@@ -1,4 +1,4 @@
 dan-tube
 http://dan-tube.appspot.com/
 local startup: dev_appserver.py DanTube
-remote deploy: appcfg.py -A marine-clarity-742 update DanTube
+remote deploy: appcfg.py -A dan-tube update DanTube

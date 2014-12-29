@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+    <head>
+    {% block head %}
+        <title>Take your challenge!</title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"type="text/javascript" ></script>
+        <link href="/static/base.css" rel="stylesheet" type="text/css">
+        <script src="/static/base.js" language="JavaScript" type="text/javascript"></script>
+    {% endblock %}
+    </head>
+    <body>
+    {% block navigation %}
+    <div id="navigation-bar-background">
+        <div id="navigation-bar" class="container">
+            <div class="fb-share-button" data-href="http://marine-clarity-742.appspot.com/" data-layout="button_count"></div>
+            <div class="user-info"><fb:login-button autologoutlink="true" scope="public_profile,email,user_friends " onlogin="status_change();"></fb:login-button></div>
+        </div>
+    </div>
+    {% endblock %}
+
+    <div id="body-container" class="container">
+    {% block body %}
+    {% endblock %}
+    </div>
+
+    {% block footscript %}
+    {% endblock %}
+    </body>
+</html>
