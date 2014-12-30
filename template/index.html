@@ -7,13 +7,20 @@
 
 {% block body %}
 <div id="player"></div>
-<form action="{{ uri_for('danmaku') }}" method="post">
+<form id="post-danmaku-form" action="{{ uri_for('danmaku') }}" method="post">
   <input class="text" name="content" type="text"/>
   <input type="submit" value="Post" class="button">
 </form>
-<form action="{{ uri_for('video') }}" method="post">
+<form id="post-video-form" action="{{ uri_for('video') }}" method="post">
   <input class="text" name="raw_url" type="text"/>
   <input class="text" name="description" type="text"/>
   <input type="submit" value="Submit" class="button">
 </form>
+<table id="danmaku-list">
+  <tr>
+    <th>Content</th>
+    <th>Creator</th> 
+    <th>Timestamp</th>
+  </tr>
+</ul>
 {% endblock %}

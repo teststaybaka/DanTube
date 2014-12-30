@@ -16,7 +16,7 @@ class Video(db.Model):
 
 class Danmaku(db.Model):
   video = db.ReferenceProperty(Video)
-  timestamp = db.TimeProperty(required=True) # datetime.time(hour, minute, second)
+  timestamp = db.FloatProperty(required=True)
   content = db.StringProperty(required=True, multiline=False)
   creator = db.ReferenceProperty(User)
   created = db.DateTimeProperty(auto_now_add=True)

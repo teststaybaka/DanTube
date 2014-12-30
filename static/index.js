@@ -65,3 +65,31 @@ function update() {
         bul.style.left = positions[i] + 'px';
     }
 }
+
+$(document).ready(function() {
+    // Post Danmaku
+    $('#post-danmaku-form .button').click(function(e){
+        e.preventDefault();
+        var content = $.trim($('#post-danmaku-form input[name="content"]')[0].value);
+        if(content.length > 0) {
+            var pdata = [{name: 'content', value: content}];
+            pdata.push({name: 'video_id', value: '123'});
+            pdata.push({name: 'timestamp', value: player.getCurrentTime()});
+            $.ajax({
+                type: "POST",
+                url: "/danmaku",
+                data: pdata,
+                success: function(result) {
+                    console.log(result);
+                    if(!result.error) {
+                        $('#danmaku-list').append('<tr><td>' + result.content + '</td><td>' + 'test' + '</td><td>' +  result.timestamp + '</td></tr>');
+                    }
+                },
+                error: function (xhr, ajaxOptions, thrownError) {
+                    console.log(xhr.status);
+                    console.log(thrownError);
+                }
+            });
+        }
+    });
+});

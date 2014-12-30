@@ -115,17 +115,16 @@ class Video(BaseHandler):
 class Danmaku(BaseHandler):
     def post(self):
         # video_id = self.request.get('video_id')
-        # video_time = self.request.get('video_time')
-        video_id = 'test'
-        timestamp = datetime.time(0, 0, 0)
-        content = self.request.get('content')
+        # video = models.Video.filter('id =', int(video_id)).get()
         danmaku = models.Danmaku(
-            video_id = video_id,
-            timestamp = timestamp,
-            content = content
+            # video = video
+            timestamp = float(self.request.get('timestamp')),
+            # creator = 
+            content = self.request.get('content')
         )
         danmaku.put()
         self.response.headers['Content-Type'] = 'application/json'
         self.response.out.write(json.dumps({
+            'timestamp': danmaku.timestamp,
             'content': danmaku.content
         }))
