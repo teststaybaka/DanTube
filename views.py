@@ -4,10 +4,15 @@ import os
 import sys
 import traceback
 import webapp2
+import datetime
 
 from jinja2 import Undefined
 from webapp2_extras import sessions
 
+import models
+import json
+import urllib2
+import urlparse
 
 class SilentUndefined(Undefined):
     '''
@@ -63,3 +68,62 @@ class Home(BaseHandler):
         context = {}
         template = env.get_template('template/index.html')
         self.response.write(template.render(context))
+
+def parse_url(raw_url):
+    if not urlparse.urlparse(raw_url).scheme:
+      raw_url = "http://" + raw_url
+
+    try:
+      req = urllib2.urlopen(raw_url)
+    except:
+      return {'error': 'invalid url'}
+    else:
+      url_parts = raw_url.split('//')[-1].split('/')
+      site = url_parts[0].split('.')[-2]
+      if site == 'youtube':
+        vid = url_parts[-1].split('=')[-1]
+        url = 'http://www.youtube.com/embed/' + vid
+      else:
+        url = raw_url
+      return {'url': url}
+
+class Video(BaseHandler):
+    def post(self):
+        raw_url = self.request.get('raw_url')
+        description = self.request.get('description')
+
+        res = parse_url(raw_url)
+        logging.info(res)
+        if res.get('error'):
+            self.response.headers['Content-Type'] = 'application/json'
+            self.response.out.write(json.dumps({
+                'status': 'failed'
+            }))
+        else:
+            video = models.Video(
+                url = res['url'],
+                description = description
+            )
+            video.put()
+            self.response.headers['Content-Type'] = 'application/json'
+            self.response.out.write(json.dumps({
+                'status': 'success'
+            }))
+
+class Danmaku(BaseHandler):
+    def post(self):
+        # video_id = self.request.get('video_id')
+        # video_time = self.request.get('video_time')
+        video_id = 'test'
+        timestamp = datetime.time(0, 0, 0)
+        content = self.request.get('content')
+        danmaku = models.Danmaku(
+            video_id = video_id,
+            timestamp = timestamp,
+            content = content
+        )
+        danmaku.put()
+        self.response.headers['Content-Type'] = 'application/json'
+        self.response.out.write(json.dumps({
+            'content': danmaku.content
+        }))

@@ -8,3 +8,13 @@
 {% block body %}
 <div id="player"></div>
 {% endblock %}
+<form action="{{ uri_for('danmaku') }}" method="post">
+  <input class="text" name="content" type="text"/>
+  <input type="submit" value="Post" class="button">
+</form>
+<form action="{{ uri_for('video') }}" method="post">
+  <input class="text" name="raw_url" type="text"/>
+  <input class="text" name="description" type="text"/>
+  <input type="submit" value="Submit" class="button">
+</form>
+{% endblock %}
