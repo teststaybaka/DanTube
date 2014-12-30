@@ -2,12 +2,26 @@
 {% block head %}
 {{ super() }}
 <link href="/static/index.css" rel="stylesheet" type="text/css">
-<script src="/static/index.js" language="JavaScript" type="text/javascript"></script>
+<script>
+  function onYouTubeIframeAPIReady() {
+      player = new YT.Player('player', {
+        height: '390',
+        width: '640',
+        videoId: '{{ video.vid }}',
+        events: {
+          'onReady': onPlayerReady,
+          'onStateChange': onPlayerStateChange
+        }
+      });
+  }
+</script>
+<script src="/static/video.js" language="JavaScript" type="text/javascript"></script>
 {% endblock %}
 
 {% block body %}
 <div id="player"></div>
-<form id="post-danmaku-form" action="{{ uri_for('danmaku') }}" method="post">
+
+<form id="post-danmaku-form" action="{{ uri_for('danmaku', video_id=video_id) }}" method="post">
   <input class="text" name="content" type="text"/>
   <input type="submit" value="Post" class="button">
 </form>

@@ -88,16 +88,26 @@ def parse_url(raw_url):
       return {'url': url, 'vid': vid, 'source': source}
 
 class Video(BaseHandler):
+    def get(self, video_id):
+        video = models.Video.get_by_id(int(video_id))
+        if video is not None:
+            context = {'video': video, 'video_id': video_id}
+            template = env.get_template('template/video.html')
+            self.response.write(template.render(context))
+        else:
+            self.response.write('video not found')
+            self.response.set_status(404)
+
     def post(self):
         raw_url = self.request.get('raw_url')
         description = self.request.get('description')
 
         res = parse_url(raw_url)
         logging.info(res)
+        self.response.headers['Content-Type'] = 'application/json'
         if res.get('error'):
-            self.response.headers['Content-Type'] = 'application/json'
             self.response.out.write(json.dumps({
-                'status': 'failed'
+                'error': 'failed to submit video'
             }))
         else:
             video = models.Video(
@@ -107,24 +117,46 @@ class Video(BaseHandler):
                 description = description
             )
             video.put()
-            self.response.headers['Content-Type'] = 'application/json'
             self.response.out.write(json.dumps({
-                'status': 'success'
+                'id': '123'
             }))
 
 class Danmaku(BaseHandler):
-    def post(self):
-        # video_id = self.request.get('video_id')
-        # video = models.Video.filter('id =', int(video_id)).get()
-        danmaku = models.Danmaku(
-            # video = video
-            timestamp = float(self.request.get('timestamp')),
-            # creator = 
-            content = self.request.get('content')
-        )
-        danmaku.put()
+    def get(self, video_id):
         self.response.headers['Content-Type'] = 'application/json'
-        self.response.out.write(json.dumps({
-            'timestamp': danmaku.timestamp,
-            'content': danmaku.content
-        }))
+        video = models.Video.get_by_id(int(video_id))
+        if video is not None:
+            danmaku_itr = models.Danmaku.all().filter('video = ', video).run()
+            danmakus = []
+            for danmaku in danmaku_itr:
+                danmakus.append({
+                    'content': danmaku.content,
+                    'timestamp': danmaku.timestamp,
+                    'creator': danmaku.creator
+                });
+            self.response.out.write(json.dumps(danmakus))
+        else:
+            self.response.out.write(json.dumps({
+                'error': 'video not found',
+            }))
+
+    def post(self, video_id):
+        self.response.headers['Content-Type'] = 'application/json'
+        video = models.Video.get_by_id(int(video_id))
+        if video is not None:
+            danmaku = models.Danmaku(
+                video = video,
+                timestamp = float(self.request.get('timestamp')),
+                # creator = 
+                content = self.request.get('content')
+            )
+            danmaku.put()
+            
+            self.response.out.write(json.dumps({
+                'timestamp': danmaku.timestamp,
+                'content': danmaku.content
+            }))
+        else:
+            self.response.out.write(json.dumps({
+                'error': 'video not found',
+            }))
