@@ -1,0 +1,64 @@
+div.danmaku {
+	position: absolute;
+	cursor: default;
+	-webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+div.danmaku-mask {
+	position: absolute;
+	height: 2000px;
+	width: 200px;
+	left: 200px;
+	background: white;
+}
+
+#player-container {
+	padding-top: 40px;
+	padding-left: 10px;
+}
+
+#player-controller {
+	float: left;
+	width: 640px;
+}
+
+#controller {
+	width: 638px;
+	height: 25px;
+	border-top: 1px solid rgb(200, 200, 200);
+	border-left: 1px solid rgb(200, 200, 200);
+	border-right: 1px solid rgb(200, 200, 200);
+	position: relative;
+	top: -4px;
+}
+
+#play-pause-button {
+	display: inline-block;
+	height: 100%;
+	width: 40px;
+	background-image: url("/static/img/play-icon.png");
+	border-right: 1px solid rgb(200, 200, 200);
+	cursor: pointer;
+}
+
+#shooter {
+	width: 638px;
+	height: 25px;
+	border-bottom-right-radius: 3px;
+	border-bottom-left-radius: 3px;
+	border: 1px solid rgb(200, 200, 200);
+	position: relative;
+	top: -4px;
+}
+
+#danmaku-pool {
+	float: left;
+	height: 413px;
+	width: 340px;
+	margin-bottom: 4px;
+}

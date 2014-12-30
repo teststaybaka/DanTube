@@ -1,19 +1,28 @@
 {% extends "template/base.html" %}
 {% block head %}
 {{ super() }}
-<link href="/static/index.css" rel="stylesheet" type="text/css">
+<link href="/static/player.css" rel="stylesheet" type="text/css">
 <script src="/static/index.js" language="JavaScript" type="text/javascript"></script>
 {% endblock %}
 
 {% block body %}
-<div id="player"></div>
-<form action="{{ uri_for('danmaku') }}" method="post">
-  <input class="text" name="content" type="text"/>
-  <input type="submit" value="Post" class="button">
-</form>
-<form action="{{ uri_for('video') }}" method="post">
-  <input class="text" name="raw_url" type="text"/>
-  <input class="text" name="description" type="text"/>
-  <input type="submit" value="Submit" class="button">
-</form>
+<div id="player-container" class="container">
+	<div id="player-controller">
+		<div id="player"></div>
+		<div id="controller">
+			<div id="play-pause-button"></div>
+		</div>
+		<div id="shooter"></div>
+	</div>
+	<div id="danmaku-pool"></div>
+	<form action="{{ uri_for('danmaku') }}" method="post">
+	  <input class="text" name="content" type="text"/>
+	  <input type="submit" value="Post" class="button">
+	</form>
+	<form action="{{ uri_for('video') }}" method="post">
+	  <input class="text" name="raw_url" type="text"/>
+	  <input class="text" name="description" type="text"/>
+	  <input type="submit" value="Submit" class="button">
+	</form>
+</div>
 {% endblock %}

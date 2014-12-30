@@ -1,32 +1,59 @@
 var player;
+var isPlaying;
 function onYouTubeIframeAPIReady() {
     player = new YT.Player('player', {
-      height: '390',
-      width: '640',
+      height: '360',
+      width: '100%',
       videoId: 'M7lc1UVf-VE',
+      playerVars: {
+        autoplay: 0,
+        controls: 0,
+        showinfo: 0,
+        modestbranding: 1,
+        enablejsapi: 1,
+        rel: 0,
+      },
       events: {
-        'onReady': onPlayerReady,
-        'onStateChange': onPlayerStateChange
+        // 'onReady': onPlayerReady,
+        'onStateChange': onPlayerStateChange,
       }
     });
 }
 
 
-function onPlayerReady(event) {
-    event.target.playVideo();
+// function onPlayerReady(event) {
+//     event.target.playVideo();
+// }
+
+function playVideo() {
+    isPlaying = true;
+    player.playVideo();
+    var button = document.getElementById("play-pause-button");
+    button.style.backgroundImage = 'url(/static/img/pause-icon.png)'
 }
 
-var done = false;
+function pauseVideo() {
+    isPlaying = false;
+    player.pauseVideo();
+    var button = document.getElementById("play-pause-button");
+    button.style.backgroundImage = 'url(/static/img/play-icon.png)';
+}
+
 function onPlayerStateChange(event) {
-    if (event.data == YT.PlayerState.PLAYING && !done) {
-      setTimeout(stopVideo, 6000);
-      done = true;
+    if (event.data == YT.PlayerState.PLAYING) {
+        playVideo();
+    } else if (event.data == YT.PlayerState.PAUSED) {
+        pauseVideo();
     }
 }
-function stopVideo() {
-    player.stopVideo();
-}
 
+function video_toggle(evt) {
+    if (isPlaying) {
+        pauseVideo();
+    } else {
+        playVideo();
+    }
+}
 
 var bullets = [];
 var positions = [];
@@ -48,7 +75,11 @@ window.onload = function() {
     var block_div = document.createElement('div');
     block_div.setAttribute('class', 'danmaku-mask');
     document.body.appendChild(block_div);
-    setInterval(update, 50)
+    // setInterval(update, 50)
+
+    var button = document.getElementById("play-pause-button");
+    button.addEventListener("click", video_toggle);
+    isPlaying = false;
 };
 
 function update() {

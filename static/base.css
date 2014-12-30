@@ -2,3 +2,31 @@ body {
 	margin: 0;
 	padding: 0;
 }
+
+#navigation-bar-background {
+    padding-top: 10px;
+    padding-bottom: 10px;
+    width: 100%;
+    background-color: rgb(245,245,245);
+    border-bottom: 1px solid rgb(200,200,200);
+    box-shadow: 0px 0 5px rgb(0,0,0);
+}
+
+#navigation-bar {
+    width: 1000px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+#body-container {
+	width: 1000px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 50px;
+}
+
+div.container:after {
+    clear: both;
+    display: table;
+    content: "";
+}
