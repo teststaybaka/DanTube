@@ -79,13 +79,13 @@ def parse_url(raw_url):
       return {'error': 'invalid url'}
     else:
       url_parts = raw_url.split('//')[-1].split('/')
-      site = url_parts[0].split('.')[-2]
-      if site == 'youtube':
+      source = url_parts[0].split('.')[-2]
+      if source == 'youtube':
         vid = url_parts[-1].split('=')[-1]
         url = 'http://www.youtube.com/embed/' + vid
       else:
         url = raw_url
-      return {'url': url}
+      return {'url': url, 'vid': vid, 'source': source}
 
 class Video(BaseHandler):
     def post(self):
@@ -102,6 +102,8 @@ class Video(BaseHandler):
         else:
             video = models.Video(
                 url = res['url'],
+                vid = res['vid'],
+                source = res['source'],
                 description = description
             )
             video.put()

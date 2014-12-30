@@ -10,6 +10,8 @@ class User(db.Model):
 
 class Video(db.Model):
   url = db.StringProperty(required=True)
+  vid = db.StringProperty(required=True)
+  source = db.StringProperty(required=True, choices=['youtube'])
   description = db.StringProperty()
 
 class Danmaku(db.Model):
