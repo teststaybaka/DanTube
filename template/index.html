@@ -9,27 +9,22 @@
 <div id="player-container" class="container">
 	<div id="player-controller">
 		<div id="player"></div>
-		<div id="controller">
-			<div id="play-pause-button"></div>
+		<div id="controller" class="container">
+			<div id="full-screen" class="off"></div>
+			<div id="wide-screen" class="off"></div>
+			<div id="loop-switch" class="on"></div>
+			<div id="danmaku-switch" class="on"></div>
+			<div id="volume-switch" class="on"></div>
+			<div id="progress-number"></div>
+			<div id="play-pause-button" class="play"></div>
+			<div id="progress-bar-background"></div>
+			<div id="progress-bar-buffered"></div>
+			<div id="progress-bar-played"></div>
+			<div id="progress-pointer"></div>
 		</div>
 		<div id="shooter"></div>
 	</div>
 	<div id="danmaku-pool"></div>
-	<form action="{{ uri_for('danmaku') }}" method="post">
-	  <input class="text" name="content" type="text"/>
-	  <input type="submit" value="Post" class="button">
-	</form>
-	<form action="{{ uri_for('video') }}" method="post">
-	  <input class="text" name="raw_url" type="text"/>
-	  <input class="text" name="description" type="text"/>
-	  <input type="submit" value="Submit" class="button">
-	</form>
-	<table id="danmaku-list">
-	  <tr>
-	    <th>Content</th>
-	    <th>Creator</th> 
-	    <th>Timestamp</th>
-	  </tr>
 	</ul>
 </div>
 {% endblock %}

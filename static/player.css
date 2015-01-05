@@ -37,13 +37,172 @@ div.danmaku-mask {
 	top: -4px;
 }
 
-#play-pause-button {
+#play-pause-button.play, #play-pause-button.pause {
 	display: inline-block;
 	height: 100%;
 	width: 40px;
 	background-image: url("/static/img/play-icon.png");
 	border-right: 1px solid rgb(200, 200, 200);
 	cursor: pointer;
+}
+
+#play-pause-button.play:hover {
+	background-image: url("/static/img/play-icon-hover.png");
+}
+
+#play-pause-button.play:active {
+	background-image: url("/static/img/play-icon-active.png");
+}
+
+#play-pause-button.pause {
+	background-image: url("/static/img/pause-icon.png");
+}
+
+#play-pause-button.pause:hover {
+	background-image: url("/static/img/pause-icon-hover.png");
+}
+
+#play-pause-button.pause:active {
+	background-image: url("/static/img/pause-icon-active.png");
+}
+
+#progress-bar-background {
+	display: inline-block;
+	margin-top: 9px;
+	margin-bottom: 9px;
+	margin-left: 5px;
+	height: 7px;
+	width: 200px;
+	/*border: 1px solid rgb(200, 200, 200);*/
+	background-color: rgb(50,50,50);
+	border-radius: 10px;
+}
+
+#progress-number {
+	display: inline-block;
+	float: right;
+	height: 100%;
+}
+
+#volume-switch.on, #volume-switch.off {
+	display: inline-block;
+	float: right;
+	height: 100%;
+	width: 25px;
+	background-image: url("/static/img/volume.png");
+	cursor: pointer;
+}
+
+#volume-switch.off {
+	background-image: url("/static/img/volume-mute.png");
+}
+
+#volume-switch.on:hover {
+	background-image: url("/static/img/volume-hover.png");
+}
+
+#volume-switch.on:active {
+	background-image: url("/static/img/volume-active.png");
+}
+
+#volume-switch.off:hover {
+	background-image: url("/static/img/volume-mute-hover.png");
+}
+
+#volume-switch.off:active {
+	background-image: url("/static/img/volume-mute-active.png");
+}
+
+#danmaku-switch {
+	display: inline-block;
+	float: right;
+	height: 100%;
+	width: 25px;
+	background-image: url("/static/img/danmaku.png");
+	cursor: pointer;
+}
+
+#danmaku-switch.off {
+	background-image: url("/static/img/danmaku-off.png");
+}
+
+#danmaku-switch:hover {
+	background-image: url("/static/img/danmaku-hover.png");
+}
+
+#danmaku-switch:active {
+	background-image: url("/static/img/danmaku-active.png");
+}
+
+#loop-switch {
+	display: inline-block;
+	float: right;
+	height: 100%;
+	width: 25px;
+	background-image: url("/static/img/loop.png");
+	cursor: pointer;
+}
+
+#loop-switch.off {
+	background-image: url("/static/img/loop-off.png");
+}
+
+#loop-switch:hover {
+	background-image: url("/static/img/loop-hover.png");
+}
+
+#loop-switch:active {
+	background-image: url("/static/img/loop-active.png");
+}
+
+#wide-screen {
+	display: inline-block;
+	float: right;
+	height: 100%;
+	width: 25px;
+	background-image: url("/static/img/widescreen.png");
+	cursor: pointer;
+}
+
+#wide-screen.off {
+	background-image: url("/static/img/widescreen-off.png");
+}
+
+#wide-screen:hover {
+	background-image: url("/static/img/widescreen-hover.png");
+}
+
+#wide-screen:active {
+	background-image: url("/static/img/widescreen-active.png");
+}
+
+#full-screen {
+	display: inline-block;
+	float: right;
+	height: 100%;
+	width: 25px;
+	background-image: url("/static/img/fullscreen-off.png");
+	cursor: pointer;
+}
+
+#full-screen.off {
+	background-image: url("/static/img/fullscreen.png");
+}
+
+#full-screen.on:hover {
+	background-image: url("/static/img/fullscreen-off-hover.png");
+}
+
+#full-screen.on:active {
+	background-image: url("/static/img/fullscreen-off-active.png");
+}
+
+#full-screen.off:hover {
+	background-image: url("/static/img/fullscreen-hover.png");
+}
+
+#full-screen.off:active {
+	background-image: url("/static/img/fullscreen-active.png");
 }
 
 #shooter {
