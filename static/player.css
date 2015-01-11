@@ -19,26 +19,30 @@ div.danmaku-mask {
 
 #player-container {
 	padding-top: 40px;
-	padding-left: 10px;
 }
 
 #player-controller {
+	display: inline-table;
 	float: left;
 	width: 640px;
+}
+
+#controller-background {
+	position: relative;
+	top: -4px;
+	box-shadow: 0px 0 8px rgb(200,200,200);
+	border: 1px solid rgb(200, 200, 200);
+	border-bottom-left-radius: 3px;
 }
 
 #controller {
 	width: 638px;
 	height: 25px;
-	border-top: 1px solid rgb(200, 200, 200);
-	border-left: 1px solid rgb(200, 200, 200);
-	border-right: 1px solid rgb(200, 200, 200);
-	position: relative;
-	top: -4px;
 }
 
 #play-pause-button.play, #play-pause-button.pause {
-	display: inline-block;
+	/*display: inline-block;*/
+	float: left;
 	height: 100%;
 	width: 40px;
 	background-image: url("/static/img/play-icon.png");
@@ -66,16 +70,21 @@ div.danmaku-mask {
 	background-image: url("/static/img/pause-icon-active.png");
 }
 
-#progress-bar-background {
+/*#progress-bar-background {
 	display: inline-block;
 	margin-top: 9px;
 	margin-bottom: 9px;
 	margin-left: 5px;
 	height: 7px;
 	width: 200px;
-	/*border: 1px solid rgb(200, 200, 200);*/
 	background-color: rgb(50,50,50);
 	border-radius: 10px;
+}*/
+#progress-bar {
+	height: 100%;
+	width: 472px;
+	float: left;
+	background-color: white;
 }
 
 #progress-number {
@@ -208,16 +217,159 @@ div.danmaku-mask {
 #shooter {
 	width: 638px;
 	height: 25px;
-	border-bottom-right-radius: 3px;
-	border-bottom-left-radius: 3px;
-	border: 1px solid rgb(200, 200, 200);
-	position: relative;
-	top: -4px;
+	border-top: 1px solid rgb(200, 200, 200);
+}
+
+#danmaku-form {
+	height: 100%;
+	z-index: 1;
+}
+
+#danmaku-color-setting {
+	/*display: inline-block;*/
+	float: left;
+	height: 100%;
+	width: 25px;
+	border-right: 1px solid rgb(200, 200, 200);
+	background-color: white;
+}
+
+#danmaku-input {
+	float: left;
+	/*display: inline-block;*/
+	outline: none;
+	height: 100%;
+	margin: 0;
+	padding: 0;
+	border-width: 0;
+	width: 555px;
+	border-right: 1px solid rgb(200, 200, 200);
+	padding-left: 3px;
+	padding-right: 3px;
+	overflow: hidden;
+}
+
+#fire-button {
+	float: left;
+	/*display: inline-block;*/
+	margin: 0;
+	height: 100%;
+	border-width: 0;
+	background-color: rgb(126, 206, 244);
+	width: 50px;
+	color: white;
+	outline: none;
+	text-align: center;
+}
+
+#fire-button:hover {
+	background-color: rgb(0, 132, 255);
+}
+
+#fire-button:active {
+	background-color: rgb(126, 206, 244);
 }
 
 #danmaku-pool {
+	display: inline-table;
 	float: left;
-	height: 413px;
-	width: 340px;
+	height: 411px;
+	width: 359px;
 	margin-bottom: 4px;
+	border-bottom: 1px solid rgb(200, 200, 200);
+	border-right: 1px solid rgb(200, 200, 200);
+	border-top: 1px solid rgb(200, 200, 200);
+	border-bottom-right-radius: 3px;
+	border-top-right-radius: 3px;
+	box-shadow: 0px 0 8px rgb(200,200,200);
+	background-color: white;
+	color: rgb(110,110,110);
+}
+
+div.danmaku-order-title {
+	background-color: rgb(245,245,245);
+	padding: 5px 10px;
+	display: inline-block;
+}
+
+div.danmaku-order-title:hover {
+	background-color: rgb(205,230,242);
+}
+
+div.danmaku-order-title:active {
+	background-color: rgb(129,206,243);
+}
+
+#time {
+	width: 40px;
+}
+
+#content {
+	width: 160px;
+}
+
+#date {
+	width: 99px;
+}
+
+#danmaku-list {
+	height: 383px;
+	overflow-y: auto;
+	display: block;
+}
+
+div.per-bullet {
+	text-align: right;
+	color: rgb(120,120,120);
+	text-align: left;
+	display: inline-block;
+	padding: 0;
+	margin: 0;
+	width: 100%;
+}
+
+div.per-bullet:hover {
+	background-color: rgb(189, 234, 255);
+}
+
+div.per-bullet:active {
+	background-color: rgb(129,206,243);
+}
+
+div.bullet-time-value {
+	display: inline-block;
+	width: 39px;
+	padding: 5px 10px;
+	height: 18px;
+	float: left;
+	text-overflow: ellipsis;
+	overflow: hidden;
+}
+
+div.bullet-content-value {
+	display: inline-block;
+	width: 159px;
+	padding: 5px 10px;
+	height: 18px;
+	float: left;
+	text-overflow: ellipsis;
+	overflow: hidden;
+}
+
+div.bullet-date-value {
+	width: 87px;
+	padding: 5px 10px;
+	padding-right: 0;
+	height: 18px;
+	float: left;
+	text-overflow: ellipsis;
+	overflow: hidden;
+}
+
+div.space-padding {
+	background-color: white;
+	width: 1px;
+	height: 28px;
+	display: inline-block;
+	float: left;
 }
