@@ -7,14 +7,31 @@ div.danmaku {
     -moz-user-select: none;
     -ms-user-select: none;
     user-select: none;
+    z-index: 2;
 }
+
+div.danmaku:active {
+	background-color: red;
+	transform: translateX(500px);
+
+} 
 
 div.danmaku-mask {
 	position: absolute;
-	height: 2000px;
+	height: 1000px;
 	width: 200px;
-	left: 200px;
+	left: 600px;
 	background: white;
+	z-index: 1;
+}
+
+div.danmaku-mask:active {
+	background-color: red;
+}
+
+#player {
+	position: relative;
+	z-index: 1;
 }
 
 #player-container {
@@ -38,6 +55,7 @@ div.danmaku-mask {
 #controller {
 	width: 638px;
 	height: 25px;
+	background-color: white;
 }
 
 #play-pause-button.play, #play-pause-button.pause {
@@ -70,27 +88,48 @@ div.danmaku-mask {
 	background-image: url("/static/img/pause-icon-active.png");
 }
 
-/*#progress-bar-background {
+#progress-bar, #progress-bar-played {
 	display: inline-block;
-	margin-top: 9px;
-	margin-bottom: 9px;
-	margin-left: 5px;
 	height: 7px;
-	width: 200px;
-	background-color: rgb(50,50,50);
 	border-radius: 10px;
-}*/
+	position: fixed;
+	background-repeat: no-repeat;
+}
+
 #progress-bar {
-	height: 100%;
-	width: 472px;
-	float: left;
-	background-color: white;
+	background-color: rgb(220,220,220);
+	background-image: url("/static/img/buffered.png");
+}
+
+#progress-bar-played {
+	background-image: url("/static/img/played.png");
+	background-position: -1000px 0;
+	cursor: pointer;
+}
+
+#progress-pointer {
+	display: inline-block;
+	height: 12px;
+	width: 12px;
+	border-radius: 10px;
+	position: fixed;
+	border: 4px solid white;
+	-webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
+	-moz-box-sizing: border-box;    /* Firefox, other Gecko */
+	box-sizing: border-box;
+	box-shadow: 0px 0 1px rgb(50,50,50);
+	/*cursor: pointer;*/
+	pointer-events: none;
 }
 
 #progress-number {
 	display: inline-block;
 	float: right;
 	height: 100%;
+	padding-top: 3px;
+	-webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
+	-moz-box-sizing: border-box;    /* Firefox, other Gecko */
+	box-sizing: border-box;
 }
 
 #volume-switch.on, #volume-switch.off {
@@ -284,6 +323,8 @@ div.danmaku-mask {
 	box-shadow: 0px 0 8px rgb(200,200,200);
 	background-color: white;
 	color: rgb(110,110,110);
+	position: relative;
+	z-index: 3;
 }
 
 div.danmaku-order-title {
