@@ -1,0 +1,20 @@
+{% extends "template/base.html" %}
+
+{% block body %}
+<div id="sign-up-container">
+    <form action="{{ uri_for('signup') }}" method="post">
+        <div id="form-header">Sign up</div>
+        <div id="form-body">
+            <div class="label" id="label-username">Username</div>
+            <input class="text" name="username" id="input-username" autofocus type="text" tabindex="1" />
+            <div class="label" id="label-email">Email</div>
+            <input class="text" name="email" id="input-email" autofocus type="text" tabindex="2" />
+            <div class="label" id="label-password">Password</div>
+            <input class="text" name="password" id="input-password" type="password" tabindex="3" />
+            <div class="label" id="label-password-again">Password again to confirm</div>
+            <input class="text" name="password_confirm" id="input-password-again" type="password" tabindex="4" />
+            <input class="button" id="button-signup" type="submit" value="Sign up" tabindex="5" />
+        </div>
+    </form>
+</div>
+{% endblock %}

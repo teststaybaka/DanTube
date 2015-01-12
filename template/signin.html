@@ -1,0 +1,19 @@
+{% extends "template/base.html" %}
+{% block head %}
+{{ super() }}
+{% endblock %}
+
+{% block body %}
+<div id="sign-in-container">
+    <form action="{{ uri_for('signin') }}" method="post">
+        <div id="form-header">Sign in</div>
+        <div id="form-body">
+            <div class="label" id="label-username">Username or Email</div>
+            <input class="text" name="username" id="input-username" autofocus type="text" tabindex="1" />
+            <div class="label" id="label-password">Password (forgot password)</div>
+            <input class="text" name="password" id="input-password" type="password" tabindex="2" />
+            <input class="button" id="button-signin" type="submit" value="Sign in" tabindex="3" />
+        </div>
+    </form>
+</div>
+{% endblock %}

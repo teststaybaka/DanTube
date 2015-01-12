@@ -69,6 +69,22 @@ class Home(BaseHandler):
         template = env.get_template('template/index.html')
         self.response.write(template.render(context))
 
+class Signin(BaseHandler):
+    def get(self):
+        context = {}
+        template = env.get_template('template/signin.html')
+        self.response.write(template.render(context))
+
+    # def post(self):
+
+class Signup(BaseHandler):
+    def get(self):
+        context = {}
+        template = env.get_template('template/signup.html')
+        self.response.write(template.render(context))
+        
+    # def post(self):
+
 def parse_url(raw_url):
     if not urlparse.urlparse(raw_url).scheme:
       raw_url = "http://" + raw_url
