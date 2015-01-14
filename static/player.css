@@ -1,4 +1,5 @@
 div.danmaku {
+	display: inline-block;
 	position: absolute;
 	cursor: default;
 	-webkit-touch-callout: none;
@@ -9,7 +10,7 @@ div.danmaku {
     user-select: none;
     z-index: 2;
     font: 16px "Times New Roman";
-    left: 700px;
+    left: 640px;
 }
 
 div.danmaku:active {
@@ -21,7 +22,7 @@ div.danmaku:active {
 #danmaku-left-mask {
 	position: absolute;
 	height: 360px;
-	right: 1000px;
+	right: 1050px;
 	background-color: rgb(245,245,245);
 	z-index: 3;
 }
@@ -29,7 +30,7 @@ div.danmaku:active {
 #danmaku-right-mask {
 	position: absolute;
 	height: 360px;
-	width: 200px;
+	width: 26px;
 	left: 640px;
 	background-color: rgb(245,245,245);
 	z-index: 3;
@@ -61,6 +62,12 @@ div.danmaku-mask:active {
 	width: 640px;
 }
 
+#top-padding, #bottom-padding {
+	width: 640px;
+	height: 108px;
+	background-color: black;
+}
+
 #controller-background {
 	position: relative;
 	top: -4px;
@@ -70,7 +77,6 @@ div.danmaku-mask:active {
 }
 
 #controller {
-	width: 638px;
 	height: 25px;
 	background-color: white;
 }
@@ -399,18 +405,16 @@ div.danmaku-mask:active {
 }
 
 #shooter {
-	width: 638px;
 	height: 25px;
 	border-top: 1px solid rgb(200, 200, 200);
 }
 
 #danmaku-form {
 	height: 100%;
-	z-index: 1;
 }
 
 #danmaku-color-setting {
-	/*display: inline-block;*/
+	display: inline-block;
 	float: left;
 	height: 100%;
 	width: 25px;
@@ -420,7 +424,7 @@ div.danmaku-mask:active {
 
 #danmaku-input {
 	float: left;
-	/*display: inline-block;*/
+	display: inline-block;
 	outline: none;
 	height: 100%;
 	margin: 0;
@@ -435,7 +439,7 @@ div.danmaku-mask:active {
 
 #fire-button {
 	float: left;
-	/*display: inline-block;*/
+	display: inline-block;
 	margin: 0;
 	height: 100%;
 	border-width: 0;
@@ -458,7 +462,7 @@ div.danmaku-mask:active {
 	display: inline-table;
 	float: left;
 	height: 411px;
-	width: 359px;
+	width: 383px;
 	margin-bottom: 4px;
 	border-bottom: 1px solid rgb(200, 200, 200);
 	border-right: 1px solid rgb(200, 200, 200);
@@ -491,7 +495,7 @@ div.danmaku-order-title:active {
 }
 
 #content {
-	width: 160px;
+	width: 184px;
 }
 
 #date {
@@ -505,7 +509,6 @@ div.danmaku-order-title:active {
 }
 
 div.per-bullet {
-	text-align: right;
 	color: rgb(120,120,120);
 	text-align: left;
 	display: inline-block;
@@ -535,7 +538,7 @@ div.bullet-time-value {
 
 div.bullet-content-value {
 	display: inline-block;
-	width: 159px;
+	width: 183px;
 	padding: 5px 10px;
 	height: 18px;
 	float: left;
