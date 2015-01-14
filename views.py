@@ -66,7 +66,7 @@ class BaseHandler(webapp2.RequestHandler):
 class Home(BaseHandler):
     def get(self):
         context = {}
-        template = env.get_template('template/index.html')
+        template = env.get_template('template/player.html')
         self.response.write(template.render(context))
 
 def parse_url(raw_url):
