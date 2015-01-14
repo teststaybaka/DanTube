@@ -8,6 +8,8 @@ div.danmaku {
     -ms-user-select: none;
     user-select: none;
     z-index: 2;
+    font: 16px "Times New Roman";
+    left: 700px;
 }
 
 div.danmaku:active {
@@ -16,13 +18,21 @@ div.danmaku:active {
 
 } 
 
-div.danmaku-mask {
+#danmaku-left-mask {
 	position: absolute;
-	height: 1000px;
+	height: 360px;
+	right: 1000px;
+	background-color: rgb(245,245,245);
+	z-index: 3;
+}
+
+#danmaku-right-mask {
+	position: absolute;
+	height: 360px;
 	width: 200px;
-	left: 600px;
-	background: white;
-	z-index: 1;
+	left: 640px;
+	background-color: rgb(245,245,245);
+	z-index: 3;
 }
 
 div.danmaku-mask:active {
@@ -42,6 +52,7 @@ div.danmaku-mask:active {
     -moz-user-select: none;
     -ms-user-select: none;
     user-select: none;
+    position: relative;
 }
 
 #player-controller {
@@ -241,6 +252,20 @@ div.danmaku-mask:active {
 	box-shadow: 0px 0 1px rgb(50,50,50);
 	bottom: 0;
 	pointer-events: none;
+}
+
+#volume-tip {
+	display: none;
+	position: absolute;
+	bottom: 0;
+	margin-left: 28px;
+	border-radius: 3px;
+	background-color: rgba(255,255,255,.5);
+	padding: 0 3px;
+}
+
+#volume-background:hover #volume-tip {
+	display: inline-block;
 }
 
 #danmaku-switch {
@@ -444,7 +469,7 @@ div.danmaku-mask:active {
 	background-color: white;
 	color: rgb(110,110,110);
 	position: relative;
-	z-index: 3;
+	z-index: 4;
 }
 
 div.danmaku-order-title {
@@ -505,6 +530,7 @@ div.bullet-time-value {
 	float: left;
 	text-overflow: ellipsis;
 	overflow: hidden;
+	white-space:nowrap
 }
 
 div.bullet-content-value {
@@ -515,6 +541,7 @@ div.bullet-content-value {
 	float: left;
 	text-overflow: ellipsis;
 	overflow: hidden;
+	white-space:nowrap
 }
 
 div.bullet-date-value {
@@ -525,6 +552,7 @@ div.bullet-date-value {
 	float: left;
 	text-overflow: ellipsis;
 	overflow: hidden;
+	white-space:nowrap
 }
 
 div.space-padding {

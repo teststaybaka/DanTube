@@ -1,6 +1,6 @@
 var player;
 var isPlaying;
-var refreshVar;
+var danmakuVar;
 var bufferVar;
 var progressVar;
 var progressHold = false;
@@ -54,19 +54,19 @@ function onPlayerReady(event) {
 function onPlayerStateChange(event) {
     if (event.data == YT.PlayerState.PLAYING) {
         isPlaying = true;
-        // refreshVar = setInterval(update, 50);
+        danmakuVar = setInterval(danmaku_update, 50);
         progressVar = setInterval(progress_update, 300);
         var button = document.getElementById("play-pause-button");
         button.setAttribute("class", "pause");
     } else if (event.data == YT.PlayerState.PAUSED) {
         isPlaying = false;
-        // clearInterval(refreshVar);
+        clearInterval(danmakuVar);
         clearInterval(progressVar);
         var button = document.getElementById("play-pause-button");
         button.setAttribute("class", "play");
     } else if (event.data == YT.PlayerState.ENDED) {
         isPlaying = false;
-        // clearInterval(refreshVar);
+        clearInterval(danmakuVar);
         clearInterval(progressVar);
         var button = document.getElementById("play-pause-button");
         button.setAttribute("class", "play");
@@ -126,6 +126,18 @@ function volume_move(evt) {
     volume_pointer.style.WebkitTransform = "translateY(-"+len+"px)";
     volume_pointer.style.msTransform = "translateY(-"+len+"px)";
     volume_pointer.style.transform = "translateY(-"+len+"px)";
+
+    var volume_tip = document.getElementById("volume-tip");
+    volume_tip.style.WebkitTransform = "translateY(-"+len+"px)";
+    volume_tip.style.msTransform = "translateY(-"+len+"px)";
+    volume_tip.style.transform = "translateY(-"+len+"px)";
+    var text;
+    if (Math.floor(len/volume.offsetHeight*100) < 10) {
+        text = "0"+Math.floor(len/volume.offsetHeight*100);
+    } else {
+        text = Math.floor(len/volume.offsetHeight*100);
+    }
+    volume_tip.lastChild.nodeValue = text;
 
     player.setVolume(len/volume.offsetHeight*100);
 }
@@ -274,7 +286,7 @@ function progress_bar_up_out(evt) {
         }
         var progress_number = document.getElementById("progress-number");
         progress_number.lastChild.nodeValue = text+"/"+progress_number.lastChild.nodeValue.split('/')[1];
-        reposition();
+        progress_resize();
 
         player.seekTo(num, true);
         document.onmousemove = null;
@@ -288,25 +300,16 @@ var bullets = [];
 var positions = [];
 
 window.onload = function() {
-    var move_speed = 1;
     var max = 60;
-    var nav_bar = document.getElementById("navigation-bar-background");
-    // for (var i = 0; i < max; i++) {
-    //     var bul = document.createElement('div');
-        
-    //     bul.setAttribute('class', 'danmaku');
-    //     bul.style.left = 500+'px';
-    //     bul.style.top = i*20+'px';
-    //     var text = document.createTextNode('sdfsdfs');
-    //     bul.appendChild(text);
-
-    //     positions.push(i*20);
-    //     document.body.appendChild(bul);
-    //     bullets.push(bul);
-    // }
-    // var block_div = document.createElement('div');
-    // block_div.setAttribute('class', 'danmaku-mask');
-    // document.body.appendChild(block_div);
+    var player_container = document.getElementById("player-container");
+    for (var i = 0; i < max; i++) {
+        var bul = document.createElement('div');
+        bul.setAttribute('class', 'danmaku');
+        var text = document.createTextNode('sdfsdfs');
+        bul.appendChild(text);
+        player_container.appendChild(bul);
+        bullets.push(bul);
+    }
 
     var play_button = document.getElementById("play-pause-button");
     play_button.addEventListener("click", video_toggle);
@@ -323,6 +326,11 @@ window.onload = function() {
     volume_pointer.style.WebkitTransform = "translateY(-"+25+"px)";
     volume_pointer.style.msTransform = "translateY(-"+25+"px)";
     volume_pointer.style.transform = "translateY(-"+25+"px)";
+    var volume_tip = document.getElementById("volume-tip");
+    volume_tip.style.WebkitTransform = "translateY(-"+25+"px)";
+    volume_tip.style.msTransform = "translateY(-"+25+"px)";
+    volume_tip.style.transform = "translateY(-"+25+"px)";
+    volume_tip.lastChild.nodeValue = 50;
 
     var danmaku_button = document.getElementById("danmaku-switch");
     danmaku_button.addEventListener("click", danmaku_switch);
@@ -349,8 +357,19 @@ window.onload = function() {
     var progress_buffered = document.getElementById("progress-bar-buffered");
     progress_buffered.style.width = "0";
 
-    reposition();
+    progress_resize();
+    danmaku_mask_resize();
+    console.log(getTextWidth("sdfsdfs"));
 };
+window.onresize = danmaku_mask_resize;
+window.onscroll = danmaku_mask_resize;
+
+function danmaku_mask_resize() {
+    var left_mask = document.getElementById("danmaku-left-mask");
+    var player_controller = document.getElementById("player-controller");
+    var rect = player_controller.getBoundingClientRect();
+    left_mask.style.width = rect.left + "px";
+}
 
 function danmaku_update() {
     // for (var i = 0; i < bullets.length; i++) {
@@ -368,7 +387,16 @@ function danmaku_update() {
     
 }
 
-function reposition() {
+function getTextWidth(text) {
+    // re-use canvas object for better performance
+    var canvas = getTextWidth.canvas || (getTextWidth.canvas = document.createElement("canvas"));
+    var context = canvas.getContext("2d");
+    context.font = "16px Times New Roman";
+    var metrics = context.measureText(text);
+    return metrics.width;
+};
+
+function progress_resize() {
     var progress_bar = document.getElementById("progress-bar");
     var rect = progress_bar.getBoundingClientRect();
     var progress_number = document.getElementById("progress-number");
@@ -377,7 +405,7 @@ function reposition() {
 
     var progress_bar_background = document.getElementById("progress-bar-background");
     progress_bar_background.style.width = progress_bar.style.width;
-    // console.log('reposition');
+    // console.log('progress_resize');
 }
 
 function buffer_update() {
@@ -390,7 +418,6 @@ function buffer_update() {
 
 function progress_update() {
     // console.log('progress_update');
-    var progress_bar = document.getElementById("progress-bar");
     var progress_number = document.getElementById("progress-number");
     var splits = progress_number.lastChild.nodeValue.split('/');
     var curTime;
@@ -405,9 +432,10 @@ function progress_update() {
         curTime += ":"+Math.floor(player.getCurrentTime()%60);
     }
     progress_number.lastChild.nodeValue = curTime+"/"+splits[1];
-    reposition();
+    progress_resize();
 
     if (!progressHold) {
+        var progress_bar = document.getElementById("progress-bar");
         var progress_played = document.getElementById("progress-bar-played");
         progress_played.style.width = player.getCurrentTime()/player.getDuration()*progress_bar.offsetWidth + "px";
         
