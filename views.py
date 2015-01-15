@@ -270,8 +270,7 @@ class Video(BaseHandler):
         video = models.Video.get_by_id(int(video_id))
         if video is not None:
             context = {'video': video, 'video_id': video_id}
-            template = env.get_template('template/video.html')
-            self.response.write(template.render(context))
+            self.render('video', context)
         else:
             self.response.write('video not found')
             self.response.set_status(404)
