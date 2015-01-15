@@ -97,9 +97,11 @@ class Home(BaseHandler):
     def get(self):
         logging.info(self.user_info)
         context = {}
-        # template = env.get_template('template/index.html')
+        # self.render('index', context)
+        
+        # template = env.get_template('template/player.html')
         # self.response.write(template.render(context))
-        self.render('index', context)
+        self.render('player')
 
 class Signin(BaseHandler):
     def get(self):

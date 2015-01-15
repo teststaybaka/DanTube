@@ -1,4 +1,5 @@
 div.danmaku {
+	display: inline-block;
 	position: absolute;
 	cursor: default;
 	-webkit-touch-callout: none;
@@ -8,6 +9,8 @@ div.danmaku {
     -ms-user-select: none;
     user-select: none;
     z-index: 2;
+    font: 16px "Times New Roman";
+    right: 384px;
 }
 
 div.danmaku:active {
@@ -16,13 +19,12 @@ div.danmaku:active {
 
 } 
 
-div.danmaku-mask {
+#danmaku-left-mask {
 	position: absolute;
-	height: 1000px;
-	width: 200px;
-	left: 600px;
-	background: white;
-	z-index: 1;
+	height: 360px;
+	right: 1024px;
+	background-color: rgb(255,255,255);
+	z-index: 3;
 }
 
 div.danmaku-mask:active {
@@ -36,12 +38,25 @@ div.danmaku-mask:active {
 
 #player-container {
 	padding-top: 40px;
+	-webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    position: relative;
 }
 
 #player-controller {
 	display: inline-table;
 	float: left;
 	width: 640px;
+}
+
+#top-padding, #bottom-padding {
+	width: 640px;
+	height: 108px;
+	background-color: black;
 }
 
 #controller-background {
@@ -53,7 +68,6 @@ div.danmaku-mask:active {
 }
 
 #controller {
-	width: 638px;
 	height: 25px;
 	background-color: white;
 }
@@ -88,38 +102,65 @@ div.danmaku-mask:active {
 	background-image: url("/static/img/pause-icon-active.png");
 }
 
-#progress-bar, #progress-bar-played {
+#progress-bar {
+	position: absolute;
+	height: 50%;
+	margin-left: 9px;
+	display: inline-block;
+	cursor: pointer;
+}
+
+#progress-bar-background, #progress-bar-buffered, #progress-bar-played {
 	display: inline-block;
 	height: 7px;
 	border-radius: 10px;
-	position: fixed;
-	background-repeat: no-repeat;
+	position: absolute;
+	margin-top: 9px;
+	margin-bottom: 9px;
+	margin-left: 9px;
 }
 
-#progress-bar {
+#progress-bar-background {
 	background-color: rgb(220,220,220);
-	background-image: url("/static/img/buffered.png");
+	pointer-events: none;
+}
+
+#progress-bar-buffered {
+	background-color: rgb(127,206,244);
+	pointer-events: none;
 }
 
 #progress-bar-played {
-	background-image: url("/static/img/played.png");
-	background-position: -1000px 0;
-	cursor: pointer;
+	background-color: rgb(0,132,255);
+	pointer-events: none;
 }
 
 #progress-pointer {
 	display: inline-block;
-	height: 12px;
-	width: 12px;
+	height: 13px;
+	width: 13px;
+	margin-top: 6px;
+	margin-bottom: 6px;
+	margin-left: 5px;
 	border-radius: 10px;
-	position: fixed;
+	position: absolute;
 	border: 4px solid white;
 	-webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
 	-moz-box-sizing: border-box;    /* Firefox, other Gecko */
 	box-sizing: border-box;
 	box-shadow: 0px 0 1px rgb(50,50,50);
-	/*cursor: pointer;*/
 	pointer-events: none;
+}
+
+#progress-tip {
+	display: none;
+	position: absolute;
+	bottom: 53px;
+	background-color: rgba(255,255,255,.5);
+	z-index: 3;
+	border-radius: 3px;
+	margin-left: 9px;
+	padding: 0 3px;
 }
 
 #progress-number {
@@ -161,6 +202,69 @@ div.danmaku-mask:active {
 	background-image: url("/static/img/volume-mute-active.png");
 }
 
+#volume-background {
+	display: none;
+	height: 70px;
+	width: 25px;
+	background-color: white;
+	position: absolute;
+	bottom: 50px;
+	z-index: 3;
+}
+
+#volume-switch.on:hover #volume-background {
+	display: inline-block;
+}
+
+#volume-bar, #volume-magnitude {
+	display: inline-block;
+	position: absolute;
+	border-radius: 10px;
+	margin: 10px 10px;
+	width: 5px;
+	bottom: 0;
+	pointer-events: none;
+}
+
+#volume-bar {
+	height: 50px;
+	background-color: rgb(225,225,225);
+}
+
+#volume-magnitude {
+	background-color: rgb(127,206,244);
+}
+
+#volume-pointer {
+	display: inline-block;
+	position: absolute;
+	margin: 5px 7px;
+	width: 11px;
+	height: 11px;
+	background-color: white;
+	-webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
+	-moz-box-sizing: border-box;    /* Firefox, other Gecko */
+	box-sizing: border-box;
+	border-radius: 10px;
+	box-shadow: 0px 0 1px rgb(50,50,50);
+	bottom: 0;
+	pointer-events: none;
+}
+
+#volume-tip {
+	display: none;
+	position: absolute;
+	bottom: 0;
+	margin-left: 28px;
+	border-radius: 3px;
+	background-color: rgba(255,255,255,.5);
+	padding: 0 3px;
+}
+
+#volume-background:hover #volume-tip {
+	display: inline-block;
+}
+
 #danmaku-switch {
 	display: inline-block;
 	float: right;
@@ -182,6 +286,25 @@ div.danmaku-mask:active {
 	background-image: url("/static/img/danmaku-active.png");
 }
 
+#danmaku-on-tip, #danmaku-off-tip {
+	bottom: 53px;
+	border-radius: 3px;
+	position: absolute;
+	z-index: 3;
+	background-color: rgba(255,255,255,.5);
+	display: none;
+	padding: 0 3px;
+	margin-left: -20px;
+}
+
+#danmaku-switch.on:hover #danmaku-on-tip {
+	display: inline-block;
+}
+
+#danmaku-switch.off:hover #danmaku-off-tip {
+	display: inline-block;
+}
+
 #loop-switch {
 	display: inline-block;
 	float: right;
@@ -201,6 +324,25 @@ div.danmaku-mask:active {
 
 #loop-switch:active {
 	background-image: url("/static/img/loop-active.png");
+}
+
+#loop-on-tip, #loop-off-tip {
+	bottom: 53px;
+	border-radius: 3px;
+	position: absolute;
+	z-index: 3;
+	background-color: rgba(255,255,255,.5);
+	display: none;
+	padding: 0 3px;
+	margin-left: -15px;
+}
+
+#loop-switch.on:hover #loop-on-tip {
+	display: inline-block;
+}
+
+#loop-switch.off:hover #loop-off-tip {
+	display: inline-block;
 }
 
 #wide-screen {
@@ -254,18 +396,16 @@ div.danmaku-mask:active {
 }
 
 #shooter {
-	width: 638px;
 	height: 25px;
 	border-top: 1px solid rgb(200, 200, 200);
 }
 
 #danmaku-form {
 	height: 100%;
-	z-index: 1;
 }
 
 #danmaku-color-setting {
-	/*display: inline-block;*/
+	display: inline-block;
 	float: left;
 	height: 100%;
 	width: 25px;
@@ -275,7 +415,7 @@ div.danmaku-mask:active {
 
 #danmaku-input {
 	float: left;
-	/*display: inline-block;*/
+	display: inline-block;
 	outline: none;
 	height: 100%;
 	margin: 0;
@@ -290,7 +430,7 @@ div.danmaku-mask:active {
 
 #fire-button {
 	float: left;
-	/*display: inline-block;*/
+	display: inline-block;
 	margin: 0;
 	height: 100%;
 	border-width: 0;
@@ -313,7 +453,7 @@ div.danmaku-mask:active {
 	display: inline-table;
 	float: left;
 	height: 411px;
-	width: 359px;
+	width: 383px;
 	margin-bottom: 4px;
 	border-bottom: 1px solid rgb(200, 200, 200);
 	border-right: 1px solid rgb(200, 200, 200);
@@ -324,7 +464,7 @@ div.danmaku-mask:active {
 	background-color: white;
 	color: rgb(110,110,110);
 	position: relative;
-	z-index: 3;
+	z-index: 4;
 }
 
 div.danmaku-order-title {
@@ -346,7 +486,7 @@ div.danmaku-order-title:active {
 }
 
 #content {
-	width: 160px;
+	width: 184px;
 }
 
 #date {
@@ -360,7 +500,6 @@ div.danmaku-order-title:active {
 }
 
 div.per-bullet {
-	text-align: right;
 	color: rgb(120,120,120);
 	text-align: left;
 	display: inline-block;
@@ -385,16 +524,18 @@ div.bullet-time-value {
 	float: left;
 	text-overflow: ellipsis;
 	overflow: hidden;
+	white-space:nowrap
 }
 
 div.bullet-content-value {
 	display: inline-block;
-	width: 159px;
+	width: 183px;
 	padding: 5px 10px;
 	height: 18px;
 	float: left;
 	text-overflow: ellipsis;
 	overflow: hidden;
+	white-space:nowrap
 }
 
 div.bullet-date-value {
@@ -405,6 +546,7 @@ div.bullet-date-value {
 	float: left;
 	text-overflow: ellipsis;
 	overflow: hidden;
+	white-space:nowrap
 }
 
 div.space-padding {
