@@ -101,7 +101,7 @@ class Home(BaseHandler):
         
         # template = env.get_template('template/player.html')
         # self.response.write(template.render(context))
-        self.render('player')
+        self.render('index')
 
 class Signin(BaseHandler):
     def get(self):
@@ -233,6 +233,20 @@ class Logout(BaseHandler):
     self.session['message'] = 'Logout successfully'
     self.redirect(self.uri_for('home'))
 
+def login_required(handler):
+  """
+    Decorator that checks if there's a user associated with the current session.
+    Will also fail if there's no session present.
+  """
+  def check_login(self, *args, **kwargs):
+    auth = self.auth
+    if not auth.get_user_by_session():
+      self.redirect(self.uri_for('signin'), abort=True)
+    else:
+      return handler(self, *args, **kwargs)
+ 
+  return check_login
+
 def parse_url(raw_url):
     if not urlparse.urlparse(raw_url).scheme:
       raw_url = "http://" + raw_url
@@ -263,12 +277,23 @@ class Video(BaseHandler):
             self.response.set_status(404)
 
     def post(self):
-        raw_url = self.request.get('raw_url')
-        description = self.request.get('description')
+        self.response.headers['Content-Type'] = 'application/json'
+        user = self.user_info
+        if not user:
+            self.response.out.write(json.dumps({
+                'error': 'not logged in!',
+            }))
+            return
 
+        raw_url = self.request.get('video-url')
+        description = self.request.get('description')
+        if not raw_url:
+            self.response.out.write(json.dumps({
+                'error': 'video url must not be empty!'
+            }))
+            return
         res = parse_url(raw_url)
         logging.info(res)
-        self.response.headers['Content-Type'] = 'application/json'
         if res.get('error'):
             self.response.out.write(json.dumps({
                 'error': 'failed to submit video'
@@ -278,12 +303,29 @@ class Video(BaseHandler):
                 url = res['url'],
                 vid = res['vid'],
                 source = res['source'],
+                uploader = user['username'],
                 description = description
             )
             video.put()
+
             self.response.out.write(json.dumps({
-                'id': '123'
+                'url': '/video/dt'+ str(video.key().id_or_name())
             }))
+
+class Videolist(BaseHandler):
+    def get(self):
+        logging.info('hehe')
+        self.response.headers['Content-Type'] = 'application/json'
+        video_itr = models.Video.all().run()
+        videos = []
+        for video in video_itr:
+            videos.append({
+                'url': '/video/dt'+ str(video.key().id_or_name()),
+                'vid': video.vid,
+                'uploader': video.uploader,
+                'created': video.created.strftime("%Y-%m-%d %H:%M:%S")
+            });
+        self.response.out.write(json.dumps(videos))
 
 class Danmaku(BaseHandler):
     def get(self, video_id):
@@ -296,7 +338,7 @@ class Danmaku(BaseHandler):
                 danmakus.append({
                     'content': danmaku.content,
                     'timestamp': danmaku.timestamp,
-                    'creator': danmaku.creator
+                    'created': danmaku.created.strftime("%Y-%m-%d %H:%M:%S")
                 });
             self.response.out.write(json.dumps(danmakus))
         else:
@@ -306,21 +348,41 @@ class Danmaku(BaseHandler):
 
     def post(self, video_id):
         self.response.headers['Content-Type'] = 'application/json'
+        user = self.user_info
+        if not user:
+            self.response.out.write(json.dumps({
+                'error': 'not logged in!',
+            }))
+            return
+
         video = models.Video.get_by_id(int(video_id))
         if video is not None:
             danmaku = models.Danmaku(
                 video = video,
                 timestamp = float(self.request.get('timestamp')),
-                # creator = 
+                creator = user['username'],
                 content = self.request.get('content')
             )
             danmaku.put()
             
             self.response.out.write(json.dumps({
                 'timestamp': danmaku.timestamp,
-                'content': danmaku.content
+                'content': danmaku.content,
+                'creator': danmaku.creator,
+                'created': danmaku.created.strftime("%Y-%m-%d %H:%M:%S")
             }))
         else:
             self.response.out.write(json.dumps({
                 'error': 'video not found',
             }))
+
+class Submit(BaseHandler):
+
+    @login_required
+    def get(self):
+        self.render('submit')
+
+class Player(BaseHandler):
+
+    def get(self):
+        self.render('player')

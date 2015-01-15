@@ -1,40 +1,158 @@
 {% extends "template/base.html" %}
 {% block head %}
 {{ super() }}
-<link href="/static/index.css" rel="stylesheet" type="text/css">
+<link href="/static/player.css" rel="stylesheet" type="text/css">
 <script>
   function onYouTubeIframeAPIReady() {
-      player = new YT.Player('player', {
-        height: '390',
-        width: '640',
-        videoId: '{{ video.vid }}',
-        events: {
-          'onReady': onPlayerReady,
-          'onStateChange': onPlayerStateChange
-        }
-      });
-  }
+    player = new YT.Player('player', {
+      height: '360',
+      width: '100%',
+      videoId: '{{ video.vid }}',
+      playerVars: {
+        autoplay: 0,
+        controls: 0,
+        showinfo: 0,
+        modestbranding: 1,
+        enablejsapi: 1,
+        rel: 0,
+      },
+      events: {
+        'onReady': onPlayerReady,
+        'onStateChange': onPlayerStateChange,
+      }
+    });
+}
 </script>
 <script src="/static/video.js" language="JavaScript" type="text/javascript"></script>
 {% endblock %}
 
 {% block body %}
-<div id="player"></div>
+<div id="player-container" class="container">
+  <div id="player-controller">
+    <div id="player"></div>
+    <div id="controller-background">
+      <div id="controller" class="container">
+        <div id="full-screen" class="off"></div>
+        <div id="wide-screen" class="off"></div>
+        <div id="loop-switch" class="off">
+          <div id="loop-on-tip">Loop On</div>
+          <div id="loop-off-tip">Loop Off</div>
+        </div>
+        <div id="danmaku-switch" class="on">
+          <div id="danmaku-on-tip">Danmaku On</div>
+          <div id="danmaku-off-tip">Danmaku Off</div>
+        </div>
+        <div id="volume-switch" class="on">
+          <div id="volume-background">
+            <div id="volume-bar"></div>
+            <div id="volume-magnitude"></div>
+            <div id="volume-pointer"></div>
+            <div id="volume-tip">23</div>
+          </div>
+        </div>
+        <div id="progress-number">--/--</div>
+        <div id="play-pause-button" class="play"></div>
+        <div id="progress-bar"></div>
+        <div id="progress-bar-background"></div>
+        <div id="progress-bar-buffered"></div>
+        <div id="progress-bar-played"></div>
+        <div id="progress-pointer"></div>
+        <div id="progress-tip">23:23</div>
+      </div>
+      <div id="shooter" class="container">
+        <form id="danmaku-form" action="{{ uri_for('danmaku', video_id=video_id) }}" method="post">
+          <div id="danmaku-color-setting"></div>
+          <input id="danmaku-input" type="text" name="content">
+          <button id="fire-button" type="button">Fire!</button>
+        </form>
+      </div>
+    </div>
+  </div>
+  <div id="danmaku-pool">
+    <div class="danmaku-order-title" id="time">Time</div>
+    <div class="danmaku-order-title" id="content">Content</div>
+    <div class="danmaku-order-title"  id="date">Date</div>
+    <div id="danmaku-list">
+      <div class="per-bullet container">
+        <div class="bullet-time-value">10:33</div>
+        <div class="space-padding"></div>
+        <div class="bullet-content-value">23333 33333333333333333333333</div>
+        <div class="space-padding"></div>
+        <div class="bullet-date-value">01-10 06:41</div>
+      </div>
+      <div class="per-bullet container">
+        <div class="bullet-time-value">10:33</div>
+        <div class="space-padding"></div>
+        <div class="bullet-content-value">2333333333333333333333333333</div>
+        <div class="space-padding"></div>
+        <div class="bullet-date-value">01-10 06:41</div>
+      </div>
+      <div class="per-bullet container">
+        <div class="bullet-time-value">10:33</div>
+        <div class="space-padding"></div>
+        <div class="bullet-content-value">2333333333333333333333333333</div>
+        <div class="space-padding"></div>
+        <div class="bullet-date-value">01-10 06:41</div>
+      </div>
+      <div class="per-bullet container">
+        <div class="bullet-time-value">10:33</div>
+        <div class="space-padding"></div>
+        <div class="bullet-content-value">2333333333333333333333333333</div>
+        <div class="space-padding"></div>
+        <div class="bullet-date-value">01-10 06:41</div>
+      </div>
+      <div class="per-bullet container">
+        <div class="bullet-time-value">10:33</div>
+        <div class="space-padding"></div>
+        <div class="bullet-content-value">2333333333333333333333333333</div>
+        <div class="space-padding"></div>
+        <div class="bullet-date-value">01-10 06:41</div>
+      </div>
+      <div class="per-bullet container">
+        <div class="bullet-time-value">10:33</div>
+        <div class="space-padding"></div>
+        <div class="bullet-content-value">2333333333333333333333333333</div>
+        <div class="space-padding"></div>
+        <div class="bullet-date-value">01-10 06:41</div>
+      </div>
+      <div class="per-bullet container">
+        <div class="bullet-time-value">10:33</div>
+        <div class="space-padding"></div>
+        <div class="bullet-content-value">2333333333333333333333333333</div>
+        <div class="space-padding"></div>
+        <div class="bullet-date-value">01-10 06:41</div>
+      </div>
+      <div class="per-bullet container">
+        <div class="bullet-time-value">10:33</div>
+        <div class="space-padding"></div>
+        <div class="bullet-content-value">2333333333333333333333333333</div>
+        <div class="space-padding"></div>
+        <div class="bullet-date-value">01-10 06:41</div>
+      </div>
+      <div class="per-bullet container">
+        <div class="bullet-time-value">10:33</div>
+        <div class="space-padding"></div>
+        <div class="bullet-content-value">2333333333333333333333333333</div>
+        <div class="space-padding"></div>
+        <div class="bullet-date-value">01-10 06:41</div>
+      </div>
+      <div class="per-bullet container">
+        <div class="bullet-time-value">10:33</div>
+        <div class="space-padding"></div>
+        <div class="bullet-content-value">2333333333333333333333333333</div>
+        <div class="space-padding"></div>
+        <div class="bullet-date-value">01-10 06:41</div>
+      </div>
+      <div class="per-bullet container">
+        <div class="bullet-time-value">10:33</div>
+        <div class="space-padding"></div>
+        <div class="bullet-content-value">2333333333333333333333333333</div>
+        <div class="space-padding"></div>
+        <div class="bullet-date-value">01-10 06:41</div>
+      </div>
+    </div>
+  </div>
+  <div id="danmaku-left-mask"></div>
+</div>
 
-<form id="post-danmaku-form" action="{{ uri_for('danmaku', video_id=video_id) }}" method="post">
-  <input class="text" name="content" type="text"/>
-  <input type="submit" value="Post" class="button">
-</form>
-<form id="post-video-form" action="{{ uri_for('post-video') }}" method="post">
-  <input class="text" name="raw_url" type="text"/>
-  <input class="text" name="description" type="text"/>
-  <input type="submit" value="Submit" class="button">
-</form>
-<table id="danmaku-list">
-  <tr>
-    <th>Content</th>
-    <th>Creator</th> 
-    <th>Timestamp</th>
-  </tr>
-</ul>
 {% endblock %}

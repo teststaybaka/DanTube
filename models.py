@@ -18,7 +18,7 @@ class Video(db.Model):
   vid = db.StringProperty(required=True)
   source = db.StringProperty(required=True, choices=['youtube'])
   created = db.DateTimeProperty(auto_now_add=True)
-  # uploader
+  uploader = db.StringProperty(required=True)
   description = db.StringProperty()
 
 class Danmaku(db.Model):
@@ -26,5 +26,5 @@ class Danmaku(db.Model):
   timestamp = db.FloatProperty(required=True)
   content = db.StringProperty(required=True, multiline=False)
   # creator = db.ReferenceProperty(User)
-  creator = db.StringProperty()
+  creator = db.StringProperty(required=True)
   created = db.DateTimeProperty(auto_now_add=True)
