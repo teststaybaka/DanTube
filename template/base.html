@@ -11,9 +11,39 @@
     </head>
     <body>
     {% block navigation %}
+    <div id="user-bar-background">
+        <div id="user-bar" class="container">
+            <div id="logo" class="left">DanTube</div>
+            <div class="navi left">I'm feeling lucky!</div>
+            <div id="portrait" class="navi right">Portrait
+                <div id="user-box">
+                    <div id="user-name">XXX</div>
+                    <div id="user-at">@Me</div>
+                    <div id="user-notification">My Notifications</div>
+                    <div id="user-message">My Messages</div>
+                    <div id="logout">Logout</div>
+                </div>
+            </div>
+            <div id="favorites" class="navi right">Favorites</div>
+            <div id="history" class="navi right">History</div>
+            <div id="subscription" class="navi right">Subscriptions</div>
+            <div id="submit" class="navi right">Submit</div>
+        </div>
+    </div>
     <div id="navigation-bar-background">
         <div id="navigation-bar" class="container">
-            <div>Hi</div>
+            <div class="category" id="home-link">Home</div>
+            <div class="category">Anime</div>
+            <div class="category">Music</div>
+            <div class="category">Game</div>
+            <div class="category">Entertainment</div>
+            <div class="category">Technology</div>
+            <div class="category">Sports</div>
+            <div class="category">Movie</div>
+            <div class="category">TV Drama</div>
+            <div class="category">Other Channels</div>
+            <button id="search-button" type="button"></button>
+            <input type="text" name="keywords" id="search-input">
         </div>
     </div>
     {% endblock %}

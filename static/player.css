@@ -10,7 +10,7 @@ div.danmaku {
     user-select: none;
     z-index: 2;
     font: 16px "Times New Roman";
-    left: 640px;
+    right: 384px;
 }
 
 div.danmaku:active {
@@ -22,17 +22,8 @@ div.danmaku:active {
 #danmaku-left-mask {
 	position: absolute;
 	height: 360px;
-	right: 1050px;
-	background-color: rgb(245,245,245);
-	z-index: 3;
-}
-
-#danmaku-right-mask {
-	position: absolute;
-	height: 360px;
-	width: 26px;
-	left: 640px;
-	background-color: rgb(245,245,245);
+	right: 1024px;
+	background-color: rgb(255,255,255);
 	z-index: 3;
 }
 
