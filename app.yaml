@@ -8,6 +8,14 @@ handlers:
 - url: /static
   static_dir: static
 
+- url: /signin
+  script: urls.application
+  secure: always
+
+- url: /signup
+  script: urls.application
+  secure: always
+
 - url: /admin/.*
   login: admin
   script: urls.application

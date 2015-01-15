@@ -13,8 +13,17 @@
     {% block navigation %}
     <div id="navigation-bar-background">
         <div id="navigation-bar" class="container">
-            <div class="fb-share-button" data-href="http://marine-clarity-742.appspot.com/" data-layout="button_count"></div>
-            <div class="user-info"><fb:login-button autologoutlink="true" scope="public_profile,email,user_friends " onlogin="status_change();"></fb:login-button></div>
+            <div>Hi</div>
+            {% if message %}
+                <p>Message: {{ message }}</p>
+            {% endif %}
+            {% if is_auth %}
+                <p>Username: {{ username }}</p>
+                <a href="{{ uri_for('logout') }}">Logout</a>
+            {% else %}
+                <a href="{{ uri_for('signin') }}">Signin</a>
+                <a href="{{ uri_for('signup') }}">Signup</a>
+            {% endif %}
         </div>
     </div>
     {% endblock %}

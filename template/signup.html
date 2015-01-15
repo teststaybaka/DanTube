@@ -1,20 +1,53 @@
 {% extends "template/base.html" %}
+{% block head %}
+{{ super() }}
+<link href="/static/signup.css" rel="stylesheet" type="text/css">
+<script src="/static/signup.js" language="JavaScript" type="text/javascript"></script>
+{% endblock %}
 
 {% block body %}
-<div id="sign-up-container">
-    <form action="{{ uri_for('signup') }}" method="post">
-        <div id="form-header">Sign up</div>
-        <div id="form-body">
-            <div class="label" id="label-username">Username</div>
-            <input class="text" name="username" id="input-username" autofocus type="text" tabindex="1" />
-            <div class="label" id="label-email">Email</div>
-            <input class="text" name="email" id="input-email" autofocus type="text" tabindex="2" />
-            <div class="label" id="label-password">Password</div>
-            <input class="text" name="password" id="input-password" type="password" tabindex="3" />
-            <div class="label" id="label-password-again">Password again to confirm</div>
-            <input class="text" name="password_confirm" id="input-password-again" type="password" tabindex="4" />
-            <input class="button" id="button-signup" type="submit" value="Sign up" tabindex="5" />
-        </div>
-    </form>
+<div id="signup-container">
+    <div id="signup-header">
+        <h2>Sign up</h2>
+    </div>
+    <div id="signup-form-container">
+        <form id="signupform" action="{{ uri_for('signup') }}" method="post">
+            <div id="signup-form">
+                <div class="form-error">
+                    {% if form_error %}
+                        <p>{{ form_error }}</p>
+                    {% endif %}
+                </div>
+                <div class="form-body">
+                    <div class="form-row">
+                        <label for="username" class="form-label">Username</label>
+                        <input type="text" class="inputtext" id="username" name="username" tabindex="1"></input>
+                    </div>
+                    <div class="form-row">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="text" class="inputtext" id="email" name="email" tabindex="1"></input>
+                    </div>
+                    <div class="form-row">
+                        <label for="password" class="form-label">Password</label>
+                        <input type="password" class="inputpassword" id="password" name="password" tabindex="1"></input>
+                    </div>
+                    <div class="form-row">
+                        <label for="password-confirm" class="form-label">Confirm Password</label>
+                        <input type="password" class="inputpassword" id="password-confirm" name="password-confirm" tabindex="1"></input>
+                    </div>
+                    <div id="buttons">
+                        <div id="signup-button">
+                            <input class="button" type="submit" value="Sign up" tabindex="1" />
+                        </div>
+                        <div id="signin-link">
+                            <strong>
+                                <a href="{{ uri_for('signin') }}">Already have an account?</a>
+                            </strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
 </div>
 {% endblock %}

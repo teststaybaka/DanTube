@@ -1,0 +1,83 @@
+#signin-container {
+  width: 500px;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 30px;
+  border: 1px solid #ccc;
+  -webkit-border-radius: 4px;
+}
+
+#signin-header {
+  margin-left: 20px;
+  margin-right: 20px;
+  margin-top: 6px;
+  padding: 6px 0 16px;
+  border-bottom: 1px solid #aaa;
+}
+
+#signin-header h2 {
+  margin: 0px;
+  font-size: 20px;
+  line-height: 20px;
+}
+
+#signin-form-container {
+  margin: 20px;
+}
+
+#signin-form {
+  margin: auto;
+  width: 300px;
+}
+
+.form-row {
+  padding: 0 0 8px 0;
+}
+
+.form-row label {
+  width: 100px;
+  float: left;
+  display: block;
+  cursor: pointer;
+}
+
+.form-row input {
+  width: 175px;
+}
+
+.remember-row {
+  padding: 3px 0 3px 100px;
+}
+
+#buttons {
+  padding: 5px 0 0 100px;
+}
+
+#buttons:after {
+  clear: both;
+  content: ".";
+  font-size: 0;
+  height: 0;
+  display: block;
+  visibility: hidden;
+}
+
+#signin-button {
+  float: left;
+  margin-right: 5px;
+  margin-bottom: 5px;
+  display: block;
+}
+
+#signup-link {
+  font-size: 11px;
+  margin-top: 5px;
+  float: left;
+  display: block;
+}
+
+#password-reset {
+  margin-top: 10px;
+  padding-left: 100px;
+  font-size: 15px;
+}
