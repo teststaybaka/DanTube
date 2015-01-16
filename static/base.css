@@ -209,3 +209,18 @@ span.arrow {
     margin-right: auto;
     margin-bottom: 50px;
 }
+
+.form-row {
+  padding: 0 0 8px 0;
+}
+
+.form-row label {
+  width: 100px;
+  float: left;
+  display: block;
+  cursor: pointer;
+}
+
+.form-row input {
+  width: 175px;
+}

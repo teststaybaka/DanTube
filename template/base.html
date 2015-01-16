@@ -11,9 +11,21 @@
     </head>
     <body>
     {% block navigation %}
+    <div> 
+        {% if message %}
+            <p>Message: {{ message }}</p>
+        {% endif %}
+        {% if is_auth %}
+            <p>Username: {{ username }}</p>
+            <a href="{{ uri_for('logout') }}">Logout</a>
+        {% else %}
+            <a href="{{ uri_for('signin') }}">Signin</a>
+            <a href="{{ uri_for('signup') }}">Signup</a>
+        {% endif %}
+    </div>
     <div id="user-bar-background">
         <div id="user-bar" class="container">
-            <div id="logo" class="left">DanTube</div>
+            <div id="logo" class="left" onclick="location.href='/'">DanTube</div>
             <div class="navi left">I'm feeling lucky!</div>
             <div id="portrait" class="navi right">Portrait
                 <div id="user-box">
@@ -27,7 +39,7 @@
             <div id="favorites" class="navi right">Favorites</div>
             <div id="history" class="navi right">History</div>
             <div id="subscription" class="navi right">Subscriptions</div>
-            <div id="submit" class="navi right">Submit</div>
+            <div id="submit" class="navi right" onclick="location.href='/submit'">Submit</div>
         </div>
     </div>
     <div id="navigation-bar-background">
