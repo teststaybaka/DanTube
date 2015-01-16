@@ -17,14 +17,6 @@ div.danmaku:active {
 	background-color: red;
 	transform: translateX(500px);
 
-} 
-
-#danmaku-left-mask {
-	position: absolute;
-	height: 360px;
-	right: 1024px;
-	background-color: rgb(255,255,255);
-	z-index: 3;
 }
 
 div.danmaku-mask:active {

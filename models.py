@@ -25,8 +25,22 @@ class Message(db.Model):
   receiver = db.StringProperty(required=True)
   content = db.TextProperty(required=True)
   title = db.StringProperty(required=True)
-  
-Video_SubCategory = []
+
+Video_Category = ['Anime', 'Music', 'Dance', 'Game', 'Entertainment', 'Techs', 'Sports', 'Movie', 'TV Drama']
+Video_SubCategory = {'Anime': ['Continuing Anime', 'Finished Anime', 'MAD/AMV/GMV', 'MMD/3D', 'Original/Voice Acting', 'General']
+                  , 'Music': ['Music Sharing', 'Cover Version', 'Instrument Playing', 'VOCALOID/UTAU', 'Music Selection', 'Sound Mix']
+                  , 'Dance': ['Dance']
+                  , 'Game': ['Game Video', 'Game Guides/Commentary', 'Eletronic Sports', 'Mugen']
+                  , 'Entertainment': ['Funny Video', 'Animal Planet', 'Tasty Food', 'Entertainment TV Show']
+                  , 'Techs': ['Documentary', 'Various Techs', 'Wild Techs', 'Funny Tech Intro']
+                  , 'Sports': ['Amazing Human', 'Sports Video', 'Tournament']
+                  , 'Movie': ['Movie', 'Micro/Short Film', 'Trailer/Highlights']
+                  , 'TV Drama': ['Continuing Drama', 'Finished Drama', 'Tokusatsu', 'Trailer/Highlights']}
+
+class VideoList(db.Model):
+  user_belonged = db.ReferenceProperty(User, required=True, collection_name='video_lists')
+  title = db.StringProperty(required=True)
+  counter = db.IntegerProperty(required=True)
 
 class Video(db.Model):
   url = db.StringProperty(required=True)
@@ -36,8 +50,12 @@ class Video(db.Model):
   uploader = db.StringProperty(required=True)
   description = db.StringProperty(required=True)
   title = db.StringProperty(required=True)
-  category = db.StringProperty(required=True, choices=[''])
+  category = db.StringProperty(required=True, choices=Video_Category)
+  subcategory = db.StringProperty(required=True)
   
+  list_belonged = db.ReferenceProperty(VideoList, required=True, collection_name='vidoes')
+  order = db.IntegerProperty(required=True)
+
   comment_counter = db.IntegerProperty(required=True)
   tags = db.StringListProperty();
   banned_tags = db.StringListProperty();

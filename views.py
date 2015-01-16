@@ -384,4 +384,5 @@ class Submit(BaseHandler):
 class Player(BaseHandler):
 
     def get(self):
-        self.render('video')
+        context = {'category': models.Video_Category, 'subcategory': models.Video_SubCategory}
+        self.render('video', context)
