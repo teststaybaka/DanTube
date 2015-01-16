@@ -5,12 +5,14 @@ var bufferVar;
 var progressVar;
 var progressHold = false;
 var isLoop = false;
+var bullets = [];
+var positions = [];
 
 function onYouTubeIframeAPIReady() {
     player = new YT.Player('player', {
       height: '360',
       width: '100%',
-      videoId: 'M7lc1UVf-VE',
+      videoId: 'M7lc1U-VE',
       playerVars: {
         autoplay: 0,
         controls: 0,
@@ -86,19 +88,16 @@ function video_toggle(evt) {
 }
 
 function volume_switch(evt) {
-    if (evt.target.className === "on") {
-        evt.target.className = "off";
+    var volume_controller = document.getElementById("volume-controller");
+    if (volume_controller.className === "on") {
+        volume_controller.className = "off";
         player.setVolume(0);
     } else {//off
-        evt.target.className = "on";
+        volume_controller.className = "on";
         var volume = document.getElementById("volume-bar");
         var volume_magnitude = document.getElementById("volume-magnitude");
         player.setVolume(volume_magnitude.offsetHeight/volume.offsetHeight*100);
     }
-}
-
-function volume_stop_propagation(evt) {
-    evt.stopPropagation();
 }
 
 function volume_start(evt) {
@@ -326,106 +325,6 @@ function progress_bar_up_out(evt) {
     }
 }
 
-var bullets = [];
-var positions = [];
-
-window.onload = function() {
-    var max = 60;
-    var player_container = document.getElementById("player-container");
-    for (var i = 0; i < max; i++) {
-        var bul = document.createElement('div');
-        bul.setAttribute('class', 'danmaku');
-        var text = document.createTextNode('sdfsdfs');
-        bul.appendChild(text);
-        player_container.appendChild(bul);
-        bullets.push(bul);
-    }
-
-    var play_button = document.getElementById("play-pause-button");
-    play_button.addEventListener("click", video_toggle);
-    isPlaying = false;
-
-    var volume_button = document.getElementById("volume-switch");
-    volume_button.addEventListener("click", volume_switch);
-    var volume = document.getElementById("volume-background");
-    volume.addEventListener("mousedown", volume_start);
-    volume.addEventListener("click", volume_stop_propagation);
-    var volume_magnitude = document.getElementById("volume-magnitude");
-    volume_magnitude.style.height = "25px";
-    var volume_pointer = document.getElementById("volume-pointer");
-    volume_pointer.style.WebkitTransform = "translateY(-"+25+"px)";
-    volume_pointer.style.msTransform = "translateY(-"+25+"px)";
-    volume_pointer.style.transform = "translateY(-"+25+"px)";
-    var volume_tip = document.getElementById("volume-tip");
-    volume_tip.style.WebkitTransform = "translateY(-"+25+"px)";
-    volume_tip.style.msTransform = "translateY(-"+25+"px)";
-    volume_tip.style.transform = "translateY(-"+25+"px)";
-    volume_tip.lastChild.nodeValue = 50;
-
-    var danmaku_button = document.getElementById("danmaku-switch");
-    danmaku_button.addEventListener("click", danmaku_switch);
-
-    var loop_button = document.getElementById("loop-switch");
-    loop_button.addEventListener("click", loop_switch);
-
-    var wide_button = document.getElementById("wide-screen");
-    wide_button.addEventListener("click", widescreen_switch);
-
-    var full_button = document.getElementById("full-screen");
-    full_button.addEventListener("click", fullscreen_switch);
-
-    var progress_bar = document.getElementById("progress-bar");
-    progress_bar.addEventListener("mousedown", progress_bar_down);
-    progress_bar.addEventListener("mouseover", progress_tip_show);
-    progress_bar.addEventListener("mousemove", progress_tip_show);
-    progress_bar.addEventListener("mouseout", progress_tip_hide);
-    // progress_bar.addEventListener("mouseout", progress_bar_up_out);
-
-    var progress_bar_played = document.getElementById("progress-bar-played");
-    progress_bar_played.style.width = "0";
-
-    var progress_buffered = document.getElementById("progress-bar-buffered");
-    progress_buffered.style.width = "0";
-
-    progress_resize();
-    danmaku_mask_resize();
-    console.log(getTextWidth("sdfsdfs"));
-};
-window.onresize = danmaku_mask_resize;
-window.onscroll = danmaku_mask_resize;
-
-function danmaku_mask_resize() {
-    var left_mask = document.getElementById("danmaku-left-mask");
-    var player_controller = document.getElementById("player-controller");
-    var rect = player_controller.getBoundingClientRect();
-    left_mask.style.width = rect.left + "px";
-}
-
-function danmaku_update() {
-    // for (var i = 0; i < bullets.length; i++) {
-    //     var bul = bullets[i];
-    //     positions[i] -= 1;
-    //     if (positions[i]  == 300) {
-    //         var text = document.createTextNode('sdfsdfs');
-    //         bul.appendChild(text);
-    //     }
-    //     bul.style.left = positions[i] + 'px';
-    // }
-    // console.log(player.getDuration());
-    // console.log(player.getVideoLoadedFraction());
-    // console.log(player.getCurrentTime());
-    
-}
-
-function getTextWidth(text) {
-    // re-use canvas object for better performance
-    var canvas = getTextWidth.canvas || (getTextWidth.canvas = document.createElement("canvas"));
-    var context = canvas.getContext("2d");
-    context.font = "16px Times New Roman";
-    var metrics = context.measureText(text);
-    return metrics.width;
-};
-
 function progress_resize() {
     var progress_bar = document.getElementById("progress-bar");
     var rect = progress_bar.getBoundingClientRect();
@@ -475,3 +374,100 @@ function progress_update() {
         progress_pointer.style.transform = "translateX("+player.getCurrentTime()/player.getDuration()*progress_bar.offsetWidth+"px)";
     }
 }
+
+function danmaku_mask_resize() {
+    var left_mask = document.getElementById("danmaku-left-mask");
+    var player_controller = document.getElementById("player-controller");
+    var rect = player_controller.getBoundingClientRect();
+    left_mask.style.width = rect.left + "px";
+}
+
+function danmaku_update() {
+    // for (var i = 0; i < bullets.length; i++) {
+    //     var bul = bullets[i];
+    //     positions[i] -= 1;
+    //     if (positions[i]  == 300) {
+    //         var text = document.createTextNode('sdfsdfs');
+    //         bul.appendChild(text);
+    //     }
+    //     bul.style.left = positions[i] + 'px';
+    // }
+    // console.log(player.getDuration());
+    // console.log(player.getVideoLoadedFraction());
+    // console.log(player.getCurrentTime());
+    
+}
+
+function getTextWidth(text) {
+    // re-use canvas object for better performance
+    var canvas = getTextWidth.canvas || (getTextWidth.canvas = document.createElement("canvas"));
+    var context = canvas.getContext("2d");
+    context.font = "16px Times New Roman";
+    var metrics = context.measureText(text);
+    return metrics.width;
+}
+
+$(document).ready(function() {
+    var max = 60;
+    var player_container = document.getElementById("player-container");
+    for (var i = 0; i < max; i++) {
+        var bul = document.createElement('div');
+        bul.setAttribute('class', 'danmaku');
+        var text = document.createTextNode('sdfsdfs');
+        bul.appendChild(text);
+        player_container.appendChild(bul);
+        bullets.push(bul);
+    }
+
+    var play_button = document.getElementById("play-pause-button");
+    play_button.addEventListener("click", video_toggle);
+    isPlaying = false;
+
+    var volume_button = document.getElementById("volume-switch");
+    volume_button.addEventListener("click", volume_switch);
+    var volume = document.getElementById("volume-background");
+    volume.addEventListener("mousedown", volume_start);
+    var volume_magnitude = document.getElementById("volume-magnitude");
+    volume_magnitude.style.height = "25px";
+    var volume_pointer = document.getElementById("volume-pointer");
+    volume_pointer.style.WebkitTransform = "translateY(-"+25+"px)";
+    volume_pointer.style.msTransform = "translateY(-"+25+"px)";
+    volume_pointer.style.transform = "translateY(-"+25+"px)";
+    var volume_tip = document.getElementById("volume-tip");
+    volume_tip.style.WebkitTransform = "translateY(-"+25+"px)";
+    volume_tip.style.msTransform = "translateY(-"+25+"px)";
+    volume_tip.style.transform = "translateY(-"+25+"px)";
+    volume_tip.lastChild.nodeValue = 50;
+
+    var danmaku_button = document.getElementById("danmaku-switch");
+    danmaku_button.addEventListener("click", danmaku_switch);
+
+    var loop_button = document.getElementById("loop-switch");
+    loop_button.addEventListener("click", loop_switch);
+
+    var wide_button = document.getElementById("wide-screen");
+    wide_button.addEventListener("click", widescreen_switch);
+
+    var full_button = document.getElementById("full-screen");
+    full_button.addEventListener("click", fullscreen_switch);
+
+    var progress_bar = document.getElementById("progress-bar");
+    progress_bar.addEventListener("mousedown", progress_bar_down);
+    progress_bar.addEventListener("mouseover", progress_tip_show);
+    progress_bar.addEventListener("mousemove", progress_tip_show);
+    progress_bar.addEventListener("mouseout", progress_tip_hide);
+    // progress_bar.addEventListener("mouseout", progress_bar_up_out);
+
+    var progress_bar_played = document.getElementById("progress-bar-played");
+    progress_bar_played.style.width = "0";
+
+    var progress_buffered = document.getElementById("progress-bar-buffered");
+    progress_buffered.style.width = "0";
+
+    progress_resize();
+    danmaku_mask_resize();
+    console.log(getTextWidth("sdfsdfs"));
+});
+
+window.onresize = danmaku_mask_resize;
+window.onscroll = danmaku_mask_resize;

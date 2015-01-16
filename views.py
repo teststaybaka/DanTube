@@ -384,4 +384,4 @@ class Submit(BaseHandler):
 class Player(BaseHandler):
 
     def get(self):
-        self.render('player')
+        self.render('video')

@@ -172,32 +172,37 @@ div.danmaku-mask:active {
 	box-sizing: border-box;
 }
 
-#volume-switch.on, #volume-switch.off {
+#volume-controller {
 	display: inline-block;
 	float: right;
 	height: 100%;
 	width: 25px;
-	background-image: url("/static/img/volume.png");
 	cursor: pointer;
 }
 
-#volume-switch.off {
+#volume-controller.on #volume-switch, #volume-controller.off #volume-switch {
+	background-image: url("/static/img/volume.png");
+	height: 100%;
+	width: 100%;
+}
+
+#volume-controller.off #volume-switch {
 	background-image: url("/static/img/volume-mute.png");
 }
 
-#volume-switch.on:hover {
+#volume-controller.on:hover #volume-switch {
 	background-image: url("/static/img/volume-hover.png");
 }
 
-#volume-switch.on:active {
+#volume-controller.on  #volume-switch:active {
 	background-image: url("/static/img/volume-active.png");
 }
 
-#volume-switch.off:hover {
+#volume-controller.off:hover #volume-switch {
 	background-image: url("/static/img/volume-mute-hover.png");
 }
 
-#volume-switch.off:active {
+#volume-controller.off  #volume-switch:active {
 	background-image: url("/static/img/volume-mute-active.png");
 }
 
@@ -211,7 +216,7 @@ div.danmaku-mask:active {
 	z-index: 3;
 }
 
-#volume-switch.on:hover #volume-background {
+#volume-controller.on:hover #volume-background {
 	display: inline-block;
 }
 
