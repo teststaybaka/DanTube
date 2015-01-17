@@ -103,6 +103,7 @@ class Video(ndb.Model):
       raise Exception(res['error'])
     else:
       if (category in Video_Category) and (subcategory in Video_SubCategory[category]):
+<<<<<<< HEAD
         try:
           video = Video(
             id = 'dt'+str(Video.getID()),
@@ -120,6 +121,22 @@ class Video(ndb.Model):
           raise Exception('Failed to submit video')
         else:
           return video
+=======
+        video = Video(
+          id = 'dt'+str(Video.getID()),
+          url = raw_url,
+          vid = res['vid'],
+          source = res['source'],
+          uploader = username,
+          description = description,
+          title = title, 
+          category = category,
+          subcategory = subcategory,
+          video_order = 1,
+        )
+        video.put()
+        return video
+>>>>>>> ea6d3a5a8386c6a5e8b6a69a45233b5305b0bc51
       else:
         # return 'Category mismatch.'
         raise Exception('Category mismatch')
@@ -128,6 +145,8 @@ class Danmaku(ndb.Model):
   video = ndb.KeyProperty(kind='Video', required=True)
   timestamp = ndb.FloatProperty(required=True, indexed=False)
   content = ndb.StringProperty(required=True, indexed=False)
+  position = db.StringProperty(required=True, default='RightToLeft', choices=['RightToLeft', 'Top', 'Bottom'])
+  color = db.IntegerProperty(required=True, default=255*256*256+255*256+255)
   # creator = db.ReferenceProperty(User)
   # order = ndb.IntegerProperty(required=True)
   protected = ndb.BooleanProperty(required=True)
