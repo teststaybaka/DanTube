@@ -309,13 +309,6 @@ function progress_update() {
     }
 }
 
-function danmaku_mask_resize() {
-    var left_mask = document.getElementById("danmaku-left-mask");
-    var player_controller = document.getElementById("player-controller");
-    var rect = player_controller.getBoundingClientRect();
-    left_mask.style.width = rect.left + "px";
-}
-
 function danmaku_update() {
     // for (var i = 0; i < bullets.length; i++) {
     //     var bul = bullets[i];
@@ -399,12 +392,8 @@ $(document).ready(function() {
     progress_buffered.style.width = "0";
 
     progress_resize();
-    danmaku_mask_resize();
     console.log(getTextWidth("sdfsdfs"));
 });
-
-window.onresize = danmaku_mask_resize;
-window.onscroll = danmaku_mask_resize;
 
 function secondsToTime(secs)
 {
@@ -432,8 +421,8 @@ $(document).ready(function() {
         type: "GET",
         url: url + "/danmaku",
         success: function(result) {
-            console.log(result);
             if(!result.error) {
+                console.log(result.length);
                 for(var i = 0; i < result.length; i++) {
                     $('#danmaku-list').append('<div class="per-bullet container">' + 
                         '<div class="bullet-time-value">' + secondsToTime(result[i].timestamp) + '</div>' + 
@@ -442,6 +431,8 @@ $(document).ready(function() {
                         '<div class="space-padding"></div>' + 
                         '<div class="bullet-date-value">' + result[i].created + '</div></div>');
                 }
+            } else {
+                console.log(result);
             }
         },
         error: function (xhr, ajaxOptions, thrownError) {

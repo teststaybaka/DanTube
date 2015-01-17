@@ -1,6 +1,6 @@
 import webapp2
 
-import views
+import views, admin
 
 secret_key = 'efrghtrrouhsmvnmxdiosjkgjfds68_=' \
              'iooijgrdxuihbvc97yutcivbhugd479k'
@@ -26,5 +26,8 @@ application = webapp2.WSGIApplication(
         webapp2.Route(r'/video/dt<video_id:\d+>/danmaku', views.Danmaku, name="danmaku"),
         webapp2.Route(r'/videolist', views.Videolist, name="videolist"),
         webapp2.Route(r'/player', views.Player, name="player"),
+
+        webapp2.Route(r'/admin/video', admin.VideoPageTest, name="Admin_Video"),
+        webapp2.Route(r'/admin/danmaku', admin.DanmakuTest, name="Admin_Danmaku"),
         ], debug=True
     , config=config)

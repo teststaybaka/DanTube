@@ -180,17 +180,17 @@ div.sub-category {
 /* Chrome, Safari, Opera */
 @-webkit-keyframes subcat_right_move {
     from {transform: translateX(0);}
-    to {transform: translateX(6px);}
+    to {transform: translateX(8px);}
 }
 
 /* Standard syntax */
 @keyframes subcat_right_move {
     from {transform: translateX(0);}
-    to {transform: translateX(6px);}
+    to {transform: translateX(8px);}
 }
 
 div.sub-category:hover {
-	transform: translateX(6px);
+	transform: translateX(8px);
 	-webkit-animation: subcat_right_move .2s; /* Chrome, Safari, Opera */
     animation: subcat_right_move .2s;
 }

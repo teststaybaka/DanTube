@@ -8,7 +8,6 @@ div.danmaku {
     -moz-user-select: none;
     -ms-user-select: none;
     user-select: none;
-    z-index: 2;
     font: 16px "Times New Roman";
     right: 384px;
 }
@@ -21,11 +20,6 @@ div.danmaku:active {
 
 div.danmaku-mask:active {
 	background-color: red;
-}
-
-#player {
-	position: relative;
-	z-index: 1;
 }
 
 #player-container {
@@ -148,7 +142,7 @@ div.danmaku-mask:active {
 	position: absolute;
 	bottom: 53px;
 	background-color: rgba(255,255,255,.5);
-	z-index: 3;
+	z-index: 1;
 	border-radius: 3px;
 	margin-left: 9px;
 	padding: 0 3px;
@@ -205,7 +199,7 @@ div.danmaku-mask:active {
 	background-color: white;
 	position: absolute;
 	bottom: 50px;
-	z-index: 3;
+	z-index: 1;
 }
 
 #volume-controller.on:hover #volume-background {
@@ -286,7 +280,7 @@ div.danmaku-mask:active {
 	bottom: 53px;
 	border-radius: 3px;
 	position: absolute;
-	z-index: 3;
+	z-index: 1;
 	background-color: rgba(255,255,255,.5);
 	display: none;
 	padding: 0 3px;
@@ -326,7 +320,7 @@ div.danmaku-mask:active {
 	bottom: 53px;
 	border-radius: 3px;
 	position: absolute;
-	z-index: 3;
+	z-index: 1;
 	background-color: rgba(255,255,255,.5);
 	display: none;
 	padding: 0 3px;
@@ -458,7 +452,6 @@ div.danmaku-mask:active {
 	background-color: white;
 	color: rgb(110,110,110);
 	position: relative;
-	z-index: 4;
 }
 
 div.danmaku-order-title {

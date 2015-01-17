@@ -1,7 +1,10 @@
 from google.appengine.ext import db
+from google.appengine.ext import ndb
 import webapp2_extras.appengine.auth.models
 from webapp2_extras import security
 from google.appengine.ext import blobstore
+import urllib2
+import urlparse
 
 # class User(db.Model):
 #     id = db.StringProperty(required=True)
@@ -20,11 +23,11 @@ class User(webapp2_extras.appengine.auth.models.User):
   def set_password(self, raw_password):
     self.password = security.generate_password_hash(raw_password, length=12)
 
-class Message(db.Model):
-  sender = db.StringProperty(required=True)
-  receiver = db.StringProperty(required=True)
-  content = db.TextProperty(required=True)
-  title = db.StringProperty(required=True)
+class Message(ndb.Model):
+  sender = ndb.StringProperty(required=True)
+  receiver = ndb.StringProperty(required=True)
+  content = ndb.TextProperty(required=True, indexed=False)
+  title = ndb.StringProperty(required=True, indexed=False)
 
 Video_Category = ['Anime', 'Music', 'Dance', 'Game', 'Entertainment', 'Techs', 'Sports', 'Movie', 'TV Drama']
 Video_SubCategory = {'Anime': ['Continuing Anime', 'Finished Anime', 'MAD/AMV/GMV', 'MMD/3D', 'Original/Voice Acting', 'General']
@@ -37,60 +40,119 @@ Video_SubCategory = {'Anime': ['Continuing Anime', 'Finished Anime', 'MAD/AMV/GM
                   , 'Movie': ['Movie', 'Micro/Short Film', 'Trailer/Highlights']
                   , 'TV Drama': ['Continuing Drama', 'Finished Drama', 'Tokusatsu', 'Trailer/Highlights']}
 
-class VideoList(db.Model):
-  user_belonged = db.ReferenceProperty(User, required=True, collection_name='video_lists')
-  title = db.StringProperty(required=True)
-  counter = db.IntegerProperty(required=True)
+class VideoList(ndb.Model):
+  user_belonged = ndb.StringProperty(required=True)
+  title = ndb.StringProperty(required=True)
+  video_counter = ndb.IntegerProperty(required=True)
 
-class Video(db.Model):
-  url = db.StringProperty(required=True)
-  vid = db.StringProperty(required=True)
-  source = db.StringProperty(required=True, choices=['youtube'])
-  created = db.DateTimeProperty(auto_now_add=True)
-  uploader = db.StringProperty(required=True)
-  description = db.StringProperty(required=True)
-  title = db.StringProperty(required=True)
-  category = db.StringProperty(required=True, choices=Video_Category)
-  subcategory = db.StringProperty(required=True)
-  
-  list_belonged = db.ReferenceProperty(VideoList, required=True, collection_name='vidoes')
-  order = db.IntegerProperty(required=True)
+class Video(ndb.Model):
+  url = ndb.StringProperty(indexed=False)
+  vid = ndb.StringProperty(required=True, indexed=False)
+  source = ndb.StringProperty(required=True, choices=['youtube'])
+  created = ndb.DateTimeProperty(auto_now_add=True)
+  uploader = ndb.StringProperty(required=True)
+  description = ndb.StringProperty(required=True)
+  title = ndb.StringProperty(required=True)
+  category = ndb.StringProperty(required=True, choices=Video_Category)
+  subcategory = ndb.StringProperty(required=True)
 
-  comment_counter = db.IntegerProperty(required=True)
-  tags = db.StringListProperty();
-  banned_tags = db.StringListProperty();
+  # video_list_belonged = ndb.KeyProperty(kind='VideoList', required=True, indexed=False)
+  video_order = ndb.IntegerProperty(required=True)
+  danmaku_counter = ndb.IntegerProperty(required=True)
+  comment_counter = ndb.IntegerProperty(required=True)
+  tags = ndb.StringProperty(repeated=True);
+  banned_tags = ndb.StringProperty(repeated=True);
 
-  hits = db.IntegerProperty(required=True)
-  likes = db.IntegerProperty(required=True)
-  bullets = db.IntegerProperty(required=True)
-  be_collected = db.IntegerProperty(required=True)
+  hits = ndb.IntegerProperty(required=True)
+  likes = ndb.IntegerProperty(required=True)
+  bullets = ndb.IntegerProperty(required=True)
+  be_collected = ndb.IntegerProperty(required=True)
 
-class Danmaku(db.Model):
-  video = db.ReferenceProperty(Video, required=True, collection_name='danmaku_pool')
-  timestamp = db.FloatProperty(required=True)
-  content = db.StringProperty(required=True, multiline=False)
+  @staticmethod
+  def parse_url(raw_url):
+    if not urlparse.urlparse(raw_url).scheme:
+      raw_url = "http://" + raw_url
+
+    try:
+      req = urllib2.urlopen(raw_url)
+    except:
+      return {'error': 'invalid url'}
+    else:
+      url_parts = raw_url.split('//')[-1].split('/')
+      source = url_parts[0].split('.')[-2]
+      if source == 'youtube':
+        vid = url_parts[-1].split('=')[-1]
+        url = 'http://www.youtube.com/embed/' + vid
+      else:
+        url = raw_url
+      return {'url': url, 'vid': vid, 'source': source}
+
+  @staticmethod
+  def getID():
+    try:
+        Video.id_counter += 1
+    except AttributeError:
+        Video.id_counter = 1
+    return Video.id_counter
+
+  @staticmethod
+  def Create(raw_url, username, description, title, category, subcategory):
+    res = Video.parse_url(raw_url)
+    if res.get('error'):
+      return 'URL Error.'
+    else:
+      if (category in Video_Category) and (subcategory in Video_SubCategory[category]):
+        video = Video(
+          id = 'dt'+str(Video.getID()),
+          url = raw_url,
+          vid = res['vid'],
+          source = res['source'],
+          uploader = username,
+          description = description,
+          title = title, 
+          category = category,
+          subcategory = subcategory,
+          hits = 0,
+          likes = 0,
+          bullets = 0,
+          be_collected = 0,
+          video_order = 1,
+          danmaku_counter = 0,
+          comment_counter = 0,
+        )
+        video.put()
+        return video
+      else:
+        return 'Category mismatch.'
+
+class Danmaku(ndb.Model):
+  video = ndb.KeyProperty(kind='Video', required=True)
+  timestamp = ndb.FloatProperty(required=True, indexed=False)
+  content = ndb.StringProperty(required=True, indexed=False)
   # creator = db.ReferenceProperty(User)
-  creator = db.StringProperty(required=True)
-  created = db.DateTimeProperty(auto_now_add=True)
+  # order = ndb.IntegerProperty(required=True)
+  protected = ndb.BooleanProperty(required=True)
+  creator = ndb.StringProperty(required=True)
+  created = ndb.DateTimeProperty(auto_now_add=True)
 
-class Comment(db.Model):
-  video = db.ReferenceProperty(Video, required=True, collection_name='comments')
-  creator = db.StringProperty(required=True)
-  floor = db.IntegerProperty(required=True)
-  content = db.TextProperty(required=True)
-  created = db.DateTimeProperty(auto_now_add=True)
-  inner_comment_counter = db.IntegerProperty(required=True)
+class Comment(ndb.Model):
+  video = ndb.KeyProperty(kind='Video', required=True)
+  creator = ndb.StringProperty(required=True)
+  content = ndb.TextProperty(required=True, indexed=False)
+  created = ndb.DateTimeProperty(auto_now_add=True, indexed=False)
+  floor = ndb.IntegerProperty(required=True)
+  inner_comment_counter = ndb.IntegerProperty(required=True, indexed=False)
 
-class CommentOfComment(db.Model):
-  ori_comment = db.ReferenceProperty(Comment, required=True, collection_name='inner_comments')
-  creator = db.StringProperty(required=True)
-  floor = db.IntegerProperty(required=True)
-  content = db.TextProperty(required=True)
-  created = db.DateTimeProperty(auto_now_add=True)
+class CommentOfComment(ndb.Model):
+  comment_belonged = ndb.KeyProperty(kind='Comment', required=True)
+  creator = ndb.StringProperty(required=True)
+  content = ndb.TextProperty(required=True, indexed=False)
+  floor = ndb.IntegerProperty(required=True)
+  created = ndb.DateTimeProperty(auto_now_add=True, indexed=False)
 
-class AtUser(db.Model):
-  sender = db.StringProperty(required=True)
-  receiver = db.StringProperty(required=True)
-  comment = db.ReferenceProperty(Comment);
-  inner_comment = db.ReferenceProperty(CommentOfComment);
-  danmaku = db.ReferenceProperty(Danmaku)
+class AtUser(ndb.Model):
+  sender = ndb.StringProperty(required=True)
+  receiver = ndb.StringProperty(required=True)
+  comment = ndb.KeyProperty(kind='Comment', indexed=False);
+  inner_comment = ndb.KeyProperty(kind='CommentOfComment', indexed=False);
+  danmaku = ndb.KeyProperty(kind='Danmaku', indexed=False)

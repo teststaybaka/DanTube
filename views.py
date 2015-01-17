@@ -247,29 +247,12 @@ def login_required(handler):
  
   return check_login
 
-def parse_url(raw_url):
-    if not urlparse.urlparse(raw_url).scheme:
-      raw_url = "http://" + raw_url
-
-    try:
-      req = urllib2.urlopen(raw_url)
-    except:
-      return {'error': 'invalid url'}
-    else:
-      url_parts = raw_url.split('//')[-1].split('/')
-      source = url_parts[0].split('.')[-2]
-      if source == 'youtube':
-        vid = url_parts[-1].split('=')[-1]
-        url = 'http://www.youtube.com/embed/' + vid
-      else:
-        url = raw_url
-      return {'url': url, 'vid': vid, 'source': source}
-
 class Video(BaseHandler):
     def get(self, video_id):
-        video = models.Video.get_by_id(int(video_id))
+        video = models.Video.get_by_id('dt'+video_id)
         if video is not None:
-            context = {'video': video, 'video_id': video_id}
+            context = {'video': video, 'video_id': video_id, 
+                        'category': models.Video_Category, 'subcategory': models.Video_SubCategory}
             self.render('video', context)
         else:
             self.response.write('video not found')
@@ -291,7 +274,7 @@ class Video(BaseHandler):
                 'error': 'video url must not be empty!'
             }))
             return
-        res = parse_url(raw_url)
+        res = models.Video.parse_url(raw_url)
         logging.info(res)
         if res.get('error'):
             self.response.out.write(json.dumps({
@@ -329,15 +312,15 @@ class Videolist(BaseHandler):
 class Danmaku(BaseHandler):
     def get(self, video_id):
         self.response.headers['Content-Type'] = 'application/json'
-        video = models.Video.get_by_id(int(video_id))
+        video = models.Video.get_by_id('dt'+video_id)
         if video is not None:
-            danmaku_itr = models.Danmaku.all().filter('video = ', video).run()
+            danmaku_itr = models.Danmaku.query(models.Danmaku.video==video.key)
             danmakus = []
             for danmaku in danmaku_itr:
                 danmakus.append({
                     'content': danmaku.content,
                     'timestamp': danmaku.timestamp,
-                    'created': danmaku.created.strftime("%Y-%m-%d %H:%M:%S")
+                    'created': danmaku.created.strftime("%m-%d %H:%M")
                 });
             self.response.out.write(json.dumps(danmakus))
         else:
@@ -382,7 +365,6 @@ class Submit(BaseHandler):
         self.render('submit')
 
 class Player(BaseHandler):
-
     def get(self):
         context = {'category': models.Video_Category, 'subcategory': models.Video_SubCategory}
         self.render('video', context)
