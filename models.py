@@ -57,7 +57,7 @@ class Video(ndb.Model):
   subcategory = ndb.StringProperty(required=True)
 
   # video_list_belonged = ndb.KeyProperty(kind='VideoList', required=True, indexed=False)
-  video_order = ndb.IntegerProperty(required=True, default=1)
+  video_order = ndb.IntegerProperty(required=True)
   danmaku_counter = ndb.IntegerProperty(required=True, default=0)
   comment_counter = ndb.IntegerProperty(required=True, default=0)
   tags = ndb.StringProperty(repeated=True);
@@ -103,7 +103,6 @@ class Video(ndb.Model):
       raise Exception(res['error'])
     else:
       if (category in Video_Category) and (subcategory in Video_SubCategory[category]):
-<<<<<<< HEAD
         try:
           video = Video(
             id = 'dt'+str(Video.getID()),
@@ -115,28 +114,13 @@ class Video(ndb.Model):
             title = title, 
             category = category,
             subcategory = subcategory,
+            video_order = 1,
           )
           video.put()
         except:
           raise Exception('Failed to submit video')
         else:
           return video
-=======
-        video = Video(
-          id = 'dt'+str(Video.getID()),
-          url = raw_url,
-          vid = res['vid'],
-          source = res['source'],
-          uploader = username,
-          description = description,
-          title = title, 
-          category = category,
-          subcategory = subcategory,
-          video_order = 1,
-        )
-        video.put()
-        return video
->>>>>>> ea6d3a5a8386c6a5e8b6a69a45233b5305b0bc51
       else:
         # return 'Category mismatch.'
         raise Exception('Category mismatch')
