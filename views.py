@@ -9,6 +9,7 @@ import datetime
 from jinja2 import Undefined
 from webapp2_extras import sessions
 from webapp2_extras import auth
+from google.appengine.api.datastore_errors import BadValueError
 
 import models
 import json
@@ -97,21 +98,7 @@ class BaseHandler(webapp2.RequestHandler):
 
 class Home(BaseHandler):
     def get(self):
-        logging.info(self.request.headers)
-        if self.request.headers.get('X-Requested-With'):
-            self.response.headers['Content-Type'] = 'application/json'
-            videos = models.Video.query().fetch(limit=10)
-            results = []
-            for video in videos:
-                results.append({
-                    'url': '/video/'+ video.key.id(),
-                    'vid': video.vid,
-                    'uploader': video.uploader,
-                    'created': video.created.strftime("%Y-%m-%d %H:%M:%S")
-                });
-            self.response.out.write(json.dumps(results))
-        else:
-            self.render('index')
+        self.render('index')
 
 class Signin(BaseHandler):
     def get(self):
@@ -258,15 +245,50 @@ def login_required(handler):
   return check_login
 
 class Video(BaseHandler):
-    def get(self, video_id):
-        video = models.Video.get_by_id('dt'+video_id)
-        if video is not None:
-            context = {'video': video, 'video_id': video_id, 
-                        'category': models.Video_Category, 'subcategory': models.Video_SubCategory}
-            self.render('video', context)
+    def get(self):
+        self.response.headers['Content-Type'] = 'application/json'
+        category = self.request.get('category')
+        subcategory = self.request.get('subcategory')
+
+        try:
+            limit = int(self.request.get('limit'))
+        except ValueError:
+            limit = 50
+
+        try:
+            if category:
+                for cat_name, url_name in dict((k,v[0]) for k,v in models.URL_NAME_DICT.items()).iteritems():
+                    if url_name == category:
+                        category = cat_name
+                        break
+                if subcategory:
+                    for subcat_name, url_name in models.URL_NAME_DICT[category][1].iteritems():
+                        if url_name == subcategory:
+                            subcategory = subcat_name
+                            break
+                    videos = models.Video.query(models.Video.category == category, models.Video.subcategory == subcategory).fetch(limit=limit)
+                else:
+                    videos = models.Video.query(models.Video.category == category).fetch(limit=limit)
+            else:
+                videos = models.Video.query().fetch(limit=limit)
+        except (KeyError, BadValueError) as e:
+            self.response.out.write(json.dumps([]))
+        except:
+            self.response.out.write(json.dumps({'error': 'Failed to retrieve video infos'}))
         else:
-            self.response.write('video not found')
-            self.response.set_status(404)
+            results = []
+            for video in videos:
+                results.append({
+                    'url': '/video/'+ video.key.id(),
+                    'vid': video.vid,
+                    'uploader': video.uploader,
+                    'created': video.created.strftime("%Y-%m-%d %H:%M:%S"),
+                    'category': video.category,
+                    'subcategory': video.subcategory,
+                    'hits': video.hits,
+                    'danmaku_counter': video.danmaku_counter
+                });
+            self.response.out.write(json.dumps(results))
 
     def post(self):
         self.response.headers['Content-Type'] = 'application/json'
@@ -332,19 +354,15 @@ class Video(BaseHandler):
                 'url': '/video/'+ video.key.id()
             }))
 
-class Videolist(BaseHandler):
-    def get(self):
-        self.response.headers['Content-Type'] = 'application/json'
-        videos = models.Video.query().fetch(limit=10)
-        results = []
-        for video in videos:
-            results.append({
-                'url': '/video/'+ video.key.id(),
-                'vid': video.vid,
-                'uploader': video.uploader,
-                'created': video.created.strftime("%Y-%m-%d %H:%M:%S")
-            });
-        self.response.out.write(json.dumps(results))
+class Watch(BaseHandler):
+    def get(self, video_id):
+        video = models.Video.get_by_id('dt'+video_id)
+        if video is not None:
+            context = {'video': video, 'video_id': video_id}
+            self.render('video', context)
+        else:
+            self.response.write('video not found')
+            self.response.set_status(404)
 
 class Danmaku(BaseHandler):
     def get(self, video_id):
@@ -409,42 +427,14 @@ class Player(BaseHandler):
 class Category(BaseHandler):
     def get(self):
         category = self.request.route.name
-        if self.request.headers.get('X-Requested-With'):
-            self.response.headers['Content-Type'] = 'application/json'
-            results = {}
-            for subcategory in models.Video_SubCategory[category]:
-                videos = models.Video.query(models.Video.category == category, models.Video.subcategory == subcategory).fetch(limit=10)
-                results[subcategory] = []         
-                for video in videos:
-                    results[subcategory].append({
-                        'url': '/video/'+ video.key.id(),
-                        'vid': video.vid,
-                        'uploader': video.uploader,
-                        'created': video.created.strftime("%Y-%m-%d %H:%M:%S")
-                    });
-            self.response.out.write(json.dumps(results))
-        else:
-            context = {}
-            context['category_name'] = category
-            self.render('category', context)
+        context = {}
+        context['category_name'] = category
+        self.render('category', context)
 
 class Subcategory(BaseHandler):
     def get(self):
         [category, subcategory] = self.request.route.name.split('-')
-        if self.request.headers.get('X-Requested-With'):
-            self.response.headers['Content-Type'] = 'application/json'
-            logging.info(subcategory)
-            videos = models.Video.query(models.Video.category == category, models.Video.subcategory == subcategory).fetch()
-            results = []
-            for video in videos:
-                results.append({
-                    'url': '/video/'+ video.key.id(),
-                    'vid': video.vid,
-                    'uploader': video.uploader,
-                    'created': video.created.strftime("%Y-%m-%d %H:%M:%S")
-                });
-            self.response.out.write(json.dumps(results))
-        else:
-            context = {}
-            context['subcategory_name'] = subcategory
-            self.render('subcategory', context)
+        context = {}
+        context['category_name'] = category
+        context['subcategory_name'] = subcategory
+        self.render('subcategory', context)

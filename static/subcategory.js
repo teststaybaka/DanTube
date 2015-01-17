@@ -1,8 +1,10 @@
 $(document).ready(function() {
     // Retrieve Videos
+    var urlparts = window.location.pathname.split('/');
     $.ajax({
         type: "GET",
-        url: document.URL,
+        url: "/video",
+        data: [{name: 'category', value: urlparts[1]}, {name: 'subcategory', value: urlparts[2]}],
         success: function(results) {
             if(!results.error) {
                 for(var i = 0; i < results.length; i++) {

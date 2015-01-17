@@ -42,59 +42,68 @@ Video_SubCategory = {'Anime': ['Continuing Anime', 'Finished Anime', 'MAD/AMV/GM
 
 URL_NAME_DICT = {
   # Categories
-  'Anime': 'anime',
-  'Music': 'music',
-  'Dance': 'dance',
-  'Game': 'game',
-  'Entertainment': 'ent',
-  'Techs': 'techs',
-  'Sports': 'sports',
-  'Movie': 'movie',
-  'TV Drama': 'drama',
-  # Subcategories of Anime
-  'Continuing Anime': 'continuing',
-  'Finished Anime': 'finished',
-  'MAD/AMV/GMV': 'mad',
-  'MMD/3D': 'mmd',
-  'Original/Voice Acting': 'original',
-  'General': 'general',
-  # Subcategories of Music
-  'Music Sharing': 'sharing',
-  'Cover Version': 'cover',
-  'Instrument Playing': 'instrument',
-  'VOCALOID/UTAU': 'vocaloid',
-  'Music Selection': 'selection',
-  'Sound Mix': 'mix',
-  # Subcategories of Dance
-  'Dance': 'dance',
-  # Subcategories of Game
-  'Game Video': 'video',
-  'Game Guides/Commentary': 'guides',
-  'Eletronic Sports': 'esports',
-  'Mugen': 'mugen',
-  # Subcategories of Entertainment
-  'Funny Video': 'fun',
-  'Animal Planet': 'animal',
-  'Tasty Food': 'food',
-  'Entertainment TV Show': 'show',
-  # Subcategories of Techs
-  'Documentary': 'documentary',
-  'Various Techs': 'various',
-  'Wild Techs': 'wild',
-  'Funny Tech Intro': 'fun',
-  # Subcategories of Sports
-  'Amazing Human': 'human',
-  'Sports Video': 'video',
-  'Tournament': 'tournament',
-  # Subcategories of Movie
-  'Movie': 'movie',
-  'Micro/Short Film': 'micro',
-  'Trailer/Highlights': 'trailer',
-  # Subcategories of TV Drama
-  'Continuing Drama': 'continuing',
-  'Finished Drama': 'finished',
-  'Tokusatsu': 'tokusatsu',
-  'Trailer/Highlights': 'trailer',
+  'Anime': ['anime', {
+    # Subcategories of Anime
+    'Continuing Anime': 'continuing',
+    'Finished Anime': 'finished',
+    'MAD/AMV/GMV': 'mad',
+    'MMD/3D': 'mmd',
+    'Original/Voice Acting': 'original',
+    'General': 'general',
+  }],
+  'Music': ['music', {
+    # Subcategories of Music
+    'Music Sharing': 'sharing',
+    'Cover Version': 'cover',
+    'Instrument Playing': 'instrument',
+    'VOCALOID/UTAU': 'vocaloid',
+    'Music Selection': 'selection',
+    'Sound Mix': 'mix',
+  }],
+  'Dance': ['dance', {
+    # Subcategories of Dance
+    'Dance': 'dance',
+  }],
+  'Game': ['game', {
+    # Subcategories of Game
+    'Game Video': 'video',
+    'Game Guides/Commentary': 'guides',
+    'Eletronic Sports': 'esports',
+    'Mugen': 'mugen',
+  }],
+  'Entertainment': ['ent', {
+    # Subcategories of Entertainment
+    'Funny Video': 'fun',
+    'Animal Planet': 'animal',
+    'Tasty Food': 'food',
+    'Entertainment TV Show': 'show',
+  }],
+  'Techs': ['techs', {
+    # Subcategories of Techs
+    'Documentary': 'documentary',
+    'Various Techs': 'various',
+    'Wild Techs': 'wild',
+    'Funny Tech Intro': 'fun',
+  }],
+  'Sports': ['sports', {
+    # Subcategories of Sports
+    'Amazing Human': 'human',
+    'Sports Video': 'video',
+    'Tournament': 'tournament',
+  }],
+  'Movie': ['movie', {
+    # Subcategories of Movie
+    'Movie': 'movie',
+    'Micro/Short Film': 'micro',
+    'Trailer/Highlights': 'trailer',
+  }],
+  'TV Drama': ['drama', {
+    # Subcategories of TV Drama
+    'Continuing Drama': 'continuing',
+    'Finished Drama': 'finished',
+    'Tokusatsu': 'tokusatsu',
+    'Trailer/Highlights': 'trailer',
+  }],
 };
 
 class VideoList(ndb.Model):

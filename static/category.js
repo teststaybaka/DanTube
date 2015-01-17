@@ -1,33 +1,33 @@
 $(document).ready(function() {
     // Retrieve Videos
-    $.ajax({
-        type: "GET",
-        url: document.URL,
-        success: function(results) {
-            if(!results.error) {
-                $('.subcategory').each(function() {
-                    var subcategory = $(this).attr('id');
-                    if(results[subcategory]) {
-                        if(results[subcategory].length == 0) {
-                            $(this).append('<p>No video</p>');
-                        } else {
-                            for(var i = 0; i < results[subcategory].length; i++) {
-                                $(this).append('<div class="video-item">' + 
-                                '<a href="' + results[subcategory][i].url + '"><div><img src="http://img.youtube.com/vi/' + 
-                                results[subcategory][i].vid + '/default.jpg"></a></div>' + 
-                                '<div>Uploader: ' +  results[subcategory][i].uploader + '</div>' + 
-                                '<div>Created at: ' + results[subcategory][i].created + '</div></div>');
-                            }
-                        }
+    var category = window.location.pathname.split('/')[1];
+    $('.subcategory').each(function() {
+        var subcategory = $(this).attr('id');
+        var current_div = $(this);
+        $.ajax({
+            type: "GET",
+            url: '/video',
+            data: [{name: 'category', value: category}, {name: 'subcategory', value: subcategory}],
+            success: function(results) {
+                if(!results.error) {
+                    if(results.length == 0) {
+                        console.log($(this));
+                        current_div.append('<p>No video</p>');
                     } else {
-                        $(this).append('<p>No video</p>');
-                    }
-                });
+                        for(var i = 0; i < results.length; i++) {
+                            current_div.append('<div class="video-item">' + 
+                            '<a href="' + results[i].url + '"><div><img src="http://img.youtube.com/vi/' + 
+                            results[i].vid + '/default.jpg"></a></div>' + 
+                            '<div>Uploader: ' +  results[i].uploader + '</div>' + 
+                            '<div>Created at: ' + results[i].created + '</div></div>');
+                        }
+                    }                
+                }
+            },
+            error: function (xhr, ajaxOptions, thrownError) {
+                console.log(xhr.status);
+                console.log(thrownError);
             }
-        },
-        error: function (xhr, ajaxOptions, thrownError) {
-            console.log(xhr.status);
-            console.log(thrownError);
-        }
+        });
     });
 });

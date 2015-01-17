@@ -21,8 +21,8 @@ routes = [
     webapp2.Route(r'/signup', views.Signup, name="signup"),
     webapp2.Route(r'/logout', views.Logout, name="logout"),
     webapp2.Route(r'/submit', views.Submit, name="submit"),
-    webapp2.Route(r'/video', views.Video, name="post-video", methods=['POST']),
-    webapp2.Route(r'/video/dt<video_id:\d+>', views.Video, name="get-video", methods=['GET']),
+    webapp2.Route(r'/video', views.Video, name="video"),
+    webapp2.Route(r'/video/dt<video_id:\d+>', views.Watch, name="watch"),
     webapp2.Route(r'/video/dt<video_id:\d+>/danmaku', views.Danmaku, name="danmaku"),
     webapp2.Route(r'/player', views.Player, name="player"),
 
@@ -30,10 +30,10 @@ routes = [
     webapp2.Route(r'/admin/danmaku', admin.DanmakuTest, name="Admin_Danmaku"),
 ]
 for category in models.Video_Category:
-    route = webapp2.Route(r'/%s' % models.URL_NAME_DICT[category], views.Category, name=category)
+    route = webapp2.Route(r'/%s' % models.URL_NAME_DICT[category][0], views.Category, name=category)
     routes.append(route)
     for subcategory in models.Video_SubCategory[category]:
-        route = webapp2.Route(r'/%s/%s' % (models.URL_NAME_DICT[category], models.URL_NAME_DICT[subcategory]),
+        route = webapp2.Route(r'/%s/%s' % (models.URL_NAME_DICT[category][0], models.URL_NAME_DICT[category][1][subcategory]),
             views.Subcategory, name=category + '-' + subcategory)
         routes.append(route)
 
