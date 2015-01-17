@@ -57,16 +57,16 @@ class Video(ndb.Model):
   subcategory = ndb.StringProperty(required=True)
 
   # video_list_belonged = ndb.KeyProperty(kind='VideoList', required=True, indexed=False)
-  video_order = ndb.IntegerProperty(required=True)
-  danmaku_counter = ndb.IntegerProperty(required=True)
-  comment_counter = ndb.IntegerProperty(required=True)
+  video_order = ndb.IntegerProperty(required=True, default=1)
+  danmaku_counter = ndb.IntegerProperty(default=0)
+  comment_counter = ndb.IntegerProperty(default=0)
   tags = ndb.StringProperty(repeated=True);
   banned_tags = ndb.StringProperty(repeated=True);
 
-  hits = ndb.IntegerProperty(required=True)
-  likes = ndb.IntegerProperty(required=True)
-  bullets = ndb.IntegerProperty(required=True)
-  be_collected = ndb.IntegerProperty(required=True)
+  hits = ndb.IntegerProperty(default=0)
+  likes = ndb.IntegerProperty(default=0)
+  bullets = ndb.IntegerProperty(default=0)
+  be_collected = ndb.IntegerProperty(default=0)
 
   @staticmethod
   def parse_url(raw_url):
@@ -112,13 +112,7 @@ class Video(ndb.Model):
           title = title, 
           category = category,
           subcategory = subcategory,
-          hits = 0,
-          likes = 0,
-          bullets = 0,
-          be_collected = 0,
           video_order = 1,
-          danmaku_counter = 0,
-          comment_counter = 0,
         )
         video.put()
         return video
@@ -129,6 +123,8 @@ class Danmaku(ndb.Model):
   video = ndb.KeyProperty(kind='Video', required=True)
   timestamp = ndb.FloatProperty(required=True, indexed=False)
   content = ndb.StringProperty(required=True, indexed=False)
+  position = db.StringProperty(required=True, default='RightToLeft', choices=['RightToLeft', 'Top', 'Bottom'])
+  color = db.IntegerProperty(required=True, default=255*256*256+255*256+255)
   # creator = db.ReferenceProperty(User)
   # order = ndb.IntegerProperty(required=True)
   protected = ndb.BooleanProperty(required=True)
