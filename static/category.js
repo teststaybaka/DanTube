@@ -2,7 +2,7 @@ $(document).ready(function() {
     // Retrieve Videos
     $.ajax({
         type: "GET",
-        url: "/",
+        url: document.URL,
         success: function(result) {
             if(!result.error) {
                 for(var i = 0; i < result.length; i++) {

@@ -44,10 +44,10 @@
     </div>
     <div id="navigation-bar-background">
         <div id="navigation-bar" class="container">
-            <div id="home-link">Home</div>
+            <div id="home-link" onclick="location.href='/'">Home</div>
             {% for key in category %}
             <div class="category">
-                <div class="category-name">{{ key }}</div>
+                <div class="category-name" onclick="location.href='{{ uri_for(key) }}'">{{ key }}</div>
                 <div class="dragdown-menu">
                     {% for val in subcategory[key] %}
                         <div class="sub-category">

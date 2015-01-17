@@ -97,13 +97,20 @@ class BaseHandler(webapp2.RequestHandler):
 
 class Home(BaseHandler):
     def get(self):
-        logging.info(self.user_info)
-        context = {}
-        # self.render('index', context)
-        
-        # template = env.get_template('template/player.html')
-        # self.response.write(template.render(context))
-        self.render('index')
+        if self.request.headers.get('X-Requested-With'):
+            self.response.headers['Content-Type'] = 'application/json'
+            videos = models.Video.query().fetch(limit=10)
+            results = []
+            for video in videos:
+                results.append({
+                    'url': '/video/'+ video.key.id(),
+                    'vid': video.vid,
+                    'uploader': video.uploader,
+                    'created': video.created.strftime("%Y-%m-%d %H:%M:%S")
+                });
+            self.response.out.write(json.dumps(results))
+        else:
+            self.render('index')
 
 class Signin(BaseHandler):
     def get(self):
@@ -326,7 +333,6 @@ class Video(BaseHandler):
 
 class Videolist(BaseHandler):
     def get(self):
-        logging.info('hehe')
         self.response.headers['Content-Type'] = 'application/json'
         videos = models.Video.query().fetch(limit=10)
         results = []
@@ -398,3 +404,23 @@ class Submit(BaseHandler):
 class Player(BaseHandler):
     def get(self):
         self.render('video')
+
+class Category(BaseHandler):
+    def get(self):
+        category = self.request.route.name
+        if self.request.headers.get('X-Requested-With'):
+            self.response.headers['Content-Type'] = 'application/json'
+            videos = models.Video.query(models.Video.category == category).fetch()
+            results = []
+            for video in videos:
+                results.append({
+                    'url': '/video/'+ video.key.id(),
+                    'vid': video.vid,
+                    'uploader': video.uploader,
+                    'created': video.created.strftime("%Y-%m-%d %H:%M:%S")
+                });
+            self.response.out.write(json.dumps(results))
+        else:
+            context = {}
+            context['category_name'] = category
+            self.render('category', context)

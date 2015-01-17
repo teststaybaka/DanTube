@@ -40,6 +40,18 @@ Video_SubCategory = {'Anime': ['Continuing Anime', 'Finished Anime', 'MAD/AMV/GM
                   , 'Movie': ['Movie', 'Micro/Short Film', 'Trailer/Highlights']
                   , 'TV Drama': ['Continuing Drama', 'Finished Drama', 'Tokusatsu', 'Trailer/Highlights']}
 
+URL_NAME_DICT = {
+  'Anime': 'anime',
+  'Music': 'music',
+  'Dance': 'dance',
+  'Game': 'game',
+  'Entertainment': 'ent',
+  'Techs': 'techs',
+  'Sports': 'sports',
+  'Movie': 'movie',
+  'TV Drama': 'drama'
+};
+
 class VideoList(ndb.Model):
   user_belonged = ndb.StringProperty(required=True)
   title = ndb.StringProperty(required=True)
