@@ -32,5 +32,9 @@ routes = [
 for category in models.Video_Category:
     route = webapp2.Route(r'/%s' % models.URL_NAME_DICT[category], views.Category, name=category)
     routes.append(route)
+    for subcategory in models.Video_SubCategory[category]:
+        route = webapp2.Route(r'/%s/%s' % (models.URL_NAME_DICT[category], models.URL_NAME_DICT[subcategory]),
+            views.Subcategory, name=category + '-' + subcategory)
+        routes.append(route)
 
 application = webapp2.WSGIApplication(routes, debug=True, config=config)

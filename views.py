@@ -97,6 +97,7 @@ class BaseHandler(webapp2.RequestHandler):
 
 class Home(BaseHandler):
     def get(self):
+        logging.info(self.request.headers)
         if self.request.headers.get('X-Requested-With'):
             self.response.headers['Content-Type'] = 'application/json'
             videos = models.Video.query().fetch(limit=10)
@@ -410,7 +411,30 @@ class Category(BaseHandler):
         category = self.request.route.name
         if self.request.headers.get('X-Requested-With'):
             self.response.headers['Content-Type'] = 'application/json'
-            videos = models.Video.query(models.Video.category == category).fetch()
+            results = {}
+            for subcategory in models.Video_SubCategory[category]:
+                videos = models.Video.query(models.Video.category == category, models.Video.subcategory == subcategory).fetch(limit=10)
+                results[subcategory] = []         
+                for video in videos:
+                    results[subcategory].append({
+                        'url': '/video/'+ video.key.id(),
+                        'vid': video.vid,
+                        'uploader': video.uploader,
+                        'created': video.created.strftime("%Y-%m-%d %H:%M:%S")
+                    });
+            self.response.out.write(json.dumps(results))
+        else:
+            context = {}
+            context['category_name'] = category
+            self.render('category', context)
+
+class Subcategory(BaseHandler):
+    def get(self):
+        [category, subcategory] = self.request.route.name.split('-')
+        if self.request.headers.get('X-Requested-With'):
+            self.response.headers['Content-Type'] = 'application/json'
+            logging.info(subcategory)
+            videos = models.Video.query(models.Video.category == category, models.Video.subcategory == subcategory).fetch()
             results = []
             for video in videos:
                 results.append({
@@ -422,5 +446,5 @@ class Category(BaseHandler):
             self.response.out.write(json.dumps(results))
         else:
             context = {}
-            context['category_name'] = category
-            self.render('category', context)
+            context['subcategory_name'] = subcategory
+            self.render('subcategory', context)

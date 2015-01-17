@@ -6,6 +6,11 @@
 
 {% block body %}
 <h2>{{ category_name }}</h2>
-<div id="video-list">
-</div>
+{% for val in subcategory[category_name] %}
+  <div id="{{ val }}" class="subcategory">
+    <a href="{{ uri_for([category_name,val]|join('-')) }}"><h3>{{ val }}</h3></a>
+    <div class="video-list">
+    </div>
+  </div>
+{% endfor %}
 {% endblock %}
