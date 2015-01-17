@@ -444,7 +444,7 @@ $(document).ready(function() {
     // Post Danmaku
     $('#fire-button').click(function(e){
         e.preventDefault();
-        var content = $.trim($('#danmaku-form input[name="content"]')[0].value);
+        var content = $('#danmaku-input')[0].value.trim();
         if(content.length > 0) {
             var pdata = [{name: 'content', value: content}];
             pdata.push({name: 'video_id', value: video_id});

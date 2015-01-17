@@ -89,6 +89,8 @@ class BaseHandler(webapp2.RequestHandler):
         if message is not None:
             context['message'] = message
             self.session.pop('message')
+        context['category'] = models.Video_Category
+        context['subcategory'] = models.Video_SubCategory
         path = 'template/' + tempname + '.html'
         template = env.get_template(path)
         self.response.write(template.render(context))
@@ -268,46 +270,74 @@ class Video(BaseHandler):
             return
 
         raw_url = self.request.get('video-url')
-        description = self.request.get('description')
         if not raw_url:
             self.response.out.write(json.dumps({
                 'error': 'video url must not be empty!'
             }))
             return
-        res = models.Video.parse_url(raw_url)
-        logging.info(res)
-        if res.get('error'):
+
+        category = self.request.get('category')
+        if not category:
             self.response.out.write(json.dumps({
-                'error': 'failed to submit video'
+                'error': 'category must not be empty!',
+            }))
+            return
+
+        subcategory = self.request.get('subcategory')
+        if not subcategory:
+            self.response.out.write(json.dumps({
+                'error': 'subcategory must not be empty!',
+            }))
+            return
+
+        title = self.request.get('title')
+        if not title:
+            self.response.out.write(json.dumps({
+                'error': 'title must not be empty!',
+            }))
+            return
+
+        description = self.request.get('description')
+        if not description:
+            self.response.out.write(json.dumps({
+                'error': 'description must not be empty!',
+            }))
+            return
+
+        # res = models.Video.parse_url(raw_url)
+        # logging.info(res)
+        try:
+            video = models.Video.Create(
+                raw_url = raw_url,
+                username = user['username'],
+                description = description,
+                title = title,
+                category = category,
+                subcategory = subcategory
+            )
+        except Exception, e:
+            self.response.out.write(json.dumps({
+                'error': str(e)
             }))
         else:
-            video = models.Video(
-                url = res['url'],
-                vid = res['vid'],
-                source = res['source'],
-                uploader = user['username'],
-                description = description
-            )
-            video.put()
-
             self.response.out.write(json.dumps({
-                'url': '/video/dt'+ str(video.key().id_or_name())
+                'url': '/video/'+ video.key.id()
             }))
 
 class Videolist(BaseHandler):
     def get(self):
         logging.info('hehe')
         self.response.headers['Content-Type'] = 'application/json'
-        video_itr = models.Video.all().run()
-        videos = []
-        for video in video_itr:
-            videos.append({
-                'url': '/video/dt'+ str(video.key().id_or_name()),
+        videos = models.Video.query().fetch(limit=10)
+        results = []
+        for video in videos:
+            results.append({
+                'url': '/video/'+ video.key.id(),
                 'vid': video.vid,
                 'uploader': video.uploader,
                 'created': video.created.strftime("%Y-%m-%d %H:%M:%S")
             });
-        self.response.out.write(json.dumps(videos))
+        self.response.out.write(json.dumps(results))
 
 class Danmaku(BaseHandler):
     def get(self, video_id):
@@ -337,13 +367,14 @@ class Danmaku(BaseHandler):
             }))
             return
 
-        video = models.Video.get_by_id(int(video_id))
+        video = models.Video.get_by_id('dt'+video_id)
         if video is not None:
             danmaku = models.Danmaku(
-                video = video,
+                video = video.key,
                 timestamp = float(self.request.get('timestamp')),
                 creator = user['username'],
-                content = self.request.get('content')
+                content = self.request.get('content'),
+                protected = False
             )
             danmaku.put()
             
@@ -351,7 +382,7 @@ class Danmaku(BaseHandler):
                 'timestamp': danmaku.timestamp,
                 'content': danmaku.content,
                 'creator': danmaku.creator,
-                'created': danmaku.created.strftime("%Y-%m-%d %H:%M:%S")
+                'created': danmaku.created.strftime("%m-%d %H:%M")
             }))
         else:
             self.response.out.write(json.dumps({
@@ -366,5 +397,4 @@ class Submit(BaseHandler):
 
 class Player(BaseHandler):
     def get(self):
-        context = {'category': models.Video_Category, 'subcategory': models.Video_SubCategory}
-        self.render('video', context)
+        self.render('video')

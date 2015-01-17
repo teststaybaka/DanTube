@@ -2,6 +2,12 @@
 {% block head %}
 {{ super() }}
 <script src="/static/submit.js" language="JavaScript" type="text/javascript"></script>
+<script type="text/javascript">
+var video_subcategories = {};
+{% for key in category %}
+  video_subcategories['{{ key }}'] = [{% for val in subcategory[key] %}'{{ val }}', {% endfor %}];
+{% endfor %}
+</script>
 {% endblock %}
 
 {% block body %}
@@ -19,12 +25,35 @@
           </div>
           <div class="form-body">
               <div class="form-row">
+                <label for="title" class="form-label">Title</label>
+                <input type="text" class="inputtext" id="title" name="title" tabindex="1"></input>
+              </div>
+              <div class="form-row">
                 <label for="video-url" class="form-label">Video URL</label>
                 <input type="text" class="inputtext" id="video-url" name="video-url" tabindex="1"></input>
               </div>
               <div class="form-row">
+                <label for="category" class="form-label">Category</label>
+                <select name="category"  id="category">
+                  {% for key in category %}
+                    <option value="{{ key }}">{{ key }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="form-row">
+                <label for="subcategory" class="form-label">Subcategory</label>
+                <select name="subcategory" id="subcategory">
+                  {% for val in subcategory[category[0]] %}
+                    <option value="{{ val }}">{{ val }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="form-row">
                 <label for="description" class="form-label">Description</label>
                 <textarea class="inputtextarea" id="description" name="description" tabindex="1"></textarea>
+              </div>
+              <div id="playlist-button" class="form-row">
+                <button type="button" tabindex="1">+Add to playlist</button>
               </div>
               <div id="submit-button">
                 <input class="button" type="submit" value="Submit" tabindex="1" />

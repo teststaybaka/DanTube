@@ -57,16 +57,16 @@ class Video(ndb.Model):
   subcategory = ndb.StringProperty(required=True)
 
   # video_list_belonged = ndb.KeyProperty(kind='VideoList', required=True, indexed=False)
-  video_order = ndb.IntegerProperty(required=True)
-  danmaku_counter = ndb.IntegerProperty(required=True)
-  comment_counter = ndb.IntegerProperty(required=True)
+  video_order = ndb.IntegerProperty(required=True, default=1)
+  danmaku_counter = ndb.IntegerProperty(required=True, default=0)
+  comment_counter = ndb.IntegerProperty(required=True, default=0)
   tags = ndb.StringProperty(repeated=True);
   banned_tags = ndb.StringProperty(repeated=True);
 
-  hits = ndb.IntegerProperty(required=True)
-  likes = ndb.IntegerProperty(required=True)
-  bullets = ndb.IntegerProperty(required=True)
-  be_collected = ndb.IntegerProperty(required=True)
+  hits = ndb.IntegerProperty(required=True, default=0)
+  likes = ndb.IntegerProperty(required=True, default=0)
+  bullets = ndb.IntegerProperty(required=True, default=0)
+  be_collected = ndb.IntegerProperty(required=True, default=0)
 
   @staticmethod
   def parse_url(raw_url):
@@ -99,31 +99,30 @@ class Video(ndb.Model):
   def Create(raw_url, username, description, title, category, subcategory):
     res = Video.parse_url(raw_url)
     if res.get('error'):
-      return 'URL Error.'
+      # return 'URL Error.'
+      raise Exception(res['error'])
     else:
       if (category in Video_Category) and (subcategory in Video_SubCategory[category]):
-        video = Video(
-          id = 'dt'+str(Video.getID()),
-          url = raw_url,
-          vid = res['vid'],
-          source = res['source'],
-          uploader = username,
-          description = description,
-          title = title, 
-          category = category,
-          subcategory = subcategory,
-          hits = 0,
-          likes = 0,
-          bullets = 0,
-          be_collected = 0,
-          video_order = 1,
-          danmaku_counter = 0,
-          comment_counter = 0,
-        )
-        video.put()
-        return video
+        try:
+          video = Video(
+            id = 'dt'+str(Video.getID()),
+            url = raw_url,
+            vid = res['vid'],
+            source = res['source'],
+            uploader = username,
+            description = description,
+            title = title, 
+            category = category,
+            subcategory = subcategory,
+          )
+          video.put()
+        except:
+          raise Exception('Failed to submit video')
+        else:
+          return video
       else:
-        return 'Category mismatch.'
+        # return 'Category mismatch.'
+        raise Exception('Category mismatch')
 
 class Danmaku(ndb.Model):
   video = ndb.KeyProperty(kind='Video', required=True)

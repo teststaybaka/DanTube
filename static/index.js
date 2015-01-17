@@ -4,7 +4,6 @@ $(document).ready(function() {
         type: "GET",
         url: "/videolist",
         success: function(result) {
-            console.log(result);
             if(!result.error) {
                 for(var i = 0; i < result.length; i++) {
                     console.log(result[i])
