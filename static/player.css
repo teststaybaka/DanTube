@@ -9,17 +9,15 @@ div.danmaku {
     -ms-user-select: none;
     user-select: none;
     font: 16px "Times New Roman";
-    right: 384px;
+    left: 650px;
+    top: 0;
+    color: white;
+    text-shadow: 0 2px 6px rgb(50,50,50);
 }
 
 div.danmaku:active {
 	background-color: red;
-	transform: translateX(500px);
-
-}
-
-div.danmaku-mask:active {
-	background-color: red;
+	/*transform: translateX(500px);*/
 }
 
 #player-container {
@@ -30,13 +28,22 @@ div.danmaku-mask:active {
     -moz-user-select: none;
     -ms-user-select: none;
     user-select: none;
-    position: relative;
+    box-shadow: 0px 0 8px rgb(200,200,200);
 }
 
 #player-controller {
 	display: inline-table;
 	float: left;
 	width: 640px;
+}
+
+#player-canvas {
+	width: 640px;
+	height: 360px;
+	top: 0;
+	left: 0;
+	overflow: hidden;
+	position: relative;
 }
 
 #top-padding, #bottom-padding {
@@ -47,8 +54,6 @@ div.danmaku-mask:active {
 
 #controller-background {
 	position: relative;
-	top: -4px;
-	box-shadow: 0px 0 8px rgb(200,200,200);
 	border: 1px solid rgb(200, 200, 200);
 }
 
@@ -89,7 +94,7 @@ div.danmaku-mask:active {
 
 #progress-bar {
 	position: absolute;
-	height: 50%;
+	height: 25px;
 	margin-left: 9px;
 	display: inline-block;
 	cursor: pointer;
@@ -444,11 +449,9 @@ div.danmaku-mask:active {
 	float: left;
 	height: 411px;
 	width: 383px;
-	margin-bottom: 4px;
 	border-bottom: 1px solid rgb(200, 200, 200);
 	border-right: 1px solid rgb(200, 200, 200);
 	border-top: 1px solid rgb(200, 200, 200);
-	box-shadow: 0px 0 8px rgb(200,200,200);
 	background-color: white;
 	color: rgb(110,110,110);
 	position: relative;

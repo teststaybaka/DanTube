@@ -8,7 +8,7 @@ class VideoPageTest(webapp2.RequestHandler):
             entry.key.delete()
 
         models.Video.Create('https://www.youtube.com/watch?v=wknTl2ZMkzg', 'test_user_name', 'aaa', 'Test', 'Anime', 'Continuing Anime')
-        models.Video.Create('https://www.youtube.com/watch?v=HDXcU3SEjvE', 'test_user_name', 'aaa', 'Test', 'Anime', 'Continuing Anime')
+        models.Video.Create('https://www.youtube.com/watch?v=M7lc1UVf-VE', 'test_user_name', 'aaa', 'Test', 'Anime', 'Continuing Anime')
 
         self.response.headers['Content-Type'] = 'text/plain'
         self.response.write('Data initialized.')
@@ -23,7 +23,7 @@ class DanmakuTest(webapp2.RequestHandler):
             entry.key.delete()
 
         v1 = models.Video.Create('https://www.youtube.com/watch?v=wknTl2ZMkzg', 'test_user_name', 'aaa', 'Test', 'Anime', 'Continuing Anime')
-        models.Video.Create('https://www.youtube.com/watch?v=HDXcU3SEjvE', 'test_user_name', 'aaa', 'Test', 'Anime', 'Continuing Anime')
+        models.Video.Create('https://www.youtube.com/watch?v=M7lc1UVf-VE', 'test_user_name', 'aaa', 'Test', 'Anime', 'Continuing Anime')
 
         for i in range(0, 1000):
             # logging.info(i)

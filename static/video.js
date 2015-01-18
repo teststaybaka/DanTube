@@ -1,19 +1,23 @@
 var player;
 var isPlaying;
-var danmakuVar;
-var bufferVar;
-var progressVar;
+var danmakuVar = null;
+var progressVar = null;
 var progressHold = false;
 var isLoop = false;
-var bullets = [];
-var positions = [];
+var danmaku = [];
+var danmaku_pointer = 0;
+var danmaku_list = [];
+var danmkau_elements = [];
+var danmaku_refresh_interval = 1/20;
+var lastTime = 0;
+var occupation = new Array(10000);
 
 function onPlayerReady(event) {
     // console.log(player.getDuration());
     var progress_number = document.getElementById("progress-number");
     progress_number.lastChild.nodeValue = "00:00"+"/"+secondsToTime(player.getDuration());
     // console.log(progress_number.lastChild+" "+"00:00/"+player.getDuration());
-    bufferVar = setInterval(buffer_update, 300);
+    setInterval(buffer_update, 500);
     player.setVolume(50);
 
     buffer_update();
@@ -23,20 +27,28 @@ function onPlayerReady(event) {
 function onPlayerStateChange(event) {
     if (event.data == YT.PlayerState.PLAYING) {
         isPlaying = true;
-        danmakuVar = setInterval(danmaku_update, 50);
-        progressVar = setInterval(progress_update, 300);
+        if (danmakuVar == null) {
+            danmakuVar = setInterval(danmaku_update, danmaku_refresh_interval*1000);
+        }
+        if (progressVar == null) {
+            progressVar = setInterval(progress_update, 500);
+        }
         var button = document.getElementById("play-pause-button");
         button.setAttribute("class", "pause");
-    } else if (event.data == YT.PlayerState.PAUSED) {
+    } else if (event.data == YT.PlayerState.PAUSED || event.data == YT.PlayerState.BUFFERING) {
         isPlaying = false;
         clearInterval(danmakuVar);
         clearInterval(progressVar);
+        danmakuVar = null;
+        progressVar = null;
         var button = document.getElementById("play-pause-button");
         button.setAttribute("class", "play");
     } else if (event.data == YT.PlayerState.ENDED) {
         isPlaying = false;
         clearInterval(danmakuVar);
         clearInterval(progressVar);
+        danmakuVar == null;
+        progressVar == null;
         var button = document.getElementById("play-pause-button");
         button.setAttribute("class", "play");
 
@@ -146,13 +158,14 @@ function widescreen_switch(evt) {
         player_controller.style.width = "640px";
         var danmaku_input = document.getElementById("danmaku-input");
         danmaku_input.style.width = "555px";
-        var danmaku_left_mask = document.getElementById("danmaku-left-mask");
-        danmaku_left_mask.style.height = "360px";
+        var player_canvas = document.getElementById("player-canvas");
+        player_canvas.style.width = "640px";
+        player_canvas.style.height = "360px";
         progress_update();
 
         var list = document.querySelectorAll("div.danmaku");
         for (var i = 0; i < list.length; ++i) {
-           list[i].style.right = "384px";
+           list[i].style.left = "650px";
         }
     } else {//off
         evt.target.className = "on";
@@ -163,13 +176,14 @@ function widescreen_switch(evt) {
         player_controller.style.width = "1024px";
         var danmaku_input = document.getElementById("danmaku-input");
         danmaku_input.style.width = "939px";
-        var danmaku_left_mask = document.getElementById("danmaku-left-mask");
-        danmaku_left_mask.style.height = "576px";
+        var player_canvas = document.getElementById("player-canvas");
+        player_canvas.style.width = "1024px";
+        player_canvas.style.height = "576px";
         progress_update();
 
         var list = document.querySelectorAll("div.danmaku");
         for (var i = 0; i < list.length; ++i) {
-           list[i].style.right = "0";
+           list[i].style.left = "1034px";
         }
     }
 }
@@ -220,26 +234,21 @@ function progress_bar_down(evt) {
 }
 
 function progress_bar_move(evt) {
-    // if (progressHold) {
-        var progress_bar = document.getElementById("progress-bar");
-        var rect = progress_bar.getBoundingClientRect();
-        var progress_played = document.getElementById("progress-bar-played");
-        var offset = evt.clientX - rect.left;
-        if (offset < 0) {
-            offset = 0;
-        }
-        if (offset > progress_bar.offsetWidth) {
-            offset = progress_bar.offsetWidth;
-        }
-        progress_played.style.width = offset + "px";
-        var progress_pointer = document.getElementById("progress-pointer");
-        progress_pointer.style.WebkitTransform = "translateX("+offset+"px)";
-        progress_pointer.style.msTransform = "translateX("+offset+"px)";
-        progress_pointer.style.transform = "translateX("+offset+"px)";
-
-        // var num = (evt.clientX - progress_bar.offsetLeft)/progress_bar.offsetWidth*player.getDuration();
-        // player.seekTo(num, false);
-    // }
+    var progress_bar = document.getElementById("progress-bar");
+    var rect = progress_bar.getBoundingClientRect();
+    var progress_played = document.getElementById("progress-bar-played");
+    var offset = evt.clientX - rect.left;
+    if (offset < 0) {
+        offset = 0;
+    }
+    if (offset > progress_bar.offsetWidth) {
+        offset = progress_bar.offsetWidth;
+    }
+    progress_played.style.width = offset + "px";
+    var progress_pointer = document.getElementById("progress-pointer");
+    progress_pointer.style.WebkitTransform = "translateX("+offset+"px)";
+    progress_pointer.style.msTransform = "translateX("+offset+"px)";
+    progress_pointer.style.transform = "translateX("+offset+"px)";
 }
 
 function progress_bar_up_out(evt) {
@@ -283,6 +292,7 @@ function progress_resize() {
 }
 
 function buffer_update() {
+    // console.log('buffer_update:'+player.getVideoLoadedFraction());
     var buffered = player.getVideoLoadedFraction();
     var progress_bar = document.getElementById("progress-bar");
     var progress_buffered = document.getElementById("progress-bar-buffered");
@@ -310,40 +320,106 @@ function progress_update() {
 }
 
 function danmaku_update() {
-    // for (var i = 0; i < bullets.length; i++) {
-    //     var bul = bullets[i];
-    //     positions[i] -= 1;
-    //     if (positions[i]  == 300) {
-    //         var text = document.createTextNode('sdfsdfs');
-    //         bul.appendChild(text);
-    //     }
-    //     bul.style.left = positions[i] + 'px';
-    // }
-    // console.log(player.getDuration());
-    // console.log(player.getVideoLoadedFraction());
-    // console.log(player.getCurrentTime());
-    
-}
+    // console.log('danmaku_update:'+player.getCurrentTime());
+    if (danmaku.length == 0) return;
 
-function getTextWidth(text) {
-    // re-use canvas object for better performance
-    var canvas = getTextWidth.canvas || (getTextWidth.canvas = document.createElement("canvas"));
-    var context = canvas.getContext("2d");
-    context.font = "16px Times New Roman";
-    var metrics = context.measureText(text);
-    return metrics.width;
+    var player_canvas = document.getElementById("player-canvas");
+    var curTime = player.getCurrentTime();
+    // console.log('before:'+danmaku_pointer);
+    if (danmaku[danmaku_pointer].timestamp <= curTime) {
+        // console.log('out:'+danmaku[danmaku_pointer].timestamp);
+        while (danmaku[danmaku_pointer].timestamp < curTime - 1 || danmaku[danmaku_pointer].timestamp < lastTime) {
+            danmaku_pointer += 1;
+            // console.log(danmaku[danmaku_pointer].timestamp);
+        }
+    } else {
+        while(danmaku_pointer > 0 && danmaku[danmaku_pointer - 1].timestamp > curTime) {
+            danmaku_pointer -= 1;
+        }
+    }
+    
+    for (var i = 0; i < danmkau_elements.length; i++) {
+        var ele = danmkau_elements[i];
+        if (ele['idle'] && danmaku[danmaku_pointer].timestamp <= curTime) {
+            ele['element'].lastChild.nodeValue = danmaku[danmaku_pointer].content
+            // ele['element'].lastChild.nodeValue = secondsToTime(danmaku[danmaku_pointer].timestamp);
+            ele['posX'] = 0;
+            ele['generating'] = true;
+            ele['idle'] = false;
+
+            var mark_len = {};
+            var lastMark = 0;
+            var startLine = 0;
+            var count = 0;
+            for (var j = 0; j < player_canvas.offsetHeight; j++) {
+                if (lastMark != occupation[j]) {
+                    if (!(lastMark in mark_len) && count >= ele['element'].offsetHeight) {
+                        mark_len[lastMark] = startLine;
+                    }
+                    startLine = j;
+                    count = 0;
+                    lastMark = occupation[j];
+                }
+                count += 1;
+                // console.log(count);
+            }
+            if (!(lastMark in mark_len) && count >= ele['element'].offsetHeight) {
+                mark_len[lastMark] = startLine;
+            }
+
+            console.log(mark_len);
+            var mark = 0;
+            while(true) {
+                if (!(mark in mark_len)) {
+                    mark += 1;
+                } else {
+                    ele['posY'] = mark_len[mark];
+                    for (var j = ele['posY']; j < ele['element'].offsetHeight + ele['posY']; j++) {
+                        occupation[j] += 1;
+                    }
+                    break;
+                }
+            }
+            
+            // console.log(i+" "+ele['element'].lastChild.nodeValue+" "+danmaku[danmaku_pointer].content);
+            danmaku_pointer += 1;
+            // console.log('middle:'+danmaku_pointer);
+        }
+        if (!ele['idle']) {
+            ele['posX'] += (500 + ele['element'].offsetWidth)/10*danmaku_refresh_interval;
+            // console.log(i+" "+ele['posX'])
+            if (ele['generating'] && ele['posX'] > ele['element'].offsetWidth + 5) {
+                ele['generating'] = false;
+                for (var j = ele['posY']; j < ele['element'].offsetHeight + ele['posY']; j++) {
+                    occupation[j] -= 1;
+                }
+            }
+            if (ele['posX'] > ele['element'].offsetWidth + player_canvas.offsetWidth) {
+                ele['idle'] = true;
+            }
+        }
+
+        var bul = ele['element'];
+        bul.style.WebkitTransform = "translate(-"+ele['posX']+"px, "+ele['posY']+"px)";
+        bul.style.msTransform = "translate(-"+ele['posX']+"px, "+ele['posY']+"px)";
+        bul.style.transform = "translate(-"+ele['posX']+"px, "+ele['posY']+"px)";
+    }
+    lastTime = curTime;
 }
 
 $(document).ready(function() {
     var max = 60;
-    var player_container = document.getElementById("player-container");
+    var player_canvas = document.getElementById("player-canvas");
     for (var i = 0; i < max; i++) {
         var bul = document.createElement('div');
         bul.setAttribute('class', 'danmaku');
         var text = document.createTextNode('sdfsdfs');
         bul.appendChild(text);
-        player_container.appendChild(bul);
-        bullets.push(bul);
+        player_canvas.appendChild(bul);
+        danmkau_elements.push({'idle':true, 'generating':false, 'posX': 0, 'posY': 0, 'element':bul});
+    }
+    for (var i = 0; i < 10000; i++) {
+        occupation[i] = 0;
     }
 
     var play_button = document.getElementById("play-pause-button");
@@ -395,6 +471,15 @@ $(document).ready(function() {
     console.log(getTextWidth("sdfsdfs"));
 });
 
+function getTextWidth(text) {
+    // re-use canvas object for better performance
+    var canvas = getTextWidth.canvas || (getTextWidth.canvas = document.createElement("canvas"));
+    var context = canvas.getContext("2d");
+    context.font = "16px Times New Roman";
+    var metrics = context.measureText(text);
+    return metrics.width;
+}
+
 function secondsToTime(secs)
 {
     var curTime;
@@ -411,8 +496,25 @@ function secondsToTime(secs)
     return curTime;
 }
 
-$(document).ready(function() {
+function danmaku_timestamp_compare(x, y) {
+    return x.timestamp < y.timestamp;
+}
 
+function danmaku_date_compare(x, y) {
+    if (parseInt(x.created.substr(0, 2)) < parseInt(y.created.substr(0, 2)) ) {
+        return true;
+    } else if (parseInt(x.created.substr(3, 2)) < parseInt(y.created.substr(3, 2)) ) {
+        return true;
+    } else if (parseInt(x.created.substr(6, 2)) < parseInt(y.created.substr(6, 2)) ) {
+        return true;
+    } else if (parseInt(x.created.substr(9, 2)) < parseInt(y.created.substr(9, 2)) ) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+$(document).ready(function() {
     var url = document.URL;
     var video_id = url.substr(url.lastIndexOf('/dt') + 3);
 
@@ -424,12 +526,19 @@ $(document).ready(function() {
             if(!result.error) {
                 console.log(result.length);
                 for(var i = 0; i < result.length; i++) {
+                    danmaku_list.push(result[i]);
+                }
+                // quick_sort(danmaku_list, 0, result.length - 1, danmaku_timestamp_compare);
+                quick_sort(danmaku_list, 0, result.length - 1, danmaku_date_compare);
+                danmaku = result;
+                quick_sort(danmaku, 0, result.length-1, danmaku_timestamp_compare);
+                for(var i = 0; i < result.length; i++) {
                     $('#danmaku-list').append('<div class="per-bullet container">' + 
-                        '<div class="bullet-time-value">' + secondsToTime(result[i].timestamp) + '</div>' + 
+                        '<div class="bullet-time-value">' + secondsToTime(danmaku_list[i].timestamp) + '</div>' + 
                         '<div class="space-padding"></div>' + 
-                        '<div class="bullet-content-value">' + result[i].content + '</div>' + 
+                        '<div class="bullet-content-value">' + danmaku_list[i].content + '</div>' + 
                         '<div class="space-padding"></div>' + 
-                        '<div class="bullet-date-value">' + result[i].created + '</div></div>');
+                        '<div class="bullet-date-value">' + danmaku_list[i].created + '</div></div>');
                 }
             } else {
                 console.log(result);
