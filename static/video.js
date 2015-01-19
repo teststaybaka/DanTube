@@ -8,7 +8,7 @@ var danmaku = [];
 var danmaku_pointer = 0;
 var danmaku_list = [];
 var danmkau_elements = [];
-var danmaku_refresh_interval = 1/20;
+var danmaku_check_interval = 1/4;
 var lastTime = 0;
 var occupation = new Array(10000);
 var accumulate = new Array(10000);
@@ -29,7 +29,7 @@ function onPlayerStateChange(event) {
     if (event.data == YT.PlayerState.PLAYING) {
         isPlaying = true;
         if (danmakuVar == null) {
-            danmakuVar = setInterval(danmaku_update, danmaku_refresh_interval*1000);
+            danmakuVar = setInterval(danmaku_update, danmaku_check_interval*1000);
         }
         if (progressVar == null) {
             progressVar = setInterval(progress_update, 500);
@@ -320,6 +320,48 @@ function progress_update() {
     }
 }
 
+function Danmaku_Animation(index) {
+    var player_canvas = document.getElementById("player-canvas");
+    var lTime = 0;
+    var ele = danmkau_elements[index];
+    var speed = (500 + ele['element'].offsetWidth)/10;
+
+    this.startAnimation = function() {
+        lTime = Date.now();
+        requestAnimationFrame(update);
+        // console.log(index+' '+startTime)
+    }
+    function update() {
+        var curTime = Date.now();
+        var deltaTime = curTime - lTime;
+        lTime = curTime; 
+        if (isPlaying) {
+            ele['posX'] += speed*deltaTime/1000;
+            ele['element'].style.WebkitTransform = "translate(-"+ele['posX']+"px, "+ele['posY']+"px)";
+            ele['element'].style.msTransform = "translate(-"+ele['posX']+"px, "+ele['posY']+"px)";
+            ele['element'].style.transform = "translate(-"+ele['posX']+"px, "+ele['posY']+"px)";
+        }
+        
+        // console.log(index+' '+percent)
+        if (ele['generating'] && ele['posX'] > ele['element'].offsetWidth + 5) {
+            ele['generating'] = false;
+            for (var j = ele['posY']; j < ele['element'].offsetHeight + ele['posY']; j++) {
+                occupation[j] -= 1;
+            }
+        }
+
+        if (ele['posX'] < ele['element'].offsetWidth + player_canvas.offsetWidth + 10) {
+            requestAnimationFrame(update);
+        } else {
+            ele['element'].style.WebkitTransform = "translate(-"+0+"px, "+ele['posY']+"px)";
+            ele['element'].style.msTransform = "translate(-"+0+"px, "+ele['posY']+"px)";
+            ele['element'].style.transform = "translate(-"+0+"px, "+ele['posY']+"px)";
+            danmkau_elements[index]['idle'] = true;
+            ele['posX'] = 0;
+        }
+    }
+}
+
 function danmaku_update() {
     // console.log('danmaku_update:'+player.getCurrentTime());
     if (danmaku.length == 0) return;
@@ -340,8 +382,10 @@ function danmaku_update() {
     }
     
     for (var i = 0; i < danmkau_elements.length; i++) {
+        if (danmaku[danmaku_pointer].timestamp > curTime) break;
+
         var ele = danmkau_elements[i];
-        if (ele['idle'] && danmaku[danmaku_pointer].timestamp <= curTime) {
+        if (ele['idle']) {
             ele['element'].lastChild.nodeValue = danmaku[danmaku_pointer].content
             // ele['element'].lastChild.nodeValue = secondsToTime(danmaku[danmaku_pointer].timestamp);
             ele['generating'] = true;
@@ -370,69 +414,11 @@ function danmaku_update() {
             for (var j = ele['posY']; j < ele['element'].offsetHeight + ele['posY']; j++) {
                 occupation[j] += 1;
             }
-
-            // var mark_len = {};
-            // var lastMark = 0;
-            // var startLine = 0;
-            // var count = 0;
-            // for (var j = 0; j < player_canvas.offsetHeight; j++) {
-            //     if (lastMark != occupation[j]) {
-            //         if (!(lastMark in mark_len) && count >= ele['element'].offsetHeight) {
-            //             mark_len[lastMark] = startLine;
-            //         }
-            //         startLine = j;
-            //         count = 0;
-            //         lastMark = occupation[j];
-            //     }
-            //     count += 1;
-            //     // console.log(count);
-            // }
-            // if (!(lastMark in mark_len) && count >= ele['element'].offsetHeight) {
-            //     mark_len[lastMark] = startLine;
-            // }
-
-            // // console.log(mark_len);
-            // var mark = 0;
-            // if (mark_len != {}) {
-            //     while(true) {
-            //         if (!(mark in mark_len)) {
-            //             mark += 1;
-            //         } else {
-            //             ele['posY'] = mark_len[mark];
-            //             for (var j = ele['posY']; j < ele['element'].offsetHeight + ele['posY']; j++) {
-            //                 occupation[j] += 1;
-            //             }
-            //             break;
-            //         }
-            //     }
-            // } else {
-            //     ele['posY'] = 0;
-            //     for (var j = ele['posY']; j < ele['element'].offsetHeight + ele['posY']; j++) {
-            //         occupation[j] += 1;
-            //     }
-            // }
             
+            var danmaku_Animation = new Danmaku_Animation(i);
+            danmaku_Animation.startAnimation();
             danmaku_pointer += 1;
         }
-        if (!ele['idle']) {
-            ele['posX'] += (500 + ele['element'].offsetWidth)/10*danmaku_refresh_interval;
-            // console.log(i+" "+ele['posX'])
-            if (ele['generating'] && ele['posX'] > ele['element'].offsetWidth + 5) {
-                ele['generating'] = false;
-                for (var j = ele['posY']; j < ele['element'].offsetHeight + ele['posY']; j++) {
-                    occupation[j] -= 1;
-                }
-            }
-            if (ele['posX'] > ele['element'].offsetWidth + player_canvas.offsetWidth + 10) {
-                ele['idle'] = true;
-                ele['posX'] = 0;
-            }
-        }
-
-        var bul = ele['element'];
-        bul.style.WebkitTransform = "translate(-"+ele['posX']+"px, "+ele['posY']+"px)";
-        bul.style.msTransform = "translate(-"+ele['posX']+"px, "+ele['posY']+"px)";
-        bul.style.transform = "translate(-"+ele['posX']+"px, "+ele['posY']+"px)";
     }
     lastTime = curTime;
 }
