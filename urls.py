@@ -20,6 +20,7 @@ routes = [
     webapp2.Route(r'/signin', views.Signin, name="signin"),
     webapp2.Route(r'/signup', views.Signup, name="signup"),
     webapp2.Route(r'/logout', views.Logout, name="logout"),
+    webapp2.Route(r'/profile', views.Profile, name="profile"),
     webapp2.Route(r'/submit', views.Submit, name="submit"),
     webapp2.Route(r'/video', views.Video, name="video"),
     webapp2.Route(r'/video/dt<video_id:\d+>', views.Watch, name="watch"),

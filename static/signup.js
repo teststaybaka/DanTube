@@ -1,5 +1,16 @@
 $(document).ready(function() {
   $('#signupform').submit(function() {
+        var email = $('#signupform input[name="email"]')[0].value.trim();
+        if(!email) {
+            $('#signupform div.form-error').html('<p>email must not be empty!</p>')
+            return false;
+        }
+        var email_re = /^[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/;
+        if(!email_re.test(email)) {
+            $('#signupform div.form-error').html('<p>invalid email format!</p>')
+            return false;
+        }
+
         var username = $('#signupform input[name="username"]')[0].value.trim();
         if(!username) {
             $('#signupform div.form-error').html('<p>username must not be empty!</p>')
@@ -16,16 +27,6 @@ $(document).ready(function() {
         var username_re = /^[a-z|A-Z|0-9|\-|_]*$/;
         if(!username_re.test(username)) {
             $('#signupform div.form-error').html('<p>username can only contain a-z, A-Z, 0-9, underline and dash!</p>')
-            return false;
-        }
-        var email = $('#signupform input[name="email"]')[0].value.trim();
-        if(!email) {
-            $('#signupform div.form-error').html('<p>email must not be empty!</p>')
-            return false;
-        }
-        var email_re = /^[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/;
-        if(!email_re.test(email)) {
-            $('#signupform div.form-error').html('<p>invalid email format!</p>')
             return false;
         }
 

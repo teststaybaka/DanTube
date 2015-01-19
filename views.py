@@ -152,12 +152,19 @@ class Signin(BaseHandler):
             
 class Signup(BaseHandler):
     def validateSignupForm(self):
-        username = self.request.get('username')
         email = self.request.get('email')
+        username = self.request.get('username')
         password = self.request.get('password')
         password_confirm = self.request.get('password-confirm')
         logging.info(password)
         logging.info(password_confirm)
+        if not email:
+            return {'error': 'email must not be empty!'}
+        email = email.strip()
+        if not email:
+            return {'error': 'email must not be empty!'}
+        if re.match(r"^[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$", email) is None:
+            return {'error': 'invalid email format!'}
         if not username:
             return {'error': 'username must not be empty!'}
         username = username.strip()
@@ -169,13 +176,6 @@ class Signup(BaseHandler):
             return {'error': 'username can not exceed 20 characters!'}
         if re.match(r"^[a-z|A-Z|0-9|\-|_]*$", username) is None:
             return {'error': 'username can only contain a-z, A-Z, 0-9, underline and dash!'}
-        if not email:
-            return {'error': 'email must not be empty!'}
-        email = email.strip()
-        if not email:
-            return {'error': 'email must not be empty!'}
-        if re.match(r"^[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$", email) is None:
-            return {'error': 'invalid email format!'}
         if not password:
             return {'error': 'password must not be empty!'}
         if len(password) < 8:
@@ -190,9 +190,7 @@ class Signup(BaseHandler):
         if self.user_info:
             self.redirect(self.uri_for('home'))
         else:
-            context = {}
-            template = env.get_template('template/signup.html')
-            self.response.write(template.render(context))
+            self.render('signup')
     
     def post(self):
         self.response.headers['Content-Type'] = 'application/json'
@@ -203,8 +201,8 @@ class Signup(BaseHandler):
             }))
             return
 
-        unique_properties = ['username']
-        user_data = self.user_model.create_user(res['username'],
+        unique_properties = ['email']
+        user_data = self.user_model.create_user(res['email'],
             unique_properties,
             username=res['username'], email=res['email'], password_raw=res['password'], verified=False)
         if not user_data[0]: #user_data is a tuple
@@ -212,12 +210,13 @@ class Signup(BaseHandler):
             #     duplicate keys %s' % (username, user_data[1])
             # self.render('signup')
             self.response.out.write(json.dumps({
-                'error': 'username already exists!'
+                'error': 'email already used!'
             }))
             return
 
         user = user_data[1]
         user_id = user.get_id()
+        u = self.auth.get_user_by_password(res['email'], res['password'], remember=True)
         # self.session['message'] = 'Sign up successfully!'
         # self.redirect(self.uri_for('home'))
         self.response.out.write(json.dumps({
@@ -278,10 +277,13 @@ class Video(BaseHandler):
         else:
             results = []
             for video in videos:
+                uploader = models.User.get_by_id(video.uploader.id())
                 results.append({
                     'url': '/video/'+ video.key.id(),
                     'vid': video.vid,
-                    'uploader': video.uploader,
+                    'uploader': {
+                        'username': uploader.username, 
+                    },
                     'created': video.created.strftime("%Y-%m-%d %H:%M:%S"),
                     'category': video.category,
                     'subcategory': video.subcategory,
@@ -292,8 +294,8 @@ class Video(BaseHandler):
 
     def post(self):
         self.response.headers['Content-Type'] = 'application/json'
-        user = self.user_info
-        if not user:
+        user = self.user
+        if user is None:
             self.response.out.write(json.dumps({
                 'error': 'not logged in!',
             }))
@@ -339,7 +341,7 @@ class Video(BaseHandler):
         try:
             video = models.Video.Create(
                 raw_url = raw_url,
-                username = user['username'],
+                user = user,
                 description = description,
                 title = title,
                 category = category,
@@ -385,8 +387,8 @@ class Danmaku(BaseHandler):
 
     def post(self, video_id):
         self.response.headers['Content-Type'] = 'application/json'
-        user = self.user_info
-        if not user:
+        user = self.user
+        if user is None:
             self.response.out.write(json.dumps({
                 'error': 'not logged in!',
             }))
@@ -397,7 +399,7 @@ class Danmaku(BaseHandler):
             danmaku = models.Danmaku(
                 video = video.key,
                 timestamp = float(self.request.get('timestamp')),
-                creator = user['username'],
+                creator = user.key,
                 content = self.request.get('content'),
                 protected = False
             )
@@ -406,7 +408,7 @@ class Danmaku(BaseHandler):
             self.response.out.write(json.dumps({
                 'timestamp': danmaku.timestamp,
                 'content': danmaku.content,
-                'creator': danmaku.creator,
+                'creator': user.username,
                 'created': danmaku.created.strftime("%m-%d %H:%M")
             }))
         else:
@@ -438,3 +440,12 @@ class Subcategory(BaseHandler):
         context['category_name'] = category
         context['subcategory_name'] = subcategory
         self.render('subcategory', context)
+
+class Profile(BaseHandler):
+
+    @login_required
+    def get(self):
+        self.render('profile')
+
+    # @login_required
+    # def post(self):

@@ -15,7 +15,7 @@ import urlparse
 #     profile_url = db.StringProperty(required=True)
 #     messages = db.ListProperty(db.Key)
 class User(webapp2_extras.appengine.auth.models.User):
-  nickname = db.StringProperty()
+  username = ndb.StringProperty(required=True)
   intro = db.StringProperty()
   profile_photo = blobstore.BlobReferenceProperty()
   favorites = db.ListProperty(db.Key)
@@ -107,7 +107,7 @@ URL_NAME_DICT = {
 };
 
 class VideoList(ndb.Model):
-  user_belonged = ndb.StringProperty(required=True)
+  user_belonged = ndb.KeyProperty(kind='User', required=True)
   title = ndb.StringProperty(required=True)
   video_counter = ndb.IntegerProperty(required=True)
 
@@ -116,7 +116,7 @@ class Video(ndb.Model):
   vid = ndb.StringProperty(required=True, indexed=False)
   source = ndb.StringProperty(required=True, choices=['youtube'])
   created = ndb.DateTimeProperty(auto_now_add=True)
-  uploader = ndb.StringProperty(required=True)
+  uploader = ndb.KeyProperty(kind='User', required=True)
   description = ndb.StringProperty(required=True)
   title = ndb.StringProperty(required=True)
   category = ndb.StringProperty(required=True, choices=Video_Category)
@@ -162,7 +162,7 @@ class Video(ndb.Model):
     return Video.id_counter
 
   @staticmethod
-  def Create(raw_url, username, description, title, category, subcategory):
+  def Create(raw_url, user, description, title, category, subcategory):
     res = Video.parse_url(raw_url)
     if res.get('error'):
       # return 'URL Error.'
@@ -175,7 +175,7 @@ class Video(ndb.Model):
             url = raw_url,
             vid = res['vid'],
             source = res['source'],
-            uploader = username,
+            uploader = user.key,
             description = description,
             title = title, 
             category = category,
@@ -200,12 +200,12 @@ class Danmaku(ndb.Model):
   # creator = db.ReferenceProperty(User)
   # order = ndb.IntegerProperty(required=True)
   protected = ndb.BooleanProperty(required=True)
-  creator = ndb.StringProperty(required=True)
+  creator = ndb.KeyProperty(kind='User', required=True)
   created = ndb.DateTimeProperty(auto_now_add=True)
 
 class Comment(ndb.Model):
   video = ndb.KeyProperty(kind='Video', required=True)
-  creator = ndb.StringProperty(required=True)
+  creator = ndb.KeyProperty(kind='User', required=True)
   content = ndb.TextProperty(required=True, indexed=False)
   created = ndb.DateTimeProperty(auto_now_add=True, indexed=False)
   floor = ndb.IntegerProperty(required=True)
@@ -213,14 +213,14 @@ class Comment(ndb.Model):
 
 class CommentOfComment(ndb.Model):
   comment_belonged = ndb.KeyProperty(kind='Comment', required=True)
-  creator = ndb.StringProperty(required=True)
+  creator = ndb.KeyProperty(kind='User', required=True)
   content = ndb.TextProperty(required=True, indexed=False)
   floor = ndb.IntegerProperty(required=True)
   created = ndb.DateTimeProperty(auto_now_add=True, indexed=False)
 
 class AtUser(ndb.Model):
-  sender = ndb.StringProperty(required=True)
-  receiver = ndb.StringProperty(required=True)
-  comment = ndb.KeyProperty(kind='Comment', indexed=False);
-  inner_comment = ndb.KeyProperty(kind='CommentOfComment', indexed=False);
+  sender = ndb.KeyProperty(kind='User', required=True)
+  receiver = ndb.KeyProperty(kind='User', required=True)
+  comment = ndb.KeyProperty(kind='Comment', indexed=False)
+  inner_comment = ndb.KeyProperty(kind='CommentOfComment', indexed=False)
   danmaku = ndb.KeyProperty(kind='Danmaku', indexed=False)
