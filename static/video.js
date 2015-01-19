@@ -347,12 +347,15 @@ function danmaku_update() {
             ele['generating'] = true;
             ele['idle'] = false;
 
-            // for (var j = 0; j < player_canvas.offsetHeight; j++) {
-            //     accumulate[j] = 0;
-            //     for (var z = j; z >= 0 && z > j - ele['element'].offsetHeight; z--) {
-            //         accumulate[z] += occupation[j];
-            //     }
-            // }
+            accumulate[0] = 0;
+            for (var z = 0; z < ele['element'].offsetHeight && z < player_canvas.offsetHeight; z++) {
+                accumulate[0] += occupation[z];
+            }
+            for (var j = 1; j < player_canvas.offsetHeight - ele['element'].offsetHeight + 1; j++) {
+                accumulate[j] = accumulate[j-1];
+                accumulate[j] -= occupation[j-1];
+                accumulate[j] += occupation[j+ele['element'].offsetHeight-1];
+            }
 
             var min_value = 2000000;
             var min_line = 0;
@@ -366,7 +369,6 @@ function danmaku_update() {
             ele['posY'] = min_line;
             for (var j = ele['posY']; j < ele['element'].offsetHeight + ele['posY']; j++) {
                 occupation[j] += 1;
-                accumulate[j] += ele['element'].offsetHeight + ele['posY'] - j;
             }
 
             // var mark_len = {};
@@ -419,7 +421,6 @@ function danmaku_update() {
                 ele['generating'] = false;
                 for (var j = ele['posY']; j < ele['element'].offsetHeight + ele['posY']; j++) {
                     occupation[j] -= 1;
-                    accumulate[j] -= ele['element'].offsetHeight + ele['posY'] - j;
                 }
             }
             if (ele['posX'] > ele['element'].offsetWidth + player_canvas.offsetWidth + 10) {
