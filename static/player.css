@@ -40,8 +40,6 @@ div.danmaku:active {
 #player-canvas {
 	width: 640px;
 	height: 360px;
-	top: 0;
-	left: 0;
 	overflow: hidden;
 	position: relative;
 }
@@ -460,6 +458,7 @@ div.danmaku:active {
 div.danmaku-order-title {
 	background-color: rgb(245,245,245);
 	padding: 5px 10px;
+	padding-right: 0;
 	display: inline-block;
 }
 
@@ -471,16 +470,42 @@ div.danmaku-order-title:active {
 	background-color: rgb(129,206,243);
 }
 
+div.danmaku-order-title span {
+	display: inline-block;
+}
+
+span.arrow-order {
+	width: 8px;
+	height: 8px;
+}
+
+div.danmaku-order-title.up span.arrow-order {
+	background-image: url("/static/img/arrow_up.png");
+}
+
+div.danmaku-order-title.down span.arrow-order {
+	background-image: url("/static/img/arrow_down.png");
+}
+
 #time {
-	width: 40px;
+	width: 60px;
+	-webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
+	-moz-box-sizing: border-box;    /* Firefox, other Gecko */
+	box-sizing: border-box;
 }
 
 #content {
-	width: 184px;
+	width: 204px;
+	-webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
+	-moz-box-sizing: border-box;    /* Firefox, other Gecko */
+	box-sizing: border-box;
 }
 
 #date {
-	width: 99px;
+	width: 119px;
+	-webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
+	-moz-box-sizing: border-box;    /* Firefox, other Gecko */
+	box-sizing: border-box;
 }
 
 #danmaku-list {
