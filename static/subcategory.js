@@ -11,7 +11,7 @@ $(document).ready(function() {
                     console.log(results[i])
                     $('#video-list').append('<div class="video-item">' + 
                         '<a href="' + results[i].url + '"><div><img src="http://img.youtube.com/vi/' + results[i].vid + '/default.jpg"></a></div>' + 
-                        '<div>Uploader: ' +  results[i].uploader + '</div>' + 
+                        '<div>Uploader: ' +  results[i].uploader.nickname + '</div>' + 
                         '<div>Created at: ' + results[i].created + '</div></div>');
                 }
             }

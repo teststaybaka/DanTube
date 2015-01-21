@@ -75,7 +75,7 @@ class BaseHandler(webapp2.RequestHandler):
         user = self.user_info
         if user is not None:
             context['is_auth'] = True
-            context['username'] = user.get('username')
+            context['nickname'] = user.get('nickname')
             context['email'] = user.get('email')
         else:
             context['is_auth'] = False
@@ -103,15 +103,15 @@ class Signin(BaseHandler):
     def post(self):
         # self.response.headers['Content-Type'] = 'application/json'
         context = {}
-        username = self.request.get('username')
+        email = self.request.get('email')
         password = self.request.get('password')
         remember = self.request.get('remember')
         logging.info(self.request)
-        if not username:
+        if not email:
             # self.response.out.write(json.dumps({
-            #     'username_error': 'username must not be empty',
+            #     'email_error': 'email must not be empty',
             # }))
-            context['form_error'] = 'username must not be empty'
+            context['form_error'] = 'email must not be empty'
             self.render('signin', context)
             return
         if not password:
@@ -123,22 +123,22 @@ class Signin(BaseHandler):
             return
         try:
             if remember:
-                u = self.auth.get_user_by_password(username, password, remember=True)
+                u = self.auth.get_user_by_password(email, password, remember=True)
             else:
-                u = self.auth.get_user_by_password(username, password, remember=False)
+                u = self.auth.get_user_by_password(email, password, remember=False)
             self.session['message'] = 'login success'
             # self.response.out.write(json.dumps({
             #     'success': 'login success',
             # }))
             self.redirect(self.uri_for('home'))
         except (auth.InvalidAuthIdError, auth.InvalidPasswordError) as e:
-            logging.info('Login failed for user %s because of %s', username, type(e))
+            logging.info('Login failed for user %s because of %s', email, type(e))
             self.session['message'] = 'login failed'
             # self.response.out.write(json.dumps({
-            #     'error': 'invalid username or password',
+            #     'error': 'invalid email or password',
             # }))
-            context['form_error'] = 'invalid username or password'
-            context['username_value'] = username
+            context['form_error'] = 'invalid email or password'
+            context['email_value'] = email
             if remember:
                 context['remember'] = 1
             self.render('signin', context)
@@ -146,7 +146,7 @@ class Signin(BaseHandler):
 class Signup(BaseHandler):
     def validateSignupForm(self):
         email = self.request.get('email')
-        username = self.request.get('username')
+        nickname = self.request.get('nickname')
         password = self.request.get('password')
         password_confirm = self.request.get('password-confirm')
         logging.info(password)
@@ -158,17 +158,17 @@ class Signup(BaseHandler):
             return {'error': 'email must not be empty!'}
         if re.match(r"^[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$", email) is None:
             return {'error': 'invalid email format!'}
-        if not username:
-            return {'error': 'username must not be empty!'}
-        username = username.strip()
-        if not username:
-            return {'error': 'username must not be empty!'}
-        if len(username) < 8:
-            return {'error': 'username must have at least 8 characters!'}
-        if len(username) > 20:
-            return {'error': 'username can not exceed 20 characters!'}
-        if re.match(r"^[a-z|A-Z|0-9|\-|_]*$", username) is None:
-            return {'error': 'username can only contain a-z, A-Z, 0-9, underline and dash!'}
+        if not nickname:
+            return {'error': 'nickname must not be empty!'}
+        nickname = nickname.strip()
+        if not nickname:
+            return {'error': 'nickname must not be empty!'}
+        if len(nickname) < 8:
+            return {'error': 'nickname must have at least 8 characters!'}
+        if len(nickname) > 20:
+            return {'error': 'nickname can not exceed 20 characters!'}
+        if re.match(r"^[a-z|A-Z|0-9|\-|_]*$", nickname) is None:
+            return {'error': 'nickname can only contain a-z, A-Z, 0-9, underline and dash!'}
         if not password:
             return {'error': 'password must not be empty!'}
         if len(password) < 8:
@@ -177,7 +177,7 @@ class Signup(BaseHandler):
             return {'error': 'password confirmation does not match!'}
         if password_confirm != password:
             return {'error': 'password confirmation does not match!'}
-        return {'username': username, 'email': email, 'password': password}
+        return {'nickname': nickname, 'email': email, 'password': password}
 
     def get(self):
         if self.user_info:
@@ -197,10 +197,10 @@ class Signup(BaseHandler):
         unique_properties = ['email']
         user_data = self.user_model.create_user(res['email'],
             unique_properties,
-            username=res['username'], email=res['email'], password_raw=res['password'], verified=False)
+            nickname=res['nickname'], email=res['email'], password_raw=res['password'], verified=False)
         if not user_data[0]: #user_data is a tuple
             # self.session['message'] = 'Unable to create user for email %s because of \
-            #     duplicate keys %s' % (username, user_data[1])
+            #     duplicate keys %s' % (email, user_data[1])
             # self.render('signup')
             self.response.out.write(json.dumps({
                 'error': 'email already used!'
@@ -209,7 +209,7 @@ class Signup(BaseHandler):
 
         user = user_data[1]
         user_id = user.get_id()
-        u = self.auth.get_user_by_password(res['email'], res['password'], remember=True)
+        # u = self.auth.get_user_by_password(res['email'], res['password'], remember=True)
         # self.session['message'] = 'Sign up successfully!'
         # self.redirect(self.uri_for('home'))
         self.response.out.write(json.dumps({
@@ -275,7 +275,7 @@ class Video(BaseHandler):
                     'url': '/video/'+ video.key.id(),
                     'vid': video.vid,
                     'uploader': {
-                        'username': uploader.username, 
+                        'nickname': uploader.nickname, 
                     },
                     'created': video.created.strftime("%Y-%m-%d %H:%M:%S"),
                     'category': video.category,
@@ -402,7 +402,7 @@ class Danmaku(BaseHandler):
             self.response.out.write(json.dumps({
                 'timestamp': danmaku.timestamp,
                 'content': danmaku.content,
-                'creator': user.username,
+                'creator': user.nickname,
                 'created': danmaku.created.strftime("%m-%d %H:%M")
             }))
         else:
@@ -459,7 +459,8 @@ class AvatarUpload(BaseHandler, blobstore_handlers.BlobstoreUploadHandler):
         if upload == []:
             self.response.headers['Content-Type'] = 'application/json'
             self.response.out.write(json.dumps({
-                'error': 'Please select a file.',
+                'error': True,
+                'message': 'Please select a file.',
             }))
             return
 
@@ -471,7 +472,8 @@ class AvatarUpload(BaseHandler, blobstore_handlers.BlobstoreUploadHandler):
             uploaded_image.delete()
             self.response.headers['Content-Type'] = 'application/json'
             self.response.out.write(json.dumps({
-                'error': 'File type error.',
+                'error': True,
+                'message': 'File type error.',
             }))
             return
 
@@ -479,7 +481,8 @@ class AvatarUpload(BaseHandler, blobstore_handlers.BlobstoreUploadHandler):
             uploaded_image.delete()
             self.response.headers['Content-Type'] = 'application/json'
             self.response.out.write(json.dumps({
-                'error': 'File is too large.',
+                'error': True,
+                'message': 'File is too large.',
             }))
             return
 
@@ -490,5 +493,5 @@ class AvatarUpload(BaseHandler, blobstore_handlers.BlobstoreUploadHandler):
         user.put()
         self.response.headers['Content-Type'] = 'application/json'
         self.response.out.write(json.dumps({
-            'success': 'Upload succeeded.',
+            'message': 'Upload succeeded.',
         }))

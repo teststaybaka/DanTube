@@ -15,7 +15,7 @@ import urlparse
 #     profile_url = db.StringProperty(required=True)
 #     messages = db.ListProperty(db.Key)
 class User(webapp2_extras.appengine.auth.models.User):
-  username = ndb.StringProperty(required=True)
+  nickname = ndb.StringProperty(required=True)
   intro = ndb.StringProperty()
   avatar = ndb.BlobKeyProperty() # blobstore.BlobReferenceProperty()
   favorites = ndb.KeyProperty(kind='Video', repeated=True)

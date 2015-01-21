@@ -8,7 +8,7 @@ secret_key = 'efrghtrrouhsmvnmxdiosjkgjfds68_=' \
 config = {
     'webapp2_extras.auth': {
         'user_model' : 'models.User',
-        'user_attributes': ['username', 'email']
+        'user_attributes': ['nickname', 'email']
     },
     'webapp2_extras.sessions': {
         'secret_key': secret_key

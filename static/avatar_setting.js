@@ -97,7 +97,10 @@ $(document).ready(function() {
             headers: {"Content-Type": "multipart\/form-data; boundary=" + sBoundary},
             data: data,
             success: function(result){
-                console.log(result);
+                alert(result.message);
+                if(!result.error) {
+                    // success
+                }
             },
             error: function (xhr, ajaxOptions, thrownError) {
                 console.log(xhr.status);
