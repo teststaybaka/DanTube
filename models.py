@@ -15,10 +15,10 @@ import urlparse
 #     profile_url = db.StringProperty(required=True)
 #     messages = db.ListProperty(db.Key)
 class User(webapp2_extras.appengine.auth.models.User):
-  # nickname = ndb.StringProperty(required=True)
+  nickname = ndb.StringProperty(required=True)
   intro = ndb.StringProperty()
-  profile_photo = blobstore.BlobReferenceProperty()
-  favorites = db.ListProperty(db.Key)
+  avatar = ndb.BlobKeyProperty()
+  favorites = ndb.KeyProperty(kind='Video', repeated=True)
 
   def set_password(self, raw_password):
     self.password = security.generate_password_hash(raw_password, length=12)

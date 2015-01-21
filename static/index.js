@@ -9,7 +9,7 @@ $(document).ready(function() {
                     console.log(result[i])
                     $('#video-list').append('<div class="video-item">' + 
                         '<a href="' + result[i].url + '"><div><img src="http://img.youtube.com/vi/' + result[i].vid + '/default.jpg"></a></div>' + 
-                        '<div>Uploader: ' +  result[i].uploader + '</div>' + 
+                        '<div>Uploader: ' +  result[i].uploader.nickname + '</div>' + 
                         '<div>Created at: ' + result[i].created + '</div></div>');
                 }
             }

@@ -23,7 +23,9 @@ routes = [
     webapp2.Route(r'/nickname_check', login.NicknameCheck, name="nickname_check"),
     webapp2.Route(r'/logout', views.Logout, name="logout"),
 
-    webapp2.Route(r'/profile', views.Profile, name="profile"),
+    # webapp2.Route(r'/settings/profile', views.ProfileSetting, name="profile_setting"),
+    webapp2.Route(r'/settings/avatar', views.AvatarSetting, name="avatar_setting"),
+    webapp2.Route(r'/settings/avatar/upload', views.AvatarUpload, name="avatar_upload"),
     webapp2.Route(r'/submit', views.Submit, name="submit"),
     webapp2.Route(r'/video', views.Video, name="video"),
     webapp2.Route(r'/video/dt<video_id:\d+>', views.Watch, name="watch"),

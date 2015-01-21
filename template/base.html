@@ -17,7 +17,7 @@
             <p>Message: {{ message }}</p>
         {% endif %}
         {% if is_auth %}
-            <p>Username: {{ username }}</p>
+            <p>Nickname: {{ nickname }}</p>
             <a href="{{ uri_for('logout') }}">Logout</a>
         {% else %}
             <a href="{{ uri_for('signin') }}">Signin</a>
