@@ -10,6 +10,8 @@ from jinja2 import Undefined
 from webapp2_extras import sessions
 from webapp2_extras import auth
 from google.appengine.api.datastore_errors import BadValueError
+from google.appengine.ext.webapp import blobstore_handlers
+from google.appengine.api import images
 
 import models
 import json
@@ -441,11 +443,60 @@ class Subcategory(BaseHandler):
         context['subcategory_name'] = subcategory
         self.render('subcategory', context)
 
-class Profile(BaseHandler):
-
+class AvatarSetting(BaseHandler):
     @login_required
     def get(self):
-        self.render('profile')
+        user = self.user
+        context = {}
+        if user.avatar:
+            avatar_url = images.get_serving_url(user.avatar)
+            context['avatar_url'] = avatar_url
+        self.render('avatar_setting', context)
 
-    # @login_required
-    # def post(self):
+class AvatarUpload(BaseHandler, blobstore_handlers.BlobstoreUploadHandler):
+    @login_required
+    def get(self):
+        upload_url = models.blobstore.create_upload_url('/settings/avatar/upload')
+        self.response.headers['Content-Type'] = 'application/json'
+        self.response.out.write(json.dumps({'url': upload_url}))
+
+    @login_required
+    def post(self):
+        logging.info(self.request)
+        upload = self.get_uploads('upload-avatar')  # 'file' is file upload field in the form
+        if upload == []:
+            self.response.headers['Content-Type'] = 'application/json'
+            self.response.out.write(json.dumps({
+                'error': 'Please select a file.',
+            }))
+            return
+
+        uploaded_image = upload[0]
+        logging.info("upload content_type:"+uploaded_image.content_type)
+        logging.info("upload size:"+str(uploaded_image.size))
+        types = uploaded_image.content_type.split('/')
+        if types[0] != 'image':
+            uploaded_image.delete()
+            self.response.headers['Content-Type'] = 'application/json'
+            self.response.out.write(json.dumps({
+                'error': 'File type error.',
+            }))
+            return
+
+        if uploaded_image.size > 50*1000000:
+            uploaded_image.delete()
+            self.response.headers['Content-Type'] = 'application/json'
+            self.response.out.write(json.dumps({
+                'error': 'File is too large.',
+            }))
+            return
+
+        user = self.user
+        if user.avatar != None:
+            models.blobstore.BlobInfo(user.avatar).delete()
+        user.avatar = uploaded_image.key()
+        user.put()
+        self.response.headers['Content-Type'] = 'application/json'
+        self.response.out.write(json.dumps({
+            'success': 'Upload succeeded.',
+        }))

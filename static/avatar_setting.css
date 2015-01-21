@@ -1,0 +1,43 @@
+#avatar-container {
+  width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+#avatar-upload-form-container {
+  margin-top: 20px;
+}
+
+#avatar-edit {
+  float: left;
+}
+
+#avatar-crop-container {
+  margin-top:20px;
+  width: 400px;
+  height: 300px;
+  background: #e2e2e2;
+  position: relative;
+}
+
+#avatar-crop-container img {
+  max-width: 400px;
+  max-height: 300px;
+  vertical-align: middle;
+}
+
+#avatar-preview-container {
+  float: right;
+}
+
+.avatar-preview {
+  overflow: hidden;
+}
+
+.avatar-preview-text {
+  margin: 6px 0 18px 0;
+}
+
+#crop-canvas-container {
+  display: none;
+}

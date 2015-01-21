@@ -1,0 +1,38 @@
+{% extends "template/base.html" %}
+{% block head %}
+{{ super() }}
+<script src="/static/jquery.Jcrop.min.js" language="JavaScript" type="text/javascript"></script>
+<script src="/static/avatar_setting.js" language="JavaScript" type="text/javascript"></script>
+<link rel="stylesheet" href="/static/jquery.Jcrop.min.css" type="text/css" />
+<link rel="stylesheet" href="/static/avatar_setting.css" type="text/css" />
+{% endblock %}
+
+{% block body %}
+<div id="avatar-container">
+  <h2>Upload Avatar</h2>
+  <div id="avatar-edit">
+    <div id="avatar-crop-container">
+    </div>
+    <div id="avatar-upload-form-container">
+      <form method="post" enctype="multipart/form-data" id="avatar-upload-form">
+        <input type="file" name="upload-avatar" class="file" id="upload-avatar" />
+        <button class="upload" id="avatar-upload-button" type="button">Submit</button>
+      </form>
+    </div>
+  </div>
+  <div id="avatar-preview-container">
+    <h3>Avatar Preview</h3>
+    <div id="avatar-preview-medium-container" class="avatar-preview" style="width:100px; height:100px;">
+      <img id="avatar-preview-medium" src="{{ avatar_url }}" width="100" height="100">
+    </div>
+    <div class="avatar-preview-text">Preview 100*100</div>
+    <div id="avatar-preview-small-container" class="avatar-preview" style="width:50px; height:50px;">
+      <img id="avatar-preview-small" src="{{ avatar_url }}" width="50" height="50">
+    </div>
+    <div class="avatar-preview-text">Preview 50*50</div>
+  </div>
+</div>
+<div id="crop-canvas-container">
+  <canvas id="crop-canvas" width="100" height="100" style="border:1px solid #d3d3d3;"></canvas>
+</div>
+{% endblock %}
