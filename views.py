@@ -9,6 +9,7 @@ import datetime
 from jinja2 import Undefined
 from webapp2_extras import sessions
 from webapp2_extras import auth
+from webapp2_extras import sessions_ndb
 from google.appengine.api.datastore_errors import BadValueError
 
 import models
@@ -55,7 +56,8 @@ class BaseHandler(webapp2.RequestHandler):
 
     @webapp2.cached_property
     def session(self):
-        return self.session_store.get_session(backend="datastore")
+        # return self.session_store.get_session(backend="datastore")
+        return self.session_store.get_session(name='db_session', factory=sessions_ndb.DatastoreSessionFactory)
 
     def dispatch(self):
         """
@@ -195,7 +197,7 @@ class Signup(BaseHandler):
         unique_properties = ['email']
         user_data = self.user_model.create_user(res['email'],
             unique_properties,
-            username=res['username'], email=res['email'], password_raw=res['password'], verified=False)
+            nickname=res['username'], email=res['email'], password_raw=res['password'], verified=False)
         if not user_data[0]: #user_data is a tuple
             # self.session['message'] = 'Unable to create user for email %s because of \
             #     duplicate keys %s' % (username, user_data[1])

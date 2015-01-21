@@ -1,6 +1,6 @@
 import webapp2
 
-import views, admin
+import views, admin, login
 import models
 
 secret_key = 'efrghtrrouhsmvnmxdiosjkgjfds68_=' \
@@ -8,7 +8,7 @@ secret_key = 'efrghtrrouhsmvnmxdiosjkgjfds68_=' \
 config = {
     'webapp2_extras.auth': {
         'user_model' : 'models.User',
-        'user_attributes': ['username', 'email']
+        'user_attributes': ['nickname', 'email']
     },
     'webapp2_extras.sessions': {
         'secret_key': secret_key
@@ -19,7 +19,10 @@ routes = [
     webapp2.Route(r'/', views.Home, name="home"),
     webapp2.Route(r'/signin', views.Signin, name="signin"),
     webapp2.Route(r'/signup', views.Signup, name="signup"),
+    webapp2.Route(r'/email_check', login.EmailCheck, name="email_check"),
+    webapp2.Route(r'/nickname_check', login.NicknameCheck, name="nickname_check"),
     webapp2.Route(r'/logout', views.Logout, name="logout"),
+
     webapp2.Route(r'/profile', views.Profile, name="profile"),
     webapp2.Route(r'/submit', views.Submit, name="submit"),
     webapp2.Route(r'/video', views.Video, name="video"),

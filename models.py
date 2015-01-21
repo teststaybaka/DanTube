@@ -15,8 +15,8 @@ import urlparse
 #     profile_url = db.StringProperty(required=True)
 #     messages = db.ListProperty(db.Key)
 class User(webapp2_extras.appengine.auth.models.User):
-  username = ndb.StringProperty(required=True)
-  intro = db.StringProperty()
+  # nickname = ndb.StringProperty(required=True)
+  intro = ndb.StringProperty()
   profile_photo = blobstore.BlobReferenceProperty()
   favorites = db.ListProperty(db.Key)
 

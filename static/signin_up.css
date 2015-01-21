@@ -1,5 +1,6 @@
 #signup-container, #signin-container {
   float: right;
+  position: relative;
 }
 
 #signup-header, #signin-header {
@@ -50,9 +51,14 @@ input.inputtext, input.inputpassword {
   font-size: 16px;
 }
 
+input.inputtext.error, input.inputpassword.error {
+  box-shadow: 0 0 2px rgb(232,0,0);
+  border: 1px solid rgb(232,0,0);
+}
+
 input.inputtext:focus, input.inputpassword:focus {
-    box-shadow: 0 0 2px rgb(81,203,238);
-    border: 1px solid rgb(81,203,238);
+  box-shadow: 0 0 2px rgb(81,203,238);
+  border: 1px solid rgb(81,203,238);
 }
 
 input.signin_up-button {
@@ -110,4 +116,45 @@ span.other-option {
   font-size: 14px;
   margin-left: 210px;
   margin-right: 0;
+}
+
+#signup-success {
+  display: none;
+  color: rgb(55,205,2);
+  margin: 5px 0;
+}
+
+#signup-success.success {
+  display: block;
+}
+
+div.input-error-message {
+  position: absolute;
+  right: 405px;
+  white-space: nowrap;
+  display: none;
+}
+
+div.input-error-message.show {
+  display: inline-table;
+}
+
+div.input-error-message span {
+  background-color: rgb(192,62,62);
+  color: white;
+  padding: 15px 15px;
+  border-radius: 5px;
+  position: relative;
+  top: 5px;
+}
+
+div.error-message-arrow {
+  display: inline-block;
+  width: 0;
+  height: 0;
+  border-top: 8px solid transparent;
+  border-bottom: 8px solid transparent;
+  border-left: 10px solid rgb(192,62,62);
+  position: relative;
+  top: 8px;
 }

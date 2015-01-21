@@ -1,13 +1,90 @@
 $(document).ready(function() {
-  $('#signupform').submit(function() {
+    $('#signupform input[name="nickname"]').focusout(function(evt) {
+        var nickname = evt.target.value;
+        if (!nickname) {
+            $('#nickname-invalid').removeClass('show');
+            $('#nickname-required').addClass('show');
+            $('#nickname-used').removeClass('show');
+            $(evt.target).addClass('error');
+        } else if (nickname.indexOf(' ') != -1) {
+            $('#nickname-invalid').addClass('show');
+            $('#nickname-required').removeClass('show');
+            $('#nickname-used').removeClass('show');
+            $(evt.target).addClass('error');
+        } else {
+            $.ajax({
+                type: "POST",
+                url: "/nickname_check",
+                data: {nickname: nickname},
+                success: function(result) {
+                    console.log(result);
+                    if (result === 'valid') {
+                        $('#nickname-invalid').removeClass('show');
+                        $('#nickname-used').removeClass('show');
+                        $('#nickname-required').removeClass('show');
+                        $(evt.target).removeClass('error');
+                    } else {
+                        $('#nickname-invalid').removeClass('show');
+                        $('#nickname-required').removeClass('show');
+                        $('#nickname-used').addClass('show');
+                        $(evt.target).addClass('error');
+                    }
+                },
+                error: function (xhr, ajaxOptions, thrownError) {
+                    console.log(xhr.status);
+                    console.log(thrownError);
+                }
+            });
+        }
+    })
+
+    $('#signupform input[name="password"]').focusout(function(evt) {
+        var password = evt.target.value;
+        if (!password) {
+            $('#password-invalid').addClass('show');
+            $(evt.target).addClass('error');
+        } else {
+            $('#password-invalid').removeClass('show');
+            $(evt.target).removeClass('error');
+        }
+    })
+
+    $('#signupform input[name="email"]').focusout(function(evt) {
+        var email = evt.target.value.trim();
+        var email_re = /^[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/;
+        if (!email || !email_re.test(email)) {
+            $('#email-invalid').addClass('show');
+            $('#email-used').removeClass('show');
+            $(evt.target).addClass('error');
+        } else {
+            $.ajax({
+                type: "POST",
+                url: "/email_check",
+                data: {email: email},
+                success: function(result) {
+                    console.log(result);
+                    if (result === 'valid') {
+                        $('#email-used').removeClass('show');
+                        $('#email-invalid').removeClass('show');
+                        $(evt.target).removeClass('error');
+                    } else {
+                        $('#email-invalid').removeClass('show');
+                        $('#email-used').addClass('show');
+                        $(evt.target).addClass('error');
+                    }
+                },
+                error: function (xhr, ajaxOptions, thrownError) {
+                    console.log(xhr.status);
+                    console.log(thrownError);
+                }
+            });
+        }
+    })
+
+    $('#signupform').submit(function() {
         var email = $('#signupform input[name="email"]')[0].value.trim();
         if(!email) {
             $('#signupform div.form-error').html('<p>email must not be empty!</p>')
-            return false;
-        }
-        var email_re = /^[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/;
-        if(!email_re.test(email)) {
-            $('#signupform div.form-error').html('<p>invalid email format!</p>')
             return false;
         }
 

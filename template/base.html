@@ -52,7 +52,7 @@
                 <div class="dragdown-menu">
                     {% for val in subcategory[key] %}
                     <div class="sub-category" onclick="location.href='{{ uri_for([key,val]|join('-')) }}'">
-                        <span class="arrow"></span>
+                        <span class="category-arrow"></span>
                         <span>{{ val }}</span>
                     </div>
                     {% endfor %}

@@ -195,7 +195,7 @@ div.sub-category:hover {
     animation: subcat_right_move .2s;
 }
 
-span.arrow {
+span.category-arrow {
 	display: inline-block;
 	width: 10px;
 	height: 8px;
