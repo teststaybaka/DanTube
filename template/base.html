@@ -51,10 +51,10 @@
                 <div class="category-name" onclick="location.href='{{ uri_for(key) }}'">{{ key }}</div>
                 <div class="dragdown-menu">
                     {% for val in subcategory[key] %}
-                        <div class="sub-category" onclick="location.href='{{ uri_for([key,val]|join('-')) }}'">
-                            <span class="arrow"></span>
-                            <span>{{ val }}</span>
-                        </div>
+                    <div class="sub-category" onclick="location.href='{{ uri_for([key,val]|join('-')) }}'">
+                        <span class="arrow"></span>
+                        <span>{{ val }}</span>
+                    </div>
                     {% endfor %}
                 </div>
             </div>
@@ -68,9 +68,11 @@
     </div>
     {% endblock %}
 
-    <div id="body-container" class="container">
-    {% block body %}
-    {% endblock %}
+    <div id="body-background">
+        <div id="body-container" class="container">
+        {% block body %}
+        {% endblock %}
+        </div>
     </div>
 
     {% block footscript %}

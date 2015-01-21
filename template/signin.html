@@ -1,63 +1,28 @@
 {% extends "template/base.html" %}
 {% block head %}
 {{ super() }}
-<link href="/static/signin.css" rel="stylesheet" type="text/css">
+<link href="/static/signin_up.css" rel="stylesheet" type="text/css">
 <script src="/static/signin.js" language="JavaScript" type="text/javascript"></script>
 {% endblock %}
 
 {% block body %}
 <div id="signin-container">
-    <div id="signin-header">
-        <h2>Sign in</h2>
-    </div>
-    <div id="signin-form-container">
-        <form id="signinform" action="{{ uri_for('signin') }}" method="post">
-            <div id="signin-form">
-                <div class="form-error">
-                    {% if form_error %}
-                        <p>{{ form_error }}</p>
-                    {% endif %}
-                </div>
-                <div class="form-body">
-                    <div class="form-row">
-                        <label for="username" class="form-label">Username</label>
-                        {% if username_value %}
-                            <input type="text" class="inputtext" id="username" name="username" tabindex="1" value="{{ username_value }}"></input>
-                        {% else %}
-                            <input type="text" class="inputtext" id="username" name="username" tabindex="1"></input>
-                        {% endif %}
-                    </div>
-                    <div class="form-row">
-                        <label for="password" class="form-label">Password</label>
-                        <input type="password" class="inputpassword" id="password" name="password" tabindex="1"></input>
-                    </div>
-                    <div class="remember-row">
-                        <div>
-                            {% if remember %}
-                                <input type="checkbox" class="inputcheckbox" id="remember" name="remember" value="1" checked="0">
-                            {% else %}
-                                <input type="checkbox" class="inputcheckbox" id="remember" name="remember" value="1">
-                            {% endif %}
-                            <label for="remember" class="input-label">Remember me</label>
-                        </div>
-                    </div>
-                    <div id="buttons">
-                        <div id="signin-button">
-                            <input class="button" type="submit" value="Sign in" tabindex="1" />
-                        </div>
-                        <div id="signup-link">
-                            or
-                            <strong>
-                                <a href="{{ uri_for('signup') }}">Sign up for DanTube</a>
-                            </strong>
-                        </div>
-                    </div>
-                    <div id="password-reset">
-                        <a href="#">Forgot password?</a>
-                    </div>
-                </div>
-            </div>
-        </form>
-    </div>
+    <div id="signin-header">Sign in</div>
+    <form id="signinform" action="{{ uri_for('signin') }}" method="post">
+        <label for="email" class="form-label">Email:</label>
+        <input type="text" class="inputtext" id="email" name="email" tabindex="1" value="{{ email_value }}" placeholder="Enter your email"></input>
+        <div class="password-label-row">
+            <label for="password" class="form-label" id="password-label">Password:</label>
+            <a class="signin_up-link" id="forgot-password" href="#">Forgot password?</a>
+        </div>
+        <input type="password" class="inputpassword" id="password" name="password" tabindex="2" placeholder="Enter your password"></input>
+        <label for="remember" class="check-label">
+            <input type="checkbox" class="checkbox" id="remember" name="remember" value="1" tabindex="3" {% if remember %} checked="0" {% endif %}>
+            <span>Remember me</span>
+        </label>
+        <input class="signin_up-button" type="submit" value="Sign in" />
+        <span class="other-option">or</span>
+        <a class="signin_up-link" href="{{ uri_for('signup') }}">Sign up for DanTube</a>
+    </form>
 </div>
 {% endblock %}

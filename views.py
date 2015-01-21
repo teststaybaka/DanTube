@@ -71,15 +71,6 @@ class BaseHandler(webapp2.RequestHandler):
         finally:
             self.session_store.save_sessions(self.response)
 
-    @webapp2.cached_property
-    def session(self):
-        """
-        This snippet of code is taken from the webapp2 framework documentation.
-        See more at
-        http://webapp-improved.appspot.com/api/webapp2_extras/sessions.html
-        """
-        return self.session_store.get_session()
-
     def render(self, tempname, context = {}):
         user = self.user_info
         if user is not None:
@@ -379,7 +370,8 @@ class Danmaku(BaseHandler):
                 danmakus.append({
                     'content': danmaku.content,
                     'timestamp': danmaku.timestamp,
-                    'created': danmaku.created.strftime("%m-%d %H:%M")
+                    'created': danmaku.created.strftime("%m-%d %H:%M"),
+                    'created_seconds': (danmaku.created - datetime.datetime(1970,1,1)).total_seconds(),
                 });
             self.response.out.write(json.dumps(danmakus))
         else:

@@ -272,6 +272,8 @@ function progress_bar_up_out(evt) {
         progress_number.lastChild.nodeValue = secondsToTime(num)+"/"+progress_number.lastChild.nodeValue.split('/')[1];
         progress_resize();
 
+        danmaku_clear_request();
+
         player.seekTo(num, true);
         document.onmousemove = null;
         document.onmouseup = null;
@@ -343,14 +345,14 @@ function Danmaku_Animation(index) {
         }
         
         // console.log(index+' '+percent)
-        if (ele['generating'] && ele['posX'] > ele['element'].offsetWidth + 5) {
+        if (ele['generating'] && (ele['clear_request'] || ele['posX'] > ele['element'].offsetWidth + 5)) {
             ele['generating'] = false;
             for (var j = ele['posY']; j < ele['element'].offsetHeight + ele['posY']; j++) {
                 occupation[j] -= 1;
             }
         }
 
-        if (ele['posX'] < ele['element'].offsetWidth + player_canvas.offsetWidth + 10) {
+        if (!ele['clear_request'] && ele['posX'] < ele['element'].offsetWidth + player_canvas.offsetWidth + 10) {
             requestAnimationFrame(update);
         } else {
             ele['element'].style.WebkitTransform = "translate(-"+0+"px, "+ele['posY']+"px)";
@@ -362,6 +364,13 @@ function Danmaku_Animation(index) {
     }
 }
 
+function danmaku_clear_request() {
+    for (var i = 0; i < danmkau_elements.length; i++) {
+        var ele = danmkau_elements[i];
+        ele['clear_request'] = true;
+    }
+}
+
 function danmaku_update() {
     // console.log('danmaku_update:'+player.getCurrentTime());
     if (danmaku.length == 0) return;
@@ -369,9 +378,10 @@ function danmaku_update() {
     var player_canvas = document.getElementById("player-canvas");
     var curTime = player.getCurrentTime();
     // console.log('before:'+danmaku_pointer);
-    if (danmaku[danmaku_pointer].timestamp <= curTime) {
+    if (danmaku_pointer < danmaku.length && danmaku[danmaku_pointer].timestamp <= curTime) {
         // console.log('out:'+danmaku[danmaku_pointer].timestamp);
-        while (danmaku[danmaku_pointer].timestamp < curTime - 1 || danmaku[danmaku_pointer].timestamp < lastTime) {
+        while (danmaku_pointer < danmaku.length
+            && (danmaku[danmaku_pointer].timestamp < curTime - 1 || danmaku[danmaku_pointer].timestamp < lastTime)) {
             danmaku_pointer += 1;
             // console.log(danmaku[danmaku_pointer].timestamp);
         }
@@ -382,7 +392,7 @@ function danmaku_update() {
     }
     
     for (var i = 0; i < danmkau_elements.length; i++) {
-        if (danmaku[danmaku_pointer].timestamp > curTime) break;
+        if (danmaku_pointer >= danmaku.length || danmaku[danmaku_pointer].timestamp > curTime) break;
 
         var ele = danmkau_elements[i];
         if (ele['idle']) {
@@ -390,6 +400,7 @@ function danmaku_update() {
             // ele['element'].lastChild.nodeValue = secondsToTime(danmaku[danmaku_pointer].timestamp);
             ele['generating'] = true;
             ele['idle'] = false;
+            ele['clear_request'] = false;
 
             accumulate[0] = 0;
             for (var z = 0; z < ele['element'].offsetHeight && z < player_canvas.offsetHeight; z++) {
@@ -432,7 +443,7 @@ $(document).ready(function() {
         var text = document.createTextNode('sdfsdfs');
         bul.appendChild(text);
         player_canvas.appendChild(bul);
-        danmkau_elements.push({'idle':true, 'generating':false, 'posX': 0, 'posY': 0, 'element':bul});
+        danmkau_elements.push({'idle':true, 'generating':false, 'posX': 0, 'posY': 0, 'clear_request':false, 'element':bul});
     }
     for (var i = 0; i < 10000; i++) {
         occupation[i] = 0;
@@ -592,31 +603,11 @@ function danmaku_content_upper_compare(x, y) {
 }
 
 function danmaku_date_lower_compare(x, y) {
-    if (parseInt(x.created.substr(0, 2)) < parseInt(y.created.substr(0, 2)) ) {
-        return true;
-    } else if (parseInt(x.created.substr(3, 2)) < parseInt(y.created.substr(3, 2)) ) {
-        return true;
-    } else if (parseInt(x.created.substr(6, 2)) < parseInt(y.created.substr(6, 2)) ) {
-        return true;
-    } else if (parseInt(x.created.substr(9, 2)) < parseInt(y.created.substr(9, 2)) ) {
-        return true;
-    } else {
-        return false;
-    }
+    return x.created_seconds < y.created_seconds;
 }
 
 function danmaku_date_upper_compare(x, y) {
-    if (parseInt(x.created.substr(0, 2)) > parseInt(y.created.substr(0, 2)) ) {
-        return true;
-    } else if (parseInt(x.created.substr(3, 2)) > parseInt(y.created.substr(3, 2)) ) {
-        return true;
-    } else if (parseInt(x.created.substr(6, 2)) > parseInt(y.created.substr(6, 2)) ) {
-        return true;
-    } else if (parseInt(x.created.substr(9, 2)) > parseInt(y.created.substr(9, 2)) ) {
-        return true;
-    } else {
-        return false;
-    }
+    return x.created_seconds > y.created_seconds;
 }
 
 function generate_danmaku_pool_list() {
