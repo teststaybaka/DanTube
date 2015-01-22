@@ -118,7 +118,7 @@ span.other-option {
   margin-right: 0;
 }
 
-#signup-success {
+#signup-success, #signup-fail, #signin-success, #signin-fail {
   display: none;
   color: rgb(55,205,2);
   margin: 5px 0;
@@ -126,7 +126,11 @@ span.other-option {
   font-size: 18px;
 }
 
-#signup-success.show {
+#signup-fail, #signin-fail {
+  color: rgb(192,62,62);
+}
+
+#signup-success.show, #signup-fail.show, #signin-success.show, #signin-fail.show {
   display: block;
 }
 

@@ -95,56 +95,6 @@ class Home(BaseHandler):
     def get(self):
         self.render('index')
 
-class Signin(BaseHandler):
-    def get(self):
-        if self.user_info:
-            self.redirect(self.uri_for('home'))
-        else:
-            self.render('signin')
-
-    def post(self):
-        # self.response.headers['Content-Type'] = 'application/json'
-        context = {}
-        email = self.request.get('email')
-        password = self.request.get('password')
-        remember = self.request.get('remember')
-        logging.info(self.request)
-        if not email:
-            # self.response.out.write(json.dumps({
-            #     'email_error': 'email must not be empty',
-            # }))
-            context['form_error'] = 'email must not be empty'
-            self.render('signin', context)
-            return
-        if not password:
-            # self.response.out.write(json.dumps({
-            #     'password_error': 'password must not be empty',
-            # }))
-            context['form_error'] = 'password must not be empty'
-            self.render('signin', context)
-            return
-        try:
-            if remember:
-                u = self.auth.get_user_by_password(email, password, remember=True)
-            else:
-                u = self.auth.get_user_by_password(email, password, remember=False)
-            self.session['message'] = 'login success'
-            # self.response.out.write(json.dumps({
-            #     'success': 'login success',
-            # }))
-            self.redirect(self.uri_for('home'))
-        except (auth.InvalidAuthIdError, auth.InvalidPasswordError) as e:
-            logging.info('Login failed for user %s because of %s', email, type(e))
-            self.session['message'] = 'login failed'
-            # self.response.out.write(json.dumps({
-            #     'error': 'invalid email or password',
-            # }))
-            context['form_error'] = 'invalid email or password'
-            context['email_value'] = email
-            if remember:
-                context['remember'] = 1
-            self.render('signin', context)
-
 class Logout(BaseHandler):
   def get(self):
     self.auth.unset_session()

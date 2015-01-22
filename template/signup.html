@@ -8,7 +8,8 @@
 {% block body %}
 <div id="signup-container">
     <div id="signup-header">Sign up</div>
-    <div id="signup-success">Signup successfully! An email has been sent to you to activate your account. Redirecting to home page in 5 seconds...</div>
+    <div id="signup-success">Signup successfully! An email has been sent to you to activate your account. Redirecting to home page in 3 seconds...</div>
+    <div id="signup-fail">Signup failed for some reason.</div>
     <form id="signupform" action="{{ uri_for('signup') }}" method="post">
         <label for="email" class="form-label">Email:</label>
         <div class="input-error-message" id="email-error">

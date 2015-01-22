@@ -1,16 +1,27 @@
 $(document).ready(function() {
     $('#signinform').submit(function() {
-        var username = $('#signinform input[name="username"]')[0].value.trim();
-        if(!username) {
-            $('#signinform div.form-error').html('<p>username must not be empty!</p>')
-            return false;
-        }
-
-        var password = $('#signinform input[name="password"]')[0].value.trim();
-        if(!password) {
-            $('#signinform div.form-error').html('<p>password must not be empty!</p>')
-            return false;
-        }
-        return true;
+        $.ajax({
+            type: "POST",
+            url: "/signin",
+            data: $('#signinform').serialize(),
+            success: function(result) {
+                console.log(result);
+                if(result === 'success') {
+                    $('#signin-success').addClass('show');
+                    $('#signin-fail').removeClass('show');
+                    setTimeout(function(){
+                        window.location.replace('/'); 
+                    }, 3000);
+                } else {
+                    $('#signin-success').removeClass('show');
+                    $('#signin-fail').addClass('show');
+                }
+            },
+            error: function (xhr, ajaxOptions, thrownError) {
+                console.log(xhr.status);
+                console.log(thrownError);
+            }
+        });
+        return false;
     });
 });

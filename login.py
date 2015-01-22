@@ -44,6 +44,9 @@ class Signup(BaseHandler):
         if len(nickname) > 30:
             # logging.info('nickname 3')
             return -1
+        res = models.User.query(models.User.nickname==self.request.get('nickname')).get()
+        if res is not None:
+            return -1
 
         if not password:
             # logging.info('password 1')
@@ -73,7 +76,7 @@ class Signup(BaseHandler):
             self.response.out.write('error 1')
             return
 
-        unique_properties = ['email', 'nickname']
+        unique_properties = ['email']
         user_data = self.user_model.create_user(res['email'],
             unique_properties,
             nickname=res['nickname'], email=res['email'], password_raw=res['password'], verified=False)
@@ -90,3 +93,35 @@ class Signup(BaseHandler):
         # self.session['message'] = 'Sign up successfully!'
         # self.redirect(self.uri_for('home'))
         self.response.out.write('success')
+
+class Signin(BaseHandler):
+    def get(self):
+        if self.user_info:
+            self.redirect(self.uri_for('home'))
+        else:
+            self.render('signin')
+
+    def post(self):
+        self.response.headers['Content-Type'] = 'text/plain'
+        email = self.request.get('email')
+        password = self.request.get('password')
+        remember = self.request.get('remember')
+        # logging.info(self.request)
+
+        if not email:
+            self.response.out.write('error')
+            return
+        if not password:
+            self.response.out.write('error')
+            return
+        try:
+            if remember:
+                u = self.auth.get_user_by_password(email, password, remember=True)
+            else:
+                u = self.auth.get_user_by_password(email, password, remember=False)
+            self.response.out.write('success')
+            return
+        except (auth.InvalidAuthIdError, auth.InvalidPasswordError) as e:
+            logging.info('Login failed for user %s because of %s', email, type(e))
+            self.response.out.write('error')
+            return

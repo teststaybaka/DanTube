@@ -157,11 +157,13 @@ $(document).ready(function() {
                 console.log(result);
                 if(result === 'success') {
                     $('#signup-success').addClass('show');
+                    $('#signup-fail').removeClass('show');
                     setTimeout(function(){
                         window.location.replace('/'); 
-                    }, 5000);
+                    }, 3000);
                 } else {
-                    //do nothing for now
+                    $('#signup-success').removeClass('show');
+                    $('#signup-fail').addClass('show');
                 }
             },
             error: function (xhr, ajaxOptions, thrownError) {

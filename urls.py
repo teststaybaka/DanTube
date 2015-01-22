@@ -17,7 +17,7 @@ config = {
 
 routes = [
     webapp2.Route(r'/', views.Home, name="home"),
-    webapp2.Route(r'/signin', views.Signin, name="signin"),
+    webapp2.Route(r'/signin', login.Signin, name="signin"),
     webapp2.Route(r'/signup', login.Signup, name="signup"),
     webapp2.Route(r'/email_check', login.EmailCheck, name="email_check"),
     webapp2.Route(r'/nickname_check', login.NicknameCheck, name="nickname_check"),
