@@ -8,34 +8,22 @@
 {% block body %}
 <div id="signup-container">
     <div id="signup-header">Sign up</div>
-    <div id="signup-success">Sign up successful. You will be directed to the home page.</div>
+    <div id="signup-success">Signup successfully! An email has been sent to you to activate your account. Redirecting to home page in 5 seconds...</div>
     <form id="signupform" action="{{ uri_for('signup') }}" method="post">
         <label for="email" class="form-label">Email:</label>
-        <div class="input-error-message" id="email-invalid">
+        <div class="input-error-message" id="email-error">
             <span>Email address invalid.</span>
-            <div class="error-message-arrow"></div>
-        </div>
-        <div class="input-error-message" id="email-used">
-            <span>Email address has been used.</span>
             <div class="error-message-arrow"></div>
         </div>
         <input type="text" class="inputtext" id="email" name="email" tabindex="1" placeholder="Enter your email"></input>
         <label for="nickname" class="form-label">Nickname:</label>
-        <div class="input-error-message" id="nickname-used">
+        <div class="input-error-message" id="nickname-error">
             <span>Someone has used this name.</span>
-            <div class="error-message-arrow"></div>
-        </div>
-        <div class="input-error-message" id="nickname-required">
-            <span>Your nickname is the name that will be seen by others.</span>
-            <div class="error-message-arrow"></div>
-        </div>
-        <div class="input-error-message" id="nickname-invalid">
-            <span>Nickname can't contain any space.</span>
             <div class="error-message-arrow"></div>
         </div>
         <input type="text" class="inputtext" id="nickname" name="nickname" tabindex="2" placeholder="Your nickname can be changed later"></input>
         <label for="password" class="form-label">Password:</label>
-        <div class="input-error-message" id="password-invalid">
+        <div class="input-error-message" id="password-error">
             <span>Please enter a password.</span>
             <div class="error-message-arrow"></div>
         </div>

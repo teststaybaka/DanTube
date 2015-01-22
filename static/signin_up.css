@@ -122,9 +122,11 @@ span.other-option {
   display: none;
   color: rgb(55,205,2);
   margin: 5px 0;
+  width: 398px;
+  font-size: 18px;
 }
 
-#signup-success.success {
+#signup-success.show {
   display: block;
 }
 
@@ -157,4 +159,5 @@ div.error-message-arrow {
   border-left: 10px solid rgb(192,62,62);
   position: relative;
   top: 8px;
+  right: 1px;
 }

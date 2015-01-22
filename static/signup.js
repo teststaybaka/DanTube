@@ -2,14 +2,16 @@ $(document).ready(function() {
     $('#signupform input[name="nickname"]').focusout(function(evt) {
         var nickname = evt.target.value;
         if (!nickname) {
-            $('#nickname-invalid').removeClass('show');
-            $('#nickname-required').addClass('show');
-            $('#nickname-used').removeClass('show');
+            $('#nickname-error').addClass('show');
+            $('#nickname-error span').text('Your nickname is the name that will be seen by others.');
             $(evt.target).addClass('error');
         } else if (nickname.indexOf(' ') != -1) {
-            $('#nickname-invalid').addClass('show');
-            $('#nickname-required').removeClass('show');
-            $('#nickname-used').removeClass('show');
+            $('#nickname-error').addClass('show');
+            $('#nickname-error span').text('Nickname can\'t contain any space.');
+            $(evt.target).addClass('error');
+        } else if (nickname.length > 30) {
+            $('#nickname-error').addClass('show');
+            $('#nickname-error span').text('Nickname can\'t exceed 30 letters long.');
             $(evt.target).addClass('error');
         } else {
             $.ajax({
@@ -19,14 +21,11 @@ $(document).ready(function() {
                 success: function(result) {
                     console.log(result);
                     if (result === 'valid') {
-                        $('#nickname-invalid').removeClass('show');
-                        $('#nickname-used').removeClass('show');
-                        $('#nickname-required').removeClass('show');
+                        $('#nickname-error').removeClass('show');
                         $(evt.target).removeClass('error');
                     } else {
-                        $('#nickname-invalid').removeClass('show');
-                        $('#nickname-required').removeClass('show');
-                        $('#nickname-used').addClass('show');
+                        $('#nickname-error').addClass('show');
+                        $('#nickname-error span').text('Someone has used this name.');
                         $(evt.target).addClass('error');
                     }
                 },
@@ -41,10 +40,23 @@ $(document).ready(function() {
     $('#signupform input[name="password"]').focusout(function(evt) {
         var password = evt.target.value;
         if (!password) {
-            $('#password-invalid').addClass('show');
+            $('#password-error').addClass('show');
+            $('#password-error span').text('Please enter a password.');
+            $(evt.target).addClass('error');
+        } else if (!password.trim()) {
+            $('#password-error').addClass('show');
+            $('#password-error span').text('Password must be something other than all spaces.');
+            $(evt.target).addClass('error');
+        } else if (password.length < 6) {
+            $('#password-error').addClass('show');
+            $('#password-error span').text('Password must contain at least 6 letters.');
+            $(evt.target).addClass('error');
+        } else if (password.length > 40) {
+            $('#password-error').addClass('show');
+            $('#password-error span').text('Password can\'t exceed 40 letters.');
             $(evt.target).addClass('error');
         } else {
-            $('#password-invalid').removeClass('show');
+            $('#password-error').removeClass('show');
             $(evt.target).removeClass('error');
         }
     })
@@ -53,8 +65,8 @@ $(document).ready(function() {
         var email = evt.target.value.trim();
         var email_re = /^[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/;
         if (!email || !email_re.test(email)) {
-            $('#email-invalid').addClass('show');
-            $('#email-used').removeClass('show');
+            $('#email-error').addClass('show');
+            $('#email-error span').text('Email address invalid.');
             $(evt.target).addClass('error');
         } else {
             $.ajax({
@@ -64,12 +76,11 @@ $(document).ready(function() {
                 success: function(result) {
                     console.log(result);
                     if (result === 'valid') {
-                        $('#email-used').removeClass('show');
-                        $('#email-invalid').removeClass('show');
+                        $('#email-error').removeClass('show');
                         $(evt.target).removeClass('error');
                     } else {
-                        $('#email-invalid').removeClass('show');
-                        $('#email-used').addClass('show');
+                        $('#email-error').addClass('show');
+                        $('#email-error span').text('Email addres has been used.');
                         $(evt.target).addClass('error');
                     }
                 },
@@ -81,44 +92,60 @@ $(document).ready(function() {
         }
     })
 
-    $('#signupform').submit(function() {
-        var email = $('#signupform input[name="email"]')[0].value.trim();
-        if(!email) {
-            $('#signupform div.form-error').html('<p>email must not be empty!</p>')
-            return false;
-        }
+    $('#signupform').submit(function(evt) {
+        var error = false;
 
-        var username = $('#signupform input[name="username"]')[0].value.trim();
-        if(!username) {
-            $('#signupform div.form-error').html('<p>username must not be empty!</p>')
-            return false;
-        }
-        if(username.length < 8) {
-            $('#signupform div.form-error').html('<p>username must have at least 8 characters!</p>')
-            return false;
-        }
-        if(username.length > 20) {
-            $('#signupform div.form-error').html('<p>username can not exceed 20 characters!</p>')
-            return false;
-        }
-        var username_re = /^[a-z|A-Z|0-9|\-|_]*$/;
-        if(!username_re.test(username)) {
-            $('#signupform div.form-error').html('<p>username can only contain a-z, A-Z, 0-9, underline and dash!</p>')
-            return false;
+        var email = $('#signupform input[name="email"]')[0].value.trim();
+        var email_re = /^[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/;
+        if (!email || !email_re.test(email)) {
+            $('#email-error').addClass('show');
+            $('#email-error span').text('Email address invalid.');
+            $('#signupform input[name="email"]').addClass('error');
+            error = true;
         }
 
         var password = $('#signupform input[name="password"]')[0].value;
-        if(!password.trim()) {
-            $('#signupform div.form-error').html('<p>password must not be empty!</p>')
-            return false;
+        if (!password) {
+            $('#password-error').addClass('show');
+            $('#password-error span').text('Please enter a password.');
+            $('#signupform input[name="password"]').addClass('error');
+            error = true;
+        } else if (!password.trim()) {
+            $('#password-error').addClass('show');
+            $('#password-error span').text('Password must be something other than all spaces.');
+            $('#signupform input[name="password"]').addClass('error');
+            error = true;
+        } else if (password.length < 6){
+            $('#password-error').addClass('show');
+            $('#password-error span').text('Password must contain at least 6 letters.');
+            $('#signupform input[name="password"]').addClass('error');
+            error = true;
+        }  else if (password.length > 40) {
+            $('#password-error').addClass('show');
+            $('#password-error span').text('Password can\'t exceed 40 letters.');
+            $('#signupform input[name="password"]').addClass('error');
+            error = true;
         }
-        if(password.length < 8) {
-            $('#signupform div.form-error').html('<p>password must have at least 8 characters!</p>')
-            return false;
+
+        var nickname = $('#signupform input[name="nickname"]')[0].value;
+        if (!nickname) {
+            $('#nickname-error').addClass('show');
+            $('#nickname-error span').text('Your nickname is the name that will be seen by others.');
+            $('#signupform input[name="nickname"]').addClass('error');
+            error = true;
+        } else if (nickname.indexOf(' ') != -1) {
+            $('#nickname-error').addClass('show');
+            $('#nickname-error span').text('Nickname can\'t contain any space.');
+            $('#signupform input[name="nickname"]').addClass('error');
+            error = true;
+        } else if (nickname.length > 30) {
+            $('#nickname-error').addClass('show');
+            $('#nickname-error span').text('Nickname can\'t exceed 30 letters long.');
+            $('#signupform input[name="nickname"]').addClass('error');
+            error = true;
         }
-        var password_confirm = $('#signupform input[name="password-confirm"]')[0].value;
-        if(password != password_confirm) {
-            $('#signupform div.form-error').html('<p>password confirmation does not match!</p>')
+
+        if (error) {
             return false;
         }
 
@@ -128,13 +155,13 @@ $(document).ready(function() {
             data: $('#signupform').serialize(),
             success: function(result) {
                 console.log(result);
-                if(result.error) {
-                    $('#signupform div.form-error').html('<p>' + result.error + '</p>');
-                } else {
-                    $('#signupform div.form-error').html('<p>Signup successfully! An email has been sent to you to activate your account. Redirecting to home page in 5 seconds...</p>');
+                if(result === 'success') {
+                    $('#signup-success').addClass('show');
                     setTimeout(function(){
                         window.location.replace('/'); 
                     }, 5000);
+                } else {
+                    //do nothing for now
                 }
             },
             error: function (xhr, ajaxOptions, thrownError) {
