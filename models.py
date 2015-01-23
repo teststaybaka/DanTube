@@ -6,6 +6,8 @@ from google.appengine.ext import blobstore
 import urllib2
 import urlparse
 import time
+import re
+import logging
 
 # class User(db.Model):
 #     id = db.StringProperty(required=True)
@@ -23,6 +25,53 @@ class User(webapp2_extras.appengine.auth.models.User):
 
   def set_password(self, raw_password):
     self.password = security.generate_password_hash(raw_password, length=12)
+
+  @classmethod
+  def validate_nickname(cls, nickname):
+    nickname = nickname.strip();
+    if not nickname:
+      logging.info('nickname 1')
+      return None
+    if re.match(r".*[@.,?!;:/\\\"'].*", nickname):
+      logging.info('nickname 2')
+      return None
+    if len(nickname) > 30:
+      logging.info('nickname 3')
+      return None
+    res = cls.query(cls.nickname==nickname).get()
+    if res is not None:
+      logging.info('nickname 4')
+      return None
+    return nickname
+
+  @classmethod
+  def validate_password(cls, password):
+    if not password:
+      logging.info('password 1')
+      return None
+    if not password.strip():
+      logging.info('password 2')
+      return None
+    if len(password) < 6:
+      logging.info('password 3')
+      return None
+    if len(password) > 40:
+      logging.info('password 4')
+      return None
+
+    return password
+
+  @classmethod
+  def validate_email(cls, email):
+    email = email.strip()
+    if not email:
+      logging.info('email 1')
+      return None
+    if re.match(r"^[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$", email) is None:
+      logging.info('email 2')
+      return None
+
+    return email
 
   @classmethod
   def create_pwdreset_token(cls, user_id):

@@ -2,6 +2,16 @@
 {% block head %}
 {{ super() }}
 <script src="/static/basics_setting.js" language="JavaScript" type="text/javascript"></script>
+<link href="/static/signin_up.css" rel="stylesheet" type="text/css">
+<style>
+  .inputtextarea {
+    width: 350px;
+    height: 200px;
+    resize: none;
+    border: 1px solid rgb(200,200,200);
+    border-radius: 5px;
+  }
+</style>
 {% endblock %}
 
 {% block content %}
@@ -17,7 +27,7 @@
   </div>
   <div>
     <label for="intro" class="form-label" id="intro-label">Introduction</label>
-    <textarea class="inputtextarea" id="intro" name="intro" tabindex="1">{{ intro }}</textarea>
+    <textarea class="inputtextarea" id="intro" name="intro" tabindex="2">{{ intro }}</textarea>
   </div>
   <input class="basics-submit-button" type="submit" value="Update" />
 </form>

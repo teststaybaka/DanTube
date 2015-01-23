@@ -265,23 +265,6 @@ class ForgotPasswordReset(BaseHandler):
 
         return user
 
-    def validateForm(self):
-        new_password = self.request.get('new-password')
-        confirm_password = self.request.get('confirm-password')
-
-        if not new_password:
-            return {'error': 'New password must not be empty.'}
-        if not new_password.strip():
-            return {'error': 'new password must not be empty.'}
-        if len(new_password) < 6:
-            return {'error': 'New password must contain at least 6 letters.'}
-        if len(new_password) > 40:
-            return {'error': 'New password cannot exceed 40 letters.'}
-        if confirm_password != new_password:
-            return {'error': 'Your passwords do not match. Please try again.'}
-
-        return {'new_password': new_password}
-
     def get(self, *args, **kwargs):
         user_id = int(kwargs['user_id'])
         pwdreset_token = kwargs['pwdreset_token']
@@ -295,36 +278,22 @@ class ForgotPasswordReset(BaseHandler):
         pwdreset_token = kwargs['pwdreset_token']
         user = self.validateToken(user_id, pwdreset_token)
         if user:
-            res = self.validateForm()
-            if res.get('error'):
-                self.render('forgot_password_reset', {'hint': res['error']})
+            new_password = self.user_model.validate_password(self.request.get('new-password'))
+            if not new_password:
+                self.render('forgot_password_reset', {'hint': 'Invalid new password.'})
                 return
 
-            user.set_password(res['new_password'])
+            confirm_password = self.request.get('confirm-password')
+            if confirm_password != new_password:
+                self.render('forgot_password_reset', {'hint': 'Your passwords do not match. Please try again.'})
+                return
+
+            user.set_password(new_password)
             user.put()
             self.user_model.delete_pwdreset_token(user.get_id(), pwdreset_token)
             self.notify('Your password has been reset, please remember it this time and login again.')
 
 class PasswordReset(BaseHandler):
-    def validateForm(self):
-        old_password = self.request.get('old-password')
-        new_password = self.request.get('new-password')
-        confirm_password = self.request.get('confirm-password')
-
-        if not old_password:
-            return {'error': 'Please enter your old password.'}
-        if not new_password:
-            return {'error': 'New password must not be empty.'}
-        if not new_password.strip():
-            return {'error': 'new password must not be empty.'}
-        if len(new_password) < 6:
-            return {'error': 'New password must contain at least 6 letters.'}
-        if len(new_password) > 40:
-            return {'error': 'New password cannot exceed 40 letters.'}
-        if confirm_password != new_password:
-            return {'error': 'Your passwords do not match. Please try again.'}
-
-        return {'old_password': old_password, 'new_password': new_password}
 
     @login_required
     def get(self):
@@ -332,15 +301,25 @@ class PasswordReset(BaseHandler):
 
     @login_required
     def post(self):
-        res = self.validateForm()
-        if res.get('error'):
-            self.render('password_reset', {'hint': res['error']})
+        old_password = self.request.get('old-password')
+        if not old_password:
+            self.render('password_reset', {'hint': 'Please enter your old password.'})
+            return
+
+        new_password = self.user_model.validate_password(self.request.get('new-password'))
+        if not new_password:
+            self.render('password_reset', {'hint': 'Invalid new password.'})
+            return
+
+        confirm_password = self.request.get('confirm-password')
+        if confirm_password != new_password:
+            self.render('password_reset', {'hint': 'Your passwords do not match. Please try again.'})
             return
 
         user = self.user
         try:
-            self.user_model.get_by_auth_password(user.email, res['old_password'])
-            user.set_password(res['new_password'])
+            self.user_model.get_by_auth_password(user.email, old_password)
+            user.set_password(new_password)
             user.put()
         except (auth.InvalidAuthIdError, auth.InvalidPasswordError) as e:
             self.render('password_reset', {'hint': 'Please enter the correct password.'})
@@ -556,10 +535,30 @@ class BasicsSetting(BaseHandler):
     def get(self):
         self.render('basics_setting')
 
-    # @login_required
-    # def post(self):
-    #     self.request.get('nickname')
-    #     self.request.get('intro')
+    @login_required
+    def post(self):
+        self.response.headers['Content-Type'] = 'application/json'
+        user = self.user
+        nickname = self.request.get('nickname')
+        intro = self.request.get('intro')
+        if nickname != self.user.nickname:
+            nickname = self.user_model.validate_nickname(nickname)
+            if not nickname:
+                self.response.out.write(json.dumps({'error': True, 'message': 'Invalid nickname.'}))
+                return 
+
+        try:
+            user.nickname = nickname
+            user.intro = intro
+            user.put()
+        except Exception, e:
+            logging.info(e)
+            logging.info(type(e))
+            self.response.out.write(json.dumps({'error': True, 'message': e}))
+            return 
+
+        self.response.out.write(json.dumps({'message': 'success', 'nickname': nickname, 'intro': intro}))
+
 
 class AvatarSetting(BaseHandler):
     @login_required
