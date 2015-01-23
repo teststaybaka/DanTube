@@ -8,8 +8,6 @@
 {% block body %}
 <div id="signin-container">
     <div id="signin-header">Sign in</div>
-    <div id="signin-success">Signin successfully! Redirecting to home page in 3 seconds...</div>
-    <div id="signin-fail">Signin failed! <br> Email and password doesn't match.</div>
     <form id="signinform" action="{{ uri_for('signin') }}" method="post">
         <label for="email" class="form-label">Email:</label>
         <input type="text" class="inputtext" id="email" name="email" tabindex="1" value="{{ email_value }}" placeholder="Enter your email"></input>
@@ -19,7 +17,7 @@
         </div>
         <input type="password" class="inputpassword" id="password" name="password" tabindex="2" placeholder="Enter your password"></input>
         <label for="remember" class="check-label">
-            <input type="checkbox" class="checkbox" id="remember" name="remember" value="1" tabindex="3" {% if remember %} checked="0" {% endif %}>
+            <input type="checkbox" class="checkbox" id="remember" name="remember" value="1" tabindex="3" checked>
             <span>Remember me</span>
         </label>
         <input class="signin_up-button" type="submit" value="Sign in" />

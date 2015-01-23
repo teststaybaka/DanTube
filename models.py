@@ -23,9 +23,14 @@ class User(webapp2_extras.appengine.auth.models.User):
   def set_password(self, raw_password):
     self.password = security.generate_password_hash(raw_password, length=12)
 
+class Notification(ndb.Model):
+  receiver = ndb.KeyProperty(kind='User', required=True)
+  content = ndb.TextProperty(required=True, indexed=False)
+  title = ndb.StringProperty(required=True, indexed=False)
+
 class Message(ndb.Model):
-  sender = ndb.StringProperty(required=True)
-  receiver = ndb.StringProperty(required=True)
+  sender = ndb.KeyProperty(kind='User', required=True)
+  receiver = ndb.KeyProperty(kind='User', required=True)
   content = ndb.TextProperty(required=True, indexed=False)
   title = ndb.StringProperty(required=True, indexed=False)
 

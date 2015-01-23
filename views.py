@@ -95,12 +95,6 @@ class Home(BaseHandler):
     def get(self):
         self.render('index')
 
-class Logout(BaseHandler):
-  def get(self):
-    self.auth.unset_session()
-    self.session['message'] = 'Logout successfully'
-    self.redirect(self.uri_for('home'))
-
 def login_required(handler):
   """
     Decorator that checks if there's a user associated with the current session.

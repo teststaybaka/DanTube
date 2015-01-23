@@ -21,7 +21,7 @@ routes = [
     webapp2.Route(r'/signup', login.Signup, name="signup"),
     webapp2.Route(r'/email_check', login.EmailCheck, name="email_check"),
     webapp2.Route(r'/nickname_check', login.NicknameCheck, name="nickname_check"),
-    webapp2.Route(r'/logout', views.Logout, name="logout"),
+    webapp2.Route(r'/logout', login.Logout, name="logout"),
 
     # webapp2.Route(r'/settings/profile', views.ProfileSetting, name="profile_setting"),
     webapp2.Route(r'/settings/avatar', views.AvatarSetting, name="avatar_setting"),

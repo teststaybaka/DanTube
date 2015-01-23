@@ -6,7 +6,7 @@ body {
 }
 
 #user-bar-background {
-    padding-top: 10px;
+	padding-top: 10px;
     padding-bottom: 10px;
     min-width: 1024px;
     background-color: rgb(255,255,255);
@@ -58,22 +58,178 @@ div.left {
 }
 
 div.navi {
-	padding-top: 5px;
-	margin-left: 20px;
+	margin-top: 10px;
+	padding: 6px 10px;
+	margin-left: 5px;
 	cursor: pointer;
 	display: inline-block;
+}
+
+div.link:hover {
+	color: rgb(0,140,255);
+}
+
+#signin-nav-button {
+	font-weight: bold;
+}
+
+#feeling-lucky {
+	margin-top: 0;
+	font-size: 15px;
+}
+
+#feeling-lucky:hover {
+	text-shadow:0 0 2px rgb(150,150,150);
+	color: rgb(0,0,0);
+}
+
+#portrait {
+	margin-left: 5px;
+	margin-top: 10px;
+}
+
+#portrait-img {
+	padding: 6px 10px;
+	cursor: pointer;
 }
 
 #user-box {
 	position: absolute;
 	display: none;
-	right: 0;
-	background-color: white;
+	right: 7px;
+	background-color: rgb(255,255,255);
+	border: 1px solid rgb(200,200,200);
 	z-index: 1;
+	width: 220px;
+	/*height: 125px;*/
+	top: 100%;
 }
 
-#portrait:hover #user-box {
+#user-box:before, #user-box:after {
+	bottom: 100%;
+	left: 85%;
+	border: solid transparent;
+	content: " ";
+	height: 0;
+	width: 0;
+	position: absolute;
+	pointer-events: none;
+}
+
+#user-box:after {
+	border-bottom-color: rgb(255, 255, 255);
+	border-width: 10px;
+	margin-left: -10px;
+}
+
+#user-box:before {
+	border-bottom-color: rgb(200, 200, 200);
+	border-width: 11px;
+	margin-left: -11px;
+}
+
+#user-box.show {
 	display: inline-block;
+}
+
+#user-box-nickname {
+	width: 100%;
+	border-bottom: 1px solid rgb(200,200,200);
+	padding: 10px 10px;
+	-webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
+	-moz-box-sizing: border-box;    /* Firefox, other Gecko */
+	box-sizing: border-box;
+	font-weight: bold;
+	font-size: 14px;
+}
+
+#user-message-container {
+	padding: 10px;
+	padding-bottom: 0;
+	border-bottom: 1px solid rgb(200,200,200);
+}
+
+#user-at, #user-notification, #user-message {
+	white-space: nowrap;
+	float: left;
+	color: rgb(134,134,134);
+	padding-left: 22px;
+	margin-right: 18px;
+	padding-bottom: 4px;
+	margin-bottom: 6px;
+	cursor: pointer;
+}
+
+#user-at {
+	background-image: url("/static/img/at_icon.png");
+	background-repeat: no-repeat;
+}
+
+#user-at:hover {
+	background-image: url("/static/img/at_icon-hover.png");
+	background-repeat: no-repeat;
+	color: rgb(0,140,255);
+}
+
+#user-notification {
+	background-image: url("/static/img/notification.png");
+	background-repeat: no-repeat;
+}
+
+#user-notification:hover {
+	background-image: url("/static/img/notification-hover.png");
+	background-repeat: no-repeat;
+	color: rgb(0,140,255);
+}
+
+#user-message {
+	background-image: url("/static/img/message.png");
+	background-repeat: no-repeat;
+}
+
+#user-message:hover {
+	background-image: url("/static/img/message-hover.png");
+	background-repeat: no-repeat;
+	color: rgb(0,140,255);
+}
+
+#user-box-bottom-line {
+	background-color: rgb(245,245,245);
+}
+
+#user-config {
+	margin: 6px 10px;
+	width: 24px;
+	height: 24px;
+	background-image: url("/static/img/config.png");
+	float: left;
+	background-repeat: no-repeat;
+	cursor: pointer;
+}
+
+/* Chrome, Safari, Opera */
+@-webkit-keyframes config_hover {
+    from {transform: rotate(0);}
+    to {transform: rotate(360deg);}
+}
+
+/* Standard syntax */
+@keyframes config_hover {
+    from {transform: rotate(0);}
+    to {transform: rotate(360deg);}
+}
+
+#user-config:hover {
+	-webkit-animation: config_hover 2s linear infinite; /* Chrome, Safari, Opera */
+    animation: config_hover 2s linear infinite;
+}
+
+#logout {
+	padding: 5px 7px;
+	margin: 5px 14px;
+	cursor: pointer;
+	float: right;
+	font-size: 14px;
 }
 
 div.category {
@@ -159,6 +315,7 @@ div.dragdown-menu {
 	background-color: rgb(255,255,255);
 	/*border: 1px solid rgb(200,200,200);*/
 	box-shadow: 0px 4px 4px rgb(200,200,200);
+	z-index: 1;
 }
 
 div.category:hover div.category-name{
