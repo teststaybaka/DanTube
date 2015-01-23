@@ -90,7 +90,6 @@ $(document).ready(function() {
     })
 
     $('#signupform').submit(function(evt) {
-        return true;
         // evt.preventDefault();
         $('#signup-header').addClass('loading');
         
