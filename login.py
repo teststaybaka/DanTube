@@ -1,4 +1,5 @@
 from views import *
+from google.appengine.api import mail
 
 class EmailCheck(BaseHandler):
     def post(self):
@@ -89,6 +90,26 @@ class Signup(BaseHandler):
 
         user = user_data[1]
         user_id = user.get_id()
+
+        token = self.user_model.create_signup_token(user_id)
+ 
+        verification_url = self.uri_for('verification', user_id=user_id,
+          signup_token=token, _full=True)
+
+        message = mail.EmailMessage(sender="tianfanw@gmail.com",
+                            subject="Verficaition Email from DanTube")
+
+        message.to = res['email']
+        message.body = """
+        Dear %s:
+
+        Your verification url is:
+        %s
+        """ % (res['nickname'], verification_url)
+        logging.info(message.body)
+        message.send()
+
+        self.auth.set_session(self.auth.store.user_to_dict(user), remember=True)
         # u = self.auth.get_user_by_password(res['email'], res['password'], remember=True)
         # self.session['message'] = 'Sign up successfully!'
         # self.redirect(self.uri_for('home'))

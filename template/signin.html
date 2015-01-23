@@ -15,7 +15,7 @@
         <input type="text" class="inputtext" id="email" name="email" tabindex="1" value="{{ email_value }}" placeholder="Enter your email"></input>
         <div class="password-label-row">
             <label for="password" class="form-label" id="password-label">Password:</label>
-            <a class="signin_up-link" id="forgot-password" href="#">Forgot password?</a>
+            <a class="signin_up-link" id="forgot-password" href="{{ uri_for('forgot_password') }}">Forgot password?</a>
         </div>
         <input type="password" class="inputpassword" id="password" name="password" tabindex="2" placeholder="Enter your password"></input>
         <label for="remember" class="check-label">
