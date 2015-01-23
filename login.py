@@ -39,12 +39,15 @@ class Signup(BaseHandler):
         if not nickname:
             # logging.info('nickname 1')
             return -1
+        if re.match(r".*[@.,?!;:/\\\"'].*", nickname):
+            # logging.info('nickname 2')
+            return -1
         if len(nickname) > 30:
             # logging.info('nickname 3')
             return -1
         res = models.User.query(models.User.nickname==self.request.get('nickname')).get()
         if res is not None:
-            # logging.info('nickname 3')
+            # logging.info('nickname 4')
             return -1
 
         if not password:
