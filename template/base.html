@@ -12,35 +12,34 @@
     </head>
     <body>
     {% block navigation %}
-    <div> 
-        {% if message %}
-            <p>Message: {{ message }}</p>
-        {% endif %}
-        {% if is_auth %}
-            <p>Nickname: {{ nickname }}</p>
-            <a href="{{ uri_for('logout') }}">Logout</a>
-        {% else %}
-            <a href="{{ uri_for('signin') }}">Signin</a>
-            <a href="{{ uri_for('signup') }}">Signup</a>
-        {% endif %}
-    </div>
     <div id="user-bar-background">
         <div id="user-bar" class="container">
             <div id="logo" class="left" onclick="location.href='/'">DanTube</div>
-            <div class="navi left">I'm feeling lucky!</div>
-            <div id="portrait" class="navi right">Portrait
+            <div class="navi left link" id="feeling-lucky">I'm feeling lucky!</div>
+            {% if is_auth %}
+            <div id="portrait" class="right">
+                <div id="portrait-img">Portrait</div>
                 <div id="user-box">
-                    <div id="user-name">XXX</div>
-                    <div id="user-at">@Me</div>
-                    <div id="user-notification">My Notifications</div>
-                    <div id="user-message">My Messages</div>
-                    <div id="logout">Logout</div>
+                    <div id="user-box-nickname">{{ nickname }}</div>
+                    <div id="user-message-container" class="container">
+                        <div id="user-at">@Me</div>
+                        <div id="user-notification">Notifications</div>
+                        <div id="user-message">Messages</div>
+                    </div>
+                    <div id="user-box-bottom-line" class="container">
+                        <div id="user-config"></div>
+                        <div id="logout" class="link" onclick="location.href='{{ uri_for('logout') }}'">Sign out</div>
+                    </div>
                 </div>
             </div>
-            <div id="favorites" class="navi right">Favorites</div>
-            <div id="history" class="navi right">History</div>
-            <div id="subscription" class="navi right">Subscriptions</div>
-            <div id="submit" class="navi right" onclick="location.href='/submit'">Submit</div>
+            <div class="navi right link">Favorites</div>
+            <div class="navi right link">History</div>
+            <div class="navi right link">Subscriptions</div>
+            <div class="navi right link" onclick="location.href='{{ uri_for('submit') }}'">Submit</div>
+            {% else %}
+            <div id="signup-nav-button" class="navi right link" onclick="location.href='{{ uri_for('signup') }}'">Sign up</div>
+            <div id="signin-nav-button" class="navi right link" onclick="location.href='{{ uri_for('signin') }}'">Sign in</div>
+            {% endif %}
         </div>
     </div>
     <div id="navigation-bar-background">

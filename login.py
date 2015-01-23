@@ -26,7 +26,7 @@ class Signup(BaseHandler):
         email = self.request.get('email')
         nickname = self.request.get('nickname')
         password = self.request.get('password')
-        # logging.info(password)
+        # logging.info(email)
 
         email = email.strip()
         if not email:
@@ -36,10 +36,11 @@ class Signup(BaseHandler):
             # logging.info('email 2')
             return -1
 
+        nickname = nickname.strip();
         if not nickname:
             # logging.info('nickname 1')
             return -1
-        if ' ' in nickname:
+        if re.match(r".*[@.,?!;:/\\\"'].*", nickname):
             # logging.info('nickname 2')
             return -1
         if len(nickname) > 30:
@@ -47,6 +48,7 @@ class Signup(BaseHandler):
             return -1
         res = models.User.query(models.User.nickname==self.request.get('nickname')).get()
         if res is not None:
+            # logging.info('nickname 4')
             return -1
 
         if not password:
@@ -146,3 +148,9 @@ class Signin(BaseHandler):
             logging.info('Login failed for user %s because of %s', email, type(e))
             self.response.out.write('error')
             return
+
+class Logout(BaseHandler):
+  def get(self):
+    self.auth.unset_session()
+    self.session['message'] = 'Logout successfully'
+    self.redirect(self.uri_for('home'))

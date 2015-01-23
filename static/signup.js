@@ -1,17 +1,14 @@
 $(document).ready(function() {
     $('#signupform input[name="nickname"]').focusout(function(evt) {
-        var nickname = evt.target.value;
-        if (!nickname) {
+        var nickname = evt.target.value.trim();
+        var puncts = /[@.,?!;:/\\"']/;
+        if (!nickname || puncts.test(nickname)) {
             $('#nickname-error').addClass('show');
-            $('#nickname-error span').text('Your nickname is the name that will be seen by others.');
-            $(evt.target).addClass('error');
-        } else if (nickname.indexOf(' ') != -1) {
-            $('#nickname-error').addClass('show');
-            $('#nickname-error span').text('Nickname can\'t contain any space.');
+            $('#nickname-error span').text('Your nickname can\'t contain: @ . , ? ! ; : / \\ \" \'');
             $(evt.target).addClass('error');
         } else if (nickname.length > 30) {
             $('#nickname-error').addClass('show');
-            $('#nickname-error span').text('Nickname can\'t exceed 30 letters long.');
+            $('#nickname-error span').text('Nickname can\'t exceed 30 characters long.');
             $(evt.target).addClass('error');
         } else {
             $.ajax({
@@ -45,15 +42,15 @@ $(document).ready(function() {
             $(evt.target).addClass('error');
         } else if (!password.trim()) {
             $('#password-error').addClass('show');
-            $('#password-error span').text('Password must be something other than all spaces.');
+            $('#password-error span').text('Password can\'t be all spaces.');
             $(evt.target).addClass('error');
         } else if (password.length < 6) {
             $('#password-error').addClass('show');
-            $('#password-error span').text('Password must contain at least 6 letters.');
+            $('#password-error span').text('Password must contain at least 6 characters.');
             $(evt.target).addClass('error');
         } else if (password.length > 40) {
             $('#password-error').addClass('show');
-            $('#password-error span').text('Password can\'t exceed 40 letters.');
+            $('#password-error span').text('Password can\'t exceed 40 characters.');
             $(evt.target).addClass('error');
         } else {
             $('#password-error').removeClass('show');
@@ -93,8 +90,13 @@ $(document).ready(function() {
     })
 
     $('#signupform').submit(function(evt) {
-        var error = false;
+        // evt.preventDefault();
+        $('#signup-header').addClass('loading');
+        
+        var button = document.querySelector('#signupform input[type="submit"]');
+        button.disabled = true;
 
+        var error = false;
         var email = $('#signupform input[name="email"]')[0].value.trim();
         var email_re = /^[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/;
         if (!email || !email_re.test(email)) {
@@ -112,40 +114,38 @@ $(document).ready(function() {
             error = true;
         } else if (!password.trim()) {
             $('#password-error').addClass('show');
-            $('#password-error span').text('Password must be something other than all spaces.');
+            $('#password-error span').text('Password can\'t be all spaces.');
             $('#signupform input[name="password"]').addClass('error');
             error = true;
         } else if (password.length < 6){
             $('#password-error').addClass('show');
-            $('#password-error span').text('Password must contain at least 6 letters.');
+            $('#password-error span').text('Password must contain at least 6 characters.');
             $('#signupform input[name="password"]').addClass('error');
             error = true;
         }  else if (password.length > 40) {
             $('#password-error').addClass('show');
-            $('#password-error span').text('Password can\'t exceed 40 letters.');
+            $('#password-error span').text('Password can\'t exceed 40 characters.');
             $('#signupform input[name="password"]').addClass('error');
             error = true;
         }
 
-        var nickname = $('#signupform input[name="nickname"]')[0].value;
-        if (!nickname) {
+        var nickname = $('#signupform input[name="nickname"]')[0].value.trim();
+        var puncts = /[@.,?!;:/\\"']/;
+        if (!nickname || puncts.test(nickname)) {
             $('#nickname-error').addClass('show');
-            $('#nickname-error span').text('Your nickname is the name that will be seen by others.');
-            $('#signupform input[name="nickname"]').addClass('error');
-            error = true;
-        } else if (nickname.indexOf(' ') != -1) {
-            $('#nickname-error').addClass('show');
-            $('#nickname-error span').text('Nickname can\'t contain any space.');
+            $('#nickname-error span').text('Your nickname can\'t contain: @ . , ? ! ; : / \\ \" \'');
             $('#signupform input[name="nickname"]').addClass('error');
             error = true;
         } else if (nickname.length > 30) {
             $('#nickname-error').addClass('show');
-            $('#nickname-error span').text('Nickname can\'t exceed 30 letters long.');
+            $('#nickname-error span').text('Nickname can\'t exceed 30 characters long.');
             $('#signupform input[name="nickname"]').addClass('error');
             error = true;
         }
 
         if (error) {
+            button.disabled = false;
+            $('#signup-header').removeClass('loading');
             return false;
         }
 
@@ -156,19 +156,22 @@ $(document).ready(function() {
             success: function(result) {
                 console.log(result);
                 if(result === 'success') {
-                    $('#signup-success').addClass('show');
-                    $('#signup-fail').removeClass('show');
+                    $('#signup-message').remove();
+                    $('#signup-header').after('<div id="signup-message" class="success">Sign up successfully! An email has been sent to you to activate your account. Redirecting to home page in 3 seconds...</div>');
                     setTimeout(function(){
                         window.location.replace('/'); 
                     }, 3000);
                 } else {
-                    $('#signup-success').removeClass('show');
-                    $('#signup-fail').addClass('show');
+                    $('#signup-message').remove();
+                    $('#signup-header').after('<div id="signup-message" class="fail">Sign up failed for some reason.</div>');
+                    button.disabled = false;
                 }
+                $('#signup-header').removeClass('loading');
             },
             error: function (xhr, ajaxOptions, thrownError) {
                 console.log(xhr.status);
                 console.log(thrownError);
+                button.disabled = false;
             }
         });
         return false;
