@@ -1,9 +1,9 @@
-{% extends "template/base.html" %}
+{% extends "template/settings.html" %}
 {% block head %}
 {{ super() }}
 {% endblock %}
 
-{% block body %}
+{% block content %}
 <h2>Send verification email</h2>
 {% if verified %}
   <p>Your account has already been verified.</p>

@@ -17,7 +17,7 @@ import time
 #     messages = db.ListProperty(db.Key)
 class User(webapp2_extras.appengine.auth.models.User):
   nickname = ndb.StringProperty(required=True)
-  intro = ndb.StringProperty()
+  intro = ndb.StringProperty(default="")
   avatar = ndb.BlobKeyProperty()
   favorites = ndb.KeyProperty(kind='Video', repeated=True)
 

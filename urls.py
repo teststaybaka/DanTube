@@ -28,7 +28,8 @@ routes = [
     webapp2.Route('/verify', views.SendVerification, name='send_verification'),
     webapp2.Route('/verify/<user_id:\d+>-<signup_token:.+>', views.Verification, name='verification'),
 
-    # webapp2.Route(r'/settings/profile', views.ProfileSetting, name="profile_setting"),
+    webapp2.Route(r'/settings', views.BasicsSetting, name="settings"),
+    webapp2.Route(r'/settings/basics', views.BasicsSetting, name="basics_setting"),
     webapp2.Route(r'/settings/avatar', views.AvatarSetting, name="avatar_setting"),
     webapp2.Route(r'/settings/avatar/upload', views.AvatarUpload, name="avatar_upload"),
     webapp2.Route(r'/submit', views.Submit, name="submit"),

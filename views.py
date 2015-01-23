@@ -75,11 +75,15 @@ class BaseHandler(webapp2.RequestHandler):
             self.session_store.save_sessions(self.response)
 
     def render(self, tempname, context = {}):
-        user = self.user_info
+        user = self.user
         if user is not None:
             context['is_auth'] = True
-            context['nickname'] = user.get('nickname')
-            context['email'] = user.get('email')
+            context['nickname'] = user.nickname
+            context['email'] = user.email
+            context['intro'] = user.intro
+            if user.avatar:
+                avatar_url = images.get_serving_url(user.avatar)
+                context['avatar_url'] = avatar_url
         else:
             context['is_auth'] = False
         message = self.session.get('message')
@@ -283,7 +287,7 @@ class ForgotPasswordReset(BaseHandler):
         pwdreset_token = kwargs['pwdreset_token']
         user = self.validateToken(user_id, pwdreset_token)
         if user:
-            self.render('reset_password', {'has_token': True})
+            self.render('forgot_password_reset')
 
 
     def post(self, *args, **kwargs):
@@ -293,7 +297,7 @@ class ForgotPasswordReset(BaseHandler):
         if user:
             res = self.validateForm()
             if res.get('error'):
-                self.render('reset_password', {'has_token': True, 'hint': res['error']})
+                self.render('forgot_password_reset', {'hint': res['error']})
                 return
 
             user.set_password(res['new_password'])
@@ -324,13 +328,13 @@ class PasswordReset(BaseHandler):
 
     @login_required
     def get(self):
-        self.render('reset_password')
+        self.render('password_reset')
 
     @login_required
     def post(self):
         res = self.validateForm()
         if res.get('error'):
-            self.render('reset_password', {'hint': res['error']})
+            self.render('password_reset', {'hint': res['error']})
             return
 
         user = self.user
@@ -339,14 +343,14 @@ class PasswordReset(BaseHandler):
             user.set_password(res['new_password'])
             user.put()
         except (auth.InvalidAuthIdError, auth.InvalidPasswordError) as e:
-            self.render('reset_password', {'hint': 'Please enter the correct password.'})
+            self.render('password_reset', {'hint': 'Please enter the correct password.'})
             return
         except Exception, e:
             logging.info(e)
             logging.info(type(e))
-            self.render('reset_password', {'hint': 'unknown error'})
+            self.render('password_reset', {'hint': 'unknown error'})
 
-        self.render('reset_password', {'hint': 'Password reset successfully.'})
+        self.render('password_reset', {'hint': 'Password reset successfully.'})
 
 class Video(BaseHandler):
     def get(self):
@@ -547,15 +551,20 @@ class Subcategory(BaseHandler):
         context['subcategory_name'] = subcategory
         self.render('subcategory', context)
 
+class BasicsSetting(BaseHandler):
+    @login_required
+    def get(self):
+        self.render('basics_setting')
+
+    # @login_required
+    # def post(self):
+    #     self.request.get('nickname')
+    #     self.request.get('intro')
+
 class AvatarSetting(BaseHandler):
     @login_required
     def get(self):
-        user = self.user
-        context = {}
-        if user.avatar:
-            avatar_url = images.get_serving_url(user.avatar)
-            context['avatar_url'] = avatar_url
-        self.render('avatar_setting', context)
+        self.render('avatar_setting')
 
 class AvatarUpload(BaseHandler, blobstore_handlers.BlobstoreUploadHandler):
     @login_required
