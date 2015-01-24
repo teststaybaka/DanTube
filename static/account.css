@@ -431,6 +431,6 @@ input.save_change-button:active {
 
 #save-change-message.show {
     display: inline-block;
-    -webkit-animation: left_to_right_show .25s; /* Chrome, Safari, Opera */
-    animation: left_to_right_show .25s;
+    -webkit-animation: left_to_right_show .5s; /* Chrome, Safari, Opera */
+    animation: left_to_right_show .5s;
 }

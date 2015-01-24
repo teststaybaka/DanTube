@@ -3,14 +3,15 @@ $(document).ready(function() {
     $.ajax({
         type: "GET",
         url: "/video",
-        success: function(result) {
-            if(!result.error) {
-                for(var i = 0; i < result.length; i++) {
-                    console.log(result[i])
+        success: function(results) {
+            if(!results.error) {
+                for(var i = 0; i < results.length; i++) {
+                    console.log(results[i])
                     $('#video-list').append('<div class="video-item">' + 
-                        '<a href="' + result[i].url + '"><div><img src="http://img.youtube.com/vi/' + result[i].vid + '/default.jpg"></a></div>' + 
-                        '<div>Uploader: ' +  result[i].uploader.nickname + '</div>' + 
-                        '<div>Created at: ' + result[i].created + '</div></div>');
+                        '<a href="' + results[i].url + '"><div><img src="http://img.youtube.com/vi/' + results[i].vid + '/default.jpg"></a></div>' + 
+                        '<div>Uploader: ' +  results[i].uploader.nickname + '</div>' + 
+                        '<div>Created at: ' + results[i].created + '</div>' + 
+                        '<div>Hits: ' + results[i].hits + ' Damakus: ' + results[i].danmaku_counter + ' </div></div>');
                 }
             }
         },

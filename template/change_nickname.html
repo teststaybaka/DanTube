@@ -1,7 +1,7 @@
-{% extends "template/settings.html" %}
+{% extends "template/account.html" %}
 {% block head %}
 {{ super() }}
-<script src="/static/basics_setting.js" language="JavaScript" type="text/javascript"></script>
+<script src="/static/change_nickname.js" language="JavaScript" type="text/javascript"></script>
 <link href="/static/signin_up.css" rel="stylesheet" type="text/css">
 <style>
   .inputtextarea {
@@ -14,9 +14,9 @@
 </style>
 {% endblock %}
 
-{% block content %}
-<h2>Basics Setting</h2>
-<form id="basicsform" action="" method="post">
+{% block detail %}
+<h2>Change Nickname</h2>
+<form id="nicknameform" action="" method="post">
   <div>
     <label for="nickname" class="form-label" id="nickname-label">Nickname</label>
     <input type="text" class="inputtext" id="nickname" name="nickname" value="{{ nickname }}" tabindex="1"></input>
@@ -24,10 +24,6 @@
   <div class="input-error-message" id="nickname-error">
     <span>Someone has used this name.</span>
     <div class="error-message-arrow"></div>
-  </div>
-  <div>
-    <label for="intro" class="form-label" id="intro-label">Introduction</label>
-    <textarea class="inputtextarea" id="intro" name="intro" tabindex="2">{{ intro }}</textarea>
   </div>
   <input class="basics-submit-button" type="submit" value="Update" />
 </form>

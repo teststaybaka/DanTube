@@ -124,7 +124,7 @@ $(document).ready(function() {
         console.log(dataURL);
         $.ajax({
             type: "GET",
-            url: "/settings/avatar/upload",
+            url: "/account/avatar/upload",
             success: function(result) {
                 if(!result.error) {
                     console.log(result);

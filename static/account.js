@@ -45,9 +45,11 @@ function confirm_password_check(confirm_pw) {
         $('#confirm-password-error').addClass('show');
         $('#confirm-password-error').text('Password doesn\'t match.');
         $("#confirm-password").addClass('error');
+        return false;
     } else {
         $('#confirm-password-error').removeClass('show');
         $("#confirm-password").removeClass('error');
+        return true;
     }
 }
 
@@ -56,7 +58,7 @@ $(document).ready(function() {
     if (urls[urls.length-1] === "account") {
         $("#sub-overview").addClass("active");
         $("#account-top-title").text("Overview");
-    } else if (urls[urls.length-1] === "change_password") {
+    } else if (urls[urls.length-1] === "password") {
         $("#sub-change-password").addClass("active");
         $("#account-top-title").text("Change Password");
     } else if (urls[urls.length-1] === "change_password") {
@@ -100,20 +102,28 @@ $(document).ready(function() {
         if (!confirm_password_check(confirm_pw)) {
             error = true;
         }
-        if (error) return false;
+        if (error) {
+            button.disabled = false;
+            return false;
+        }
+
 
         $.ajax({
             type: "POST",
-            url: "/password",
-            data: [{name: 'cur_password', value: cur_pw}, {name: 'new_password', value: new_password}],
+            url: "/account/password",
+            data: [{name: 'cur_password', value: cur_pw}, {name: 'new_password', value: new_pw}],
             success: function(result) {
                 console.log(result);
                 if(result === 'success') {
                     $('#save-change-message').remove();
-                    $('input.save_change-button').after('<div id="save-change-message success show">Change applied!</div>');
+                    $('input.save_change-button').after('<div id="save-change-message" class="success show">Change applied successfully!</div>');
+                    
+                    $("#cur-password").val('');
+                    $("#new-password").val('');
+                    $("#confirm-password").val('');
                 } else {
                     $('#save-change-message').remove();
-                    $('input.save_change-button').after('<div id="save-change-message fail show">Change failed due to incorrect password!</div>');
+                    $('input.save_change-button').after('<div id="save-change-message" class="fail show">Change failed due to incorrect password!</div>');
                 }
                 button.disabled = false;
             },

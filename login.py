@@ -43,7 +43,7 @@ class Signup(BaseHandler):
         if re.match(r".*[@.,?!;:/\\\"'].*", nickname):
             # logging.info('nickname 2')
             return -1
-        if len(nickname) > 25:
+        if len(nickname) > 30:
             # logging.info('nickname 3')
             return -1
         res = models.User.query(models.User.nickname==self.request.get('nickname')).get()
