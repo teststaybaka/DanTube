@@ -1,4 +1,4 @@
-{% extends "template/base.html" %}
+{% extends "template/settings.html" %}
 {% block head %}
 {{ super() }}
 <script src="/static/jquery.Jcrop.min.js" language="JavaScript" type="text/javascript"></script>
@@ -7,7 +7,7 @@
 <link rel="stylesheet" href="/static/avatar_setting.css" type="text/css" />
 {% endblock %}
 
-{% block body %}
+{% block content %}
 <div id="avatar-container">
   <h2>Upload Avatar</h2>
   <div id="avatar-edit">
@@ -23,11 +23,19 @@
   <div id="avatar-preview-container">
     <h3>Avatar Preview</h3>
     <div id="avatar-preview-medium-container" class="avatar-preview" style="width:100px; height:100px;">
-      <img id="avatar-preview-medium" src="{{ avatar_url }}" width="100" height="100">
+      {% if avatar_url %}
+        <img id="avatar-preview-medium" src="{{ avatar_url }}" width="100" height="100">
+      {% else %}
+        <img id="avatar-preview-medium" src="/static/img/default_avatar.jpg" width="100" height="100">
+      {% endif %}
     </div>
     <div class="avatar-preview-text">Preview 100*100</div>
     <div id="avatar-preview-small-container" class="avatar-preview" style="width:50px; height:50px;">
-      <img id="avatar-preview-small" src="{{ avatar_url }}" width="50" height="50">
+      {% if avatar_url %}
+        <img id="avatar-preview-small" src="{{ avatar_url }}" width="50" height="50">
+      {% else %}
+        <img id="avatar-preview-small" src="/static/img/default_avatar.jpg" width="50" height="50">
+      {% endif %}
     </div>
     <div class="avatar-preview-text">Preview 50*50</div>
   </div>

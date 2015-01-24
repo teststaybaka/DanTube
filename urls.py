@@ -24,7 +24,14 @@ routes = [
     webapp2.Route(r'/logout', login.Logout, name="logout"),
     webapp2.Route(r'/account', account.Account, name="account"),
 
-    # webapp2.Route(r'/settings/profile', views.ProfileSetting, name="profile_setting"),
+    webapp2.Route(r'/password/reset/<user_id:\d+>-<pwdreset_token:.+>', views.ForgotPasswordReset, name="forgot_password_reset"),
+    webapp2.Route(r'/password/reset', views.PasswordReset, name="password_reset"),
+    webapp2.Route(r'/password/forgot', views.ForgotPassword, name="forgot_password"),
+    webapp2.Route(r'/verify', views.SendVerification, name='send_verification'),
+    webapp2.Route(r'/verify/<user_id:\d+>-<signup_token:.+>', views.Verification, name='verification'),
+
+    webapp2.Route(r'/settings', views.BasicsSetting, name="settings"),
+    webapp2.Route(r'/settings/basics', views.BasicsSetting, name="basics_setting"),
     webapp2.Route(r'/settings/avatar', views.AvatarSetting, name="avatar_setting"),
     webapp2.Route(r'/settings/avatar/upload', views.AvatarUpload, name="avatar_upload"),
     webapp2.Route(r'/submit', views.Submit, name="submit"),

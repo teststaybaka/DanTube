@@ -5,6 +5,9 @@ from webapp2_extras import security
 from google.appengine.ext import blobstore
 import urllib2
 import urlparse
+import time
+import re
+import logging
 
 # class User(db.Model):
 #     id = db.StringProperty(required=True)
@@ -16,17 +19,101 @@ import urlparse
 #     messages = db.ListProperty(db.Key)
 class User(webapp2_extras.appengine.auth.models.User):
   nickname = ndb.StringProperty(required=True)
-  intro = ndb.StringProperty()
+  intro = ndb.StringProperty(default="")
   avatar = ndb.BlobKeyProperty()
   favorites = ndb.KeyProperty(kind='Video', repeated=True)
 
   def set_password(self, raw_password):
     self.password = security.generate_password_hash(raw_password, length=12)
 
+  @classmethod
+  def validate_nickname(cls, nickname):
+    nickname = nickname.strip();
+    if not nickname:
+      logging.info('nickname 1')
+      return None
+    if re.match(r".*[@.,?!;:/\\\"'].*", nickname):
+      logging.info('nickname 2')
+      return None
+    if len(nickname) > 30:
+      logging.info('nickname 3')
+      return None
+    res = cls.query(cls.nickname==nickname).get()
+    if res is not None:
+      logging.info('nickname 4')
+      return None
+    return nickname
+
+  @classmethod
+  def validate_password(cls, password):
+    if not password:
+      logging.info('password 1')
+      return None
+    if not password.strip():
+      logging.info('password 2')
+      return None
+    if len(password) < 6:
+      logging.info('password 3')
+      return None
+    if len(password) > 40:
+      logging.info('password 4')
+      return None
+
+    return password
+
+  @classmethod
+  def validate_email(cls, email):
+    email = email.strip()
+    if not email:
+      logging.info('email 1')
+      return None
+    if re.match(r"^[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$", email) is None:
+      logging.info('email 2')
+      return None
+
+    return email
+
+  @classmethod
+  def create_pwdreset_token(cls, user_id):
+    entity = cls.token_model.create(user_id, 'pwdreset')
+    return entity.token
+
+  @classmethod
+  def validate_pwdreset_token(cls, user_id, token):
+    return cls.validate_token(user_id, 'pwdreset', token)
+
+  @classmethod
+  def delete_pwdreset_token(cls, user_id, token):
+    cls.token_model.get_key(user_id, 'pwdreset', token).delete()
+
+  @classmethod
+  def get_by_auth_token(cls, user_id, token, subject='auth'):
+    """Returns a user object based on a user ID and token.
+ 
+    :param user_id:
+        The user_id of the requesting user.
+    :param token:
+        The token string to be verified.
+    :returns:
+        A tuple ``(User, timestamp)``, with a user object and
+        the token timestamp, or ``(None, None)`` if both were not found.
+    """
+    token_key = cls.token_model.get_key(user_id, subject, token)
+    user_key = ndb.Key(cls, user_id)
+    # Use get_multi() to save a RPC call.
+    valid_token, user = ndb.get_multi([token_key, user_key])
+    if valid_token and user:
+        timestamp = int(time.mktime(valid_token.created.timetuple()))
+        return user, timestamp
+ 
+    return None, None
+
+
 class Notification(ndb.Model):
   receiver = ndb.KeyProperty(kind='User', required=True)
   content = ndb.TextProperty(required=True, indexed=False)
   title = ndb.StringProperty(required=True, indexed=False)
+
 
 class Message(ndb.Model):
   sender = ndb.KeyProperty(kind='User', required=True)

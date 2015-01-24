@@ -1,0 +1,9 @@
+{% extends "template/base.html" %}
+{% block head %}
+{{ super() }}
+{% endblock %}
+
+{% block body %}
+<p>{{ notice }}</p>
+<p> Go to <a href="{{ uri_for('home') }}">Home</a></p>
+{% endblock %}
