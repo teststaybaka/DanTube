@@ -1,16 +1,14 @@
 $(document).ready(function() {
-    var old_nickname = $('#basicsform input[name="nickname"]').val();
-    var old_intro = $('#basicsform textarea[name="intro"]').val();
-
-    $('#basicsform').submit(function(e) {
+    var old_nickname = $('#nicknameform input[name="nickname"]').val();
+    
+    $('#nicknameform').submit(function(e) {
         e.preventDefault();
-        var nickname = $('#basicsform input[name="nickname"]').val();
-        var intro = $('#basicsform textarea[name="intro"]').val();
-        if( nickname != old_nickname || intro != old_intro) {
+        var nickname = $('#nicknameform input[name="nickname"]').val();
+        if( nickname != old_nickname) {
             $.ajax({
                 type: "POST",
-                url: "/settings/basics",
-                data: $('#basicsform').serialize(),
+                url: "/account/nickname",
+                data: $('#nicknameform').serialize(),
                 success: function(result) {
                     console.log(result);
                     if(result.error) {
@@ -30,7 +28,7 @@ $(document).ready(function() {
         return false;
     });
 
-    $('#basicsform input[name="nickname"]').focusout(function(evt) {
+    $('#nicknameform input[name="nickname"]').focusout(function(evt) {
         var nickname = evt.target.value.trim();
         var puncts = /[@.,?!;:/\\"']/;
         if (!nickname || puncts.test(nickname)) {
