@@ -5,7 +5,6 @@
     width: 240px;
     float: left;
     padding-bottom: 10px;
-    /*box-shadow: -2px 2px 6px rgb(164,215,255);*/
     box-shadow: -2px 2px 4px rgb(200,200,200);
 }
 
@@ -52,6 +51,7 @@ div.main-option {
     font-weight: bold;
     font-size: 17px;
     color: rgb(100,100,100);
+    cursor: pointer;
 }
 
 div.sub-option {
@@ -60,6 +60,11 @@ div.sub-option {
     padding: 3px;
     padding-left: 55px;
     color: rgb(100,100,100);
+    cursor: pointer;
+}
+
+div.sub-option:hover, div.main-option:hover {
+    color: rgb(0,140,255);
 }
 
 div.sub-option.active {
@@ -156,6 +161,11 @@ div.detail-entry {
     font-size: 18px;
     font-weight: bold;
     padding-top: 0;
+    -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
+    -moz-box-sizing: border-box;    /* Firefox, other Gecko */
+    box-sizing: border-box;
+    word-wrap: break-word;
+    max-width: 100%;
 }
 
 #account-change-password, #account-change-nickname {
@@ -190,10 +200,62 @@ div.detail-entry {
     background-repeat: no-repeat;
     cursor: pointer;
     display: inline-block;
+    word-wrap: break-word;
+    max-width: 100%;
+    -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
+    -moz-box-sizing: border-box;    /* Firefox, other Gecko */
+    box-sizing: border-box;
 }
 
 #mine-statistic span:hover {
     color: rgb(0,140,255);
+}
+
+#mine-statistic span div {
+    position: absolute;
+    display: none;
+    font-weight: normal;
+    font-size: 14px;
+    background-color: rgb(74,173,255);
+    color: white;
+    padding: 5px 8px;
+    margin-left: 9px;
+    border-radius: 3px;
+    margin-top: -3px;
+}
+
+#mine-statistic span div:after {
+    content: " ";
+    width: 0;
+    height: 0;
+    position: absolute;
+    top: 8px;
+    left: -4px;
+    border-right: 5px solid rgb(74,173,255);
+    border-top: 5px solid transparent;
+    border-bottom: 5px solid transparent;
+    display: block;
+}
+
+@-webkit-keyframes statistic_tip_show {
+    from {opacity: 0;
+          transform: translateX(-15px);}
+    to {opacity: 1;
+        transform: translateX(0);}
+}
+
+/* Standard syntax */
+@keyframes statistic_tip_show {
+    from {opacity: 0;
+          transform: translateX(-15px);}
+    to {opacity: 1;
+        transform: translateX(0);}
+}
+
+#mine-statistic span:hover div {
+    display: inline-block;
+    -webkit-animation: statistic_tip_show .25s; /* Chrome, Safari, Opera */
+    animation: statistic_tip_show .25s;
 }
 
 #personal-bullets {
@@ -217,13 +279,15 @@ div.statistic-entry {
     width: 375px;
     display: inline-block;
     float: left;
-    padding: 20px;
-    padding-left: 50px;
+    margin: 20px 0;
+    padding-left: 40px;
     padding-right: 0;
     -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
     -moz-box-sizing: border-box;    /* Firefox, other Gecko */
     box-sizing: border-box;
     color: rgb(100,100,100);
+    background-repeat: no-repeat;
+    background-position: 12px 3px;
 }
 
 div.statistic-entry span {
@@ -236,4 +300,24 @@ div.statistic-entry span {
 
 div.statistic-entry span {
     color: rgb(255,138,34);
+}
+
+#statistic-submission {
+    background-image: url("/static/img/statistic_upload.png");
+}
+
+#statistic-watched {
+    background-image: url("/static/img/statistic_watched.png");
+}
+
+#statistic-favored {
+    background-image: url("/static/img/statistic_favor.png");
+}
+
+#statistic-subscribed {
+    background-image: url("/static/img/statistic_subscribe.png");
+}
+
+#statistic-visited {
+    background-image: url("/static/img/statistic_foot.png");
 }

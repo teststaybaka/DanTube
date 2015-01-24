@@ -22,7 +22,7 @@
     {% block navigation %}
     <div id="user-bar-background">
         <div id="user-bar" class="container">
-            <div id="logo" class="left" onclick="location.href='/'">DanTube</div>
+            <div id="logo" class="left" onclick="location.href='{{ uri_for('home') }}'">DanTube</div>
             <div class="navi left link" id="feeling-lucky">I'm feeling lucky!</div>
             {% if is_auth %}
             <div id="portrait" class="right">

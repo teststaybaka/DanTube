@@ -23,6 +23,7 @@ routes = [
     webapp2.Route(r'/nickname_check', login.NicknameCheck, name="nickname_check"),
     webapp2.Route(r'/logout', login.Logout, name="logout"),
     webapp2.Route(r'/account', account.Account, name="account"),
+    webapp2.Route(r'/account/change_password', account.ChangePassword, name="change_password"),
 
     webapp2.Route(r'/password/reset/<user_id:\d+>-<pwdreset_token:.+>', views.ForgotPasswordReset, name="forgot_password_reset"),
     webapp2.Route(r'/password/reset', views.PasswordReset, name="password_reset"),
