@@ -42,7 +42,7 @@ class Signup(BaseHandler):
         if re.match(r".*[@.,?!;:/\\\"'].*", nickname):
             # logging.info('nickname 2')
             return -1
-        if len(nickname) > 30:
+        if len(nickname) > 25:
             # logging.info('nickname 3')
             return -1
         res = models.User.query(models.User.nickname==self.request.get('nickname')).get()
@@ -131,5 +131,5 @@ class Signin(BaseHandler):
 class Logout(BaseHandler):
   def get(self):
     self.auth.unset_session()
-    self.session['message'] = 'Logout successfully'
+    # self.session['message'] = 'Logout successfully'
     self.redirect(self.uri_for('home'))

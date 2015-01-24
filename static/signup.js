@@ -6,9 +6,9 @@ $(document).ready(function() {
             $('#nickname-error').addClass('show');
             $('#nickname-error span').text('Your nickname can\'t contain: @ . , ? ! ; : / \\ \" \'');
             $(evt.target).addClass('error');
-        } else if (nickname.length > 30) {
+        } else if (nickname.length > 25) {
             $('#nickname-error').addClass('show');
-            $('#nickname-error span').text('Nickname can\'t exceed 30 characters long.');
+            $('#nickname-error span').text('Nickname can\'t exceed 25 characters.');
             $(evt.target).addClass('error');
         } else {
             $.ajax({
@@ -136,9 +136,9 @@ $(document).ready(function() {
             $('#nickname-error span').text('Your nickname can\'t contain: @ . , ? ! ; : / \\ \" \'');
             $('#signupform input[name="nickname"]').addClass('error');
             error = true;
-        } else if (nickname.length > 30) {
+        } else if (nickname.length > 25) {
             $('#nickname-error').addClass('show');
-            $('#nickname-error span').text('Nickname can\'t exceed 30 characters long.');
+            $('#nickname-error span').text('Nickname can\'t exceed 25 characters.');
             $('#signupform input[name="nickname"]').addClass('error');
             error = true;
         }

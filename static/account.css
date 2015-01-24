@@ -1,0 +1,239 @@
+#account-left-bar {
+    border: 1px solid rgb(200,200,200);
+    display: inline-block;
+    margin-top: 85px;
+    width: 240px;
+    float: left;
+    padding-bottom: 10px;
+    /*box-shadow: -2px 2px 6px rgb(164,215,255);*/
+    box-shadow: -2px 2px 4px rgb(200,200,200);
+}
+
+#profile-img-space {
+    height: 70px;
+    width: 140px;
+    margin-left: auto;
+    margin-right: auto;
+    position: relative;
+}
+
+#profile-img {
+    width: 128px;
+    height: 128px;
+    position: absolute;
+    border-radius: 128px;
+    border: 6px solid white;
+    box-shadow: 0 0 1px rgb(100,100,100);
+    bottom: 0;
+    background-image: url("/static/emoticons_img/default_avatar6.png");
+}
+
+#profile-area {
+    border-bottom: 1px solid rgb(200,200,200);
+}
+
+#profile-nickname {
+    text-align: center;
+    padding: 10px 25px;
+    font-size: 18px;
+    color: rgb(50,50,50);
+    font-weight: bold;
+    word-wrap: break-word;
+}
+
+#profile-signature {
+    padding: 10px 25px;
+    color: rgb(100,100,100);
+    word-wrap: break-word;
+}
+
+div.main-option {
+    padding: 10px 25px;
+    font-weight: bold;
+    font-size: 17px;
+    color: rgb(100,100,100);
+}
+
+div.sub-option {
+    font-size: 15px;
+    font-weight: normal;
+    padding: 3px;
+    padding-left: 55px;
+    color: rgb(100,100,100);
+}
+
+div.sub-option.active {
+    color: white;
+    background-color: rgb(85,178,255);
+    font-weight: bold;
+}
+
+#account-right-section {
+    display: inline-block;
+    float: right;
+    margin-top: 85px;
+    width: 750px;
+    border: 1px solid rgb(200,200,200);
+    /*box-shadow: -2px 2px 6px rgb(255,185,164);*/
+    box-shadow: -2px 2px 4px rgb(200,200,200);
+}
+
+#account-top-title {
+    border-bottom: 1px solid rgb(200,200,200);
+    padding: 13px 25px;
+    font-size: 23px;
+    font-weight: bold;
+    color: rgb(100,100,100);
+}
+
+#account-profile-img {
+    float: left;
+    display: inline-block;
+    margin: 20px 25px;
+    text-align: center;
+}
+
+#account-profile-img-content {
+    background-image: url("/static/emoticons_img/default_avatar6.png");
+    width: 128px;
+    height: 128px;
+    box-shadow: 0 0 1px rgb(100,100,100);
+    border-radius: 128px;
+}
+
+#account-change-avatar {
+    margin-left: auto;
+    margin-right: auto;
+    color: rgb(0,140,255);
+    /*font-weight: bold;*/
+    cursor: pointer;
+    margin-top: 5px;
+    font-size: 15px;
+}
+
+#account-change-avatar:hover {
+    color: rgb(255,177,108);
+}
+
+#account-change-avatar:active {
+    color: rgb(0,50,200);
+}
+
+
+#account-detail {
+    display: inline-block;
+    float: left;
+    margin: 20px 0;
+    word-wrap: break-word;
+    width: 400px;
+}
+
+div.detail-entry {
+    padding: 2px 0;
+    color: rgb(100,100,100);
+}
+
+#account-email {
+    color: rgb(100,100,100);
+    font-size: 18px;
+    font-weight: bold;
+}
+
+#account-joint-time {
+    font-size: 14px;
+    content: rgb(150,150,150);
+    padding: 1px 0;
+}
+
+#account-space-divide {
+    padding: 0 5px;
+    color: rgb(200,200,200);
+}
+
+#account-nickname {
+    /*color: rgb(232,141,74);*/
+    color: rgb(100,100,100);
+    font-size: 18px;
+    font-weight: bold;
+    padding-top: 0;
+}
+
+#account-change-password, #account-change-nickname {
+    display: inline-block;
+    color: rgb(0,140,255);
+    font-weight: normal;
+    cursor: pointer;
+    font-size: 15px;
+    margin-left: 4px;
+}
+
+#account-change-password:hover, #account-change-nickname:hover {
+    color: rgb(255,177,108);
+}
+
+#account-change-password:active, #account-change-nickname:active {
+    color: rgb(0,50,200);
+}
+
+#mine-statistic {
+    float: right;
+    margin-top: 20px;
+    width: 100px;
+}
+
+#mine-statistic span {
+    padding-top: 3px;
+    padding-bottom: 3px;
+    padding-left: 25px;
+    font-weight: bold;
+    color: rgb(100,100,100);
+    background-repeat: no-repeat;
+    cursor: pointer;
+    display: inline-block;
+}
+
+#mine-statistic span:hover {
+    color: rgb(0,140,255);
+}
+
+#personal-bullets {
+    background-image: url("/static/img/personal_bullets.png");
+}
+
+#personal-favorites {
+    background-image: url("/static/img/personal_favorites.png");
+}
+
+#personal-subscriptions {
+    background-image: url("/static/img/personal_subscriptions.png");
+}
+
+#account-statistic {
+    border-top: 1px solid rgb(200,200,200);
+    padding-bottom: 20px;
+}
+
+div.statistic-entry {
+    width: 375px;
+    display: inline-block;
+    float: left;
+    padding: 20px;
+    padding-left: 50px;
+    padding-right: 0;
+    -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
+    -moz-box-sizing: border-box;    /* Firefox, other Gecko */
+    box-sizing: border-box;
+    color: rgb(100,100,100);
+}
+
+div.statistic-entry span {
+    font-size: 20px;
+    font-weight: bold;
+    display: inline;
+    font-style: italic;
+    font-family: "Comic Sans MS", cursive, sans-serif;
+}
+
+div.statistic-entry span {
+    color: rgb(255,138,34);
+}

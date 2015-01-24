@@ -101,8 +101,8 @@ div.link:hover {
 	border: 1px solid rgb(200,200,200);
 	z-index: 1;
 	width: 220px;
-	/*height: 125px;*/
 	top: 100%;
+	box-shadow: 0px 4px 4px rgb(200,200,200);
 }
 
 #user-box:before, #user-box:after {
@@ -132,15 +132,33 @@ div.link:hover {
 	display: inline-block;
 }
 
+@-webkit-keyframes user_box_hide {
+    from {opacity: 1;}
+    to {opacity: 0;}
+}
+
+/* Standard syntax */
+@keyframes user_box_hide {
+    from {opacity: 1;}
+    to {opacity: 0;}
+}
+
+#user-box.hide {
+	opacity: 0;
+	-webkit-animation: user_box_hide .25s; /* Chrome, Safari, Opera */
+    animation: user_box_hide .25s;
+}
+
 #user-box-nickname {
 	width: 100%;
 	border-bottom: 1px solid rgb(200,200,200);
-	padding: 10px 10px;
+	padding: 10px 14px;
 	-webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
 	-moz-box-sizing: border-box;    /* Firefox, other Gecko */
 	box-sizing: border-box;
 	font-weight: bold;
 	font-size: 14px;
+	word-wrap: break-word;
 }
 
 #user-message-container {
@@ -199,12 +217,23 @@ div.link:hover {
 
 #user-config {
 	margin: 6px 10px;
+	float: left;
+	cursor: pointer;
+	display: inline-table;
+}
+
+#user-config-icon {
+	background-image: url("/static/img/config.png");
+	background-repeat: no-repeat;
 	width: 24px;
 	height: 24px;
-	background-image: url("/static/img/config.png");
 	float: left;
-	background-repeat: no-repeat;
-	cursor: pointer;
+}
+
+#user-config-text {
+	padding: 3px 0;
+	float: left;
+	color: rgb(100,100,100);
 }
 
 /* Chrome, Safari, Opera */
@@ -219,17 +248,18 @@ div.link:hover {
     to {transform: rotate(360deg);}
 }
 
-#user-config:hover {
+#user-config:hover #user-config-icon {
 	-webkit-animation: config_hover 2s linear infinite; /* Chrome, Safari, Opera */
     animation: config_hover 2s linear infinite;
 }
 
 #logout {
-	padding: 5px 7px;
-	margin: 5px 14px;
+	padding: 5px 5px;
+	margin: 5px 16px;
 	cursor: pointer;
 	float: right;
 	font-size: 14px;
+	color: rgb(100,100,100);
 }
 
 div.category {

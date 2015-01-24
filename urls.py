@@ -1,6 +1,6 @@
 import webapp2
 
-import views, admin, login
+import views, admin, login, account
 import models
 
 secret_key = 'efrghtrrouhsmvnmxdiosjkgjfds68_=' \
@@ -22,6 +22,7 @@ routes = [
     webapp2.Route(r'/email_check', login.EmailCheck, name="email_check"),
     webapp2.Route(r'/nickname_check', login.NicknameCheck, name="nickname_check"),
     webapp2.Route(r'/logout', login.Logout, name="logout"),
+    webapp2.Route(r'/account', account.Account, name="account"),
 
     # webapp2.Route(r'/settings/profile', views.ProfileSetting, name="profile_setting"),
     webapp2.Route(r'/settings/avatar', views.AvatarSetting, name="avatar_setting"),

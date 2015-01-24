@@ -3,7 +3,6 @@
     <head>
     {% block head %}
         <title>Danmaku for Youtube!</title>
-        <script src="https://www.youtube.com/iframe_api" type="text/javascript"></script>
         <script src="/static/jquery.min.js" language="JavaScript" type="text/javascript" ></script>
         <script src="/static/utility.js" language="JavaScript" type="text/javascript"></script>
         <link href="/static/base.css" rel="stylesheet" type="text/css">
@@ -11,6 +10,15 @@
     {% endblock %}
     </head>
     <body>
+    <noscript>
+        <style type="text/css">
+            #user-bar-background, #navigation-bar-background, #body-background { display:none; }
+        </style>
+        <div class="noscriptmsg">
+            You don't have javascript enabled.  Good luck with that.
+        </div>
+    </noscript>
+    
     {% block navigation %}
     <div id="user-bar-background">
         <div id="user-bar" class="container">
@@ -18,7 +26,7 @@
             <div class="navi left link" id="feeling-lucky">I'm feeling lucky!</div>
             {% if is_auth %}
             <div id="portrait" class="right">
-                <div id="portrait-img">Portrait</div>
+                <div id="portrait-img" onclick="location.href='{{ uri_for('account') }}'">Portrait</div>
                 <div id="user-box">
                     <div id="user-box-nickname">{{ nickname }}</div>
                     <div id="user-message-container" class="container">
@@ -27,7 +35,10 @@
                         <div id="user-message">Messages</div>
                     </div>
                     <div id="user-box-bottom-line" class="container">
-                        <div id="user-config"></div>
+                        <div id="user-config" onclick="location.href='{{ uri_for('account') }}'" class="container">
+                            <span id="user-config-icon"></span>
+                            <span id="user-config-text">Settings</span>
+                        </div>
                         <div id="logout" class="link" onclick="location.href='{{ uri_for('logout') }}'">Sign out</div>
                     </div>
                 </div>
