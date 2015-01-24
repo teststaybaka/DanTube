@@ -283,7 +283,7 @@ div.statistic-entry {
     float: left;
     margin: 20px 0;
     padding-left: 40px;
-    padding-right: 0;
+    padding-right: 15px;
     -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
     -moz-box-sizing: border-box;    /* Firefox, other Gecko */
     box-sizing: border-box;
@@ -324,23 +324,23 @@ div.statistic-entry span {
     background-image: url("/static/img/statistic_foot.png");
 }
 
-#change-password-form {
+#change-password-form, #change-nickname-form {
     padding: 35px 25px;
     padding-bottom: 0;
 }
 
-#change-password-form div.input-line {
+form.change div.input-line {
     margin-bottom: 20px;
 }
 
-#change-password-form label {
+form.change label {
     color: rgb(100,100,100);
     font-weight: bold;
     width: 150px;
     display: inline-block;
 }
 
-#change-password-form input[type=password] {
+input[type=password], input[type=text] {
     padding: 5px;
     outline: none;
     font-size: 14px;
@@ -348,17 +348,17 @@ div.statistic-entry span {
     border: 1px solid rgb(200,200,200);
 }
 
-#change-password-form input[type=password].error {
+input[type=password].error, input[type=text].error {
   box-shadow: 0 0 2px rgb(232,0,0);
   border: 1px solid rgb(232,0,0);
 }
 
-#change-password-form input[type=password]:focus {
+input[type=password]:focus, input[type=text]:focus {
   box-shadow: 0 0 2px rgb(81,203,238);
   border: 1px solid rgb(81,203,238);
 }
 
-#change-password-form div.pw-error {
+form.change div.input-error {
     position: absolute;
     display: none;
     margin-left: 15px;
@@ -368,7 +368,7 @@ div.statistic-entry span {
     border-radius: 3px;
 }
 
-#change-password-form div.pw-error:after {
+form.change div.input-error:after {
     content: "";
     width: 0;
     height: 0;
@@ -381,7 +381,7 @@ div.statistic-entry span {
     display: block;
 }
 
-#change-password-form div.pw-error.show {
+form.change div.input-error.show {
     display: inline-block;
     -webkit-animation: left_to_right_show .25s; /* Chrome, Safari, Opera */
     animation: left_to_right_show .25s;
@@ -412,6 +412,13 @@ input.save_change-button:hover {
 input.save_change-button:active {
   background-color: rgb(81,203,238);
   color: rgb(255,255,255);
+}
+
+input.save_change-button:disabled {
+  color: rgb(200,200,200);
+  box-shadow: 0 0 0;
+  background-color: rgb(250,250,250);
+  border: 1px solid rgb(200,200,200);
 }
 
 #save-change-message {
