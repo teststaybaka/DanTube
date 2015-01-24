@@ -181,19 +181,15 @@ class ChangePassword(BaseHandler):
 
     @login_required
     def post(self):
-        old_password = self.request.get('old-password')
+        self.response.headers['Content-Type'] = 'text/plain'
+        old_password = self.request.get('cur_password')
         if not old_password:
-            self.render('change_password', {'hint': 'Please enter your old password.'})
+            self.response.out.write('error. Please enter your old password.')
             return
 
-        new_password = self.user_model.validate_password(self.request.get('new-password'))
+        new_password = self.user_model.validate_password(self.request.get('new_password'))
         if not new_password:
-            self.render('change_password', {'hint': 'Invalid new password.'})
-            return
-
-        confirm_password = self.request.get('confirm-password')
-        if confirm_password != new_password:
-            self.render('change_password', {'hint': 'Your passwords do not match. Please try again.'})
+            self.response.out.write('error. Invalid new password.')
             return
 
         user = self.user
@@ -202,14 +198,15 @@ class ChangePassword(BaseHandler):
             user.set_password(new_password)
             user.put()
         except (auth.InvalidAuthIdError, auth.InvalidPasswordError) as e:
-            self.render('change_password', {'hint': 'Please enter the correct password.'})
+            self.response.out.write('error. Please enter the correct password.')
             return
         except Exception, e:
             logging.info(e)
             logging.info(type(e))
-            self.render('change_password', {'hint': 'unknown error'})
+            self.response.out.write('error. unknown error.')
+            return
 
-        self.render('change_password', {'hint': 'Password reset successfully.'})
+        self.response.out.write('success')
 
 class ChangeNickname(BaseHandler):
     @login_required
