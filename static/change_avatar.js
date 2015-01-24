@@ -100,6 +100,9 @@ $(document).ready(function() {
                 alert(result.message);
                 if(!result.error) {
                     // success
+                    console.log(result.avatar_url);
+                    $('#profile-img')[0].src = result.avatar_url;
+                    $('#portrait-img img')[0].src = result.avatar_url;
                 }
             },
             error: function (xhr, ajaxOptions, thrownError) {

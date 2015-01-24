@@ -15,6 +15,8 @@ $(document).ready(function() {
                         alert(result.message);
                     } else {
                         alert('success');
+                        document.getElementById('profile-nickname').innerHTML = result.nickname;
+                        document.getElementById('user-box-nickname').innerHTML = result.nickname;
                         old_nickname = result.nickname;
                     }
                 },

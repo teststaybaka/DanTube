@@ -17,8 +17,6 @@ from google.appengine.api import mail
 
 import models
 import json
-import urllib2
-import urlparse
 import re
 
 class SilentUndefined(Undefined):
@@ -76,16 +74,21 @@ class BaseHandler(webapp2.RequestHandler):
 
     def render(self, tempname, context = {}):
         user = self.user
+        context['user'] = {}
         if user is not None:
-            context['is_auth'] = True
-            context['nickname'] = user.nickname
-            context['email'] = user.email
-            context['intro'] = user.intro
+            context['user']['is_auth'] = True
+            context['user']['nickname'] = user.nickname
+            context['user']['email'] = user.email
+            context['user']['intro'] = user.intro
+            context['user']['created'] = user.created.strftime("%Y-%m-%d %H:%M")
             if user.avatar:
                 avatar_url = images.get_serving_url(user.avatar)
-                context['avatar_url'] = avatar_url
+            else:
+                avatar_url = user.get_default_avatar_url()
+
+            context['user']['avatar_url'] = avatar_url
         else:
-            context['is_auth'] = False
+            context['user']['is_auth'] = False
         message = self.session.get('message')
         if message is not None:
             context['message'] = message

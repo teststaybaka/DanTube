@@ -287,10 +287,12 @@ class AvatarUpload(BaseHandler, blobstore_handlers.BlobstoreUploadHandler):
 
         user = self.user
         if user.avatar != None:
+            images.delete_serving_url(user.avatar)
             models.blobstore.BlobInfo(user.avatar).delete()
         user.avatar = uploaded_image.key()
         user.put()
         self.response.headers['Content-Type'] = 'application/json'
         self.response.out.write(json.dumps({
             'message': 'Upload succeeded.',
+            'avatar_url': images.get_serving_url(user.avatar)
         }))

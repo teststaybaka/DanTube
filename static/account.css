@@ -24,7 +24,7 @@
     border: 6px solid white;
     box-shadow: 0 0 1px rgb(100,100,100);
     bottom: 0;
-    background-image: url("/static/emoticons_img/default_avatar6.png");
+    cursor: pointer;
 }
 
 #profile-area {
@@ -99,7 +99,6 @@ div.sub-option.active {
 }
 
 #account-profile-img-content {
-    background-image: url("/static/emoticons_img/default_avatar6.png");
     width: 128px;
     height: 128px;
     box-shadow: 0 0 1px rgb(100,100,100);
