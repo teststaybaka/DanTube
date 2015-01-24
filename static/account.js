@@ -85,6 +85,8 @@ $(document).ready(function() {
     });
 
     $('#change-password-form').submit(function(evt) {
+        $('#save-change-message').remove();
+
         var button = document.querySelector('input.save_change-button');
         button.disabled = true;
 
@@ -115,14 +117,12 @@ $(document).ready(function() {
             success: function(result) {
                 console.log(result);
                 if(result === 'success') {
-                    $('#save-change-message').remove();
                     $('input.save_change-button').after('<div id="save-change-message" class="success show">Change applied successfully!</div>');
                     
                     $("#cur-password").val('');
                     $("#new-password").val('');
                     $("#confirm-password").val('');
                 } else {
-                    $('#save-change-message').remove();
                     $('input.save_change-button').after('<div id="save-change-message" class="fail show">Change failed due to incorrect password!</div>');
                 }
                 button.disabled = false;
@@ -136,7 +136,7 @@ $(document).ready(function() {
         return false;
     });
 
-    var cur_nickname = $('#nickname-change')[0].value;
+    var cur_nickname = $('#nickname-change').val();
     $('#nickname-change').focusout(function(evt) {
         var nickname = evt.target.value.trim();
         var puncts = /[@.,?!;:/\\"']/;
@@ -176,6 +176,8 @@ $(document).ready(function() {
     });
 
     $('#change-nickname-form').submit(function(evt) {
+        $('#save-change-message').remove();
+
         var button = document.querySelector('input.save_change-button');
         button.disabled = true;
 
@@ -197,7 +199,6 @@ $(document).ready(function() {
             $('#change-nickname-error').removeClass('show');
             $('#nickname-change').removeClass('error');
 
-            $('#save-change-message').remove();
             $('input.save_change-button').after('<div id="save-change-message" class="success show">Already applied!</div>');
             error = true;
         }
@@ -215,10 +216,8 @@ $(document).ready(function() {
                 console.log(result);
                 if(result === 'success') {
                     cur_nickname = nickname;
-                    $('#save-change-message').remove();
                     $('input.save_change-button').after('<div id="save-change-message" class="success show">Change applied successfully! Refresh to see the effect.</div>');
                 } else {
-                    $('#save-change-message').remove();
                     $('input.save_change-button').after('<div id="save-change-message" class="fail show">Change failed!</div>');
                 }
                 button.disabled = false;
