@@ -1,4 +1,4 @@
-{% extends "template/base.html" %}
+{% extends "template/account.html" %}
 {% block head %}
 {{ super() }}
 <script src="/static/submit.js" language="JavaScript" type="text/javascript"></script>
@@ -10,7 +10,7 @@ var video_subcategories = {};
 </script>
 {% endblock %}
 
-{% block body %}
+{% block detail %}
 <div id="submit-container">
   <div id="submit-header">
       <h2>Submit Video</h2>

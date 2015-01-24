@@ -17,14 +17,19 @@ import logging
 #     email = db.EmailProperty(required=True)
 #     profile_url = db.StringProperty(required=True)
 #     messages = db.ListProperty(db.Key)
+
 class User(webapp2_extras.appengine.auth.models.User):
   nickname = ndb.StringProperty(required=True)
   intro = ndb.StringProperty(default="")
   avatar = ndb.BlobKeyProperty()
+  default_avatar = ndb.IntegerProperty(default=1, choices=[1,2,3,4,5,6])
   favorites = ndb.KeyProperty(kind='Video', repeated=True)
 
   def set_password(self, raw_password):
     self.password = security.generate_password_hash(raw_password, length=12)
+
+  def get_default_avatar_url(self):
+    return '/static/emoticons_img/default_avatar' + str(self.default_avatar) + '.png'
 
   @classmethod
   def validate_nickname(cls, nickname):

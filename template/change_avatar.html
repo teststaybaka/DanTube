@@ -23,19 +23,11 @@
   <div id="avatar-preview-container">
     <h3>Avatar Preview</h3>
     <div id="avatar-preview-medium-container" class="avatar-preview" style="width:100px; height:100px;">
-      {% if avatar_url %}
-        <img id="avatar-preview-medium" src="{{ avatar_url }}" width="100" height="100">
-      {% else %}
-        <img id="avatar-preview-medium" src="/static/img/default_avatar.jpg" width="100" height="100">
-      {% endif %}
+      <img id="avatar-preview-medium" src="{{ user.avatar_url }}" width="100" height="100">
     </div>
     <div class="avatar-preview-text">Preview 100*100</div>
     <div id="avatar-preview-small-container" class="avatar-preview" style="width:50px; height:50px;">
-      {% if avatar_url %}
-        <img id="avatar-preview-small" src="{{ avatar_url }}" width="50" height="50">
-      {% else %}
-        <img id="avatar-preview-small" src="/static/img/default_avatar.jpg" width="50" height="50">
-      {% endif %}
+      <img id="avatar-preview-small" src="{{ user.avatar_url }}" width="50" height="50">
     </div>
     <div class="avatar-preview-text">Preview 50*50</div>
   </div>

@@ -9,10 +9,10 @@
 <div id="account-left-bar">
     <div id="profile-area">
         <div id="profile-img-space">
-            <div id="profile-img"></div>
+            <img id="profile-img" src="{{ user.avatar_url }}" onclick="location.href='{{ uri_for('account') }}'">
         </div>
-        <div id="profile-nickname">{{ nickname }}</div>
-        <div id="profile-signature">Time is money, my friend. The long the way you go, the more the things you know.</div>
+        <div id="profile-nickname">{{ user.nickname }}</div>
+        <div id="profile-signature">{{ user.intro }}</div>
     </div>
     <div id="bottom-area">
         <div class="main-option" onclick="location.href='{{ uri_for('account') }}'">Account</div>
@@ -26,7 +26,7 @@
         <div class="main-option">Video Manager</div>
         <div class="sub-menu">
             <div class="sub-option">Videos</div>
-            <div class="sub-option">Submission</div>
+            <div class="sub-option" onclick="location.href='{{ uri_for('submit') }}'">Submission</div>
         </div>
         <div class="main-option">Subscription</div>
         <div class="main-option">Favorites</div>
@@ -43,15 +43,15 @@
     <div>
         <div class="container">
             <div id="account-profile-img">
-                <div id="account-profile-img-content"></div>
-                <div id="account-change-avatar">Change avatar</div>
+                <img id="account-profile-img-content" src="{{ user.avatar_url }}">
+                <div id="account-change-avatar" onclick="location.href='{{ uri_for('change_avatar') }}'">Change avatar</div>
             </div>
             <div id="account-detail">
-                <div class="detail-entry" id="account-email">teststaybaka@gmail.com</div>
-                <div class="detail-entry" id="account-joint-time">Joint on 2015/01/01 10:30.</div>
+                <div class="detail-entry" id="account-email">{{ user.email }}</div>
+                <div class="detail-entry" id="account-joint-time">Joined at {{ user.created }}.</div>
                 <div class="detail-entry" id="account-space-divide">--------------</div>
-                <div class="detail-entry" id="account-nickname" onclick="location.href='{{ uri_for('change_nickname') }}'">{{ nickname }}
-                    <div id="account-change-nickname">Change nickname</div>
+                <div class="detail-entry" id="account-nickname">{{ user.nickname }}
+                    <div id="account-change-nickname" onclick="location.href='{{ uri_for('change_nickname') }}'">Change nickname</div>
                 </div>
                 <div class="detail-entry">Password
                     <div id="account-change-password" onclick="location.href='{{ uri_for('change_password') }}'">Change password</div>

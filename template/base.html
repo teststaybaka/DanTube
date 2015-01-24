@@ -24,17 +24,13 @@
         <div id="user-bar" class="container">
             <div id="logo" class="left" onclick="location.href='{{ uri_for('home') }}'">DanTube</div>
             <div class="navi left link" id="feeling-lucky">I'm feeling lucky!</div>
-            {% if is_auth %}
+            {% if user.is_auth %}
             <div id="portrait" class="right">
                 <div id="portrait-img" onclick="location.href='{{ uri_for('account') }}'">
-                    {% if avatar_url %}
-                    <img src="{{ avatar_url }}">
-                    {% else %}
-                    <img src="/static/img/default_avatar.jpg">
-                    {% endif %}
+                    <img src="{{ user.avatar_url }}">
                 </div>
                 <div id="user-box">
-                    <div id="user-box-nickname">{{ nickname }}</div>
+                    <div id="user-box-nickname">{{ user.nickname }}</div>
                     <div id="user-message-container" class="container">
                         <div id="user-at">@Me</div>
                         <div id="user-notification">Notifications</div>
