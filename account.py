@@ -247,15 +247,18 @@ class ChangeNickname(BaseHandler):
 
     @login_required
     def post(self):
-        self.response.headers['Content-Type'] = 'application/json'
+        self.response.headers['Content-Type'] = 'text/plain'
+
         user = self.user
         nickname = self.request.get('nickname')
-        
         if nickname != self.user.nickname:
             nickname = self.user_model.validate_nickname(nickname)
             if not nickname:
-                self.response.out.write(json.dumps({'error': True, 'message': 'Invalid nickname.'}))
-                return 
+                self.response.out.write('error. Invalid nickname.')
+                return
+        else:
+            self.response.out.write('error. Already Set.')
+            return
 
         try:
             user.nickname = nickname
@@ -263,10 +266,10 @@ class ChangeNickname(BaseHandler):
         except Exception, e:
             logging.info(e)
             logging.info(type(e))
-            self.response.out.write(json.dumps({'error': True, 'message': e}))
+            self.response.out.write('error. '+e)
             return 
 
-        self.response.out.write(json.dumps({'message': 'success', 'nickname': nickname}))
+        self.response.out.write('success')
 
 class ChangeAvatar(BaseHandler):
     @login_required

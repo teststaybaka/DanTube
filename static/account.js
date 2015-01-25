@@ -61,10 +61,10 @@ $(document).ready(function() {
     } else if (urls[urls.length-1] === "password") {
         $("#sub-change-password").addClass("active");
         $("#account-top-title").text("Change Password");
-    } else if (urls[urls.length-1] === "change_password") {
+    } else if (urls[urls.length-1] === "avatar") {
         $("#sub-change-avatar").addClass("active");
         $("#account-top-title").text("Change Avatar");
-    } else if (urls[urls.length-1] === "change_password") {
+    } else if (urls[urls.length-1] === "nickname") {
         $("#sub-change-nickname").addClass("active");
         $("#account-top-title").text("Change Nickname");
     }
@@ -85,6 +85,8 @@ $(document).ready(function() {
     });
 
     $('#change-password-form').submit(function(evt) {
+        $('#save-change-message').remove();
+
         var button = document.querySelector('input.save_change-button');
         button.disabled = true;
 
@@ -115,14 +117,12 @@ $(document).ready(function() {
             success: function(result) {
                 console.log(result);
                 if(result === 'success') {
-                    $('#save-change-message').remove();
                     $('input.save_change-button').after('<div id="save-change-message" class="success show">Change applied successfully!</div>');
                     
                     $("#cur-password").val('');
                     $("#new-password").val('');
                     $("#confirm-password").val('');
                 } else {
-                    $('#save-change-message').remove();
                     $('input.save_change-button').after('<div id="save-change-message" class="fail show">Change failed due to incorrect password!</div>');
                 }
                 button.disabled = false;
@@ -142,5 +142,99 @@ $(document).ready(function() {
         var max_count = 100000;
         var g = init_g - init_g / max_count * Math.min(count, max_count);
         $(this).css('color', 'rgb(255,' + g + ',34)');
+
+    var cur_nickname = $('#nickname-change').val();
+    $('#nickname-change').focusout(function(evt) {
+        var nickname = evt.target.value.trim();
+        var puncts = /[@.,?!;:/\\"']/;
+        if (!nickname || puncts.test(nickname)) {
+            $('#change-nickname-error').addClass('show');
+            $('#change-nickname-error').text('Your nickname can\'t contain: @ . , ? ! ; : / \\ \" \'');
+            $(evt.target).addClass('error');
+        } else if (nickname.length > 30) {
+            $('#change-nickname-error').addClass('show');
+            $('#change-nickname-error').text('Nickname can\'t exceed 30 characters long.');
+            $(evt.target).addClass('error');
+        } else if (nickname == cur_nickname) {
+            $('#change-nickname-error').removeClass('show');
+            $(evt.target).removeClass('error');
+        } else {
+            $.ajax({
+                type: "POST",
+                url: "/nickname_check",
+                data: {nickname: nickname},
+                success: function(result) {
+                    console.log(result);
+                    if (result === 'valid') {
+                        $('#change-nickname-error').removeClass('show');
+                        $(evt.target).removeClass('error');
+                    } else {
+                        $('#change-nickname-error').addClass('show');
+                        $('#change-nickname-error').text('Someone has used this name.');
+                        $(evt.target).addClass('error');
+                    }
+                },
+                error: function (xhr, ajaxOptions, thrownError) {
+                    console.log(xhr.status);
+                    console.log(thrownError);
+                }
+            });
+        }
+    });
+
+    $('#change-nickname-form').submit(function(evt) {
+        $('#save-change-message').remove();
+
+        var button = document.querySelector('input.save_change-button');
+        button.disabled = true;
+
+        var nickname = $('#nickname-change')[0].value.trim();
+        var puncts = /[@.,?!;:/\\"']/;
+
+        var error = false;
+        if (!nickname || puncts.test(nickname)) {
+            $('#change-nickname-error').addClass('show');
+            $('#change-nickname-error').text('Your nickname can\'t contain: @ . , ? ! ; : / \\ \" \'');
+            $('#nickname-change').addClass('error');
+            error = true;
+        } else if (nickname.length > 30) {
+            $('#change-nickname-error').addClass('show');
+            $('#change-nickname-error').text('Nickname can\'t exceed 30 characters long.');
+            $('#nickname-change').addClass('error');
+            error = true;
+        } else if (nickname == cur_nickname) {
+            $('#change-nickname-error').removeClass('show');
+            $('#nickname-change').removeClass('error');
+
+            $('input.save_change-button').after('<div id="save-change-message" class="success show">Already applied!</div>');
+            error = true;
+        }
+
+        if (error) {
+            button.disabled = false;
+            return false;
+        }
+
+        $.ajax({
+            type: "POST",
+            url: "/account/nickname",
+            data: {nickname: nickname},
+            success: function(result) {
+                console.log(result);
+                if(result === 'success') {
+                    cur_nickname = nickname;
+                    $('input.save_change-button').after('<div id="save-change-message" class="success show">Change applied successfully! Refresh to see the effect.</div>');
+                } else {
+                    $('input.save_change-button').after('<div id="save-change-message" class="fail show">Change failed!</div>');
+                }
+                button.disabled = false;
+            },
+            error: function (xhr, ajaxOptions, thrownError) {
+                console.log(xhr.status);
+                console.log(thrownError);
+                button.disabled = false;
+            }
+        });
+        return false;
     });
 });

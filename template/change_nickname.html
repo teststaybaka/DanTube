@@ -1,30 +1,18 @@
 {% extends "template/account.html" %}
 {% block head %}
 {{ super() }}
-<script src="/static/change_nickname.js" language="JavaScript" type="text/javascript"></script>
-<link href="/static/signin_up.css" rel="stylesheet" type="text/css">
-<style>
-  .inputtextarea {
-    width: 350px;
-    height: 200px;
-    resize: none;
-    border: 1px solid rgb(200,200,200);
-    border-radius: 5px;
-  }
-</style>
 {% endblock %}
 
 {% block detail %}
-<h2>Change Nickname</h2>
-<form id="nicknameform" action="" method="post">
-  <div>
-    <label for="nickname" class="form-label" id="nickname-label">Nickname</label>
-    <input type="text" class="inputtext" id="nickname" name="nickname" value="{{ user.nickname }}" tabindex="1"></input>
+<form id="change-nickname-form" method="post" class="change">
+  <div class="input-line">
+    <label for="nickname-change" class="form-label">Nickname:</label>
+    <input type="text" id="nickname-change" name="nickname" value="{{ user.nickname }}" tabindex="1"></input>
+    <div class="input-error" id="change-nickname-error">Please enter your nickname.</div>
   </div>
-  <div class="input-error-message" id="nickname-error">
-    <span>Someone has used this name.</span>
-    <div class="error-message-arrow"></div>
+  <div class="input-line">
+      <input class="save_change-button" type="submit" value="Save Change" />
+      <div id="save-change-message">Change applied!</div>
   </div>
-  <input class="basics-submit-button" type="submit" value="Update" />
 </form>
 {% endblock %}
