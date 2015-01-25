@@ -19,13 +19,19 @@ import logging
 #     profile_url = db.StringProperty(required=True)
 #     messages = db.ListProperty(db.Key)
 
+class History(ndb.Model):
+  video = ndb.KeyProperty(kind='Video', required=True)
+  last_viewed_time = ndb.DateTimeProperty(auto_now_add=True)
+  # last_viewed_timestamp
+
 class User(webapp2_extras.appengine.auth.models.User):
   nickname = ndb.StringProperty(required=True)
   intro = ndb.StringProperty(default="")
   avatar = ndb.BlobKeyProperty()
   default_avatar = ndb.IntegerProperty(default=1, choices=[1,2,3,4,5,6])
   favorites = ndb.KeyProperty(kind='Video', repeated=True)
-  history = ndb.KeyProperty(kind='Video', repeated=True)
+  # history = ndb.KeyProperty(kind='Video', repeated=True)
+  history = ndb.StructuredProperty(History, repeated=True)
   subscritions = ndb.KeyProperty(kind='User', repeated=True)
   bullets = ndb.IntegerProperty(required=True, default=0)
   videos_submited = ndb.IntegerProperty(required=True, default=0)
@@ -285,6 +291,10 @@ class Video(ndb.Model):
     }
     return basic_info
 
+  @classmethod
+  def get_by_id(cls, id):
+    return super(Video, cls).get_by_id(id, parent=ndb.Key('EntityType', 'Video'))
+
   @staticmethod
   def parse_url(raw_url):
     if not urlparse.urlparse(raw_url).scheme:
@@ -304,25 +314,35 @@ class Video(ndb.Model):
         url = raw_url
       return {'url': url, 'vid': vid, 'source': source}
 
-  @staticmethod
-  def getID():
+  @classmethod
+  @ndb.transactional(retries=2)
+  def getID(cls):
     try:
-        Video.id_counter += 1
+      cls.id_counter += 1
     except AttributeError:
-        Video.id_counter = 1
-    return Video.id_counter
+      latest_video = cls.query(ancestor=ndb.Key('EntityType', 'Video')).order(-cls.key).get()
+      if latest_video is not None:
+        max_id = int(latest_video.key.id()[2:])
+        cls.id_counter = max_id + 1
+      else:
+        cls.id_counter = 1
+      # cls.id_counter = 1
+    return cls.id_counter
 
-  @staticmethod
-  def Create(raw_url, user, description, title, category, subcategory):
-    res = Video.parse_url(raw_url)
+  @classmethod
+  def Create(cls, raw_url, user, description, title, category, subcategory):
+    res = cls.parse_url(raw_url)
     if res.get('error'):
       # return 'URL Error.'
       raise Exception(res['error'])
     else:
       if (category in Video_Category) and (subcategory in Video_SubCategory[category]):
         try:
+          id = 'dt'+str(cls.getID())
+          logging.info(id)
           video = Video(
-            id = 'dt'+str(Video.getID()),
+            # id = 'dt'+str(cls.getID()),
+            key = ndb.Key('Video', id, parent=ndb.Key('EntityType', 'Video')),
             url = raw_url,
             vid = res['vid'],
             source = res['source'],

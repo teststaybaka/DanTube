@@ -33,7 +33,7 @@ $(document).ready(function() {
             success: function(result) {
                 console.log(result);
                 if(result.error) {
-                    $('#submitform div.form-error').html('<p>' + result.error + '</p>');
+                    $('#submitform div.form-error').html('<p>' + result.message + '</p>');
                 } else {
                     $('#submitform div.form-error').html('<p>Submit successfully! <a href="' + result.url + '">video link</a></p>');
                 }

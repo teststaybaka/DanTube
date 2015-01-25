@@ -30,10 +30,14 @@ class Favorites(BaseHandler):
 class History(BaseHandler):
     @login_required
     def get(self):
-        videos = ndb.get_multi(self.user.history)
+        history = self.user.history
+        l = len(history)
+        videos = ndb.get_multi([h.video for h in history])
         context = {'videos': []}
-        for video in reversed(videos):
-            context['videos'].append(video.get_basic_info())
+        for idx, video in enumerate(reversed(videos)):
+            video_info = video.get_basic_info()
+            video_info.update({'last_viewed_time': history[l-1-idx].last_viewed_time.strftime("%Y-%m-%d %H:%M")})
+            context['videos'].append(video_info)
         self.render('history', context)
 
 class Verification(BaseHandler):

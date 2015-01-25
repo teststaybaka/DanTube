@@ -245,15 +245,22 @@ class Watch(BaseHandler):
             video.hits += 1
             video.put()
             user = self.user
+            uploader = models.User.get_by_id(video.uploader.id())
+            uploader.videos_watched += 1
+            uploader.put()
             if user is not None:
                 l = len(user.history)
+                videos = [h.video for h in user.history]
                 try:
-                    user.history.remove(video.key)
+                    idx = videos.index(video.key)
+                    user.history.pop(idx)
                 except ValueError:
+                    logging.info('not found')
                     l += 1
-                user.history.append(video.key)
                 if l > 100:
                     user.history.pop(0)
+                new_history = models.History(video=video.key)
+                user.history.append(new_history)
                 user.put()
         else:
             self.notify('video not found.', 404)
