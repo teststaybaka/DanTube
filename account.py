@@ -1,9 +1,45 @@
 from views import *
+from google.appengine.api import images
+from google.appengine.ext import ndb
 
 class Account(BaseHandler):
     @login_required
     def get(self):
-        self.render('account');
+        user = self.user
+        context = {}
+        context['user'] = user.get_statistic_info()
+        self.render('account', context);
+
+class ManageVideo(BaseHandler):
+    @login_required
+    def get(self):
+        videos = models.Video.query(models.Video.uploader==self.user.key).fetch()
+        context = {'videos': []}
+        for video in videos:
+            context['videos'].append(video.get_basic_info())
+        self.render('manage_video', context)
+
+class Favorites(BaseHandler):
+    @login_required
+    def get(self):
+        videos = ndb.get_multi(self.user.favorites)
+        context = {'videos': []}
+        for video in videos:
+            context['videos'].append(video.get_basic_info())
+        self.render('favorites', context)
+
+class History(BaseHandler):
+    @login_required
+    def get(self):
+        history = self.user.history
+        l = len(history)
+        videos = ndb.get_multi([h.video for h in history])
+        context = {'videos': []}
+        for idx, video in enumerate(reversed(videos)):
+            video_info = video.get_basic_info()
+            video_info.update({'last_viewed_time': history[l-1-idx].last_viewed_time.strftime("%Y-%m-%d %H:%M")})
+            context['videos'].append(video_info)
+        self.render('history', context)
 
 class Verification(BaseHandler):
     def get(self, *args, **kwargs):

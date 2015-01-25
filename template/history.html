@@ -1,0 +1,20 @@
+{% extends "template/account.html" %}
+{% block head %}
+{{ super() }}
+{% endblock %}
+
+{% block detail %}
+<h2>History</h2>
+<div id="video-list">
+  {% for video in videos %}
+  <div class="video-item">
+    <div>
+      <a href="{{ video.url }}"><img src="{{ video.thumbnail_url }}"></a>
+    </div>
+    <div>Created at: {{ video.created }} </div>
+    <div>Hits: {{ video.hits }} Damakus: {{ video.danmaku_counter }}</div>
+    <div>Last viewed: {{ video.last_viewed_time }}</div>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

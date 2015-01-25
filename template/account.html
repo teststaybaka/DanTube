@@ -25,14 +25,14 @@
         </div>
         <div class="main-option">Video Manager</div>
         <div class="sub-menu">
-            <div class="sub-option">Videos</div>
+            <div class="sub-option" onclick="location.href='{{ uri_for('manage_video') }}'">Videos</div>
             <div class="sub-option" onclick="location.href='{{ uri_for('submit') }}'">Submission</div>
         </div>
         <div class="main-option">Subscription</div>
-        <div class="main-option">Favorites</div>
-        <div class="main-option">History</div>
+        <div class="main-option" onclick="location.href='{{ uri_for('favorites') }}'">Favorites</div>
+        <div class="main-option" onclick="location.href='{{ uri_for('history') }}'">History</div>
         <div class="main-option">Messages</div>
-        <div class="main-option">Personal Space</div>
+        <div class="main-option" onclick="location.href='{{ user.space_url }}'">Personal Space</div>
     </div>
 </div>
 <div id="account-right-section">
@@ -58,17 +58,17 @@
                 </div>
             </div>
             <div id="mine-statistic">
-                <div><span id="personal-bullets">223,232<div>The bullets you have.</div></span></div>
-                <div><span id="personal-favorites">143<div>Your favorites.</div></span></div>
-                <div><span id="personal-subscriptions">143<div>Your subscriptions.</div></span></div>
+                <div><span id="personal-bullets">{{ user.bullets }}<div>The bullets you have.</div></span></div>
+                <div><span id="personal-favorites">{{ user.favorites_counter }}<div>Your favorites.</div></span></div>
+                <div><span id="personal-subscriptions">{{ user.subscritions_counter }}<div>Your subscriptions.</div></span></div>
             </div>
         </div>
         <div id="account-statistic" class="container">
-            <div class="statistic-entry" id="statistic-submission">You have submitted <span>134</span> videos.</div>
-            <div class="statistic-entry" id="statistic-watched">Your videos have been watched <span>2,134,134</span> times.</div>
-            <div class="statistic-entry" id="statistic-favored">Your videos were favored <span>222,222</span> times.</div>
-            <div class="statistic-entry" id="statistic-subscribed">You have <span>3,333,333</span> subscribers.</div>
-            <div class="statistic-entry" id="statistic-visited">Your space has been visited <span>134</span> times.</div>
+            <div class="statistic-entry" id="statistic-submission">You have submitted <span>{{ user.videos_submited }}</span> videos.</div>
+            <div class="statistic-entry" id="statistic-watched">Your videos have been watched <span>{{ user.videos_watched }}</span> times.</div>
+            <div class="statistic-entry" id="statistic-favored">Your videos were favored <span>{{ user.videos_favored }}</span> times.</div>
+            <div class="statistic-entry" id="statistic-subscribed">You have <span>{{ user.subscribers_counter }}</span> subscribers.</div>
+            <div class="statistic-entry" id="statistic-visited">Your space have been visited <span>{{ user.space_visited }}</span> times.</div>
         </div>
     </div>
     {% endblock %}

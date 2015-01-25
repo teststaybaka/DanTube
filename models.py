@@ -3,6 +3,7 @@ from google.appengine.ext import ndb
 import webapp2_extras.appengine.auth.models
 from webapp2_extras import security
 from google.appengine.ext import blobstore
+from google.appengine.api import images
 import urllib2
 import urlparse
 import time
@@ -18,18 +19,63 @@ import logging
 #     profile_url = db.StringProperty(required=True)
 #     messages = db.ListProperty(db.Key)
 
+class History(ndb.Model):
+  video = ndb.KeyProperty(kind='Video', required=True)
+  last_viewed_time = ndb.DateTimeProperty(auto_now_add=True)
+  # last_viewed_timestamp
+
 class User(webapp2_extras.appengine.auth.models.User):
   nickname = ndb.StringProperty(required=True)
   intro = ndb.StringProperty(default="")
   avatar = ndb.BlobKeyProperty()
   default_avatar = ndb.IntegerProperty(default=1, choices=[1,2,3,4,5,6])
   favorites = ndb.KeyProperty(kind='Video', repeated=True)
+  # history = ndb.KeyProperty(kind='Video', repeated=True)
+  history = ndb.StructuredProperty(History, repeated=True)
+  subscritions = ndb.KeyProperty(kind='User', repeated=True)
+  bullets = ndb.IntegerProperty(required=True, default=0)
+  videos_submited = ndb.IntegerProperty(required=True, default=0)
+  videos_watched = ndb.IntegerProperty(required=True, default=0)
+  videos_favored = ndb.IntegerProperty(required=True, default=0)
+  space_visited = ndb.IntegerProperty(required=True, default=0)
+  subscribers_counter = ndb.IntegerProperty(required=True, default=0)
 
   def set_password(self, raw_password):
     self.password = security.generate_password_hash(raw_password, length=12)
 
-  def get_default_avatar_url(self):
-    return '/static/emoticons_img/default_avatar' + str(self.default_avatar) + '.png'
+  def get_public_info(self):
+    public_info = {}
+    public_info['nickname'] = self.nickname
+    public_info['email'] = self.email
+    public_info['intro'] = self.intro
+    public_info['created'] = self.created.strftime("%Y-%m-%d %H:%M")
+    if self.avatar:
+      avatar_url = images.get_serving_url(self.avatar)
+    else:
+      avatar_url = '/static/emoticons_img/default_avatar' + str(self.default_avatar) + '.png'
+    public_info['avatar_url'] = avatar_url
+    public_info['space_url'] = '/user/' + str(self.key.id())
+    
+    return public_info
+
+  def get_private_info(self):
+    private_info = {
+      'bullets': self.bullets
+    }
+    
+    return private_info
+
+  def get_statistic_info(self):
+    statistic_info = {
+      'videos_submited': self.videos_submited,
+      'videos_watched': self.videos_watched,
+      'videos_favored': self.videos_favored,
+      'space_visited': self.space_visited,
+      'subscribers_counter': self.subscribers_counter,
+      'favorites_counter': len(self.favorites),
+      'subscritions_counter': len(self.subscritions)
+    }
+    return statistic_info
 
   @classmethod
   def validate_nickname(cls, nickname):
@@ -112,7 +158,6 @@ class User(webapp2_extras.appengine.auth.models.User):
         return user, timestamp
  
     return None, None
-
 
 class Notification(ndb.Model):
   receiver = ndb.KeyProperty(kind='User', required=True)
@@ -203,7 +248,7 @@ URL_NAME_DICT = {
   }],
 };
 
-class VideoList(ndb.Model):
+class PlayList(ndb.Model):
   user_belonged = ndb.KeyProperty(kind='User', required=True)
   title = ndb.StringProperty(required=True)
   video_counter = ndb.IntegerProperty(required=True)
@@ -219,7 +264,7 @@ class Video(ndb.Model):
   category = ndb.StringProperty(required=True, choices=Video_Category)
   subcategory = ndb.StringProperty(required=True)
 
-  # video_list_belonged = ndb.KeyProperty(kind='VideoList', required=True, indexed=False)
+  # video_list_belonged = ndb.KeyProperty(kind='PlayList', required=True, indexed=False)
   video_order = ndb.IntegerProperty(required=True)
   danmaku_counter = ndb.IntegerProperty(required=True, default=0)
   comment_counter = ndb.IntegerProperty(required=True, default=0)
@@ -228,8 +273,27 @@ class Video(ndb.Model):
 
   hits = ndb.IntegerProperty(required=True, default=0)
   likes = ndb.IntegerProperty(required=True, default=0)
+  favors = ndb.IntegerProperty(required=True, default=0)
   bullets = ndb.IntegerProperty(required=True, default=0)
   be_collected = ndb.IntegerProperty(required=True, default=0)
+
+  def get_basic_info(self):
+    basic_info = {
+      'url': '/video/'+ str(self.key.id()),
+      'thumbnail_url': 'http://img.youtube.com/vi/' + self.vid + '/default.jpg',
+      'created': self.created.strftime("%Y-%m-%d %H:%M"),
+      'category': self.category,
+      'subcategory': self.subcategory,
+      'hits': self.hits,
+      'danmaku_counter': self.danmaku_counter, 
+      'likes': self.likes,
+      'favors': self.favors
+    }
+    return basic_info
+
+  @classmethod
+  def get_by_id(cls, id):
+    return super(Video, cls).get_by_id(id, parent=ndb.Key('EntityType', 'Video'))
 
   @staticmethod
   def parse_url(raw_url):
@@ -250,25 +314,35 @@ class Video(ndb.Model):
         url = raw_url
       return {'url': url, 'vid': vid, 'source': source}
 
-  @staticmethod
-  def getID():
+  @classmethod
+  @ndb.transactional(retries=2)
+  def getID(cls):
     try:
-        Video.id_counter += 1
+      cls.id_counter += 1
     except AttributeError:
-        Video.id_counter = 1
-    return Video.id_counter
+      latest_video = cls.query(ancestor=ndb.Key('EntityType', 'Video')).order(-cls.key).get()
+      if latest_video is not None:
+        max_id = int(latest_video.key.id()[2:])
+        cls.id_counter = max_id + 1
+      else:
+        cls.id_counter = 1
+      # cls.id_counter = 1
+    return cls.id_counter
 
-  @staticmethod
-  def Create(raw_url, user, description, title, category, subcategory):
-    res = Video.parse_url(raw_url)
+  @classmethod
+  def Create(cls, raw_url, user, description, title, category, subcategory):
+    res = cls.parse_url(raw_url)
     if res.get('error'):
       # return 'URL Error.'
       raise Exception(res['error'])
     else:
       if (category in Video_Category) and (subcategory in Video_SubCategory[category]):
         try:
+          id = 'dt'+str(cls.getID())
+          logging.info(id)
           video = Video(
-            id = 'dt'+str(Video.getID()),
+            # id = 'dt'+str(cls.getID()),
+            key = ndb.Key('Video', id, parent=ndb.Key('EntityType', 'Video')),
             url = raw_url,
             vid = res['vid'],
             source = res['source'],

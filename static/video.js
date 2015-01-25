@@ -695,7 +695,7 @@ $(document).ready(function() {
                             '<div class="space-padding"></div>' + 
                             '<div class="bullet-date-value">' + result.created + '</div></div>');
                     } else {
-                        alert(result.error);
+                        alert(result.message);
                     }
                 },
                 error: function (xhr, ajaxOptions, thrownError) {
@@ -705,4 +705,23 @@ $(document).ready(function() {
             });
         }
     });
+    
+    $('#add-to-favorite').click(function(e) {
+        e.preventDefault();
+        $.ajax({
+            type: "POST",
+            url: url + "/favor",
+            success: function(result) {
+                if(!result.error) {
+                    alert('success!');
+                } else {
+                    alert(result.message);
+                }
+            },
+            error: function (xhr, ajaxOptions, thrownError) {
+                console.log(xhr.status);
+                console.log(thrownError);
+            }
+        });
+    })
 });
