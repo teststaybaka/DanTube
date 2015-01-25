@@ -5,6 +5,10 @@ body {
 	background-color: rgb(255,255,255);
 }
 
+img {
+	background-color: white;
+}
+
 #user-bar-background {
 	padding-top: 10px;
     padding-bottom: 10px;
@@ -84,19 +88,19 @@ div.link:hover {
 }
 
 #portrait {
-	margin-left: 5px;
-	margin-top: 10px;
+	margin-left: 15px;
+	margin-top: 0;
+	margin-right: 15px;
+	height: 35px;
 }
 
 #portrait-img {
-	/*padding: 6px 10px;*/
 	cursor: pointer;
-}
-
-#portrait-img img{
 	width: 35px;
 	height: 35px;
 	border-radius: 35px;
+	box-shadow: 0 0 1px rgb(100,100,100);
+	display: inline-block;
 }
 
 #user-box {
@@ -113,13 +117,12 @@ div.link:hover {
 
 #user-box:before, #user-box:after {
 	bottom: 100%;
-	left: 85%;
+	left: 89%;
 	border: solid transparent;
 	content: " ";
 	height: 0;
 	width: 0;
 	position: absolute;
-	pointer-events: none;
 }
 
 #user-box:after {

@@ -1,6 +1,7 @@
 from views import *
 
 class Account(BaseHandler):
+    @login_required
     def get(self):
         self.render('account');
 
@@ -174,7 +175,6 @@ class ForgotPasswordReset(BaseHandler):
             self.notify('Your password has been reset, please remember it this time and login again.')
 
 class ChangePassword(BaseHandler):
-
     @login_required
     def get(self):
         self.render('change_password')
@@ -254,13 +254,10 @@ class AvatarUpload(BaseHandler, blobstore_handlers.BlobstoreUploadHandler):
     @login_required
     def post(self):
         logging.info(self.request)
+        self.response.headers['Content-Type'] = 'text/plain'
         upload = self.get_uploads('upload-avatar')  # 'file' is file upload field in the form
         if upload == []:
-            self.response.headers['Content-Type'] = 'application/json'
-            self.response.out.write(json.dumps({
-                'error': True,
-                'message': 'Please select a file.',
-            }))
+            self.response.out.write('error 1. Please select a file.')
             return
 
         uploaded_image = upload[0]
@@ -269,20 +266,12 @@ class AvatarUpload(BaseHandler, blobstore_handlers.BlobstoreUploadHandler):
         types = uploaded_image.content_type.split('/')
         if types[0] != 'image':
             uploaded_image.delete()
-            self.response.headers['Content-Type'] = 'application/json'
-            self.response.out.write(json.dumps({
-                'error': True,
-                'message': 'File type error.',
-            }))
+            self.response.out.write('error 2. File type error.')
             return
 
-        if uploaded_image.size > 50*1000000:
+        if uploaded_image.size > 50*1024*1024:
             uploaded_image.delete()
-            self.response.headers['Content-Type'] = 'application/json'
-            self.response.out.write(json.dumps({
-                'error': True,
-                'message': 'File is too large.',
-            }))
+            self.response.out.write('error 3. File is too large.')
             return
 
         user = self.user
@@ -291,8 +280,4 @@ class AvatarUpload(BaseHandler, blobstore_handlers.BlobstoreUploadHandler):
             models.blobstore.BlobInfo(user.avatar).delete()
         user.avatar = uploaded_image.key()
         user.put()
-        self.response.headers['Content-Type'] = 'application/json'
-        self.response.out.write(json.dumps({
-            'message': 'Upload succeeded.',
-            'avatar_url': images.get_serving_url(user.avatar)
-        }))
+        self.response.out.write('success')

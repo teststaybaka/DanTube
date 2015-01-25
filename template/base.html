@@ -26,9 +26,8 @@
             <div class="navi left link" id="feeling-lucky">I'm feeling lucky!</div>
             {% if user.is_auth %}
             <div id="portrait" class="right">
-                <div id="portrait-img" onclick="location.href='{{ uri_for('account') }}'">
-                    <img src="{{ user.avatar_url }}">
-                </div>
+                <img id="portrait-img" onclick="location.href='{{ uri_for('account') }}'" src="{{ user.avatar_url }}">
+                </img>
                 <div id="user-box">
                     <div id="user-box-nickname">{{ user.nickname }}</div>
                     <div id="user-message-container" class="container">

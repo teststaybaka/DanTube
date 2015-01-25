@@ -1,3 +1,33 @@
+function fileCheck() {
+    var file = document.getElementById("upload-avatar").files[0];
+    if (file) {
+        if (file.size <= 0) {
+            $('#file-error').addClass('show');
+            $('#file-error').text('Invalid file.')
+            return false;
+        } else if (file.size > 50*1024*1024) {
+            $('#file-error').addClass('show');
+            $('#file-error').text('Please select an image smaller than 50MB.');
+            return false;
+        } else {
+            var types = file.type.split('/');
+            // console.log
+            if (types[0] != 'image') {
+                $('#file-error').addClass('show');
+                $('#file-error').text('Please select an image file.');
+                return false;
+            } else {
+                $('#file-error').removeClass('show');
+                return true;
+            }
+        }
+    } else {
+        $('#file-error').addClass('show');
+        $('#file-error').text('Please select an image.')
+        return false;
+    }
+}
+
 $(document).ready(function() {
     
     var crop_width, crop_height;
@@ -5,12 +35,11 @@ $(document).ready(function() {
     var crop_coords = {};
 
     function cropImage(src) {
-        var old_image = $('#avatar-crop')[0];
-        if(old_image) old_image.remove();
-        var old_crop_holder = $('.jcrop-holder')[0];
-        if(old_crop_holder) old_crop_holder.remove();
+        $('#image-upload-hint').remove();
+        $('#avatar-crop').remove();
+        $('div.jcrop-holder').remove();
 
-        $('#avatar-crop-container').append('<img id="avatar-crop" src="' + src + '">');
+        $('#avatar-crop-canvas').append('<img id="avatar-crop" src="' + src + '">');
         crop_width = $('#avatar-crop').width();
         crop_height = $('#avatar-crop').height();
         crop_coords.x = 0;
@@ -26,7 +55,7 @@ $(document).ready(function() {
             setSelect: [crop_coords.x, crop_coords.y, crop_coords.x + crop_coords.w, crop_coords.y + crop_coords.h],
             aspectRatio: 1
         });
-        $('.jcrop-holder').css({
+        $('div.jcrop-holder').css({
             'left': '50%',
             'top': '50%',
             'margin-left': -crop_width/2 + 'px',
@@ -34,48 +63,34 @@ $(document).ready(function() {
             'position': 'absolute'
         });
 
-        $('#avatar-preview-medium').removeAttr('width');
-        $('#avatar-preview-medium').removeAttr('height');
-        $('#avatar-preview-small').removeAttr('width');
-        $('#avatar-preview-small').removeAttr('height');
-        $('#avatar-preview-medium').attr('src', src);
-        $('#avatar-preview-small').attr('src', src);   
+        $('#avatar-preview-medium, #avatar-preview-medium-round').attr('src', src);
+        $('#avatar-preview-small, #avatar-preview-small-round').attr('src', src);   
     }
 
     function readImage() {
-        if ( this.files && this.files[0] ) {
-            file = this.files[0];
-            if (file.size <= 0) {
-                alert('File is invalid!');
-            } else if (file.size > 50*1000000) {
-                alert('File is not supposed to be larger than 50MB!!');
-            } else {
-                console.log('file size:'+file.size);
-                console.log('file type:'+file.type);
-                var types = file.type.split('/');
-                if (types[0] != 'image') {
-                    alert('Please select an image.');
-                } else {
-                    var reader = new FileReader();
-                    reader.onload = function(e) {
-                        var image = new Image();
-                        image.src = e.target.result;
+        var file = document.getElementById("upload-avatar").files[0];
+        $('#file-input-line input[type=text]').val(file.name);
+        if (fileCheck()) {
+            console.log('file size:'+file.size);
+            console.log('file type:'+file.type);
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                var image = new Image();
+                image.src = e.target.result;
 
-                        image.onload = function() {
-                            orig_width = this.width;
-                            orig_height = this.height;
-                            cropImage(this.src);
-                        }
-                    }
-                    reader.readAsDataURL(file);
+                image.onload = function() {
+                    orig_width = this.width;
+                    orig_height = this.height;
+                    cropImage(this.src);
                 }
             }
-        } else {
-            console.log('Please select a file to upload.');
+            reader.readAsDataURL(file);
         }
     }
 
     function uploadImage(upload_url, image_url) {
+        var button = document.querySelector('input.save_change-button');
+
         var form = document.getElementById('avatar-upload-form');
         form.action = upload_url;
         var sBoundary = "---------------------------" + Date.now().toString(16);
@@ -97,17 +112,18 @@ $(document).ready(function() {
             headers: {"Content-Type": "multipart\/form-data; boundary=" + sBoundary},
             data: data,
             success: function(result){
-                alert(result.message);
-                if(!result.error) {
-                    // success
-                    console.log(result.avatar_url);
-                    $('#profile-img')[0].src = result.avatar_url;
-                    $('#portrait-img img')[0].src = result.avatar_url;
+                console.log(result);
+                if(result === 'success') {
+                    $('input.save_change-button').after('<div id="save-change-message" class="success show">Change applied successfully!</div>');
+                } else {
+                    $('input.save_change-button').after('<div id="save-change-message" class="fail show">'+result+'</div>');
                 }
+                button.disabled = false;
             },
             error: function (xhr, ajaxOptions, thrownError) {
                 console.log(xhr.status);
                 console.log(thrownError);
+                button.disabled = false;
             }
         });
         // $('#avatar-upload-form').submit();
@@ -115,47 +131,59 @@ $(document).ready(function() {
     }
     document.getElementById('upload-avatar').addEventListener("change", readImage, false);
     
-    $('#avatar-upload-button').click(function() {
-        var canvas = document.getElementById("crop-canvas");
-        var ctx = canvas.getContext("2d");
-        var img=document.getElementById("avatar-crop");
-        var width_ratio = orig_width / crop_width;
-        var height_ratio = orig_height / crop_height;
-        ctx.drawImage(img,crop_coords.x * width_ratio,crop_coords.y * height_ratio, 
-            crop_coords.w * width_ratio, crop_coords.h * height_ratio, 0, 0, 100, 100);
-        var dataURL = canvas.toDataURL('image/jpeg');
-        console.log(dataURL);
-        $.ajax({
-            type: "GET",
-            url: "/account/avatar/upload",
-            success: function(result) {
-                if(!result.error) {
-                    console.log(result);
-                    uploadImage(result.url, dataURL);
+    $('#avatar-upload-form').submit(function(evt) {
+        $('#save-change-message').remove();
+        if (fileCheck()) {
+            var button = document.querySelector('input.save_change-button');
+            button.disabled = true;
+
+            var canvas = document.getElementById("crop-canvas");
+            var ctx = canvas.getContext("2d");
+            var img=document.getElementById("avatar-crop");
+            var width_ratio = orig_width / crop_width;
+            var height_ratio = orig_height / crop_height;
+            ctx.drawImage(img, crop_coords.x * width_ratio,crop_coords.y * height_ratio, 
+                crop_coords.w * width_ratio, crop_coords.h * height_ratio, 0, 0, 256, 256);
+            var dataURL = canvas.toDataURL('image/jpeg');
+            console.log(dataURL);
+            $.ajax({
+                type: "GET",
+                url: "/account/avatar/upload",
+                success: function(result) {
+                    if(!result.error) {
+                        console.log(result);
+                        uploadImage(result.url, dataURL);
+                    } else {
+                        button.disabled = false;
+                    }
+                },
+                error: function (xhr, ajaxOptions, thrownError) {
+                    console.log(xhr.status);
+                    console.log(thrownError);
+                    button.disabled = false;
                 }
-            },
-            error: function (xhr, ajaxOptions, thrownError) {
-                console.log(xhr.status);
-                console.log(thrownError);
-            }
-        });
+            });
+        }
+        return false;
     });
 
     function showPreview(coords)
     {
         if(coords.w > 0) crop_coords = coords;
-        var rx = 100 / coords.w;
-        var ry = 100 / coords.h;
-        $('#avatar-preview-medium').css({
+        var medium_len = $('#medium-container').width();
+        var rx = medium_len / coords.w;
+        var ry = medium_len / coords.h;
+        $('#avatar-preview-medium, #avatar-preview-medium-round').css({
             width: Math.round(rx * crop_width) + 'px',
             height: Math.round(ry * crop_height) + 'px',
             marginLeft: '-' + Math.round(rx * coords.x) + 'px',
             marginTop: '-' + Math.round(ry * coords.y) + 'px'
         });
         
-        rx = 50 / coords.w;
-        ry = 50 / coords.h;
-        $('#avatar-preview-small').css({
+        var small_len = $('#small-container').width();
+        rx = small_len / coords.w;
+        ry = small_len / coords.h;
+        $('#avatar-preview-small, #avatar-preview-small-round').css({
             width: Math.round(rx * crop_width) + 'px',
             height: Math.round(ry * crop_height) + 'px',
             marginLeft: '-' + Math.round(rx * coords.x) + 'px',

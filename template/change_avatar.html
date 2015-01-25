@@ -8,31 +8,45 @@
 {% endblock %}
 
 {% block detail %}
-<div id="avatar-container">
-  <h2>Upload Avatar</h2>
+<div id="avatar-container" class="container">
   <div id="avatar-edit">
-    <div id="avatar-crop-container">
+    <div id="avatar-crop-canvas">
+      <div id="image-upload-hint">Select an image smaller than 50MB. Safe file type: jpg, gif, png. <br><br>Note: Image of othe type or with transparent channel may cause display problem.</div>
     </div>
-    <div id="avatar-upload-form-container">
-      <form method="post" enctype="multipart/form-data" id="avatar-upload-form">
+    <form method="post" id="avatar-upload-form" enctype="multipart/form-data" id="avatar-upload-form" class="container">
+      <div id="file-input-line" disabled>
         <input type="file" name="upload-avatar" class="file" id="upload-avatar" />
-        <button class="upload" id="avatar-upload-button" type="button">Submit</button>
-      </form>
-    </div>
+        <input type="text" placeholder="Select an image" >
+        <div class="select-button">Select</div>
+        <div class="input-error" id="file-error">Please enter your password.</div>
+      </div>
+      <input class="save_change-button" type="submit" value="Save Change" />
+      <div id="save-change-message">Change applied!</div>
+    </form>
   </div>
-  <div id="avatar-preview-container">
-    <h3>Avatar Preview</h3>
-    <div id="avatar-preview-medium-container" class="avatar-preview" style="width:100px; height:100px;">
-      <img id="avatar-preview-medium" src="{{ user.avatar_url }}" width="100" height="100">
+  <div id="avatar-preview">
+    <h3>Preview</h3>
+    <div class="preview-block">
+      <div id="medium-container" class="preview-container medium" >
+        <img id="avatar-preview-medium" src="{{ user.avatar_url }}">
+      </div>
+      <div class="preview-container medium round" >
+        <img id="avatar-preview-medium-round" src="{{ user.avatar_url }}">
+      </div>
+      <div class="preview-text">128 x 128</div>
     </div>
-    <div class="avatar-preview-text">Preview 100*100</div>
-    <div id="avatar-preview-small-container" class="avatar-preview" style="width:50px; height:50px;">
-      <img id="avatar-preview-small" src="{{ user.avatar_url }}" width="50" height="50">
+    <div class="preview-block">
+      <div id="small-container" class="preview-container small">
+        <img id="avatar-preview-small" src="{{ user.avatar_url }}">
+      </div>
+      <div class="preview-container small round">
+        <img id="avatar-preview-small-round" src="{{ user.avatar_url }}">
+      </div>
+      <div class="preview-text">35 x 35</div>
     </div>
-    <div class="avatar-preview-text">Preview 50*50</div>
   </div>
 </div>
 <div id="crop-canvas-container">
-  <canvas id="crop-canvas" width="100" height="100" style="border:1px solid #d3d3d3;"></canvas>
+  <canvas id="crop-canvas" width="256" height="256"></canvas>
 </div>
 {% endblock %}
