@@ -1,8 +1,40 @@
 from views import *
+from google.appengine.api import images
+from google.appengine.ext import ndb
 
 class Account(BaseHandler):
     def get(self):
-        self.render('account');
+        user = self.user
+        context = {}
+        context['user'] = user.get_statistic_info()
+        self.render('account', context);
+
+class ManageVideo(BaseHandler):
+    @login_required
+    def get(self):
+        videos = models.Video.query(models.Video.uploader==self.user.key).fetch()
+        context = {'videos': []}
+        for video in videos:
+            context['videos'].append(video.get_basic_info())
+        self.render('manage_video', context)
+
+class Favorites(BaseHandler):
+    @login_required
+    def get(self):
+        videos = ndb.get_multi(self.user.favorites)
+        context = {'videos': []}
+        for video in videos:
+            context['videos'].append(video.get_basic_info())
+        self.render('favorites', context)
+
+class History(BaseHandler):
+    @login_required
+    def get(self):
+        videos = ndb.get_multi(self.user.history)
+        context = {'videos': []}
+        for video in reversed(videos):
+            context['videos'].append(video.get_basic_info())
+        self.render('history', context)
 
 class Verification(BaseHandler):
     def get(self, *args, **kwargs):

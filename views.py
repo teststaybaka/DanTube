@@ -12,7 +12,6 @@ from webapp2_extras import auth
 from webapp2_extras import sessions_ndb
 from google.appengine.api.datastore_errors import BadValueError
 from google.appengine.ext.webapp import blobstore_handlers
-from google.appengine.api import images
 from google.appengine.api import mail
 
 import models
@@ -74,21 +73,15 @@ class BaseHandler(webapp2.RequestHandler):
 
     def render(self, tempname, context = {}):
         user = self.user
-        context['user'] = {}
+        if not context.get('user'):
+            context['user'] = {}
         if user is not None:
             context['user']['is_auth'] = True
-            context['user']['nickname'] = user.nickname
-            context['user']['email'] = user.email
-            context['user']['intro'] = user.intro
-            context['user']['created'] = user.created.strftime("%Y-%m-%d %H:%M")
-            if user.avatar:
-                avatar_url = images.get_serving_url(user.avatar)
-            else:
-                avatar_url = user.get_default_avatar_url()
-
-            context['user']['avatar_url'] = avatar_url
+            context['user'].update(user.get_public_info())
+            context['user'].update(user.get_private_info())
         else:
             context['user']['is_auth'] = False
+
         message = self.session.get('message')
         if message is not None:
             context['message'] = message
@@ -111,9 +104,18 @@ def login_required(handler):
   def check_login(self, *args, **kwargs):
     auth = self.auth
     if not auth.get_user_by_session():
-      self.redirect(self.uri_for('signin'), abort=True)
+        xrequest = self.request.headers.get('X-Requested-With')
+        if xrequest and xrequest == 'XMLHttpRequest':
+            self.response.headers['Content-Type'] = 'application/json'
+            self.response.out.write(json.dumps({
+                'error': True,
+                'message': 'not logged in!'
+            }))
+            return
+        else:
+            self.redirect(self.uri_for('signin'), abort=True)
     else:
-      return handler(self, *args, **kwargs)
+        return handler(self, *args, **kwargs)
  
   return check_login
 
@@ -151,66 +153,62 @@ class Video(BaseHandler):
         except (KeyError, BadValueError) as e:
             self.response.out.write(json.dumps([]))
         except:
-            self.response.out.write(json.dumps({'error': 'Failed to retrieve video infos'}))
+            self.response.out.write(json.dumps({
+                'error': True,
+                'message': 'Failed to retrieve video infos'
+            }))
         else:
             results = []
             for video in videos:
                 uploader = models.User.get_by_id(video.uploader.id())
-                results.append({
-                    'url': '/video/'+ video.key.id(),
-                    'vid': video.vid,
-                    'uploader': {
-                        'nickname': uploader.nickname, 
-                    },
-                    'created': video.created.strftime("%Y-%m-%d %H:%M:%S"),
-                    'category': video.category,
-                    'subcategory': video.subcategory,
-                    'hits': video.hits,
-                    'danmaku_counter': video.danmaku_counter
-                });
+                video_info = video.get_basic_info()
+                video_info['uploader'] = uploader.get_public_info()
+                results.append(video_info)
+
             self.response.out.write(json.dumps(results))
 
+    @login_required
     def post(self):
         self.response.headers['Content-Type'] = 'application/json'
         user = self.user
-        if user is None:
-            self.response.out.write(json.dumps({
-                'error': 'not logged in!',
-            }))
-            return
 
         raw_url = self.request.get('video-url')
         if not raw_url:
             self.response.out.write(json.dumps({
-                'error': 'video url must not be empty!'
+                'error': True,
+                'message': 'video url must not be empty!'
             }))
             return
 
         category = self.request.get('category')
         if not category:
             self.response.out.write(json.dumps({
-                'error': 'category must not be empty!',
+                'error': True,
+                'message': 'category must not be empty!'
             }))
             return
 
         subcategory = self.request.get('subcategory')
         if not subcategory:
             self.response.out.write(json.dumps({
-                'error': 'subcategory must not be empty!',
+                'error': True,
+                'message': 'subcategory must not be empty!'
             }))
             return
 
         title = self.request.get('title')
         if not title:
             self.response.out.write(json.dumps({
-                'error': 'title must not be empty!',
+                'error': True,
+                'message': 'title must not be empty!'
             }))
             return
 
         description = self.request.get('description')
         if not description:
             self.response.out.write(json.dumps({
-                'error': 'description must not be empty!',
+                'error': True,
+                'message': 'description must not be empty!'
             }))
             return
 
@@ -227,12 +225,16 @@ class Video(BaseHandler):
             )
         except Exception, e:
             self.response.out.write(json.dumps({
-                'error': str(e)
+                'error': True,
+                'message': str(e)
             }))
-        else:
-            self.response.out.write(json.dumps({
-                'url': '/video/'+ video.key.id()
-            }))
+            return
+
+        self.response.out.write(json.dumps({
+            'url': '/video/'+ video.key.id()
+        }))
+        user.videos_submited += 1
+        user.put()
 
 class Watch(BaseHandler):
     def get(self, video_id):
@@ -242,9 +244,47 @@ class Watch(BaseHandler):
             self.render('video', context)
             video.hits += 1
             video.put()
+            user = self.user
+            if user is not None:
+                l = len(user.history)
+                try:
+                    user.history.remove(video.key)
+                except ValueError:
+                    l += 1
+                user.history.append(video.key)
+                if l > 100:
+                    user.history.pop(0)
+                user.put()
         else:
-            self.response.write('video not found')
-            self.response.set_status(404)
+            self.notify('video not found.', 404)
+
+class Favor(BaseHandler):
+    @login_required
+    def post(self, video_id):
+        self.response.headers['Content-Type'] = 'application/json'
+        user = self.user
+
+        video = models.Video.get_by_id('dt'+video_id)
+        if video is not None:
+            if video.key not in user.favorites:
+                user.favorites.append(video.key)
+                user.put()
+                self.response.out.write(json.dumps({
+                    'message': 'success',
+                }))
+                uploader = models.User.get_by_id(video.uploader.id())
+                uploader.videos_favored += 1
+                uploader.put()
+            else:
+                self.response.out.write(json.dumps({
+                    'error': True,
+                    'message': 'video already favored',
+                }))
+        else:
+            self.response.out.write(json.dumps({
+                'error': True,
+                'message': 'video not found',
+            }))
 
 class Danmaku(BaseHandler):
     def get(self, video_id):
@@ -263,17 +303,15 @@ class Danmaku(BaseHandler):
             self.response.out.write(json.dumps(danmakus))
         else:
             self.response.out.write(json.dumps({
-                'error': 'video not found',
+                'error': True,
+                'message': 'video not found',
             }))
 
+    @login_required
     def post(self, video_id):
+        logging.info(self.request)
         self.response.headers['Content-Type'] = 'application/json'
         user = self.user
-        if user is None:
-            self.response.out.write(json.dumps({
-                'error': 'not logged in!',
-            }))
-            return
 
         video = models.Video.get_by_id('dt'+video_id)
         if video is not None:
@@ -296,7 +334,8 @@ class Danmaku(BaseHandler):
             video.put()
         else:
             self.response.out.write(json.dumps({
-                'error': 'video not found',
+                'error': True,
+                'message': 'video not found',
             }))
 
 class Submit(BaseHandler):
@@ -323,3 +362,14 @@ class Subcategory(BaseHandler):
         context['category_name'] = category
         context['subcategory_name'] = subcategory
         self.render('subcategory', context)
+
+class Space(BaseHandler):
+    def get(self, user_id):
+        host = self.user_model.get_by_id(int(user_id))
+        if not host:
+            self.notify('404 not found.', 404)
+            return
+
+        self.render('space', {'host': host.get_public_info()})
+        host.space_visited += 1
+        host.put()

@@ -1,0 +1,19 @@
+#add-to-favorite {
+  height: 20px;
+  font-size: 18px;
+  color: rgb(150,150,150);
+  cursor: pointer;
+}
+
+#add-to-favorite:hover {
+  color: rgb(100,100,100);
+}
+
+#add-to-favorite:visited {
+  color: rgb(50,50,50);
+}
+
+#add-to-favorite img{
+  width: 20px;
+  height: 20px;
+}

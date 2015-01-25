@@ -135,4 +135,12 @@ $(document).ready(function() {
         });
         return false;
     });
+
+    $('.statistic-entry span').each(function() {
+        var count = $(this).html();
+        var init_g = 180;
+        var max_count = 100000;
+        var g = init_g - init_g / max_count * Math.min(count, max_count);
+        $(this).css('color', 'rgb(255,' + g + ',34)');
+    });
 });
