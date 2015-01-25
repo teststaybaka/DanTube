@@ -142,7 +142,8 @@ $(document).ready(function() {
         var max_count = 100000;
         var g = init_g - init_g / max_count * Math.min(count, max_count);
         $(this).css('color', 'rgb(255,' + g + ',34)');
-
+    });
+    
     var cur_nickname = $('#nickname-change').val();
     $('#nickname-change').focusout(function(evt) {
         var nickname = evt.target.value.trim();
