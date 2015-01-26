@@ -69,6 +69,17 @@ $(document).ready(function() {
         $("#account-top-title").text("Change Nickname");
     }
 
+    $('.statistic-entry span').each(function() {
+        // var colors = [[163,163,163], [83,187,83], [39,143,250], [208,51,208], [255,138,34]]
+        var count = parseInt($(this).text());
+        $(this).text(numberWithCommas(count));
+        if (count == 0) count = 1;
+        var color = [220 - Math.log(count)/Math.log(100000000)*220, 9/10, 65/100];
+        if (color[0] < 0) color[0] = 0;
+        color = hsl2rgb(color);
+        $(this).css('color', 'rgb('+color[0]+','+color[1]+','+color[2]+ ')');
+    });
+
     $("#cur-password").focusout(function(evt) {
         var cur_pw = evt.target.value;
         cur_password_check(cur_pw);
@@ -134,14 +145,6 @@ $(document).ready(function() {
             }
         });
         return false;
-    });
-
-    $('.statistic-entry span').each(function() {
-        var count = $(this).html();
-        var init_g = 180;
-        var max_count = 100000;
-        var g = init_g - init_g / max_count * Math.min(count, max_count);
-        $(this).css('color', 'rgb(255,' + g + ',34)');
     });
     
     var cur_nickname = $('#nickname-change').val();
