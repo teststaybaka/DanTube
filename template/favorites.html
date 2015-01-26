@@ -1,6 +1,7 @@
 {% extends "template/account.html" %}
 {% block head %}
 {{ super() }}
+<script src="/static/favorites.js" language="JavaScript" type="text/javascript"></script>
 {% endblock %}
 
 {% block detail %}
@@ -8,11 +9,13 @@
 <div id="video-list">
   {% for video in videos %}
   <div class="video-item">
-    <div>
+    <div>{{ video.title }}</div>
+    <div class="video-thumbnail">
       <a href="{{ video.url }}"><img src="{{ video.thumbnail_url }}"></a>
     </div>
     <div>Created at: {{ video.created }} </div>
     <div>Hits: {{ video.hits }} Damakus: {{ video.danmaku_counter }}</div>
+    <button class="unfavor-button" type="button">Unfavor</button>
   </div>
   {% endfor %}
 </div>

@@ -8,6 +8,7 @@
 <div id="video-list">
   {% for video in videos %}
   <div class="video-item">
+    <div>{{ video.title }}</div>
     <div>
       <a href="{{ video.url }}"><img src="{{ video.thumbnail_url }}"></a>
     </div>

@@ -30,6 +30,7 @@ class User(webapp2_extras.appengine.auth.models.User):
   avatar = ndb.BlobKeyProperty()
   default_avatar = ndb.IntegerProperty(default=1, choices=[1,2,3,4,5,6])
   favorites = ndb.KeyProperty(kind='Video', repeated=True)
+  favorites_limit = ndb.IntegerProperty(default=100, required=True)
   # history = ndb.KeyProperty(kind='Video', repeated=True)
   history = ndb.StructuredProperty(History, repeated=True)
   subscritions = ndb.KeyProperty(kind='User', repeated=True)
@@ -279,6 +280,7 @@ class Video(ndb.Model):
 
   def get_basic_info(self):
     basic_info = {
+      'title': self.title,
       'url': '/video/'+ str(self.key.id()),
       'thumbnail_url': 'http://img.youtube.com/vi/' + self.vid + '/default.jpg',
       'created': self.created.strftime("%Y-%m-%d %H:%M"),

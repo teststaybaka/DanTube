@@ -1,6 +1,8 @@
 from views import *
 from google.appengine.api import images
 from google.appengine.ext import ndb
+import time
+from datetime import datetime
 
 class Account(BaseHandler):
     @login_required
@@ -59,7 +61,13 @@ class Verification(BaseHandler):
           logging.info('Could not find any user with id "%s" and token "%s"', user_id, signup_token)
           self.notify('404 not found.', 404)
           return
-     
+        
+        time_passed = time.mktime(datetime.now().timetuple()) - ts
+        if time_passed > 24 * 60 * 60: # 24 hours
+            self.user_model.delete_signup_token(user_id, signup_token)
+            self.notify('The url is expired, please make a new request.')
+            return None
+
         current_user = self.user
         if current_user:
             if current_user.get_id() != user_id:
@@ -178,6 +186,12 @@ class ForgotPasswordReset(BaseHandler):
         if not user:
             logging.info('Could not find any user with id "%s" and token "%s"', user_id, pwdreset_token)
             self.notify('404 not found.', 404)
+            return None
+
+        time_passed = time.mktime(datetime.now().timetuple()) - ts
+        if time_passed > 24 * 60 * 60: # 24 hours
+            self.user_model.delete_pwdreset_token(user_id, pwdreset_token)
+            self.notify('The url is expired, please make a new request.')
             return None
 
         return user
