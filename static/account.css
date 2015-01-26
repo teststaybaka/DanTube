@@ -145,6 +145,15 @@ div.detail-entry {
     max-width: 100%;
 }
 
+#verified-icon {
+    display: inline-block;
+    margin-left: 7px;
+    height: 17px;
+    min-width: 17px;
+    vertical-align: middle;
+    background-image: url("/static/img/verified.png");
+}
+
 #account-joint-time {
     font-size: 14px;
     content: rgb(150,150,150);
@@ -157,7 +166,6 @@ div.detail-entry {
 }
 
 #account-nickname {
-    /*color: rgb(232,141,74);*/
     color: rgb(100,100,100);
     font-size: 18px;
     font-weight: bold;
@@ -169,21 +177,26 @@ div.detail-entry {
     max-width: 100%;
 }
 
-#account-change-password, #account-change-nickname {
+#account-change-password, #account-change-nickname, #resend-email-link {
     display: inline-block;
     color: rgb(0,140,255);
     font-weight: normal;
     cursor: pointer;
     font-size: 15px;
-    margin-left: 4px;
+    margin-left: 7px;
 }
 
-#account-change-password:hover, #account-change-nickname:hover {
+#account-change-password:hover, #account-change-nickname:hover, #resend-email-link:hover {
     color: rgb(255,177,108);
 }
 
-#account-change-password:active, #account-change-nickname:active {
+#account-change-password:active, #account-change-nickname:active, #resend-email-link:active {
     color: rgb(0,50,200);
+}
+
+#resend-email-link.send {
+    color: rgb(100,100,100);
+    cursor: default;
 }
 
 #mine-statistic {

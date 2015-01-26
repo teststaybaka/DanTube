@@ -25,6 +25,7 @@ class History(ndb.Model):
   # last_viewed_timestamp
 
 class User(webapp2_extras.appengine.auth.models.User):
+  verified = ndb.BooleanProperty(required=True)
   nickname = ndb.StringProperty(required=True)
   intro = ndb.StringProperty(default="")
   avatar = ndb.BlobKeyProperty()
@@ -46,6 +47,7 @@ class User(webapp2_extras.appengine.auth.models.User):
 
   def get_public_info(self):
     public_info = {}
+    public_info['verified'] = self.verified
     public_info['nickname'] = self.nickname
     public_info['email'] = self.email
     public_info['intro'] = self.intro

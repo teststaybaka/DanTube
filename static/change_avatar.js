@@ -104,7 +104,7 @@ $(document).ready(function() {
 
         // http://stackoverflow.com/questions/6566240/saving-canvas-image-via-javascript-from-safari-5-0-x-to-appengine-blobstore-w
         var arr = ['--' + sBoundary, 'Content-Disposition: form-data; name="upload-avatar"; filename="' + filename + '"',
-            'Content-Transfer-Encoding: base64', 'Content-Type:  image/jpeg', '', base64Data, '--' + sBoundary + '--'];
+            'Content-Transfer-Encoding: base64', 'Content-Type:  image/png', '', base64Data, '--' + sBoundary + '--'];
         var data = arr.join('\r\n');
         $.ajax({
             type: 'POST',
@@ -115,6 +115,9 @@ $(document).ready(function() {
                 console.log(result);
                 if(result === 'success') {
                     $('input.save_change-button').after('<div id="save-change-message" class="success show">Change applied successfully!</div>');
+                    setTimeout(function(){
+                        window.location.replace('/account'); 
+                    }, 3000);
                 } else {
                     $('input.save_change-button').after('<div id="save-change-message" class="fail show">'+result+'</div>');
                 }
@@ -144,7 +147,7 @@ $(document).ready(function() {
             var height_ratio = orig_height / crop_height;
             ctx.drawImage(img, crop_coords.x * width_ratio,crop_coords.y * height_ratio, 
                 crop_coords.w * width_ratio, crop_coords.h * height_ratio, 0, 0, 256, 256);
-            var dataURL = canvas.toDataURL('image/jpeg');
+            var dataURL = canvas.toDataURL('image/png');
             console.log(dataURL);
             $.ajax({
                 type: "GET",

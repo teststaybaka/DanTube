@@ -67,6 +67,12 @@ $(document).ready(function() {
     } else if (urls[urls.length-1] === "nickname") {
         $("#sub-change-nickname").addClass("active");
         $("#account-top-title").text("Change Nickname");
+    } else if (urls[urls.length-1] === "video") {
+        $("#sub-videos").addClass("active");
+        $("#account-top-title").text("Your videos");
+    } else if (urls[urls.length-1] === "submit") {
+        $("#sub-submit").addClass("active");
+        $("#account-top-title").text("Video Submission");
     }
 
     $('.statistic-entry span').each(function() {
@@ -129,7 +135,10 @@ $(document).ready(function() {
                 console.log(result);
                 if(result === 'success') {
                     $('input.save_change-button').after('<div id="save-change-message" class="success show">Change applied successfully!</div>');
-                    
+                    setTimeout(function(){
+                        window.location.replace('/account'); 
+                    }, 3000);
+
                     $("#cur-password").val('');
                     $("#new-password").val('');
                     $("#confirm-password").val('');
@@ -228,6 +237,9 @@ $(document).ready(function() {
                 if(result === 'success') {
                     cur_nickname = nickname;
                     $('input.save_change-button').after('<div id="save-change-message" class="success show">Change applied successfully! Refresh to see the effect.</div>');
+                    setTimeout(function(){
+                        window.location.replace('/account'); 
+                    }, 3000);
                 } else {
                     $('input.save_change-button').after('<div id="save-change-message" class="fail show">Change failed!</div>');
                 }
