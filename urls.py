@@ -30,6 +30,7 @@ routes = [
     webapp2.Route(r'/account/password', account.ChangePassword, name="change_password"),
     webapp2.Route(r'/account/video', account.ManageVideo, name="manage_video"),
     webapp2.Route(r'/favorites', account.Favorites, name="favorites"),
+    webapp2.Route(r'/subscriptions', account.Subscriptions, name="subscriptions"),
     webapp2.Route(r'/history', account.History, name="history"),
     webapp2.Route(r'/password/forgot', account.ForgotPassword, name="forgot_password"),
     webapp2.Route(r'/password/reset/<user_id:\d+>-<pwdreset_token:.+>', account.ForgotPasswordReset, name="forgot_password_reset"),
@@ -37,6 +38,8 @@ routes = [
     webapp2.Route(r'/verify/<user_id:\d+>-<signup_token:.+>', account.Verification, name='verification'),
 
     webapp2.Route(r'/user/<user_id:\d+>', views.Space, name='space'),
+    webapp2.Route(r'/user/<user_id:\d+>/subscribe', views.Subscribe, name='subscribe'),
+    webapp2.Route(r'/user/<user_id:\d+>/unsubscribe', views.Unsubscribe, name='unsubscribe'),
     webapp2.Route(r'/submit', views.Submit, name="submit"),
     webapp2.Route(r'/video', views.Video, name="video"),
     webapp2.Route(r'/video/dt<video_id:\d+>', views.Watch, name="watch"),

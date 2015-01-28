@@ -724,4 +724,23 @@ $(document).ready(function() {
             }
         });
     })
+
+    $('#uploader-subscribe').click(function(e) {
+        var uploader_id = $(this).attr('uid');
+        $.ajax({
+            type: "POST",
+            url: "/user/" + uploader_id + "/subscribe",
+            success: function(result) {
+                if(!result.error) {
+                    alert('success!');
+                } else {
+                    alert(result.message);
+                }
+            },
+            error: function (xhr, ajaxOptions, thrownError) {
+                console.log(xhr.status);
+                console.log(thrownError);
+            }
+        });
+    })
 });

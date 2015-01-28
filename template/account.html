@@ -28,7 +28,7 @@
             <div class="sub-option" onclick="location.href='{{ uri_for('manage_video') }}'">Videos</div>
             <div class="sub-option" onclick="location.href='{{ uri_for('submit') }}'">Submission</div>
         </div>
-        <div class="main-option">Subscription</div>
+        <div class="main-option" onclick="location.href='{{ uri_for('subscriptions') }}'">Subscription</div>
         <div class="main-option" onclick="location.href='{{ uri_for('favorites') }}'">Favorites</div>
         <div class="main-option" onclick="location.href='{{ uri_for('history') }}'">History</div>
         <div class="main-option">Messages</div>
@@ -59,8 +59,8 @@
             </div>
             <div id="mine-statistic">
                 <div><span id="personal-bullets">{{ user.bullets }}<div>The bullets you have.</div></span></div>
-                <div><span id="personal-favorites">{{ user.favorites_counter }}<div>Your favorites.</div></span></div>
-                <div><span id="personal-subscriptions">{{ user.subscritions_counter }}<div>Your subscriptions.</div></span></div>
+                <div><span id="personal-favorites" onclick="location.href='{{ uri_for('favorites') }}'">{{ user.favorites_counter }}<div>Your favorites.</div></span></div>
+                <div><span id="personal-subscriptions" onclick="location.href='{{ uri_for('subscriptions') }}'">{{ user.subscriptions_counter }}<div>Your subscriptions.</div></span></div>
             </div>
         </div>
         <div id="account-statistic" class="container">

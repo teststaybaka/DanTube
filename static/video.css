@@ -1,19 +1,82 @@
+#info-container {
+  margin-top: 20px;
+}
+
+#video-info {
+  float: left;
+  width: 700px;
+}
+
+#uploader-info {
+  float: right;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 4px;
+  width: 250px;
+  position: relative;
+}
+
+#video-details {
+  float: left;
+  position: relative;
+  height: 17px;
+}
+
+#video-title h2 {
+  margin: 0;
+}
+
 #add-to-favorite {
-  height: 20px;
-  font-size: 18px;
-  color: rgb(150,150,150);
+  height: 17px;
+  float: right;
+  position: relative;
+  color: rgb(100,100,100);
   cursor: pointer;
+  background: url("/static/img/statistic_favor.png") no-repeat;
+  background-size: 17px;
+  padding: 0 0 0 20px;
 }
 
 #add-to-favorite:hover {
-  color: rgb(100,100,100);
-}
-
-#add-to-favorite:visited {
   color: rgb(50,50,50);
 }
 
-#add-to-favorite img{
-  width: 20px;
-  height: 20px;
+#uploader-avatar {
+  float: left;
+  margin-right: 10px;
+}
+
+#uploader-avatar img{
+  width: 35px;
+  height: 35px;
+}
+
+#uploader-details {
+  float: left;
+  width: 200px;
+}
+
+#uploader-intro {
+  width: 180px;
+  overflow: hidden;
+  margin-top: 5px;
+  line-height: 18px;
+}
+
+#uploader-subscribe {
+  position: absolute;
+  padding: 2px 4px;
+  top: 5px;
+  right: 5px;
+  border: 1px solid #00a1d6;
+  border-radius: 4px;
+}
+
+#uploader-subscribe a {
+  cursor: pointer;
+}
+
+#uploader-subscribe:hover {
+  background-color: #d7f6ff;
+  cursor: pointer;
 }

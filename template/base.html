@@ -46,7 +46,7 @@
             </div>
             <div class="navi right link" onclick="location.href='{{ uri_for('favorites') }}'">Favorites</div>
             <div class="navi right link" onclick="location.href='{{ uri_for('history') }}'">History</div>
-            <div class="navi right link">Subscriptions</div>
+            <div class="navi right link" onclick="location.href='{{ uri_for('subscriptions') }}'">Subscriptions</div>
             <div class="navi right link" onclick="location.href='{{ uri_for('submit') }}'">Submit</div>
             {% else %}
             <div id="signup-nav-button" class="navi right link" onclick="location.href='{{ uri_for('signup') }}'">Sign up</div>

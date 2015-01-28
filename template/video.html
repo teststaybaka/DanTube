@@ -34,10 +34,40 @@
 {% endblock %}
 
 {% block body %}
-<div id="add-to-favorite">
-  <img src="/static/img/statistic_favor.png">
-  <span>Add to favorite</span>
+<div id="info-container" class="container">
+  <div id="video-info">
+    <div id="video-title">
+      <h2>{{ video.title }}</h2>
+    </div>
+    <div id="video-details">
+      <a href="/">Home<a> > 
+      <a href="{{ uri_for(video.category) }}">{{ video.category }}</a> > 
+      <a href="{{ uri_for([video.category, video.subcategory]|join('-')) }}">{{ video.subcategory }}</a>
+      <i>Hits: {{ video.hits }}</i>
+      <i>Danmakus: {{ video.danmaku_counter }}</i>
+      <i>Likes: {{ video.likes }}</i>
+      <i>Favors: {{ video.favors }}</i>
+    </div>
+    <div id="add-to-favorite">Add to favorites</div>
+  </div>
+  <div id="uploader-info">
+    <a href="{{ uploader.space_url}}" target="_blank">
+      <div id="uploader-avatar">
+        <img src="{{ uploader.avatar_url }}">
+      </div>
+    </a>
+    <div id="uploader-details">
+      <div id="uploader-nickname">
+        <a href="{{ uploader.space_url}}" target="_blank">{{ uploader.nickname }}</a>
+      </div>
+      <div id="uploader-intro">{{ uploader.intro }}</div>
+      <div id="uploader-subscribe" uid="{{ uploader.id }}">
+        <a>Subscribe</a>
+      </div>
+    </div>
+  </div>
 </div>
+
 <div id="player-container" class="container">
   <div id="player-controller">
     <div id="player-canvas">

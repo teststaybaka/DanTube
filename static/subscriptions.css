@@ -1,0 +1,53 @@
+#subs-user-list {
+  margin: 10px;
+}
+.user-info {
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 4px;
+  width: 210px;
+  position: relative;
+  display: inline-block;
+  margin: 20px 20px 0 0;
+}
+
+.user-avatar {
+  float: left;
+  position: relative;
+  margin-right: 10px;
+}
+
+.user-avatar img{
+  width: 55px;
+  height: 55px;
+}
+
+.user-details {
+  float: left;
+}
+
+.user-intro {
+  width: 140px;
+  height: 50px;
+  overflow: hidden;
+  margin-top: 5px;
+  line-height: 18px;
+}
+
+.user-unsubscribe {
+  position: absolute;
+  padding: 2px 4px;
+  top: 5px;
+  right: 5px;
+  border: 1px solid #00a1d6;
+  border-radius: 4px;
+}
+
+.user-unsubscribe a {
+  cursor: pointer;
+}
+
+.user-unsubscribe:hover {
+  background-color: #d7f6ff;
+  cursor: pointer;
+}

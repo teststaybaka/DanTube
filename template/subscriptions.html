@@ -1,0 +1,30 @@
+{% extends "template/account.html" %}
+{% block head %}
+{{ super() }}
+<link href="/static/subscriptions.css" rel="stylesheet" type="text/css">
+<script src="/static/subscriptions.js" language="JavaScript" type="text/javascript"></script>
+{% endblock %}
+
+{% block detail %}
+<div id="subs-user-list">
+  <h2>Subscriptions</h2>
+  {% for subs_user in subscribed_users %}
+  <div class="user-info container">
+    <a href="{{ subs_user.space_url}}" target="_blank">
+      <div class="user-avatar">
+        <img src="{{ subs_user.avatar_url }}">
+      </div>
+    </a>
+    <div class="user-details">
+      <div class="user-nickname">
+        <a href="{{ subs_user.space_url}}" target="_blank">{{ subs_user.nickname }}</a>
+      </div>
+      <div class="user-intro">{{ subs_user.intro }}</div>
+      <div class="user-unsubscribe" uid="{{ subs_user.id }}">
+        <a>Unsubscribe</a>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

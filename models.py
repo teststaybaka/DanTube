@@ -33,7 +33,7 @@ class User(webapp2_extras.appengine.auth.models.User):
   favorites_limit = ndb.IntegerProperty(default=100, required=True)
   # history = ndb.KeyProperty(kind='Video', repeated=True)
   history = ndb.StructuredProperty(History, repeated=True)
-  subscritions = ndb.KeyProperty(kind='User', repeated=True)
+  subscriptions = ndb.KeyProperty(kind='User', repeated=True)
   bullets = ndb.IntegerProperty(required=True, default=0)
   videos_submited = ndb.IntegerProperty(required=True, default=0)
   videos_watched = ndb.IntegerProperty(required=True, default=0)
@@ -46,8 +46,8 @@ class User(webapp2_extras.appengine.auth.models.User):
 
   def get_public_info(self):
     public_info = {}
+    public_info['id'] = self.key.id()
     public_info['nickname'] = self.nickname
-    public_info['email'] = self.email
     public_info['intro'] = self.intro
     public_info['created'] = self.created.strftime("%Y-%m-%d %H:%M")
     if self.avatar:
@@ -61,6 +61,7 @@ class User(webapp2_extras.appengine.auth.models.User):
 
   def get_private_info(self):
     private_info = {
+      'email': self.email,
       'bullets': self.bullets
     }
     
@@ -74,7 +75,7 @@ class User(webapp2_extras.appengine.auth.models.User):
       'space_visited': self.space_visited,
       'subscribers_counter': self.subscribers_counter,
       'favorites_counter': len(self.favorites),
-      'subscritions_counter': len(self.subscritions)
+      'subscriptions_counter': len(self.subscriptions)
     }
     return statistic_info
 
@@ -281,6 +282,7 @@ class Video(ndb.Model):
   def get_basic_info(self):
     basic_info = {
       'title': self.title,
+      'vid': self.vid,
       'url': '/video/'+ str(self.key.id()),
       'thumbnail_url': 'http://img.youtube.com/vi/' + self.vid + '/default.jpg',
       'created': self.created.strftime("%Y-%m-%d %H:%M"),

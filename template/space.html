@@ -1,8 +1,29 @@
 {% extends "template/base.html" %}
 {% block head %}
 {{ super() }}
+<script type="text/javascript">
+  $('#subscribe-button').click(function(e) {
+    var url = document.URL;
+    $.ajax({
+      type: "POST",
+      url: url + '/subscribe',
+      success: function(result) {
+        if(!result.error) {
+          alert('success');
+        } else {
+          console.log(result.message);                      
+        }
+      },
+      error: function (xhr, ajaxOptions, thrownError) {
+        console.log(xhr.status);
+        console.log(thrownError);
+      }
+    });
+  })
+</script>
 {% endblock %}
 
 {% block body %}
 <h2>{{ host.nickname }}'s Space</h2>
+<button id="subscribe-button" type="button">Subscribe</button>
 {% endblock %}

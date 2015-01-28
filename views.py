@@ -118,9 +118,10 @@ def login_required(handler):
         return handler(self, *args, **kwargs)
  
   return check_login
-
+import sys
 class Home(BaseHandler):
     def get(self):
+        logging.info(sys.getsizeof(self.user.history))
         self.render('index')
 
 class Video(BaseHandler):
@@ -240,14 +241,16 @@ class Watch(BaseHandler):
     def get(self, video_id):
         video = models.Video.get_by_id('dt'+video_id)
         if video is not None:
-            context = {'video': video, 'video_id': video_id}
+            uploader = models.User.get_by_id(video.uploader.id())
+            context = {'video': video.get_basic_info(), 'uploader': uploader.get_public_info()}
             self.render('video', context)
+
             video.hits += 1
             video.put()
-            user = self.user
-            uploader = models.User.get_by_id(video.uploader.id())
             uploader.videos_watched += 1
             uploader.put()
+
+            user = self.user
             if user is not None:
                 l = len(user.history)
                 videos = [h.video for h in user.history]
@@ -355,7 +358,6 @@ class Danmaku(BaseHandler):
 
     @login_required
     def post(self, video_id):
-        logging.info(self.request)
         self.response.headers['Content-Type'] = 'application/json'
         user = self.user
 
@@ -419,3 +421,65 @@ class Space(BaseHandler):
         self.render('space', {'host': host.get_public_info()})
         host.space_visited += 1
         host.put()
+
+class Subscribe(BaseHandler):
+    @login_required
+    def post(self, user_id):
+        self.response.headers['Content-Type'] = 'application/json'
+        host = self.user_model.get_by_id(int(user_id))
+        if not host:
+            self.response.out.write(json.dumps({
+                'error': True,
+                'message': 'user not found',
+            }))
+            return
+
+        user = self.user
+        l = len(user.subscriptions)
+        if host.key not in user.subscriptions:
+            if l >= 1000:
+                self.response.out.write(json.dumps({
+                    'error': True,
+                    'message': 'You have reached subscriptions limit.'
+                }))
+                return
+        
+            user.subscriptions.append(host.key)
+            user.put()
+            self.response.out.write(json.dumps({
+                'message': 'success'
+            }))
+            host.subscribers_counter += 1
+            host.put()
+        else:
+            self.response.out.write(json.dumps({
+                'error': True,
+                'message': 'already subscribed',
+            }))
+
+class Unsubscribe(BaseHandler):
+    @login_required
+    def post(self, user_id):
+        self.response.headers['Content-Type'] = 'application/json'
+        host = self.user_model.get_by_id(int(user_id))
+        if not host:
+            self.response.out.write(json.dumps({
+                'error': True,
+                'message': 'user not found',
+            }))
+            return
+
+        try:
+            user = self.user
+            user.subscriptions.remove(host.key)
+            user.put()
+            self.response.out.write(json.dumps({
+                'message': 'success'
+            }))
+            host.subscribers_counter -= 1
+            host.put()
+        except ValueError:
+            self.response.out.write(json.dumps({
+                'error': True,
+                'message': 'user not subscribed',
+            }))
