@@ -270,7 +270,7 @@ class Video(ndb.Model):
   title = ndb.StringProperty(required=True)
   category = ndb.StringProperty(required=True, choices=Video_Category)
   subcategory = ndb.StringProperty(required=True)
-  video_type = ndb.StringProperty(required=True, choices=['self-made', 'republish'])
+  video_type = ndb.StringProperty(required=True, choices=['self-made', 'republish'], default='republish')
 
   video_list_belonged = ndb.KeyProperty(kind='PlayList')
   video_order = ndb.IntegerProperty()
