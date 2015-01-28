@@ -1,6 +1,6 @@
 import webapp2
 
-import views, admin, login, account
+import views, admin, login, account, video
 import models
 
 secret_key = 'efrghtrrouhsmvnmxdiosjkgjfds68_=' \
@@ -37,7 +37,7 @@ routes = [
     webapp2.Route(r'/verify/<user_id:\d+>-<signup_token:.+>', account.Verification, name='verification'),
 
     webapp2.Route(r'/user/<user_id:\d+>', views.Space, name='space'),
-    webapp2.Route(r'/submit', views.Submit, name="submit"),
+    webapp2.Route(r'/submit', video.Submit, name="submit"),
     webapp2.Route(r'/video', views.Video, name="video"),
     webapp2.Route(r'/video/dt<video_id:\d+>', views.Watch, name="watch"),
     webapp2.Route(r'/video/dt<video_id:\d+>/danmaku', views.Danmaku, name="danmaku"),

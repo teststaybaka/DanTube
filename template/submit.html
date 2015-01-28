@@ -1,66 +1,77 @@
 {% extends "template/account.html" %}
 {% block head %}
 {{ super() }}
-<script src="/static/submit.js" language="JavaScript" type="text/javascript"></script>
 <script type="text/javascript">
 var video_subcategories = {};
 {% for key in category %}
   video_subcategories['{{ key }}'] = [{% for val in subcategory[key] %}'{{ val }}', {% endfor %}];
 {% endfor %}
 </script>
+<script src="/static/submit.js" language="JavaScript" type="text/javascript"></script>
 {% endblock %}
 
 {% block detail %}
 <div id="submit-container">
-  <div id="submit-header">
-      <h2>Submit Video</h2>
-  </div>
-  <div id="submit-form-container" class="form-container">
-    <form id="submitform" action="{{ uri_for('video') }}" method="post">
-      <div id="submit-form" class="form">
-          <div class="form-error">
-              {% if form_error %}
-                  <p>{{ form_error }}</p>
-              {% endif %}
-          </div>
-          <div class="form-body">
-              <div class="form-row">
-                <label for="title" class="form-label">Title</label>
-                <input type="text" class="inputtext" id="title" name="title" tabindex="1"></input>
-              </div>
-              <div class="form-row">
-                <label for="video-url" class="form-label">Video URL</label>
-                <input type="text" class="inputtext" id="video-url" name="video-url" tabindex="1"></input>
-              </div>
-              <div class="form-row">
-                <label for="category" class="form-label">Category</label>
-                <select name="category"  id="category">
-                  {% for key in category %}
-                    <option value="{{ key }}">{{ key }}</option>
-                  {% endfor %}
-                </select>
-              </div>
-              <div class="form-row">
-                <label for="subcategory" class="form-label">Subcategory</label>
-                <select name="subcategory" id="subcategory">
-                  {% for val in subcategory[category[0]] %}
-                    <option value="{{ val }}">{{ val }}</option>
-                  {% endfor %}
-                </select>
-              </div>
-              <div class="form-row">
-                <label for="description" class="form-label">Description</label>
-                <textarea class="inputtextarea" id="description" name="description" tabindex="1"></textarea>
-              </div>
-              <div id="playlist-button" class="form-row">
-                <button type="button" tabindex="1">+Add to playlist</button>
-              </div>
-              <div id="submit-button">
-                <input class="button" type="submit" value="Submit" tabindex="1" />
-              </div>
-          </div>
+  <form class="change" id="video-submission-form" action="{{ uri_for('video') }}" method="post">
+      <div class="input-line">
+        <label for="video-title">Title:</label>
+        <input type="text" id="video-title" name="title" tabindex="1" placeholder="No longer than 40 characters."></input>
+        <div class="input-error" id="video-title-error">Please.</div>
       </div>
-    </form>
-  </div>
+      <div class="input-line">
+        <label>Category:</label>
+        <select name="category"  id="select-category">
+          {% for key in category %}
+            <option value="{{ key }}">{{ key }}</option>
+          {% endfor %}
+        </select>
+        <select name="subcategory" id="select-subcategory">
+          {% for val in subcategory[category[0]] %}
+            <option value="{{ val }}">{{ val }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="input-line">
+        <label for="video-description" class="form-label">Description:</label>
+        <textarea class="inputtextarea" id="video-description" name="description" tabindex="1" placeholder="No longer than 2000 characters."></textarea>
+        <div class="input-error" id="video-description-error">Please.</div>
+      </div>
+      <div class="input-line">
+        <label>Type:</label>
+        <div class="option-button type select" id="self-made-option">Self-made</div>
+        <div class="option-button type" id="republish-option">Republish</div>
+        <input type="text" name="video-type-option" value="self-made" class="hidden" id="video-type-option">
+      </div>
+      <div class="input-line">
+        <label for="video-tags">Tags:</label>
+        <input type="text"  id="video-tags" name="tags" tabindex="1" placeholder="e.g., flying pig, the binding of isaac, sonic."></input>
+        <div class="input-error" id="video-tags-error">Please.</div>
+      </div>
+      <div class="input-line">
+        <label for="video-url">Video URL:</label>
+        <label for="video-url" class="explain">(Only support youtube source for now.)</label>
+        <input type="text" id="video-url" name="video-url" tabindex="1" placeholder="e,g., https://www.youtube.com/watch?v=8NNTvx5eoXE"></input>
+        <div class="input-error" id="video-url-error">Please.</div>
+      </div>
+      <div class="input-line">
+        <label>Playlist:</label>
+        <div class="option-button playlist select" id="no-playlist-option">No Playlist</div>
+        <div class="option-button playlist" id="add-to-playlist-option">Add to Playlist</div>
+        <div class="option-button playlist" id="new-playlist-option">New Playlist</div>
+        <input type="text" name="playlist-option" value="no-playlist" class="hidden" id="playlist-option">
+      </div>
+      <div class="input-line hide" id="new-playlist-input">
+        <label for="new-playlist-title">New Playlist Title:</label>
+        <input type="text" id="new-playlist-title" name="new-playlist-title" tabindex="1" placeholder="No longer than 40 characters."></input>
+      </div>
+      <div class="input-line hide" id="add-to-playlist-input">
+        <label for="select-playlist">Select Playlist:</label>
+        <input type="text" id="select-playlist" name="select-playlist" tabindex="1" placeholder="Click to search and select a previous list."></input>
+      </div>
+      <div>
+        <input class="save_change-button" type="submit" value="Submit Video" />
+        <div id="save-change-message">Change applied!</div>
+    </div>
+  </form>
 </div>
 {% endblock %}

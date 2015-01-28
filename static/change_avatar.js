@@ -4,10 +4,12 @@ function fileCheck() {
         if (file.size <= 0) {
             $('#file-error').addClass('show');
             $('#file-error').text('Invalid file.')
+            $('#upload-file-text').addClass('error');
             return false;
         } else if (file.size > 50*1024*1024) {
             $('#file-error').addClass('show');
             $('#file-error').text('Please select an image smaller than 50MB.');
+            $('#upload-file-text').addClass('error');
             return false;
         } else {
             var types = file.type.split('/');
@@ -15,15 +17,18 @@ function fileCheck() {
             if (types[0] != 'image') {
                 $('#file-error').addClass('show');
                 $('#file-error').text('Please select an image file.');
+                $('#upload-file-text').addClass('error');
                 return false;
             } else {
                 $('#file-error').removeClass('show');
+                $('#upload-file-text').removeClass('error');
                 return true;
             }
         }
     } else {
         $('#file-error').addClass('show');
         $('#file-error').text('Please select an image.')
+        $('#upload-file-text').addClass('error');
         return false;
     }
 }
@@ -113,15 +118,15 @@ $(document).ready(function() {
             data: data,
             success: function(result){
                 console.log(result);
-                if(result === 'success') {
+                if(!result.error) {
                     $('input.save_change-button').after('<div id="save-change-message" class="success show">Change applied successfully!</div>');
                     setTimeout(function(){
                         window.location.replace('/account'); 
-                    }, 3000);
+                    }, 1500);
                 } else {
-                    $('input.save_change-button').after('<div id="save-change-message" class="fail show">'+result+'</div>');
+                    $('input.save_change-button').after('<div id="save-change-message" class="fail show">'+result.message+'</div>');
+                    button.disabled = false;
                 }
-                button.disabled = false;
             },
             error: function (xhr, ajaxOptions, thrownError) {
                 console.log(xhr.status);
@@ -153,10 +158,11 @@ $(document).ready(function() {
                 type: "GET",
                 url: "/account/avatar/upload",
                 success: function(result) {
-                    if(!result.error) {
-                        console.log(result);
+                    console.log(result);
+                    if (!result.error) {
                         uploadImage(result.url, dataURL);
                     } else {
+                        $('input.save_change-button').after('<div id="save-change-message" class="fail show">'+result.message+'</div>');
                         button.disabled = false;
                     }
                 },

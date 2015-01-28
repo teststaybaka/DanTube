@@ -336,13 +336,39 @@ div.statistic-entry span {
     background-image: url("/static/img/statistic_foot.png");
 }
 
-#change-password-form, #change-nickname-form {
-    padding: 35px 25px;
-    padding-bottom: 0;
+#change-password-form, #change-nickname-form, #video-submission-form {
+    padding: 35px 25px 20px 25px;
 }
 
 form.change div.input-line {
-    margin-bottom: 20px;
+    padding-bottom: 35px;
+    position: relative;
+}
+
+form.change div.input-line.hide {
+    display: none;
+}
+
+@-webkit-keyframes up_to_down_expand {
+    from {height: 0;
+        padding-bottom: 0;}
+    to {height: 28px;
+        padding-bottom: 35px;}
+}
+
+/* Standard syntax */
+@keyframes up_to_down_expand {
+    from {height: 0;
+        padding-bottom: 0;}
+    to {height: 28px;
+        padding-bottom: 35px;}
+}
+
+form.change div.input-line.show {
+    -webkit-animation: up_to_down_expand 1s; /* Chrome, Safari, Opera */
+    animation: up_to_down_expand 1s;
+    overflow: hidden;
+    display: block;
 }
 
 form.change label {
@@ -352,22 +378,74 @@ form.change label {
     display: inline-block;
 }
 
-input[type=password], input[type=text] {
+form.change input[type=password], form.change input[type=text], form.change select, form.change textarea {
     padding: 5px;
     outline: none;
     font-size: 14px;
-    width: 250px;
+    width: 300px;
     border: 1px solid rgb(200,200,200);
 }
 
-input[type=password].error, input[type=text].error {
+form.change select {
+    width: 165px;
+    display: inline-block;
+    margin-right: 20px;
+}
+
+form.change input[type=password].error, form.change input[type=text].error, form.change textarea.error {
   box-shadow: 0 0 2px rgb(232,0,0);
   border: 1px solid rgb(232,0,0);
 }
 
-input[type=password]:focus, input[type=text]:focus {
+form.change input[type=password]:focus, form.change input[type=text]:focus, form.change textarea:focus {
   box-shadow: 0 0 2px rgb(81,203,238);
   border: 1px solid rgb(81,203,238);
+}
+
+form.change textarea {
+    vertical-align: text-top;
+    min-height: 130px;
+    max-height: 500px;
+    min-width:  320px;
+    max-width: 500px;
+}
+
+form.change input.hidden {
+    display: none;
+}
+
+form.change label.explain {
+    position: absolute;
+    left: 0;
+    font-size: 14px;
+    color: rgb(150,150,150);
+    width: 150px;
+    margin-top: -5px;
+    font-weight: normal;
+    display: block;
+}
+
+form.change div.option-button {
+    font-size: 15px;
+    padding: 7px 10px;
+    border-radius: 5px;
+    background-color: rgb(240,240,240);
+    cursor: pointer;
+    font-family:"Times New Roman",Georgia,Serif;
+    outline: none;
+    font-weight: normal;
+    color: rgb(130,130,130);
+    display: inline-block;
+    margin-right: 10px;
+}
+
+form.change div.option-button:hover {
+    background-color: rgb(220,220,220);
+}
+
+form.change div.option-button.select {
+    background-color: rgb(85,178,255);
+    color: rgb(255,255,255);  
 }
 
 form.change div.input-error {
@@ -378,6 +456,7 @@ form.change div.input-error {
     color: white;
     padding: 5px 10px;
     border-radius: 3px;
+    white-space: nowrap;
 }
 
 form.change div.input-error:after {
@@ -410,7 +489,6 @@ input.save_change-button {
     cursor: pointer;
     font-family:"Times New Roman",Georgia,Serif;
     outline: none;
-    font-weight: normal;
     color: rgb(100,100,100);
     font-weight: bold;
 }

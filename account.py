@@ -125,7 +125,6 @@ class ForgotPassword(BaseHandler):
         if self.user_info is not None:
             self.redirect(self.uri_for('home'))
             return
-
         self.render('forgot_password')
 
     def post(self):
@@ -231,15 +230,15 @@ class ChangePassword(BaseHandler):
 
     @login_required
     def post(self):
-        self.response.headers['Content-Type'] = 'text/plain'
+        self.response.headers['Content-Type'] = 'application/json'
         old_password = self.request.get('cur_password')
         if not old_password:
-            self.response.out.write('error. Please enter your old password.')
+            self.response.out.write(json.dumps({'error':True,'message': 'Please enter your old password.'}))
             return
 
         new_password = self.user_model.validate_password(self.request.get('new_password'))
         if not new_password:
-            self.response.out.write('error. Invalid new password.')
+            self.response.out.write(json.dumps({'error':True,'message': 'Invalid new password.'}))
             return
 
         user = self.user
@@ -248,15 +247,15 @@ class ChangePassword(BaseHandler):
             user.set_password(new_password)
             user.put()
         except (auth.InvalidAuthIdError, auth.InvalidPasswordError) as e:
-            self.response.out.write('error. Please enter the correct password.')
+            self.response.out.write(json.dumps({'error':True,'message': 'Please enter the correct password.'}))
             return
         except Exception, e:
             logging.info(e)
             logging.info(type(e))
-            self.response.out.write('error. unknown error.')
+            self.response.out.write(json.dumps({'error':True,'message': e}))
             return
 
-        self.response.out.write('success')
+        self.response.out.write(json.dumps({'error':False}))
 
 class ChangeNickname(BaseHandler):
     @login_required
@@ -265,17 +264,17 @@ class ChangeNickname(BaseHandler):
 
     @login_required
     def post(self):
-        self.response.headers['Content-Type'] = 'text/plain'
+        self.response.headers['Content-Type'] = 'application/json'
 
         user = self.user
         nickname = self.request.get('nickname')
         if nickname != self.user.nickname:
             nickname = self.user_model.validate_nickname(nickname)
             if not nickname:
-                self.response.out.write('error. Invalid nickname.')
+                self.response.out.write(json.dumps({'error':True,'message': 'Invalid nickname.'}))
                 return
         else:
-            self.response.out.write('error. Already Set.')
+            self.response.out.write(json.dumps({'error':True,'message': 'Already applied.'}))
             return
 
         try:
@@ -284,10 +283,10 @@ class ChangeNickname(BaseHandler):
         except Exception, e:
             logging.info(e)
             logging.info(type(e))
-            self.response.out.write('error. '+e)
+            self.response.out.write(json.dumps({'error':True,'message': e}))
             return 
 
-        self.response.out.write('success')
+        self.response.out.write(json.dumps({'error':False}))
 
 class ChangeAvatar(BaseHandler):
     @login_required
@@ -299,15 +298,14 @@ class AvatarUpload(BaseHandler, blobstore_handlers.BlobstoreUploadHandler):
     def get(self):
         upload_url = models.blobstore.create_upload_url('/account/avatar/upload')
         self.response.headers['Content-Type'] = 'application/json'
-        self.response.out.write(json.dumps({'url': upload_url}))
+        self.response.out.write(json.dumps({'error':False,'url': upload_url}))
 
-    @login_required
     def post(self):
         logging.info(self.request)
-        self.response.headers['Content-Type'] = 'text/plain'
-        upload = self.get_uploads('upload-avatar')  # 'file' is file upload field in the form
+        self.response.headers['Content-Type'] = 'application/json'
+        upload = self.get_uploads('upload-avatar')
         if upload == []:
-            self.response.out.write('error 1. Please select a file.')
+            self.response.out.write(json.dumps({'error':True,'message': 'Please select a file.'}))
             return
 
         uploaded_image = upload[0]
@@ -316,12 +314,12 @@ class AvatarUpload(BaseHandler, blobstore_handlers.BlobstoreUploadHandler):
         types = uploaded_image.content_type.split('/')
         if types[0] != 'image':
             uploaded_image.delete()
-            self.response.out.write('error 2. File type error.')
+            self.response.out.write(json.dumps({'error':True,'message': 'File type error.'}))
             return
 
         if uploaded_image.size > 50*1024*1024:
             uploaded_image.delete()
-            self.response.out.write('error 3. File is too large.')
+            self.response.out.write(json.dumps({'error':True,'message': 'File is too large.'}))
             return
 
         user = self.user
@@ -330,4 +328,4 @@ class AvatarUpload(BaseHandler, blobstore_handlers.BlobstoreUploadHandler):
             models.blobstore.BlobInfo(user.avatar).delete()
         user.avatar = uploaded_image.key()
         user.put()
-        self.response.out.write('success')
+        self.response.out.write(json.dumps({'error':False}))

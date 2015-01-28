@@ -109,7 +109,7 @@ def login_required(handler):
             self.response.headers['Content-Type'] = 'application/json'
             self.response.out.write(json.dumps({
                 'error': True,
-                'message': 'not logged in!'
+                'message': 'Please log in!'
             }))
             return
         else:
@@ -384,11 +384,6 @@ class Danmaku(BaseHandler):
                 'message': 'video not found',
             }))
 
-class Submit(BaseHandler):
-
-    @login_required
-    def get(self):
-        self.render('submit')
 
 class Player(BaseHandler):
     def get(self):

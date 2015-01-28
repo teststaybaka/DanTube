@@ -86,23 +86,20 @@ div.select-button {
     font-weight: bold;
 }
 
-div.input-error {
+form.change div.input-error {
   position: absolute;
   display: none;
-  background-color: rgb(192,62,62);
-  color: white;
-  padding: 5px 10px;
-  border-radius: 3px;
   bottom: 40px;
   left: 0;
-  max-width: 220px;
+  margin-left: 0;
 }
 
-div.input-error:after {
+form.change  div.input-error:after {
     content: "";
     width: 0;
     height: 0;
     position: absolute;
+    top: 100%;
     bottom: -5px;
     left: 50%;
     border-top: 6px solid rgb(192,62,62);
@@ -127,7 +124,7 @@ div.input-error:after {
         transform: translateY(0);}
 }
 
-div.input-error.show {
+form.change  div.input-error.show {
     display: inline-block;
     -webkit-animation: bottom_to_top_show .25s; /* Chrome, Safari, Opera */
     animation: bottom_to_top_show .25s;

@@ -124,6 +124,7 @@ div.link:hover {
 	height: 0;
 	width: 0;
 	position: absolute;
+	pointer-events: none;
 }
 
 #user-box:after {

@@ -23,7 +23,6 @@ class NicknameCheck(BaseHandler):
         # logging.info(res)
 
 class Signup(BaseHandler):
-
     def get(self):
         if self.user_info:
             self.redirect(self.uri_for('home'))
