@@ -67,6 +67,12 @@ $(document).ready(function() {
     } else if (urls[urls.length-1] === "nickname") {
         $("#sub-change-nickname").addClass("active");
         $("#account-top-title").text("Change Nickname");
+    } else if (urls[urls.length-1] === "video") {
+        $("#sub-videos").addClass("active");
+        $("#account-top-title").text("Your videos");
+    } else if (urls[urls.length-1] === "submit") {
+        $("#sub-submit").addClass("active");
+        $("#account-top-title").text("Video Submission");
     }
 
     $('.statistic-entry span').each(function() {
@@ -120,23 +126,21 @@ $(document).ready(function() {
             return false;
         }
 
-
         $.ajax({
             type: "POST",
             url: "/account/password",
             data: [{name: 'cur_password', value: cur_pw}, {name: 'new_password', value: new_pw}],
             success: function(result) {
                 console.log(result);
-                if(result === 'success') {
+                if(!result.error) {
                     $('input.save_change-button').after('<div id="save-change-message" class="success show">Change applied successfully!</div>');
-                    
-                    $("#cur-password").val('');
-                    $("#new-password").val('');
-                    $("#confirm-password").val('');
+                    setTimeout(function(){
+                        window.location.replace('/account'); 
+                    }, 1500);
                 } else {
-                    $('input.save_change-button').after('<div id="save-change-message" class="fail show">Change failed due to incorrect password!</div>');
+                    $('input.save_change-button').after('<div id="save-change-message" class="fail show">'+result.message+'</div>');
+                    button.disabled = false;
                 }
-                button.disabled = false;
             },
             error: function (xhr, ajaxOptions, thrownError) {
                 console.log(xhr.status);
@@ -210,7 +214,7 @@ $(document).ready(function() {
             $('#change-nickname-error').removeClass('show');
             $('#nickname-change').removeClass('error');
 
-            $('input.save_change-button').after('<div id="save-change-message" class="success show">Already applied!</div>');
+            $('input.save_change-button').after('<div id="save-change-message" class="fail show">Already applied!</div>');
             error = true;
         }
 
@@ -225,13 +229,16 @@ $(document).ready(function() {
             data: {nickname: nickname},
             success: function(result) {
                 console.log(result);
-                if(result === 'success') {
+                if(!result.error) {
                     cur_nickname = nickname;
-                    $('input.save_change-button').after('<div id="save-change-message" class="success show">Change applied successfully! Refresh to see the effect.</div>');
+                    $('input.save_change-button').after('<div id="save-change-message" class="success show">Change applied successfully!</div>');
+                    setTimeout(function(){
+                        window.location.replace('/account'); 
+                    }, 1500);
                 } else {
-                    $('input.save_change-button').after('<div id="save-change-message" class="fail show">Change failed!</div>');
+                    $('input.save_change-button').after('<div id="save-change-message" class="fail show">'+result.message+'</div>');
+                    button.disabled = false;
                 }
-                button.disabled = false;
             },
             error: function (xhr, ajaxOptions, thrownError) {
                 console.log(xhr.status);

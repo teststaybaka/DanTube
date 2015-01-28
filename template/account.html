@@ -12,7 +12,7 @@
             <img id="profile-img" src="{{ user.avatar_url }}" onclick="location.href='{{ uri_for('account') }}'">
         </div>
         <div id="profile-nickname">{{ user.nickname }}</div>
-        <div id="profile-signature">{{ user.intro }}</div>
+        <div id="profile-signature">{% if user.info %}{{ user.intro }}{% endif %}</div>
     </div>
     <div id="bottom-area">
         <div class="main-option" onclick="location.href='{{ uri_for('account') }}'">Account</div>
@@ -23,10 +23,10 @@
             <div class="sub-option" id="sub-change-nickname" onclick="location.href='{{ uri_for('change_nickname') }}'">Change Nickname</div>
             <div class="sub-option" onclick="location.href='{{ uri_for('send_verification') }}'">Email Verification</div>
         </div>
-        <div class="main-option">Video Manager</div>
+        <div class="main-option" onclick="location.href='{{ uri_for('manage_video') }}'">Video Manager</div>
         <div class="sub-menu">
-            <div class="sub-option" onclick="location.href='{{ uri_for('manage_video') }}'">Videos</div>
-            <div class="sub-option" onclick="location.href='{{ uri_for('submit') }}'">Submission</div>
+            <div class="sub-option" id="sub-videos" onclick="location.href='{{ uri_for('manage_video') }}'">Videos</div>
+            <div class="sub-option" id="sub-submit" onclick="location.href='{{ uri_for('submit') }}'">Submission</div>
         </div>
         <div class="main-option" onclick="location.href='{{ uri_for('subscriptions') }}'">Subscription</div>
         <div class="main-option" onclick="location.href='{{ uri_for('favorites') }}'">Favorites</div>
@@ -47,7 +47,13 @@
                 <div id="account-change-avatar" onclick="location.href='{{ uri_for('change_avatar') }}'">Change avatar</div>
             </div>
             <div id="account-detail">
-                <div class="detail-entry" id="account-email">{{ user.email }}</div>
+                <div class="detail-entry" id="account-email">{{ user.email }}
+                    {% if user.verified %}
+                    <div id="verified-icon"></div>
+                    {% else %}
+                    <div id="resend-email-link">Resend email.</div>
+                    {% endif %}
+                </div>
                 <div class="detail-entry" id="account-joint-time">Joined at {{ user.created }}.</div>
                 <div class="detail-entry" id="account-space-divide">--------------</div>
                 <div class="detail-entry" id="account-nickname">{{ user.nickname }}

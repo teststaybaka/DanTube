@@ -10,21 +10,13 @@ import time
 import re
 import logging
 
-# class User(db.Model):
-#     id = db.StringProperty(required=True)
-#     created = db.DateTimeProperty(auto_now_add=True)
-#     updated = db.DateTimeProperty(auto_now=True)
-#     username = db.StringProperty(required=True)
-#     email = db.EmailProperty(required=True)
-#     profile_url = db.StringProperty(required=True)
-#     messages = db.ListProperty(db.Key)
-
 class History(ndb.Model):
   video = ndb.KeyProperty(kind='Video', required=True)
   last_viewed_time = ndb.DateTimeProperty(auto_now_add=True)
   # last_viewed_timestamp
 
 class User(webapp2_extras.appengine.auth.models.User):
+  verified = ndb.BooleanProperty(required=True)
   nickname = ndb.StringProperty(required=True)
   intro = ndb.StringProperty(default="")
   avatar = ndb.BlobKeyProperty()
@@ -47,6 +39,7 @@ class User(webapp2_extras.appengine.auth.models.User):
   def get_public_info(self):
     public_info = {}
     public_info['id'] = self.key.id()
+    public_info['verified'] = self.verified
     public_info['nickname'] = self.nickname
     public_info['intro'] = self.intro
     public_info['created'] = self.created.strftime("%Y-%m-%d %H:%M")
@@ -175,7 +168,7 @@ class Message(ndb.Model):
 
 Video_Category = ['Anime', 'Music', 'Dance', 'Game', 'Entertainment', 'Techs', 'Sports', 'Movie', 'TV Drama']
 Video_SubCategory = {'Anime': ['Continuing Anime', 'Finished Anime', 'MAD/AMV/GMV', 'MMD/3D', 'Original/Voice Acting', 'General']
-                  , 'Music': ['Music Sharing', 'Cover Version', 'Instrument Playing', 'VOCALOID/UTAU', 'Music Selection', 'Sound Mix']
+                  , 'Music': ['Music Sharing', 'Cover Version', 'Instrument Playing', 'VOCALOID/UTAU', 'Music Selection', 'Sound Remix']
                   , 'Dance': ['Dance']
                   , 'Game': ['Game Video', 'Game Guides/Commentary', 'Eletronic Sports', 'Mugen']
                   , 'Entertainment': ['Funny Video', 'Animal Planet', 'Tasty Food', 'Entertainment TV Show']
@@ -202,7 +195,7 @@ URL_NAME_DICT = {
     'Instrument Playing': 'instrument',
     'VOCALOID/UTAU': 'vocaloid',
     'Music Selection': 'selection',
-    'Sound Mix': 'mix',
+    'Sound Remix': 'mix',
   }],
   'Dance': ['dance', {
     # Subcategories of Dance
@@ -254,6 +247,18 @@ class PlayList(ndb.Model):
   user_belonged = ndb.KeyProperty(kind='User', required=True)
   title = ndb.StringProperty(required=True)
   video_counter = ndb.IntegerProperty(required=True)
+  created = ndb.DateTimeProperty(auto_now_add=True)
+
+  def getVideoOrder(self):
+    self.video_counter += 1
+    self.put()
+    return self.video_counter
+
+  @classmethod
+  def Create_new_list(cls, user, title):
+    playList = PlayList(user_belonged = user, title = title, video_counter = 0)
+    playList.put()
+    return playList
 
 class Video(ndb.Model):
   url = ndb.StringProperty(indexed=False)
@@ -265,9 +270,10 @@ class Video(ndb.Model):
   title = ndb.StringProperty(required=True)
   category = ndb.StringProperty(required=True, choices=Video_Category)
   subcategory = ndb.StringProperty(required=True)
+  video_type = ndb.StringProperty(required=True, choices=['self-made', 'republish'])
 
-  # video_list_belonged = ndb.KeyProperty(kind='PlayList', required=True, indexed=False)
-  video_order = ndb.IntegerProperty(required=True)
+  video_list_belonged = ndb.KeyProperty(kind='PlayList')
+  video_order = ndb.IntegerProperty()
   danmaku_counter = ndb.IntegerProperty(required=True, default=0)
   comment_counter = ndb.IntegerProperty(required=True, default=0)
   tags = ndb.StringProperty(repeated=True);
@@ -334,7 +340,7 @@ class Video(ndb.Model):
     return cls.id_counter
 
   @classmethod
-  def Create(cls, raw_url, user, description, title, category, subcategory):
+  def Create(cls, raw_url, user, description, title, category, subcategory, video_type, tags):
     res = cls.parse_url(raw_url)
     if res.get('error'):
       # return 'URL Error.'
@@ -343,7 +349,6 @@ class Video(ndb.Model):
       if (category in Video_Category) and (subcategory in Video_SubCategory[category]):
         try:
           id = 'dt'+str(cls.getID())
-          logging.info(id)
           video = Video(
             # id = 'dt'+str(cls.getID()),
             key = ndb.Key('Video', id, parent=ndb.Key('EntityType', 'Video')),
@@ -355,9 +360,9 @@ class Video(ndb.Model):
             title = title, 
             category = category,
             subcategory = subcategory,
-            video_order = 1,
+            video_type = video_type,
+            tags = tags
           )
-          video.put()
         except:
           raise Exception('Failed to submit video')
         else:
