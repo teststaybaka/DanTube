@@ -97,6 +97,9 @@ class Submit(BaseHandler):
             }))
             return
 
+        thumbnail = self.request.get('thumbnail')
+        # logging.info(thumbnail)
+
         # res = models.Video.parse_url(raw_url)
         # logging.info(res)
         try:

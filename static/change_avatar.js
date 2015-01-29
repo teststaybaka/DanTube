@@ -1,38 +1,3 @@
-function fileCheck() {
-    var file = document.getElementById("upload-avatar").files[0];
-    if (file) {
-        if (file.size <= 0) {
-            $('#file-error').addClass('show');
-            $('#file-error').text('Invalid file.')
-            $('#upload-file-text').addClass('error');
-            return false;
-        } else if (file.size > 50*1024*1024) {
-            $('#file-error').addClass('show');
-            $('#file-error').text('Please select an image smaller than 50MB.');
-            $('#upload-file-text').addClass('error');
-            return false;
-        } else {
-            var types = file.type.split('/');
-            // console.log
-            if (types[0] != 'image') {
-                $('#file-error').addClass('show');
-                $('#file-error').text('Please select an image file.');
-                $('#upload-file-text').addClass('error');
-                return false;
-            } else {
-                $('#file-error').removeClass('show');
-                $('#upload-file-text').removeClass('error');
-                return true;
-            }
-        }
-    } else {
-        $('#file-error').addClass('show');
-        $('#file-error').text('Please select an image.')
-        $('#upload-file-text').addClass('error');
-        return false;
-    }
-}
-
 $(document).ready(function() {
     
     var crop_width, crop_height;
@@ -74,22 +39,43 @@ $(document).ready(function() {
 
     function readImage() {
         var file = document.getElementById("upload-avatar").files[0];
-        $('#file-input-line input[type=text]').val(file.name);
-        if (fileCheck()) {
-            console.log('file size:'+file.size);
-            console.log('file type:'+file.type);
-            var reader = new FileReader();
-            reader.onload = function(e) {
-                var image = new Image();
-                image.src = e.target.result;
+        if (file) {
+            if (file.size <= 0) {
+                $('#file-error').addClass('show');
+                $('#file-error').text('Invalid file.')
+                $('#upload-file-text').addClass('error');
+            } else if (file.size > 50*1024*1024) {
+                $('#file-error').addClass('show');
+                $('#file-error').text('Please select an image smaller than 50MB.');
+                $('#upload-file-text').addClass('error');
+            } else {
+                var types = file.type.split('/');
+                // console.log
+                if (types[0] != 'image') {
+                    $('#file-error').addClass('show');
+                    $('#file-error').text('Please select an image file.');
+                    $('#upload-file-text').addClass('error');
+                } else {
+                    $('#file-error').removeClass('show');
+                    $('#upload-file-text').removeClass('error');
+                    
+                    $('#file-input-line input[type=text]').val(file.name);
+                    console.log('file size:'+file.size);
+                    console.log('file type:'+file.type);
+                    var reader = new FileReader();
+                    reader.onload = function(e) {
+                        var image = new Image();
+                        image.src = e.target.result;
 
-                image.onload = function() {
-                    orig_width = this.width;
-                    orig_height = this.height;
-                    cropImage(this.src);
+                        image.onload = function() {
+                            orig_width = this.width;
+                            orig_height = this.height;
+                            cropImage(this.src);
+                        }
+                    }
+                    reader.readAsDataURL(file);
                 }
             }
-            reader.readAsDataURL(file);
         }
     }
 
@@ -102,13 +88,13 @@ $(document).ready(function() {
         var base64Data = image_url.split(',')[1];
         // var binaryData = window.atob(base64Data);
         // var binaryData = decodeBase64(base64Data);
-        var filename = document.getElementById('upload-avatar').files[0].name;
+        // var filename = document.getElementById('upload-avatar').files[0].name;
         // var data = '--' + sBoundary + '\r\n' + 
         //     'Content-Disposition: form-data; name="upload-avatar"; filename="' + filename + '"\n' + 
         //     'Content-Type: image/jpeg' + '\r\n\n' + binaryData + '\n' + '--' + sBoundary + '--\r\n';
 
         // http://stackoverflow.com/questions/6566240/saving-canvas-image-via-javascript-from-safari-5-0-x-to-appengine-blobstore-w
-        var arr = ['--' + sBoundary, 'Content-Disposition: form-data; name="upload-avatar"; filename="' + filename + '"',
+        var arr = ['--' + sBoundary, 'Content-Disposition: form-data; name="upload-avatar"; filename="avatar.png"',
             'Content-Transfer-Encoding: base64', 'Content-Type:  image/png', '', base64Data, '--' + sBoundary + '--'];
         var data = arr.join('\r\n');
         $.ajax({
@@ -137,13 +123,16 @@ $(document).ready(function() {
         // $('#avatar-upload-form').submit();
 
     }
-    document.getElementById('upload-avatar').addEventListener("change", readImage, false);
+    document.getElementById('upload-avatar').addEventListener("change", readImage);
     
     $('#avatar-upload-form').submit(function(evt) {
         $('#save-change-message').remove();
-        if (fileCheck()) {
+        if ($('#avatar-crop').length) {
             var button = document.querySelector('input.save_change-button');
             button.disabled = true;
+
+            $('#file-error').removeClass('show');
+            $('#upload-file-text').removeClass('error');
 
             var canvas = document.getElementById("crop-canvas");
             var ctx = canvas.getContext("2d");
@@ -172,6 +161,10 @@ $(document).ready(function() {
                     button.disabled = false;
                 }
             });
+        } else {
+            $('#file-error').addClass('show');
+            $('#file-error').text('Please select an image.')
+            $('#upload-file-text').addClass('error');
         }
         return false;
     });

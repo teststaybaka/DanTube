@@ -21,7 +21,7 @@ function descript_check() {
     var descrip = $('#video-description').val().trim();
     if (!descrip) {
         $('#video-description-error').addClass('show');
-        $('#video-description-error').text('Please write some description for your video.');
+        $('#video-description-error').text('Please write something for your video.');
         $('#video-description').addClass('error');
         return false;
     } else if (descrip.length > 2000) {
@@ -76,6 +76,51 @@ function url_check() {
     }
 }
 
+function resizeAndUpload(url, dataURL) {
+    var canvas = document.getElementById("crop-canvas");
+    var ctx = canvas.getContext("2d");
+    var img = document.getElementById("thumbnail-preview-img");
+    ctx.drawImage(img, 0, 0, 320, 180);
+    var dataURL = canvas.toDataURL('image/png');
+}
+
+function thumbnail_change() {
+    var file = document.getElementById("thumbnail-input").files[0];
+    if (file) {
+        if (file.size <= 0) {
+            $('#thumbnail-error').addClass('show');
+            $('#thumbnail-error').text('Invalid file.')
+        } else if (file.size > 50*1024*1024) {
+            $('#thumbnail-error').addClass('show');
+            $('#thumbnail-error').text('Please select an image smaller than 50MB.');
+        } else {
+            var types = file.type.split('/');
+            // console.log
+            if (types[0] != 'image') {
+                $('#thumbnail-error').addClass('show');
+                $('#thumbnail-error').text('Please select an image file.');
+            } else {
+                $('#thumbnail-error').removeClass('show');
+
+                if (!$('#thumbnail-preview-img').length) {
+                    $('#thumbnail-preview').append('<img id="thumbnail-preview-img">');
+                }
+
+                console.log('file size:'+file.size);
+                console.log('file type:'+file.type);
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    $('#thumbnail-preview-img').attr('src', e.target.result);
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+    } else {
+        $('#thumbnail-preview-img').remove();
+        $('#thumbnail-error').removeClass('show');
+    }
+}
+
 $(document).ready(function() {
     $('#select-category').change(function() {
         var subcategory = video_subcategories[$(this).val()];
@@ -118,8 +163,11 @@ $(document).ready(function() {
 
     $('#video-url').focusout(url_check);
 
+    document.getElementById('thumbnail-input').addEventListener("change", thumbnail_change);
+
     $('#video-submission-form').submit(function() {
         $('#save-change-message').remove();
+        $('#thumbnail-error').removeClass('show');
 
         var button = document.querySelector('input.save_change-button');
         button.disabled = true;

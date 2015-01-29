@@ -118,7 +118,7 @@ def login_required(handler):
         return handler(self, *args, **kwargs)
  
   return check_login
-import sys
+
 class Home(BaseHandler):
     def get(self):
         self.render('index')
