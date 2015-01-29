@@ -1,26 +1,14 @@
 $(document).ready(function() {
     // Retrieve Videos
     var urlparts = window.location.pathname.split('/');
-    $.ajax({
-        type: "GET",
-        url: "/video",
-        data: [{name: 'category', value: urlparts[1]}, {name: 'subcategory', value: urlparts[2]}],
-        success: function(results) {
-            if(!results.error) {
-                for(var i = 0; i < results.length; i++) {
-                    console.log(results[i]);
-                    $('#video-list').append('<div class="video-item">' + 
-                        '<div>' + results[i].title + '</div>' + 
-                        '<a href="' + results[i].url + '"><div><img src="' + results[i].thumbnail_url + '"></a></div>' + 
-                        '<div>Uploader: ' +  results[i].uploader.nickname + '</div>' + 
-                        '<div>Created at: ' + results[i].created + '</div>' + 
-                        '<div>Hits: ' + results[i].hits + ' Damakus: ' + results[i].danmaku_counter + ' </div></div>');
-                }
+    var query = {'category': urlparts[1], 'subcategory': urlparts[2], 'limit': 10};
+    get_video_list(query, function(err, videos) {
+        if(err) console.log(err);
+        else {
+            for(var i = 0; i < videos.length; i++) {
+                var div = render_video_div(videos[i]);
+                $('#video-list').append(div);
             }
-        },
-        error: function (xhr, ajaxOptions, thrownError) {
-            console.log(xhr.status);
-            console.log(thrownError);
         }
     });
 });

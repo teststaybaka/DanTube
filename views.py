@@ -121,7 +121,6 @@ def login_required(handler):
 import sys
 class Home(BaseHandler):
     def get(self):
-        logging.info(sys.getsizeof(self.user.history))
         self.render('index')
 
 class Video(BaseHandler):
@@ -133,7 +132,12 @@ class Video(BaseHandler):
         try:
             limit = int(self.request.get('limit'))
         except ValueError:
-            limit = 50
+            limit = 10
+        
+        try:
+            offset = int(self.request.get('offset'))
+        except ValueError:
+            offset = 0
 
         try:
             if category:
@@ -146,11 +150,11 @@ class Video(BaseHandler):
                         if url_name == subcategory:
                             subcategory = subcat_name
                             break
-                    videos = models.Video.query(models.Video.category == category, models.Video.subcategory == subcategory).fetch(limit=limit)
+                    videos = models.Video.query(models.Video.category == category, models.Video.subcategory == subcategory).fetch(limit=limit,  offset=offset)
                 else:
-                    videos = models.Video.query(models.Video.category == category).fetch(limit=limit)
+                    videos = models.Video.query(models.Video.category == category).fetch(limit=limit, offset=offset)
             else:
-                videos = models.Video.query().fetch(limit=limit)
+                videos = models.Video.query().fetch(limit=limit, offset=offset)
         except (KeyError, BadValueError) as e:
             self.response.out.write(json.dumps([]))
         except:
@@ -430,6 +434,13 @@ class Subscribe(BaseHandler):
             return
 
         user = self.user
+        if user == host:
+            self.response.out.write(json.dumps({
+                'error': True,
+                'message': 'cannot subscribe self'
+            }))
+            return
+
         l = len(user.subscriptions)
         if host.key not in user.subscriptions:
             if l >= 1000:
@@ -449,7 +460,7 @@ class Subscribe(BaseHandler):
         else:
             self.response.out.write(json.dumps({
                 'error': True,
-                'message': 'already subscribed',
+                'message': 'already subscribed'
             }))
 
 class Unsubscribe(BaseHandler):
@@ -460,12 +471,19 @@ class Unsubscribe(BaseHandler):
         if not host:
             self.response.out.write(json.dumps({
                 'error': True,
-                'message': 'user not found',
+                'message': 'user not found'
+            }))
+            return
+
+        user = self.user
+        if user == host:
+            self.response.out.write(json.dumps({
+                'error': True,
+                'message': 'cannot unsubscribe self'
             }))
             return
 
         try:
-            user = self.user
             user.subscriptions.remove(host.key)
             user.put()
             self.response.out.write(json.dumps({
@@ -476,5 +494,5 @@ class Unsubscribe(BaseHandler):
         except ValueError:
             self.response.out.write(json.dumps({
                 'error': True,
-                'message': 'user not subscribed',
+                'message': 'user not subscribed'
             }))

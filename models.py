@@ -363,6 +363,7 @@ class Video(ndb.Model):
             video_type = video_type,
             tags = tags
           )
+          video.put()
         except:
           raise Exception('Failed to submit video')
         else:
