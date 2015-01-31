@@ -1,9 +1,11 @@
 from google.appengine.ext import db
 from google.appengine.ext import ndb
+from google.appengine.datastore.datastore_query import Cursor
 import webapp2_extras.appengine.auth.models
 from webapp2_extras import security
 from google.appengine.ext import blobstore
 from google.appengine.api import images
+from datetime import datetime
 import urllib2
 import urlparse
 import time
@@ -265,6 +267,7 @@ class Video(ndb.Model):
   vid = ndb.StringProperty(required=True, indexed=False)
   source = ndb.StringProperty(required=True, choices=['youtube'])
   created = ndb.DateTimeProperty(auto_now_add=True)
+  last_liked = ndb.DateTimeProperty(default=datetime.now())
   uploader = ndb.KeyProperty(kind='User', required=True)
   description = ndb.StringProperty(required=True)
   title = ndb.StringProperty(required=True)
@@ -285,13 +288,136 @@ class Video(ndb.Model):
   bullets = ndb.IntegerProperty(required=True, default=0)
   be_collected = ndb.IntegerProperty(required=True, default=0)
 
+  _cls_var = 0
+  _page_size = 3
+  _page_cursors = {}
+  _video_counts = {}
+
+  @classmethod
+  def _get_query(cls, category="", subcategory=""):
+    if category:
+      if subcategory:
+        query = cls.query(cls.category==category, cls.subcategory==subcategory)
+      else:
+        query = cls.query(cls.category==category)
+    else:
+      query = cls.query()
+    return query
+
+  @classmethod
+  def _inc_video_count(cls, category="", subcategory=""):
+    count_key = category + ';' + subcategory
+    try:
+      cls._video_counts[count_key] += 1
+    except KeyError:
+      cls._video_counts[count_key] = cls._get_query(category, subcategory).count()
+      cls._video_counts[count_key] += 1
+
+  @classmethod
+  def _dec_video_count(cls, category="", subcategory=""):
+    count_key = category + ';' + subcategory
+    try:
+      cls._video_counts[count_key] -= 1
+    except KeyError:
+      cls._video_counts[count_key] = cls._get_query(category, subcategory).count()
+      cls._video_counts[count_key] -= 1
+
+  @classmethod
+  def get_video_count(cls, category="", subcategory=""):
+    count_key = category + ';' + subcategory
+    try:
+      video_count = cls._video_counts[count_key]
+    except KeyError:
+      cls._video_counts[count_key] = cls._get_query(category, subcategory).count()
+      video_count = cls._video_counts[count_key]
+
+    return video_count
+
+  @classmethod
+  def get_page_count(cls, category="", subcategory=""):
+    video_count = cls.get_video_count(category, subcategory)
+    logging.info(video_count)
+    page_count = -(-video_count // cls._page_size)
+
+    return page_count
+
+  @classmethod
+  def fetch_page(cls, category="", subcategory="", order="", page=1):
+    page_count = cls.get_page_count(category, subcategory)
+    if page > page_count:
+      return [], False
+    
+    query_key = category + ';' + subcategory + ';' + order._name
+    query = cls._get_query(category, subcategory)
+    query_forward = query.order(-order) # descending order as forward
+    query_backward = query.order(order)
+    
+    try:
+      cursors = cls._page_cursors[query_key]
+    except KeyError:
+      cls._page_cursors[query_key] = {}
+      cursors = cls._page_cursors[query_key]
+
+    logging.info(cursors)
+    logging.info('-------')
+    if page == 1:
+      videos, next_cursor, more = query_forward.fetch_page(cls._page_size)
+      if next_cursor:
+        cursors[page+1] = next_cursor
+    else:
+      is_last_page = False
+      if page == page_count:
+        if page in cursors: # already has the last page cursor, done
+          cursor = cursors[page]
+          videos, next_cursor, more = query_forward.fetch_page(cls._page_size, start_cursor=cursor)
+          return videos, more
+        else: # need to fetch the previous page to get the last page cursor
+          page -= 1
+          is_last_page = True
+
+      cached_pages = cursors.keys()
+      if not cached_pages:
+        offset = cls._page_size * (page - 1)
+        videos, next_cursor, more = query_forward.fetch_page(cls._page_size, offset=offset)
+        if next_cursor:
+          cursors[page+1] = next_cursor
+      else:
+        # find the nearest cached page, O(n) time, might be improved using btree
+        nearest_page = min(cached_pages, key=lambda x:abs(x-page))
+        
+        if nearest_page <= page:
+          cursor = cursors[nearest_page]
+          offset = cls._page_size * (page - nearest_page)
+          videos, next_cursor, more = query_forward.fetch_page(cls._page_size, offset=offset, start_cursor=cursor)
+          if next_cursor:
+            cursors[page+1] = next_cursor
+
+        else: # nearest_page >= page + 1
+          rev_cursor = cursors[nearest_page].reversed()
+          offset = cls._page_size * (nearest_page - page - 1)
+          videos, next_cursor, more = query_backward.fetch_page(cls._page_size, offset=offset, start_cursor=rev_cursor)
+          if next_cursor:
+            cursors[page] = next_cursor.reversed()
+
+      if is_last_page:
+        page += 1
+        try:
+          cursor = cursors[page]
+          videos, next_cursor, more = query_forward.fetch_page(cls._page_size, start_cursor=cursor)
+        except KeyError:
+          return [], False
+
+    logging.info(cursors)
+    logging.info(cls._page_cursors)
+    return videos, more
+
   def get_basic_info(self):
     basic_info = {
       'title': self.title,
       'vid': self.vid,
       'url': '/video/'+ str(self.key.id()),
       'thumbnail_url': 'http://img.youtube.com/vi/' + self.vid + '/default.jpg',
-      'created': self.created.strftime("%Y-%m-%d %H:%M"),
+      'created': self.created.strftime("%Y-%m-%d %H:%M:%S"),
       'category': self.category,
       'subcategory': self.subcategory,
       'hits': self.hits,
@@ -330,9 +456,10 @@ class Video(ndb.Model):
     try:
       cls.id_counter += 1
     except AttributeError:
-      latest_video = cls.query(ancestor=ndb.Key('EntityType', 'Video')).order(-cls.key).get()
+      latest_video = cls.query(ancestor=ndb.Key('EntityType', 'Video')).order(-cls.created).get()
       if latest_video is not None:
         max_id = int(latest_video.key.id()[2:])
+        logging.info(max_id)
         cls.id_counter = max_id + 1
       else:
         cls.id_counter = 1
@@ -347,8 +474,11 @@ class Video(ndb.Model):
       raise Exception(res['error'])
     else:
       if (category in Video_Category) and (subcategory in Video_SubCategory[category]):
+        cls._inc_video_count(category)
+        cls._inc_video_count(category, subcategory)  
         try:
           id = 'dt'+str(cls.getID())
+          logging.info(id)
           video = Video(
             # id = 'dt'+str(cls.getID()),
             key = ndb.Key('Video', id, parent=ndb.Key('EntityType', 'Video')),
@@ -364,7 +494,10 @@ class Video(ndb.Model):
             tags = tags
           )
           video.put()
-        except:
+        except Exception, e:
+          logging.info(e)
+          cls._dec_video_count(category)
+          cls._dec_video_count(category, subcategory)
           raise Exception('Failed to submit video')
         else:
           return video

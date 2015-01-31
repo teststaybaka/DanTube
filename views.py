@@ -118,26 +118,17 @@ def login_required(handler):
         return handler(self, *args, **kwargs)
  
   return check_login
-import sys
+
 class Home(BaseHandler):
     def get(self):
         self.render('index')
 
 class Video(BaseHandler):
     def get(self):
+        # models.Video.fetch_page()
         self.response.headers['Content-Type'] = 'application/json'
         category = self.request.get('category')
         subcategory = self.request.get('subcategory')
-
-        try:
-            limit = int(self.request.get('limit'))
-        except ValueError:
-            limit = 10
-        
-        try:
-            offset = int(self.request.get('offset'))
-        except ValueError:
-            offset = 0
 
         try:
             if category:
@@ -150,27 +141,70 @@ class Video(BaseHandler):
                         if url_name == subcategory:
                             subcategory = subcat_name
                             break
-                    videos = models.Video.query(models.Video.category == category, models.Video.subcategory == subcategory).fetch(limit=limit,  offset=offset)
                 else:
-                    videos = models.Video.query(models.Video.category == category).fetch(limit=limit, offset=offset)
+                    subcategory = ""
             else:
-                videos = models.Video.query().fetch(limit=limit, offset=offset)
+                category = ""
         except (KeyError, BadValueError) as e:
-            self.response.out.write(json.dumps([]))
-        except:
             self.response.out.write(json.dumps({
                 'error': True,
-                'message': 'Failed to retrieve video infos'
+                'message': 'Invalid category/subcategory'
             }))
-        else:
-            results = []
-            for video in videos:
-                uploader = models.User.get_by_id(video.uploader.id())
-                video_info = video.get_basic_info()
-                video_info['uploader'] = uploader.get_public_info()
-                results.append(video_info)
+            return
 
-            self.response.out.write(json.dumps(results))
+        order_str = self.request.get('order')
+        if not order_str:
+            order = models.Video.hits
+        elif order_str == 'hits':
+            order = models.Video.hits
+        elif order_str == 'created':
+            order = models.Video.created
+        # elif order_str == 'last_liked':
+        #     order = models.Video.last_liked
+        else:
+            self.response.out.write(json.dumps({
+                'error': True,
+                'message': 'Invalid order'
+            }))
+            return
+
+        page = self.request.get('page')
+        if not page:
+            page = 1
+        else:
+            try:
+                page = int(self.request.get('page'))
+            except ValueError:
+                self.response.out.write(json.dumps({
+                    'error': True,
+                    'message': 'Invalid page'
+                }))
+                return
+
+        videos, more = models.Video.fetch_page(category, subcategory, order, page)
+        # try:
+        #     videos, more = models.Video.fetch_page(category, subcategory, order, page)
+        # except Exception, e:
+        #     logging.info(e)
+        #     self.response.out.write(json.dumps({
+        #         'error': True,
+        #         'message': str(e)
+        #     }))
+        #     return
+
+        try:
+            limit = int(self.request.get('limit'))
+        except ValueError:
+            limit = len(videos)
+
+        results = []
+        for video in videos[0:limit]:
+            uploader = models.User.get_by_id(video.uploader.id())
+            video_info = video.get_basic_info()
+            video_info['uploader'] = uploader.get_public_info()
+            results.append(video_info)
+
+        self.response.out.write(json.dumps(results))
 
     @login_required
     def post(self):
@@ -408,6 +442,8 @@ class Subcategory(BaseHandler):
         context = {}
         context['category_name'] = category
         context['subcategory_name'] = subcategory
+        context['video_count'] = models.Video.get_video_count(category, subcategory)
+        context['page_count'] = models.Video.get_page_count(category, subcategory)
         self.render('subcategory', context)
 
 class Space(BaseHandler):
