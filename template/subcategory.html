@@ -1,12 +1,23 @@
 {% extends "template/base.html" %}
 {% block head %}
 {{ super() }}
+<link href="/static/subcategory.css" rel="stylesheet" type="text/css">
 <script src="/static/videolist.js" language="JavaScript" type="text/javascript"></script>
 <script src="/static/subcategory.js" language="JavaScript" type="text/javascript"></script>
 {% endblock %}
 
 {% block body %}
 <h2>{{ category_name }}>>{{ subcategory_name }}</h2>
+<div class="order-option">
+  <a prop="last_liked">Order by last liked</a>
+  <a prop="hits">Order by hits</a>
+  <a prop="created">Order by created</a>
+</div>
 <div id="video-list">
+</div>
+<div class="page-navigator">
+  <span id="total-count">Total: <i id="page-count">{{ page_count }}</i> Pages / <i id="video-count">{{ video_count }}</i> Videos</span>
+  <input type="text" id="jumptopage"></input>
+  <button type="button">Go</button>
 </div>
 {% endblock %}

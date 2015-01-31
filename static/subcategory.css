@@ -1,0 +1,45 @@
+.order-option .on{
+  background: #00a1d6;
+  color: #fff;
+}
+
+.order-option .on:hover{
+  background: #00a1d6;
+  color: #fff;
+}
+
+.order-option a:hover{
+  background: #eee;
+}
+
+.order-option a{
+  cursor: pointer;
+  padding: 2px 10px;
+  margin-left: 5px;
+  line-height: 20px;
+  height: 20px;
+  border-radius: 4px;
+}
+
+.page-navigator {
+  margin-top: 10px;
+}
+
+.page-navigator span, a, strong {
+  min-width: 15px;
+  margin: 0 2px 0 2px;
+  padding: 0 5px 0 5px;
+  height: 24px;
+}
+
+.page-navigator a {
+  cursor: pointer;
+  border: solid 1px #ccc;
+  border-radius: 4px;
+}
+
+.page-navigator a:hover {
+  border: solid 1px #bbb;
+  background-color: #bbb;
+  transition: 0.2s all;
+}
