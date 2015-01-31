@@ -5,9 +5,9 @@ function title_check() {
         $('#video-title-error').text('Please enter a title for your video');
         $('#video-title').addClass('error');
         return false;
-    } else if (title.length > 40) {
+    } else if (title.length > 100) {
         $('#video-title-error').addClass('show');
-        $('#video-title-error').text('Video title can\'t exceed 40 characters.');
+        $('#video-title-error').text('Video title can\'t exceed 100 characters.');
         $('#video-title').addClass('error');
         return false;
     } else {

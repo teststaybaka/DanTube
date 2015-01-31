@@ -123,7 +123,6 @@ div.sub-option.active {
     color: rgb(0,50,200);
 }
 
-
 #account-detail {
     display: inline-block;
     float: left;
@@ -518,15 +517,6 @@ form.change div.input-error.show {
     display: inline-block;
     top: 0;
     left: 0;
-    background-color: white;
-}
-
-#crop-canvas-container {
-  display: none;
-}
-
-#crop-canvas {
-  background-color: white;
 }
 
 input.save_change-button {

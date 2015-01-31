@@ -62,9 +62,9 @@ div.left {
 }
 
 div.navi {
-	margin-top: 10px;
-	padding: 6px 10px;
-	margin-left: 5px;
+	margin-top: 15px;
+	padding: 3px 5px;
+	margin-left: 10px;
 	cursor: pointer;
 	display: inline-block;
 	/*color: rgb(100,100,100);*/
@@ -156,8 +156,8 @@ div.link:hover {
 
 #user-box.hide {
 	opacity: 0;
-	-webkit-animation: user_box_hide .25s; /* Chrome, Safari, Opera */
-    animation: user_box_hide .25s;
+	-webkit-animation: user_box_hide .15s; /* Chrome, Safari, Opera */
+    animation: user_box_hide .15s;
 }
 
 #user-box-nickname {
