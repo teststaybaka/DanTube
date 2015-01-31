@@ -274,6 +274,7 @@ class Video(ndb.Model):
   category = ndb.StringProperty(required=True, choices=Video_Category)
   subcategory = ndb.StringProperty(required=True)
   video_type = ndb.StringProperty(required=True, choices=['self-made', 'republish'], default='republish')
+  thumbnail = ndb.BlobKeyProperty()
 
   video_list_belonged = ndb.KeyProperty(kind='PlayList')
   video_order = ndb.IntegerProperty()
@@ -412,11 +413,16 @@ class Video(ndb.Model):
     return videos, more
 
   def get_basic_info(self):
+    if self.thumbnail is None:
+      thumbnail_url = 'http://img.youtube.com/vi/' + self.vid + '/default.jpg'
+    else:
+      thumbnail_url = images.get_serving_url(self.thumbnail)
+
     basic_info = {
       'title': self.title,
       'vid': self.vid,
       'url': '/video/'+ str(self.key.id()),
-      'thumbnail_url': 'http://img.youtube.com/vi/' + self.vid + '/default.jpg',
+      'thumbnail_url': thumbnail_url,
       'created': self.created.strftime("%Y-%m-%d %H:%M:%S"),
       'category': self.category,
       'subcategory': self.subcategory,

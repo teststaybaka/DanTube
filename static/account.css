@@ -420,9 +420,9 @@ form.change label.explain {
     font-size: 14px;
     color: rgb(150,150,150);
     width: 150px;
-    margin-top: -5px;
+    margin-top: 25px;
     font-weight: normal;
-    display: block;
+    display: inline-block;
 }
 
 form.change div.option-button {
@@ -476,6 +476,57 @@ form.change div.input-error.show {
     display: inline-block;
     -webkit-animation: left_to_right_show .25s; /* Chrome, Safari, Opera */
     animation: left_to_right_show .25s;
+}
+
+#thumbnail-input {
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    position: absolute;
+    cursor: pointer;
+    padding: 0;
+    margin: 0;
+    font-size: 0;
+}
+
+#thumbnail-preview {
+    background: rgb(240,240,240);
+    width: 160px;
+    height: 90px;
+    display: inline-block;
+    vertical-align: text-top;
+    cursor: pointer;
+    position: relative;
+    box-shadow: 0 0 1px rgb(100,100,100);
+}
+
+#thumbnail-hint {
+    max-width: 80%;
+    font-size: 14px;
+    color: rgb(150,150,150);
+    margin: auto;
+    text-align: center;
+    margin-top: 20px;
+    pointer-events: none;
+}
+
+#thumbnail-preview-img {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    pointer-events: none;
+    display: inline-block;
+    top: 0;
+    left: 0;
+    background-color: white;
+}
+
+#crop-canvas-container {
+  display: none;
+}
+
+#crop-canvas {
+  background-color: white;
 }
 
 input.save_change-button {
