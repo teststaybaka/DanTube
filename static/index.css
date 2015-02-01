@@ -262,15 +262,20 @@ div.video-preview:hover div.video-preview-title {
 }
 
 div.video-preview-hits, div.video-preview-danmaku-num {
-    width: 90px;
+    width: 80px;
     overflow: hidden;
     display: inline-block;
     font-size: 14px;
     color: rgb(150,150,150);
+    padding-left: 12px;
+    background-image: url("/static/img/play-icon-preview.png");
+    background-repeat: no-repeat;
+    background-position: 0 2px;
 }
 
 div.video-preview-danmaku-num {
-    width: 65px;
+    width: 50px;
+    background-image: url("/static/img/danmaku-preview.png");
 }
 
 div.video-preview-popup {
@@ -303,9 +308,28 @@ div.popup-statistic-line {
 }
 
 div.popup-statistic-entry {
-    width: 22%;
+    width: 19%;
     display: inline-block;
     padding: 7px 2px;
+    background-repeat: no-repeat;
+    background-position: 0 9px;
+    padding-left: 12px;
+}
+
+div.popup-statistic-entry.views {
+    background-image: url("/static/img/play-icon-preview.png");
+}
+
+div.popup-statistic-entry.favorites {
+    background-image: url("/static/img/favorites-preview.png");
+}
+
+div.popup-statistic-entry.danmaku {
+    background-image: url("/static/img/danmaku-preview.png");
+}
+
+div.popup-statistic-entry.bullets {
+    background-image: url("/static/img/bullets-preview.png");
 }
 
 div.popup-intro {

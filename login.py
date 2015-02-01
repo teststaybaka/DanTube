@@ -73,7 +73,7 @@ class Signup(BaseHandler):
         message.body = """
         Dear %s:
 
-        Your verification url is:
+        Please use the following url to activate your account:
         %s
         """ % (nickname, verification_url)
         logging.info(message.body)
@@ -176,7 +176,7 @@ class ForgotPassword(BaseHandler):
 class ForgotPasswordReset(BaseHandler):
     def validateToken(self, user_id, pwdreset_token):
         if self.user:
-            return {'error':True,'message': 'You are already logged in.'}, None
+            return {'error':True,'message': 'You have already signed in.'}, None
 
         user = None
         user, ts = self.user_model.get_by_auth_token(user_id, pwdreset_token, 'pwdreset')
@@ -188,7 +188,7 @@ class ForgotPasswordReset(BaseHandler):
         time_passed = time.mktime(datetime.now().timetuple()) - ts
         if time_passed > 24 * 60 * 60: # 24 hours
             self.user_model.delete_pwdreset_token(user_id, pwdreset_token)
-            return {'error':True,'message': "Reset url is expired, please make a new request."}, None
+            return {'error':True,'message': "Reset url has expired. Please make a new request."}, None
 
         return {'error':False}, user
 

@@ -117,7 +117,7 @@ class SendVerification(BaseHandler):
         message.body = """
         Dear %s:
 
-        Your verification url is:
+        Please use the following url to activate your account:
         %s
         """ % (user.nickname, verification_url)
         logging.info(message.body)
