@@ -6,27 +6,24 @@
 {% endblock %}
 
 {% block body %}
-<div id="signup-container">
-    <div id="signup-header">Sign up</div>
+<div id="signin_up-container">
+    <div id="signin_up-header">Sign up</div>
     <form id="signupform" action="{{ uri_for('signup') }}" method="post">
-        <label for="email" class="form-label">Email:</label>
-        <div class="input-error-message" id="email-error">
-            <span>Email address invalid.</span>
-            <div class="error-message-arrow"></div>
+        <div class="input-line">
+            <label for="email" class="form-label">Email:</label>
+            <div class="input-error" id="email-error">Email address invalid.</div>
+            <input type="text" class="inputtext" id="email" name="email" tabindex="1" placeholder="Enter your email">
         </div>
-        <input type="text" class="inputtext" id="email" name="email" tabindex="1" placeholder="Enter your email"></input>
-        <label for="nickname" class="form-label">Nickname:</label>
-        <div class="input-error-message" id="nickname-error">
-            <span>Someone has used this name.</span>
-            <div class="error-message-arrow"></div>
+        <div class="input-line">
+            <label for="nickname" class="form-label">Nickname:</label>
+            <div class="input-error" id="nickname-error">Email address invalid.</div>
+            <input type="text" class="inputtext" id="nickname" name="nickname" tabindex="2" placeholder="Your nickname can be changed later">
         </div>
-        <input type="text" class="inputtext" id="nickname" name="nickname" tabindex="2" placeholder="Your nickname can be changed later"></input>
-        <label for="password" class="form-label">Password:</label>
-        <div class="input-error-message" id="password-error">
-            <span>Please enter a password.</span>
-            <div class="error-message-arrow"></div>
+        <div class="input-line">
+            <label for="password" class="form-label">Password:</label>
+            <div class="input-error" id="password-error">Email address invalid.</div>
+            <input type="password" class="inputpassword" id="password" name="password" tabindex="3" placeholder="New password">
         </div>
-        <input type="password" class="inputpassword" id="password" name="password" tabindex="3" placeholder="New password"></input>
         <input class="signin_up-button" type="submit" value="Sign up"/>
         <a class="signin_up-link" href="{{ uri_for('signin') }}">Already have an account?</a>
     </form>

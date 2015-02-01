@@ -140,18 +140,17 @@ class ForgotPassword(BaseHandler):
         if self.user_info is not None:
             self.redirect(self.uri_for('home'))
             return
-            
-        email_or_nickname = self.request.get('email-or-nickname')
-        if not email_or_nickname:
-            self.render('forgot_password', {'error': 'please enter your email or nickname'})
+        
+        self.response.headers['Content-Type'] = 'application/json'
+        email = self.request.get('email')
+        if not email:
+            self.response.out.write(json.dumps({'error':True,'message': 'Please enter your email address.'}))
             return
 
-        user = models.User.query(models.User.auth_ids == email_or_nickname).get()
+        user = models.User.query(models.User.auth_ids == email).get()
         if user is None:
-            user = models.User.query(models.User.nickname == email_or_nickname).get()
-            if user is None:
-                self.render('forgot_password', {'error': 'The email or nickname you entered does not exist!'})
-                return
+            self.response.out.write(json.dumps({'error':True,'message': 'The email address you entered does not exist.'}))
+            return
 
         user_id = user.get_id()
 
@@ -179,7 +178,7 @@ class ForgotPassword(BaseHandler):
         logging.info(message.body)
         message.send()
 
-        self.notify('The password reset link has been sent to your email!')
+        self.response.out.write(json.dumps({'error':False}))
 
 class ForgotPasswordReset(BaseHandler):
     def validateToken(self, user_id, pwdreset_token):
@@ -256,7 +255,7 @@ class ChangePassword(BaseHandler):
             user.set_password(new_password)
             user.put()
         except (auth.InvalidAuthIdError, auth.InvalidPasswordError) as e:
-            self.response.out.write(json.dumps({'error':True,'message': 'Please enter the correct password.'}))
+            self.response.out.write(json.dumps({'error':True,'message': 'Password incorrect.'}))
             return
         except Exception, e:
             logging.info(e)

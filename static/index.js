@@ -1,12 +1,15 @@
-var isAnimating = false;
+var isSlideAnimating = false;
 function Slide_Animation(ele, fromIndex, toIndex) {
     var startTime = Date.now();
-    var duration = 200;
+    var duration = 250;
     var fromX = fromIndex*document.getElementById('ranking-slides').offsetWidth;
     var toX = toIndex*document.getElementById('ranking-slides').offsetWidth;
 
     this.startAnimation = function() {
         requestAnimationFrame(update);
+        $('div.slide-title').remove();
+        $('div.slide-bottom').append('<div class="slide-title show">WHY!? WHY DID YOU HAVE TO DO THAT!? | Exoptable Money (Prequel to Presentable Liberty)</div>');
+        isSlideAnimating = true;
     }
     function update() {
         var percent = (Date.now() - startTime)/duration;
@@ -23,9 +26,19 @@ function Slide_Animation(ele, fromIndex, toIndex) {
             ele.style.WebkitTransform = "translateX(-"+toX+"px)";
             ele.style.msTransform = "translateX(-"+toX+"px)";
             ele.style.transform = "translateX(-"+toX+"px)";
-            isAnimating = false;
+            isSlideAnimating = false;
+            window.slideTimeout = setTimeout(slideChange, 5000);
         }
     }
+}
+
+function slideChange() {
+    var preIndex = 4 - $('div.slide-dot').index($('div.slide-dot.active'));
+    var index = (preIndex + 1)%5;
+    $('div.slide-dot.active').removeClass('active');
+    $('div.slide-dot:eq('+(4-index)+')').addClass('active');
+    var slide_Animation = new Slide_Animation(document.getElementById('slide-container'), preIndex, index);
+    slide_Animation.startAnimation();
 }
 
 $(document).ready(function() {
@@ -40,21 +53,18 @@ $(document).ready(function() {
         }
     });
 
-    $('div.slide-dot').click(function(evt) {
-        if (isAnimating) return;
+    window.slideTimeout = setTimeout(slideChange, 5000);
 
-        if ($(evt.target).hasClass('active')) {
-            return;
-        }
+    $('div.slide-dot').click(function(evt) {
+        if (isSlideAnimating) return;
+        if ($(evt.target).hasClass('active')) return;
+        
+        clearTimeout(window.slideTimeout);
         var preIndex = 4 - $('div.slide-dot').index($('div.slide-dot.active'));
-        $('div.slide-dot').removeClass('active');
+        $('div.slide-dot.active').removeClass('active');
         $(evt.target).addClass('active');
         var index = 4 - $('div.slide-dot').index(evt.target);
-        isAnimating = true;
         var slide_Animation = new Slide_Animation(document.getElementById('slide-container'), preIndex, index);
         slide_Animation.startAnimation();
-
-        $('div.slide-title').remove();
-        $('div.slide-bottom').append('<div class="slide-title show">WHY!? WHY DID YOU HAVE TO DO THAT!? | Exoptable Money (Prequel to Presentable Liberty)</div>');
     });
 });

@@ -4,11 +4,11 @@ $(document).ready(function() {
         var puncts = /[@.,?!;:/\\"']/;
         if (!nickname || puncts.test(nickname)) {
             $('#nickname-error').addClass('show');
-            $('#nickname-error span').text('Your nickname can\'t contain: @ . , ? ! ; : / \\ \" \'');
+            $('#nickname-error').text('Your nickname can\'t contain: @ . , ? ! ; : / \\ \" \'');
             $(evt.target).addClass('error');
         } else if (nickname.length > 30) {
             $('#nickname-error').addClass('show');
-            $('#nickname-error span').text('Nickname can\'t exceed 30 characters.');
+            $('#nickname-error').text('Nickname can\'t exceed 30 characters.');
             $(evt.target).addClass('error');
         } else {
             $.ajax({
@@ -22,7 +22,7 @@ $(document).ready(function() {
                         $(evt.target).removeClass('error');
                     } else {
                         $('#nickname-error').addClass('show');
-                        $('#nickname-error span').text('Someone has used this name.');
+                        $('#nickname-error').text('Someone has used this name.');
                         $(evt.target).addClass('error');
                     }
                 },
@@ -38,19 +38,19 @@ $(document).ready(function() {
         var password = evt.target.value;
         if (!password) {
             $('#password-error').addClass('show');
-            $('#password-error span').text('Please enter a password.');
+            $('#password-error').text('Please enter a password.');
             $(evt.target).addClass('error');
         } else if (!password.trim()) {
             $('#password-error').addClass('show');
-            $('#password-error span').text('Password can\'t be all spaces.');
+            $('#password-error').text('Password can\'t be all spaces.');
             $(evt.target).addClass('error');
         } else if (password.length < 6) {
             $('#password-error').addClass('show');
-            $('#password-error span').text('Password must contain at least 6 characters.');
+            $('#password-error').text('Password must contain at least 6 characters.');
             $(evt.target).addClass('error');
         } else if (password.length > 40) {
             $('#password-error').addClass('show');
-            $('#password-error span').text('Password can\'t exceed 40 characters.');
+            $('#password-error').text('Password can\'t exceed 40 characters.');
             $(evt.target).addClass('error');
         } else {
             $('#password-error').removeClass('show');
@@ -63,7 +63,7 @@ $(document).ready(function() {
         var email_re = /^[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/;
         if (!email || !email_re.test(email)) {
             $('#email-error').addClass('show');
-            $('#email-error span').text('Email address invalid.');
+            $('#email-error').text('Email address invalid.');
             $(evt.target).addClass('error');
         } else {
             $.ajax({
@@ -77,7 +77,7 @@ $(document).ready(function() {
                         $(evt.target).removeClass('error');
                     } else {
                         $('#email-error').addClass('show');
-                        $('#email-error span').text('Email addres has been used.');
+                        $('#email-error').text('Email addres has been used.');
                         $(evt.target).addClass('error');
                     }
                 },
@@ -101,7 +101,7 @@ $(document).ready(function() {
         var email_re = /^[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/;
         if (!email || !email_re.test(email)) {
             $('#email-error').addClass('show');
-            $('#email-error span').text('Email address invalid.');
+            $('#email-error').text('Email address invalid.');
             $('#signupform input[name="email"]').addClass('error');
             error = true;
         }
@@ -109,22 +109,22 @@ $(document).ready(function() {
         var password = $('#signupform input[name="password"]')[0].value;
         if (!password) {
             $('#password-error').addClass('show');
-            $('#password-error span').text('Please enter a password.');
+            $('#password-error').text('Please enter a password.');
             $('#signupform input[name="password"]').addClass('error');
             error = true;
         } else if (!password.trim()) {
             $('#password-error').addClass('show');
-            $('#password-error span').text('Password can\'t be all spaces.');
+            $('#password-error').text('Password can\'t be all spaces.');
             $('#signupform input[name="password"]').addClass('error');
             error = true;
         } else if (password.length < 6){
             $('#password-error').addClass('show');
-            $('#password-error span').text('Password must contain at least 6 characters.');
+            $('#password-error').text('Password must contain at least 6 characters.');
             $('#signupform input[name="password"]').addClass('error');
             error = true;
         }  else if (password.length > 40) {
             $('#password-error').addClass('show');
-            $('#password-error span').text('Password can\'t exceed 40 characters.');
+            $('#password-error').text('Password can\'t exceed 40 characters.');
             $('#signupform input[name="password"]').addClass('error');
             error = true;
         }
@@ -133,19 +133,19 @@ $(document).ready(function() {
         var puncts = /[@.,?!;:/\\"']/;
         if (!nickname || puncts.test(nickname)) {
             $('#nickname-error').addClass('show');
-            $('#nickname-error span').text('Your nickname can\'t contain: @ . , ? ! ; : / \\ \" \'');
+            $('#nickname-error').text('Your nickname can\'t contain: @ . , ? ! ; : / \\ \" \'');
             $('#signupform input[name="nickname"]').addClass('error');
             error = true;
         } else if (nickname.length > 30) {
             $('#nickname-error').addClass('show');
-            $('#nickname-error span').text('Nickname can\'t exceed 30 characters.');
+            $('#nickname-error').text('Nickname can\'t exceed 30 characters.');
             $('#signupform input[name="nickname"]').addClass('error');
             error = true;
         }
 
         if (error) {
             button.disabled = false;
-            $('#signup-header').removeClass('loading');
+            $('#signin_up-header').removeClass('loading');
             return false;
         }
 
@@ -155,18 +155,18 @@ $(document).ready(function() {
             data: $('#signupform').serialize(),
             success: function(result) {
                 console.log(result);
-                if(result === 'success') {
+                if(!result.error) {
                     $('#signup-message').remove();
-                    $('#signup-header').after('<div id="signup-message" class="success">Sign up successfully! An email has been sent to you to activate your account. Redirecting to home page in 3 seconds...</div>');
+                    $('#signupform').prepend('<div id="signup-message" class="success">Sign up successfully! Check your email to activate your account.</div>');
                     setTimeout(function(){
                         window.location.replace('/'); 
                     }, 3000);
                 } else {
                     $('#signup-message').remove();
-                    $('#signup-header').after('<div id="signup-message" class="fail">Sign up failed for some reason.</div>');
+                    // $('#signupform').prepend('<div id="signup-message" class="fail">Sign up failed.</div>');
                     button.disabled = false;
                 }
-                $('#signup-header').removeClass('loading');
+                $('#signin_up-header').removeClass('loading');
             },
             error: function (xhr, ajaxOptions, thrownError) {
                 console.log(xhr.status);

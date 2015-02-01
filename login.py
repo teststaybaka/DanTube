@@ -30,18 +30,18 @@ class Signup(BaseHandler):
             self.render('signup')
     
     def post(self):
-        self.response.headers['Content-Type'] = 'text/plain'
+        self.response.headers['Content-Type'] = 'application/json'
         email = self.user_model.validate_email(self.request.get('email'))
         if not email:
-            self.response.out.write('error 1')
+            self.response.out.write(json.dumps({'error':True,'message': 'Email is invalid.'}))
             return
         nickname = self.user_model.validate_nickname(self.request.get('nickname'))
         if not nickname:
-            self.response.out.write('error 1')
+            self.response.out.write(json.dumps({'error':True,'message': 'Nickname is invalid.'}))
             return
         password = self.user_model.validate_password(self.request.get('password'))
         if not password:
-            self.response.out.write('error 1')
+            self.response.out.write(json.dumps({'error':True,'message': 'Password is invalid.'}))
             return
 
         unique_properties = ['email']
@@ -52,7 +52,7 @@ class Signup(BaseHandler):
             # self.session['message'] = 'Unable to create user for email %s because of \
             #     duplicate keys %s' % (email, user_data[1])
             # self.render('signup')s
-            self.response.out.write('error 2')
+            self.response.out.write(json.dumps({'error':True,'message': 'Sign up failed.'}))
             return
 
         user = user_data[1]
@@ -80,9 +80,7 @@ class Signup(BaseHandler):
         message.send()
 
         # u = self.auth.get_user_by_password(res['email'], res['password'], remember=True)
-        # self.session['message'] = 'Sign up successfully!'
-        # self.redirect(self.uri_for('home'))
-        self.response.out.write('success')
+        self.response.out.write(json.dumps({'error':False}))
 
 class Signin(BaseHandler):
     def get(self):
@@ -92,28 +90,29 @@ class Signin(BaseHandler):
             self.render('signin')
 
     def post(self):
-        self.response.headers['Content-Type'] = 'text/plain'
+        self.response.headers['Content-Type'] = 'application/json'
         email = self.request.get('email')
         password = self.request.get('password')
         remember = self.request.get('remember')
         # logging.info(self.request)
 
         if not email:
-            self.response.out.write('error')
+            self.response.out.write(json.dumps({'error':True,'message': 'Email is invalid.'}))
             return
         if not password:
-            self.response.out.write('error')
+            self.response.out.write(json.dumps({'error':True,'message': 'Password is invalid.'}))
             return
         try:
             if remember:
                 u = self.auth.get_user_by_password(email, password, remember=True)
             else:
                 u = self.auth.get_user_by_password(email, password, remember=False)
+            self.response.out.write(json.dumps({'error':False}))
             self.response.out.write('success')
             return
         except (auth.InvalidAuthIdError, auth.InvalidPasswordError) as e:
             logging.info('Login failed for user %s because of %s', email, type(e))
-            self.response.out.write('error')
+            self.response.out.write(json.dumps({'error':True,'message': 'Sign in failed. Email and password don\'t match.'}))
             return
 
 class Logout(BaseHandler):

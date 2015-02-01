@@ -86,10 +86,10 @@ class User(webapp2_extras.appengine.auth.models.User):
     if len(nickname) > 30:
       logging.info('nickname 3')
       return None
-    res = cls.query(cls.nickname==nickname).get()
-    if res is not None:
-      logging.info('nickname 4')
-      return None
+    # res = cls.query(cls.nickname==nickname).get()
+    # if res is not None:
+    #   logging.info('nickname 4')
+    #   return None
     return nickname
 
   @classmethod

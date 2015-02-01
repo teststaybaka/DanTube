@@ -6,23 +6,29 @@
 {% endblock %}
 
 {% block body %}
-<div id="signin-container">
-    <div id="signin-header">Sign in</div>
+<div id="signin_up-container">
+    <div id="signin_up-header">Sign in</div>
     <form id="signinform" action="{{ uri_for('signin') }}" method="post">
-        <label for="email" class="form-label">Email:</label>
-        <input type="text" class="inputtext" id="email" name="email" tabindex="1" value="{{ email_value }}" placeholder="Enter your email"></input>
-        <div class="password-label-row">
-            <label for="password" class="form-label" id="password-label">Password:</label>
-            <a class="signin_up-link" id="forgot-password" href="{{ uri_for('forgot_password') }}">Forgot password?</a>
+        <div class="input-line">
+            <label for="email" class="form-label">Email:</label>
+            <input type="text" class="inputtext" id="email" name="email" tabindex="1" value="{{ email_value }}" placeholder="Enter your email">
         </div>
-        <input type="password" class="inputpassword" id="password" name="password" tabindex="2" placeholder="Enter your password"></input>
+        <div class="input-line">
+            <div class="password-label-row">
+                <label for="password" class="form-label" id="password-label">Password:</label>
+                <a class="signin_up-link" id="forgot-password" href="{{ uri_for('forgot_password') }}">Forgot password?</a>
+            </div>
+            <input type="password" class="inputpassword" id="password" name="password" tabindex="2" placeholder="Enter your password">
+        </div>
         <label for="remember" class="check-label">
             <input type="checkbox" class="checkbox" id="remember" name="remember" value="1" tabindex="3" checked>
             <span>Remember me</span>
         </label>
-        <input class="signin_up-button" type="submit" value="Sign in" />
-        <span class="other-option">or</span>
-        <a class="signin_up-link" href="{{ uri_for('signup') }}">Sign up for DanTube</a>
+        <div>
+            <input class="signin_up-button" type="submit" value="Sign in" />
+            <span class="other-option">or</span>
+            <a class="signin_up-link" href="{{ uri_for('signup') }}">Sign up for DanTube</a>
+        </div>
     </form>
 </div>
 {% endblock %}

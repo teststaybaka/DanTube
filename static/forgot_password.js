@@ -1,26 +1,23 @@
 $(document).ready(function() {
-    $('#signinform').submit(function(evt) {
-        // evt.preventDefault();
-        $('#signin_up-header').addClass('loading');
-
-        var button = document.querySelector('#signinform input[type="submit"]');
+    $('#forgotpasswordform').submit(function(evt) {
+        var button = document.querySelector('#forgotpasswordform input[type="submit"]');
         button.disabled = true;
-
+        
         $.ajax({
             type: "POST",
-            url: "/signin",
-            data: $('#signinform').serialize(),
+            url: "/password/forgot",
+            data: $('#forgotpasswordform').serialize(),
             success: function(result) {
                 console.log(result);
                 if(!result.error) {
-                    $('#signin-message').remove();
-                    $('#signinform').prepend('<div id="signin-message" class="success">Sign in successfully! Redirecting to home page in 3 seconds...</div>');
+                    $('#signup-message').remove();
+                    $('#forgotpasswordform').prepend('<div id="signup-message" class="success">An email has been sent to activate your account.</div>');
                     setTimeout(function(){
                         window.location.replace('/'); 
                     }, 3000);
                 } else {
-                    $('#signin-message').remove();
-                    $('#signinform').prepend('<div id="signin-message" class="fail">'+result.message+'</div>');
+                    $('#signup-message').remove();
+                    $('#forgotpasswordform').prepend('<div id="signup-message" class="fail">'+result.message+'</div>');
                     button.disabled = false;
                 }
                 $('#signin_up-header').removeClass('loading');
