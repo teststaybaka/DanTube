@@ -108,7 +108,6 @@ class Signin(BaseHandler):
             else:
                 u = self.auth.get_user_by_password(email, password, remember=False)
             self.response.out.write(json.dumps({'error':False}))
-            self.response.out.write('success')
             return
         except (auth.InvalidAuthIdError, auth.InvalidPasswordError) as e:
             logging.info('Login failed for user %s because of %s', email, type(e))
