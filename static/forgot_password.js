@@ -11,7 +11,7 @@ $(document).ready(function() {
                 console.log(result);
                 if(!result.error) {
                     $('#signup-message').remove();
-                    $('#forgotpasswordform').prepend('<div id="signup-message" class="success">An email has been sent to activate your account.</div>');
+                    $('#forgotpasswordform').prepend('<div id="signup-message" class="success">An email has been sent to reset your password.</div>');
                     setTimeout(function(){
                         window.location.replace('/'); 
                     }, 3000);
