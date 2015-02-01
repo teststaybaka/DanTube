@@ -22,6 +22,8 @@ routes = [
     webapp2.Route(r'/email_check', login.EmailCheck, name="email_check"),
     webapp2.Route(r'/nickname_check', login.NicknameCheck, name="nickname_check"),
     webapp2.Route(r'/logout', login.Logout, name="logout"),
+    webapp2.Route(r'/password/forgot', login.ForgotPassword, name="forgot_password"),
+    webapp2.Route(r'/password/reset/<user_id:\d+>-<pwdreset_token:.+>', login.ForgotPasswordReset, name="forgot_password_reset"),
 
     webapp2.Route(r'/account', account.Account, name="account"),
     webapp2.Route(r'/account/nickname', account.ChangeNickname, name="change_nickname"),
@@ -31,9 +33,7 @@ routes = [
     webapp2.Route(r'/account/video', account.ManageVideo, name="manage_video"),
     webapp2.Route(r'/favorites', account.Favorites, name="favorites"),
     webapp2.Route(r'/subscriptions', account.Subscriptions, name="subscriptions"),
-    webapp2.Route(r'/history', account.History, name="history"),
-    webapp2.Route(r'/password/forgot', account.ForgotPassword, name="forgot_password"),
-    webapp2.Route(r'/password/reset/<user_id:\d+>-<pwdreset_token:.+>', account.ForgotPasswordReset, name="forgot_password_reset"),
+    webapp2.Route(r'/history', account.History, name="history"),    
     webapp2.Route(r'/verify', account.SendVerification, name='send_verification'),
     webapp2.Route(r'/verify/<user_id:\d+>-<signup_token:.+>', account.Verification, name='verification'),
 

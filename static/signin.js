@@ -2,6 +2,7 @@ $(document).ready(function() {
     $('#signinform').submit(function(evt) {
         // evt.preventDefault();
         $('#signin_up-header').addClass('loading');
+        $('#signin-message').remove();
 
         var button = document.querySelector('#signinform input[type="submit"]');
         button.disabled = true;
@@ -13,13 +14,11 @@ $(document).ready(function() {
             success: function(result) {
                 console.log(result);
                 if(!result.error) {
-                    $('#signin-message').remove();
                     $('#signinform').prepend('<div id="signin-message" class="success">Sign in successfully! Redirecting to home page in 3 seconds...</div>');
                     setTimeout(function(){
                         window.location.replace('/'); 
                     }, 3000);
                 } else {
-                    $('#signin-message').remove();
                     $('#signinform').prepend('<div id="signin-message" class="fail">'+result.message+'</div>');
                     button.disabled = false;
                 }

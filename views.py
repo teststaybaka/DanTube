@@ -4,8 +4,8 @@ import os
 import sys
 import traceback
 import webapp2
-import datetime
 
+from datetime import datetime
 from jinja2 import Undefined
 from webapp2_extras import sessions
 from webapp2_extras import auth
@@ -385,7 +385,7 @@ class Danmaku(BaseHandler):
                     'content': danmaku.content,
                     'timestamp': danmaku.timestamp,
                     'created': danmaku.created.strftime("%m-%d %H:%M"),
-                    'created_seconds': (danmaku.created - datetime.datetime(1970,1,1)).total_seconds(),
+                    'created_seconds': (danmaku.created - datetime(1970,1,1)).total_seconds(),
                 });
             self.response.out.write(json.dumps(danmakus))
         else:

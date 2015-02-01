@@ -120,3 +120,102 @@ class Logout(BaseHandler):
     self.auth.unset_session()
     # self.session['message'] = 'Logout successfully'
     self.redirect(self.uri_for('home'))
+
+class ForgotPassword(BaseHandler):
+    def get(self):
+        if self.user_info is not None:
+            self.redirect(self.uri_for('home'))
+            return
+        self.render('forgot_password')
+
+    def post(self):
+        if self.user_info is not None:
+            self.redirect(self.uri_for('home'))
+            return
+        
+        self.response.headers['Content-Type'] = 'application/json'
+        email = self.request.get('email')
+        if not email:
+            self.response.out.write(json.dumps({'error':True,'message': 'Please enter your email address.'}))
+            return
+
+        user = models.User.query(models.User.auth_ids == email).get()
+        if user is None:
+            self.response.out.write(json.dumps({'error':True,'message': 'The email address you entered does not exist.'}))
+            return
+
+        user_id = user.get_id()
+
+        # delete any existing tokens if exist
+        # token_model = self.user_model.token_model
+        # tokens = token_model.query(token_model.user == user, subject == 'pwdreset').fetch()
+        # logging.info(tokens)
+        # for token in tokens:
+        #     self.user_model.delete_pwdreset_token(user_id, token.token)
+
+        token = self.user_model.create_pwdreset_token(user_id)
+
+        password_reset_url = self.uri_for('forgot_password_reset', user_id=user_id,
+            pwdreset_token=token, _full=True)
+        message = mail.EmailMessage(sender="DanTube Support <tianfanw@gmail.com>",
+                            subject="Password Reset Email from DanTube")
+
+        message.to = user.email
+        message.body = """
+        Dear %s:
+
+        Your password reset url is:
+        %s
+
+        You can safely ignore this email if you didn't require a password reset.
+        """ % (user.nickname, password_reset_url)
+        logging.info(message.body)
+        message.send()
+
+        self.response.out.write(json.dumps({'error':False}))
+
+class ForgotPasswordReset(BaseHandler):
+    def validateToken(self, user_id, pwdreset_token):
+        if self.user:
+            self.render('forgot_password_reset', {"message":"You are already logged in."})
+            return {'error':True,'message': 'Invalid new password.'}
+
+        user = None
+        user, ts = self.user_model.get_by_auth_token(user_id, pwdreset_token, 'pwdreset')
+
+        if not user:
+            logging.info('Could not find any user with id "%s" and token "%s"', user_id, pwdreset_token)
+            return {'error':True,'message': 'Reset url not found.'}
+
+        time_passed = time.mktime(datetime.now().timetuple()) - ts
+        if time_passed > 24 * 60 * 60: # 24 hours
+            self.user_model.delete_pwdreset_token(user_id, pwdreset_token)
+            return {'error':True,'message': "Reset url is expired, please make a new request."}
+
+        return {'error':False, 'user':user}
+
+    def get(self, *args, **kwargs):
+        user_id = int(kwargs['user_id'])
+        pwdreset_token = kwargs['pwdreset_token']
+        res = self.validateToken(user_id, pwdreset_token)
+        self.render('forgot_password_reset', res)
+
+
+    def post(self, *args, **kwargs):
+        self.response.headers['Content-Type'] = 'application/json'
+        user_id = int(kwargs['user_id'])
+        pwdreset_token = kwargs['pwdreset_token']
+        res = self.validateToken(user_id, pwdreset_token)
+        if not res['error']:
+            user = res['user']
+            new_password = self.user_model.validate_password(self.request.get('new_password'))
+            if not new_password:
+                self.response.out.write(json.dumps({'error':True,'message': 'Invalid new password.'}))
+                return
+
+            user.set_password(new_password)
+            user.put()
+            self.user_model.delete_pwdreset_token(user.get_id(), pwdreset_token)
+            self.response.out.write(json.dumps({'error':False}))
+        else:
+            self.response.out.write(json.dumps(res))
