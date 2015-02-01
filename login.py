@@ -1,6 +1,7 @@
 from views import *
 from google.appengine.api import mail
 import random
+import time
 
 class EmailCheck(BaseHandler):
     def post(self):
@@ -176,27 +177,26 @@ class ForgotPassword(BaseHandler):
 class ForgotPasswordReset(BaseHandler):
     def validateToken(self, user_id, pwdreset_token):
         if self.user:
-            self.render('forgot_password_reset', {"message":"You are already logged in."})
-            return {'error':True,'message': 'Invalid new password.'}
+            return {'error':True,'message': 'You are already logged in.'}, None
 
         user = None
         user, ts = self.user_model.get_by_auth_token(user_id, pwdreset_token, 'pwdreset')
 
         if not user:
             logging.info('Could not find any user with id "%s" and token "%s"', user_id, pwdreset_token)
-            return {'error':True,'message': 'Reset url not found.'}
+            return {'error':True,'message': 'Reset url not found.'}, None
 
         time_passed = time.mktime(datetime.now().timetuple()) - ts
         if time_passed > 24 * 60 * 60: # 24 hours
             self.user_model.delete_pwdreset_token(user_id, pwdreset_token)
-            return {'error':True,'message': "Reset url is expired, please make a new request."}
+            return {'error':True,'message': "Reset url is expired, please make a new request."}, None
 
-        return {'error':False, 'user':user}
+        return {'error':False}, user
 
     def get(self, *args, **kwargs):
         user_id = int(kwargs['user_id'])
         pwdreset_token = kwargs['pwdreset_token']
-        res = self.validateToken(user_id, pwdreset_token)
+        res, user = self.validateToken(user_id, pwdreset_token)
         self.render('forgot_password_reset', res)
 
 
@@ -204,9 +204,8 @@ class ForgotPasswordReset(BaseHandler):
         self.response.headers['Content-Type'] = 'application/json'
         user_id = int(kwargs['user_id'])
         pwdreset_token = kwargs['pwdreset_token']
-        res = self.validateToken(user_id, pwdreset_token)
+        res, user = self.validateToken(user_id, pwdreset_token)
         if not res['error']:
-            user = res['user']
             new_password = self.user_model.validate_password(self.request.get('new_password'))
             if not new_password:
                 self.response.out.write(json.dumps({'error':True,'message': 'Invalid new password.'}))
