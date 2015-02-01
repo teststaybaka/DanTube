@@ -75,6 +75,31 @@ $(document).ready(function() {
         $("#account-top-title").text("Video Submission");
     }
 
+    $('#resend-email-link').click(function(evt) {
+        if ($(evt.target).hasClass('send')) return;
+        $(evt.target).addClass('send');
+        $(evt.target).text('Sending');
+
+        $.ajax({
+            type: "POST",
+            url: "/verify",
+            success: function(result) {
+                console.log(result);
+                if(!result.error) {
+                    $(evt.target).text('An email has been sent.');
+                } else {
+                    $(evt.target).text(result.message);
+                }
+            },
+            error: function (xhr, ajaxOptions, thrownError) {
+                console.log(xhr.status);
+                console.log(thrownError);
+                $(evt.target).text('Resend email');
+                $(evt.target).removeClass('send');
+            }
+        });
+    });
+
     $('.statistic-entry span').each(function() {
         // var colors = [[163,163,163], [83,187,83], [39,143,250], [208,51,208], [255,138,34]]
         var count = parseInt($(this).text());

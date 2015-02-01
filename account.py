@@ -53,11 +53,10 @@ class History(BaseHandler):
 
 class Verification(BaseHandler):
     def get(self, *args, **kwargs):
-        user = self.user
-        if user:
-            if user.verified:
-                self.notify('Your account has already been verified.')
-                return
+        # user = self.user
+        # if user and user.verified:
+        #     self.render('verification', {'error':False, 'message':"Your account %s has been activated!" % (user.email)})
+        #     return
                 
         user = None
         user_id = int(kwargs['user_id'])
@@ -67,23 +66,24 @@ class Verification(BaseHandler):
 
         if not user:
           logging.info('Could not find any user with id "%s" and token "%s"', user_id, signup_token)
-          self.notify('404 not found.', 404)
+          self.render('verification', {'error':True, 'message':"Url not found."})
           return
         
         time_passed = time.mktime(datetime.now().timetuple()) - ts
         if time_passed > 24 * 60 * 60: # 24 hours
             self.user_model.delete_signup_token(user_id, signup_token)
-            self.notify('The url is expired, please make a new request.')
-            return None
+            self.render('verification', {'error':True, 'message':"Url has expired. Please make a new request."})
+            return
 
-        current_user = self.user
-        if current_user:
-            if current_user.get_id() != user_id:
-                self.notify('Invalid operation!')
-                return
-        else:
-            # store user data in the session
-            self.auth.set_session(self.auth.store.user_to_dict(user), remember=True)
+        # current_user = self.user
+        # if current_user:
+        #     if current_user.get_id() != user_id:
+        #         self.render('verification', {'error':True, 'message':"Invalid operation!"})
+        #         self.notify('Invalid operation!')
+        #         return
+        # else:
+        #     # store user data in the session
+        #     self.auth.set_session(self.auth.store.user_to_dict(user), remember=True)
      
         # remove signup token, we don't want users to come back with an old link
         self.user_model.delete_signup_token(user.get_id(), signup_token)
@@ -92,19 +92,15 @@ class Verification(BaseHandler):
             user.verified = True
             user.put()
 
-        notice = "Dear %s, your email %s has been verified, thank you!" % (user.nickname, user.email)
-        self.notify(notice)
+        self.render('verification', {'error':False, 'message':"Your account %s has been activated!" % (user.email)})
 
 class SendVerification(BaseHandler):
     @login_required
-    def get(self):
-        self.render('send_verification', {'verified': self.user.verified})
-
-    @login_required
     def post(self):
+        self.response.headers['Content-Type'] = 'application/json'
         user = self.user
         if user.verified:
-            self.render('send_verification', {'verified': True})
+            self.response.out.write(json.dumps({'error':True,'message': 'Your account has been activated.'}))
             return
 
         user_id = user.get_id()
@@ -114,7 +110,7 @@ class SendVerification(BaseHandler):
         verification_url = self.uri_for('verification', user_id=user_id,
           signup_token=token, _full=True)
 
-        message = mail.EmailMessage(sender="tianfanw@gmail.com",
+        message = mail.EmailMessage(sender="DanTube Support <tianfanw@gmail.com>",
                             subject="Verficaition Email from DanTube")
 
         message.to = user.email
@@ -126,7 +122,7 @@ class SendVerification(BaseHandler):
         """ % (user.nickname, verification_url)
         logging.info(message.body)
         message.send()
-        self.render('send_verification', {'hint': 'An email has been sent to you to activate your account.'})
+        self.response.out.write(json.dumps({'error':False}))
 
 class ChangePassword(BaseHandler):
     @login_required

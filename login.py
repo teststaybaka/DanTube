@@ -52,7 +52,6 @@ class Signup(BaseHandler):
         if not user_data[0]: #user_data is a tuple
             # self.session['message'] = 'Unable to create user for email %s because of \
             #     duplicate keys %s' % (email, user_data[1])
-            # self.render('signup')s
             self.response.out.write(json.dumps({'error':True,'message': 'Sign up failed.'}))
             return
 
@@ -67,7 +66,7 @@ class Signup(BaseHandler):
         verification_url = self.uri_for('verification', user_id=user_id,
           signup_token=token, _full=True)
 
-        message = mail.EmailMessage(sender="tianfanw@gmail.com",
+        message = mail.EmailMessage(sender="DanTube Support <tianfanw@gmail.com>",
                             subject="Verficaition Email from DanTube")
 
         message.to = email

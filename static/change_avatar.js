@@ -83,7 +83,6 @@ $(document).ready(function() {
         var button = document.querySelector('input.save_change-button');
 
         var form = document.getElementById('avatar-upload-form');
-        form.action = upload_url;
         var sBoundary = "---------------------------" + Date.now().toString(16);
         var base64Data = image_url.split(',')[1];
         // var binaryData = window.atob(base64Data);
@@ -99,7 +98,7 @@ $(document).ready(function() {
         var data = arr.join('\r\n');
         $.ajax({
             type: 'POST',
-            url: form.action,
+            url: upload_url,
             headers: {"Content-Type": "multipart\/form-data; boundary=" + sBoundary},
             data: data,
             success: function(result){
