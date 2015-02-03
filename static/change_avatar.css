@@ -36,6 +36,10 @@
   top: 140px;
 }
 
+#image-upload-hint.hide {
+  display: none;
+}
+
 #file-input-line {
   position: relative;
   width: 280px;
@@ -59,6 +63,8 @@
   filter: alpha(opacity=0);
   font-size: 0;
   cursor: pointer;
+  z-index: 1;
+  outline: none;
 }
 
 #file-input-line input[type=text] {
@@ -202,12 +208,4 @@ div.preview-container.small.round {
 #avatar-preview-small, #avatar-preview-small-round {
   width: 35px;
   height: 35px;
-}
-
-#crop-canvas-container {
-  display: none;
-}
-
-#crop-canvas {
-  background-color: white;
 }

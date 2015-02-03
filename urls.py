@@ -28,7 +28,7 @@ routes = [
     webapp2.Route(r'/account', account.Account, name="account"),
     webapp2.Route(r'/account/nickname', account.ChangeNickname, name="change_nickname"),
     webapp2.Route(r'/account/avatar', account.ChangeAvatar, name="change_avatar"),
-    webapp2.Route(r'/account/avatar/upload', account.AvatarUpload, name="avatar_upload"),
+    webapp2.Route(r'/account/avatar/upload/<user_id:\d+>', account.AvatarUpload, name="avatar_upload"),
     webapp2.Route(r'/account/password', account.ChangePassword, name="change_password"),
     webapp2.Route(r'/account/video', account.ManageVideo, name="manage_video"),
     webapp2.Route(r'/favorites', account.Favorites, name="favorites"),
@@ -41,6 +41,8 @@ routes = [
     webapp2.Route(r'/user/<user_id:\d+>/subscribe', views.Subscribe, name='subscribe'),
     webapp2.Route(r'/user/<user_id:\d+>/unsubscribe', views.Unsubscribe, name='unsubscribe'),
     webapp2.Route(r'/submit', video.Submit, name="submit"),
+    webapp2.Route(r'/cover_upload/dt<video_id:\d+>', video.Submit, name="cover_upload", handler_method='cover_upload'),
+
     webapp2.Route(r'/video', views.Video, name="video"),
     webapp2.Route(r'/video/dt<video_id:\d+>', views.Watch, name="watch"),
     webapp2.Route(r'/video/dt<video_id:\d+>/danmaku', views.Danmaku, name="danmaku"),

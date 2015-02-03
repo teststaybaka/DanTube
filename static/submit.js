@@ -86,25 +86,26 @@ function resizeAndUpload(url, dataURL) {
 
 function thumbnail_change() {
     var file = document.getElementById("thumbnail-input").files[0];
+    $('#thumbnail-preview-img').remove();
     if (file) {
         if (file.size <= 0) {
             $('#thumbnail-error').addClass('show');
             $('#thumbnail-error').text('Invalid file.')
+            $('#thumbnail-input').val('')
         } else if (file.size > 50*1024*1024) {
             $('#thumbnail-error').addClass('show');
             $('#thumbnail-error').text('Please select an image smaller than 50MB.');
+            $('#thumbnail-input').val('')
         } else {
             var types = file.type.split('/');
             // console.log
             if (types[0] != 'image') {
                 $('#thumbnail-error').addClass('show');
                 $('#thumbnail-error').text('Please select an image file.');
+                $('#thumbnail-input').val('')
             } else {
                 $('#thumbnail-error').removeClass('show');
-
-                if (!$('#thumbnail-preview-img').length) {
-                    $('#thumbnail-preview').append('<img id="thumbnail-preview-img">');
-                }
+                $('#thumbnail-preview').append('<img id="thumbnail-preview-img">');
 
                 console.log('file size:'+file.size);
                 console.log('file type:'+file.type);
@@ -116,7 +117,6 @@ function thumbnail_change() {
             }
         }
     } else {
-        $('#thumbnail-preview-img').remove();
         $('#thumbnail-error').removeClass('show');
     }
 }
@@ -165,9 +165,10 @@ $(document).ready(function() {
 
     document.getElementById('thumbnail-input').addEventListener("change", thumbnail_change);
 
-    $('#video-submission-form').submit(function() {
+    $('#video-submission-form').submit(function(evt) {
         $('#save-change-message').remove();
         $('#thumbnail-error').removeClass('show');
+        $('#change-applying').addClass('show');
 
         var button = document.querySelector('input.save_change-button');
         button.disabled = true;
@@ -187,13 +188,18 @@ $(document).ready(function() {
         }
         if (error) {
             button.disabled = false;
+            $('#change-applying').removeClass('show');
             return false;
         }
-
+        var formData = new FormData(document.getElementById('video-submission-form'));
         $.ajax({
             type: "POST",
             url: "/submit",
-            data: $('#video-submission-form').serialize(),
+            // data: $('#video-submission-form').serialize(),
+            data: formData,
+            cache: false,
+            contentType: false,
+            processData: false,
             success: function(result) {
                 console.log(result);
                 if(result.error) {
@@ -211,11 +217,13 @@ $(document).ready(function() {
                         window.location.replace('/account/video'); 
                     }, 1500);
                 }
+                $('#change-applying').removeClass('show');
             },
             error: function (xhr, ajaxOptions, thrownError) {
                 console.log(xhr.status);
                 console.log(thrownError);
                 button.disabled = false;
+                $('#change-applying').removeClass('show');
             }
         });
         return false;

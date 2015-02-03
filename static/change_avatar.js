@@ -5,10 +5,7 @@ $(document).ready(function() {
     var crop_coords = {};
 
     function cropImage(src) {
-        $('#image-upload-hint').remove();
-        $('#avatar-crop').remove();
-        $('div.jcrop-holder').remove();
-
+        $('#image-upload-hint').addClass('hide')
         $('#avatar-crop-canvas').append('<img id="avatar-crop" src="' + src + '">');
         crop_width = $('#avatar-crop').width();
         crop_height = $('#avatar-crop').height();
@@ -39,15 +36,21 @@ $(document).ready(function() {
 
     function readImage() {
         var file = document.getElementById("upload-avatar").files[0];
+        $('#image-upload-hint').removeClass('hide');
+        $('#avatar-crop').remove();
+        $('div.jcrop-holder').remove();
+        $('#upload-file-text').val('');
         if (file) {
             if (file.size <= 0) {
                 $('#file-error').addClass('show');
                 $('#file-error').text('Invalid file.')
                 $('#upload-file-text').addClass('error');
+                $('#upload-avatar').val('')
             } else if (file.size > 50*1024*1024) {
                 $('#file-error').addClass('show');
                 $('#file-error').text('Please select an image smaller than 50MB.');
                 $('#upload-file-text').addClass('error');
+                $('#upload-avatar').val('')
             } else {
                 var types = file.type.split('/');
                 // console.log
@@ -55,11 +58,12 @@ $(document).ready(function() {
                     $('#file-error').addClass('show');
                     $('#file-error').text('Please select an image file.');
                     $('#upload-file-text').addClass('error');
+                    $('#upload-avatar').val('')
                 } else {
                     $('#file-error').removeClass('show');
                     $('#upload-file-text').removeClass('error');
                     
-                    $('#file-input-line input[type=text]').val(file.name);
+                    $('#upload-file-text').val(file.name);
                     console.log('file size:'+file.size);
                     console.log('file type:'+file.type);
                     var reader = new FileReader();
@@ -76,6 +80,8 @@ $(document).ready(function() {
                     reader.readAsDataURL(file);
                 }
             }
+        } else {
+            $('#file-error').removeClass('show');
         }
     }
 
@@ -126,43 +132,62 @@ $(document).ready(function() {
     
     $('#avatar-upload-form').submit(function(evt) {
         $('#save-change-message').remove();
-        if ($('#avatar-crop').length) {
+        var file = document.getElementById("upload-avatar").files[0];
+        if (file) {
+        // if ($('#avatar-crop').length) {
             var button = document.querySelector('input.save_change-button');
             button.disabled = true;
+            $('#change-applying').addClass('show');
 
             $('#file-error').removeClass('show');
             $('#upload-file-text').removeClass('error');
 
-            var canvas = document.getElementById("crop-canvas");
-            var ctx = canvas.getContext("2d");
-            var img=document.getElementById("avatar-crop");
+            // var canvas = document.getElementById("crop-canvas");
+            // var ctx = canvas.getContext("2d");
+            // var img=document.getElementById("avatar-crop");
             var width_ratio = orig_width / crop_width;
             var height_ratio = orig_height / crop_height;
-            ctx.drawImage(img, crop_coords.x * width_ratio,crop_coords.y * height_ratio, 
-                crop_coords.w * width_ratio, crop_coords.h * height_ratio, 0, 0, 256, 256);
-            var dataURL = canvas.toDataURL('image/png');
-            console.log(dataURL);
+            // ctx.drawImage(img, crop_coords.x * width_ratio,crop_coords.y * height_ratio, 
+            //     crop_coords.w * width_ratio, crop_coords.h * height_ratio, 0, 0, 256, 256);
+            // var dataURL = canvas.toDataURL('image/png');
+            // console.log(dataURL);
+            var formData = new FormData(document.getElementById('avatar-upload-form'));
+            formData.append('x0', crop_coords.x * width_ratio);
+            formData.append('y0', crop_coords.y * height_ratio);
+            formData.append('width', crop_coords.w * width_ratio);
+            formData.append('height', crop_coords.h * height_ratio);
+
             $.ajax({
-                type: "GET",
-                url: "/account/avatar/upload",
+                type: "POST",
+                url: "/account/avatar",
+                data: formData,
+                cache: false,
+                contentType: false,
+                processData: false,
                 success: function(result) {
                     console.log(result);
                     if (!result.error) {
-                        uploadImage(result.url, dataURL);
+                        // uploadImage(result.url, dataURL);
+                        $('input.save_change-button').after('<div id="save-change-message" class="success show">Change applied successfully!</div>');
+                        setTimeout(function(){
+                            window.location.replace('/account'); 
+                        }, 1500);
                     } else {
                         $('input.save_change-button').after('<div id="save-change-message" class="fail show">'+result.message+'</div>');
                         button.disabled = false;
                     }
+                    $('#change-applying').removeClass('show');
                 },
                 error: function (xhr, ajaxOptions, thrownError) {
                     console.log(xhr.status);
                     console.log(thrownError);
                     button.disabled = false;
+                    $('#change-applying').removeClass('show');
                 }
             });
         } else {
             $('#file-error').addClass('show');
-            $('#file-error').text('Please select an image.')
+            // $('#file-error').text('Please select an image.')
             $('#upload-file-text').addClass('error');
         }
         return false;

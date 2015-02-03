@@ -20,7 +20,7 @@ var video_subcategories = {};
       </div>
       <div class="input-line">
         <label >Thumbnail:</label>
-        <label class="explain">(Optional)</label>
+        <label class="explain">(Optional, animated image not supported)</label>
         <div id="thumbnail-preview">
           <input type="file" name="thumbnail" id="thumbnail-input">
           <div id="thumbnail-hint">Click to select.<br>Image will be resized to 400 x 225 (16:9).</div>
@@ -79,6 +79,7 @@ var video_subcategories = {};
       </div>
       <div>
         <input class="save_change-button" type="submit" value="Submit Video" />
+        <div id="change-applying"></div>
         <div id="save-change-message">Change applied!</div>
     </div>
   </form>

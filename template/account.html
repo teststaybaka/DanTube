@@ -15,23 +15,23 @@
         <div id="profile-signature">{% if user.info %}{{ user.intro }}{% endif %}</div>
     </div>
     <div id="bottom-area">
-        <div class="main-option" onclick="location.href='{{ uri_for('account') }}'">Account</div>
+        <a class="main-option" href="{{ uri_for('account') }}">Account</a>
         <div class="sub-menu">
-            <div class="sub-option" id="sub-overview" onclick="location.href='{{ uri_for('account') }}'">Overview</div>
-            <div class="sub-option" id="sub-change-password" onclick="location.href='{{ uri_for('change_password') }}'">Change Password</div>
-            <div class="sub-option" id="sub-change-avatar" onclick="location.href='{{ uri_for('change_avatar') }}'">Change Avatar</div>
-            <div class="sub-option" id="sub-change-nickname" onclick="location.href='{{ uri_for('change_nickname') }}'">Change Nickname</div>
+            <a class="sub-option" id="sub-overview" href="{{ uri_for('account') }}">Overview</a>
+            <a class="sub-option" id="sub-change-password" href="{{ uri_for('change_password') }}">Change Password</a>
+            <a class="sub-option" id="sub-change-avatar" href="{{ uri_for('change_avatar') }}">Change Avatar</a>
+            <a class="sub-option" id="sub-change-nickname" href="{{ uri_for('change_nickname') }}">Change Nickname</a>
         </div>
-        <div class="main-option" onclick="location.href='{{ uri_for('manage_video') }}'">Video Manager</div>
+        <a class="main-option" href="{{ uri_for('manage_video') }}">Video Manager</a>
         <div class="sub-menu">
-            <div class="sub-option" id="sub-videos" onclick="location.href='{{ uri_for('manage_video') }}'">Videos</div>
-            <div class="sub-option" id="sub-submit" onclick="location.href='{{ uri_for('submit') }}'">Submission</div>
+            <a class="sub-option" id="sub-videos" href="{{ uri_for('manage_video') }}">Videos</a>
+            <a class="sub-option" id="sub-submit" href="{{ uri_for('submit') }}">Submission</a>
         </div>
-        <div class="main-option" onclick="location.href='{{ uri_for('subscriptions') }}'">Subscription</div>
-        <div class="main-option" onclick="location.href='{{ uri_for('favorites') }}'">Favorites</div>
-        <div class="main-option" onclick="location.href='{{ uri_for('history') }}'">History</div>
-        <div class="main-option">Messages</div>
-        <div class="main-option" onclick="location.href='{{ user.space_url }}'">Personal Space</div>
+        <a class="main-option" href="{{ uri_for('subscriptions') }}">Subscription</a>
+        <a class="main-option" href="{{ uri_for('favorites') }}">Favorites</a>
+        <a class="main-option" href="{{ uri_for('history') }}">History</a>
+        <a class="main-option">Messages</a>
+        <a class="main-option" href="{{ user.space_url }}">Personal Space</a>
     </div>
 </div>
 <div id="account-right-section">
@@ -43,23 +43,23 @@
         <div class="container">
             <div id="account-profile-img">
                 <img id="account-profile-img-content" src="{{ user.avatar_url }}">
-                <div id="account-change-avatar" onclick="location.href='{{ uri_for('change_avatar') }}'">Change avatar</div>
+                <a id="account-change-avatar" href="{{ uri_for('change_avatar') }}">Change avatar</a>
             </div>
             <div id="account-detail">
                 <div class="detail-entry" id="account-email">{{ user.email }}
                     {% if user.verified %}
                     <div id="verified-icon"></div>
                     {% else %}
-                    <div id="resend-email-link">Resend email.</div>
+                    <div id="resend-email-link">Resend email</div>
                     {% endif %}
                 </div>
                 <div class="detail-entry" id="account-joint-time">Joined at {{ user.created }}.</div>
                 <div class="detail-entry" id="account-space-divide">--------------</div>
                 <div class="detail-entry" id="account-nickname">{{ user.nickname }}
-                    <div id="account-change-nickname" onclick="location.href='{{ uri_for('change_nickname') }}'">Change nickname</div>
+                    <a id="account-change-nickname" href="{{ uri_for('change_nickname') }}">Change nickname</a>
                 </div>
                 <div class="detail-entry">Password
-                    <div id="account-change-password" onclick="location.href='{{ uri_for('change_password') }}'">Change password</div>
+                    <a id="account-change-password" href="{{ uri_for('change_password') }}">Change password</a>
                 </div>
             </div>
             <div id="mine-statistic">

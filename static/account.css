@@ -46,28 +46,30 @@
     word-wrap: break-word;
 }
 
-div.main-option {
+a.main-option {
     padding: 10px 25px;
     font-weight: bold;
     font-size: 17px;
     color: rgb(100,100,100);
     cursor: pointer;
+    display: block;
 }
 
-div.sub-option {
+a.sub-option {
     font-size: 15px;
     font-weight: normal;
     padding: 3px;
     padding-left: 55px;
     color: rgb(100,100,100);
     cursor: pointer;
+    display: block;
 }
 
-div.sub-option:hover, div.main-option:hover {
+a.sub-option:hover, a.main-option:hover {
     color: rgb(0,140,255);
 }
 
-div.sub-option.active {
+a.sub-option.active {
     color: white;
     background-color: rgb(85,178,255);
     font-weight: bold;
@@ -109,7 +111,7 @@ div.sub-option.active {
     margin-left: auto;
     margin-right: auto;
     color: rgb(0,140,255);
-    /*font-weight: bold;*/
+    display: block;
     cursor: pointer;
     margin-top: 5px;
     font-size: 15px;
@@ -486,6 +488,9 @@ form.change div.input-error.show {
     padding: 0;
     margin: 0;
     font-size: 0;
+    filter: alpha(opacity=0);
+    z-index: 1;
+    outline: none;
 }
 
 #thumbnail-preview {
@@ -550,6 +555,19 @@ input.save_change-button:disabled {
   box-shadow: 0 0 0;
   background-color: rgb(250,250,250);
   border: 1px solid rgb(200,200,200);
+}
+
+#change-applying {
+    width: 16px;
+    height: 16px;
+    background-image: url('/static/img/ajax-loader.gif');
+    display: none;
+    vertical-align: middle;
+    margin-left: 10px;
+}
+
+#change-applying.show {
+    display: inline-block;
 }
 
 #save-change-message {

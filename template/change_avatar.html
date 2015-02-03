@@ -18,9 +18,10 @@
         <input type="file" name="upload-avatar" class="file" id="upload-avatar">
         <input type="text" id="upload-file-text" placeholder="Select an image">
         <div class="select-button">Select</div>
-        <div class="input-error" id="file-error">Please enter your password.</div>
+        <div class="input-error" id="file-error">Please select an image.</div>
       </div>
       <input class="save_change-button" type="submit" value="Save Change" />
+      <div id="change-applying"></div>
       <div id="save-change-message">Change applied!</div>
     </form>
   </div>
@@ -45,8 +46,5 @@
       <div class="preview-text">35 x 35</div>
     </div>
   </div>
-</div>
-<div id="crop-canvas-container">
-  <canvas id="crop-canvas" width="256" height="256"></canvas>
 </div>
 {% endblock %}

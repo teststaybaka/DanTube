@@ -2,6 +2,7 @@ from views import *
 from google.appengine.api import images
 from google.appengine.ext import ndb
 import time
+from PIL import Image
 
 class Account(BaseHandler):
     @login_required
@@ -194,19 +195,89 @@ class ChangeAvatar(BaseHandler):
     def get(self):
         self.render('change_avatar')
 
-class AvatarUpload(BaseHandler, blobstore_handlers.BlobstoreUploadHandler):
     @login_required
-    def get(self):
-        upload_url = models.blobstore.create_upload_url('/account/avatar/upload')
-        self.response.headers['Content-Type'] = 'application/json'
-        self.response.out.write(json.dumps({'error':False,'url': upload_url}))
-
     def post(self):
-        logging.info(self.request)
+        user = self.user
         self.response.headers['Content-Type'] = 'application/json'
-        upload = self.get_uploads('upload-avatar')
+
+        x0 = int(round(float(self.request.get('x0'))))
+        y0 = int(round(float(self.request.get('y0'))))
+        width = int(round(float(self.request.get('width'))))
+        height = int(round(float(self.request.get('height'))))
+
+        avatar_field = self.request.POST.get('upload-avatar')
+        if avatar_field != '':
+            try:
+                im = Image.open(avatar_field.file)
+                # mypalette = frame.getpalette()
+                # logging.info(frame.info['duration'])
+                # nframes = 0
+                # while frame:
+                #     frame.putpalette(mypalette)
+                #     im = frame
+                #     nframes += 1
+                #     if nframes > 4:
+                #         break;
+                #     try:
+                #         frame.seek(frame.tell() + 1)
+                #     except EOFError:
+                #         break;
+
+                output = cStringIO.StringIO()
+                if im.mode == "RGBA" or "transparency" in im.info:
+                    rgba_im = Image.new("RGBA", (128,128))
+                    resized_im = im.crop((x0, y0, x0+width-1, y0+height-1)).resize((128,128), Image.ANTIALIAS)
+                    rgba_im.paste(resized_im)
+                    new_im = Image.new("RGB", (128,128), (255,255,255))
+                    new_im.paste(rgba_im, rgba_im)
+                    new_im.save(output, format='jpeg', quality=90)
+                else:
+                    im.crop((x0, y0, x0+width-1, y0+height-1)).resize((128,128), Image.ANTIALIAS).save(output, format='jpeg', quality=90)
+            except Exception, e:
+                self.response.out.write(json.dumps({
+                    'error': True,
+                    'message': 'Image crop error.'
+                }))
+            else:
+                output.seek(0)
+                form = MultiPartForm()
+                # form.add_field('raw_url', raw_url)
+                form.add_file('avatarImage', 'avatar.jpg', fileHandle=output)
+
+                # Build the request
+                upload_url = models.blobstore.create_upload_url(self.uri_for('avatar_upload', user_id=user.get_id()) )
+                # logging.info(upload_url)
+                request = urllib2.Request(upload_url)
+                request.add_header('User-agent', 'PyMOTW (http://www.doughellmann.com/PyMOTW/)')
+                body = str(form)
+                request.add_header('Content-type', form.get_content_type())
+                request.add_header('Content-length', len(body))
+                request.add_data(body)
+                # request.get_data()
+
+                if urllib2.urlopen(request).read() == 'error':
+                    self.response.out.write(json.dumps({
+                        'error': True,
+                        'message': 'Image upload error.'
+                    }))
+                    return
+                else:
+                    self.response.out.write(json.dumps({'error':False}))
+        else:
+            self.response.out.write(json.dumps({
+                'error': True,
+                'message': 'Image file doesn\'t exist.'
+            }))
+
+class AvatarUpload(BaseHandler, blobstore_handlers.BlobstoreUploadHandler):
+    def post(self, user_id):
+        user = self.user_model.get_by_id(int(user_id))
+        # logging.info(self.request)
+        self.response.headers['Content-Type'] = 'text/plain'
+        upload = self.get_uploads('avatarImage')
         if upload == []:
-            self.response.out.write(json.dumps({'error':True,'message': 'Please select a file.'}))
+            self.response.out.write('error')
+            # self.response.out.write(json.dumps({'error':True,'message': 'Please select a file.'}))
             return
 
         uploaded_image = upload[0]
@@ -215,18 +286,20 @@ class AvatarUpload(BaseHandler, blobstore_handlers.BlobstoreUploadHandler):
         types = uploaded_image.content_type.split('/')
         if types[0] != 'image':
             uploaded_image.delete()
-            self.response.out.write(json.dumps({'error':True,'message': 'File type error.'}))
+            self.response.out.write('error')
+            # self.response.out.write(json.dumps({'error':True,'message': 'File type error.'}))
             return
 
         if uploaded_image.size > 50*1024*1024:
             uploaded_image.delete()
-            self.response.out.write(json.dumps({'error':True,'message': 'File is too large.'}))
+            self.response.out.write('error')
+            # self.response.out.write(json.dumps({'error':True,'message': 'File is too large.'}))
             return
 
-        user = self.user
         if user.avatar != None:
             images.delete_serving_url(user.avatar)
             models.blobstore.BlobInfo(user.avatar).delete()
         user.avatar = uploaded_image.key()
         user.put()
-        self.response.out.write(json.dumps({'error':False}))
+        self.response.out.write('success')
+        # self.response.out.write(json.dumps({'error':False}))
