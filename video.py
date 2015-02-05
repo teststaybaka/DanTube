@@ -136,14 +136,17 @@ class Submit(BaseHandler, blobstore_handlers.BlobstoreUploadHandler):
 
                 output = cStringIO.StringIO()
                 if im.mode == "RGBA" or "transparency" in im.info:
-                    rgba_im = Image.new("RGBA", (400,225))
-                    resized_im = im.resize((400,225), Image.ANTIALIAS)
+                    rgba_im = Image.new("RGBA", (512,288))
+                    resized_im = im.resize((512,288), Image.ANTIALIAS)
                     rgba_im.paste(resized_im)
-                    new_im = Image.new("RGB", (400,225), (255,255,255))
+                    new_im = Image.new("RGB", (512,288), (255,255,255))
                     new_im.paste(rgba_im, rgba_im)
                     new_im.save(output, format='jpeg', quality=90)
                 else:
-                    im.resize((400,225), Image.ANTIALIAS).save(output, format='jpeg', quality=90)
+                    rgb_im = Image.new("RGB", (512,288))
+                    resized_im = im.resize((512,288), Image.ANTIALIAS)
+                    rgb_im.paste(resized_im)
+                    rgb_im.save(output, format='jpeg', quality=90)
             except Exception, e:
                 logging.info('image process failed')
             else:

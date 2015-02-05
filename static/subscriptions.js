@@ -1,5 +1,5 @@
 $(document).ready(function() {
-    $('.user-unsubscribe').click(function(e) {
+    $('div.unsubscribe-button').click(function(e) {
         var user_id = $(this).attr('uid');
         var user_div = $(this).parent().parent();
         $.ajax({
@@ -7,10 +7,11 @@ $(document).ready(function() {
             url: "/user/" + user_id + "/unsubscribe",
             success: function(result) {
                 if(!result.error) {
-                    alert('success!');
+                    // alert('success!');
                     user_div.remove();
                 } else {
-                    alert(result.message);
+                    // alert(result.message);
+                    console.log(result.message);
                 }
             },
             error: function (xhr, ajaxOptions, thrownError) {
@@ -18,5 +19,5 @@ $(document).ready(function() {
                 console.log(thrownError);
             }
         });
-    })
+    });
 });

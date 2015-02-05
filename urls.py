@@ -32,7 +32,8 @@ routes = [
     webapp2.Route(r'/account/password', account.ChangePassword, name="change_password"),
     webapp2.Route(r'/account/video', account.ManageVideo, name="manage_video"),
     webapp2.Route(r'/favorites', account.Favorites, name="favorites"),
-    webapp2.Route(r'/subscriptions', account.Subscriptions, name="subscriptions"),
+    webapp2.Route(r'/account/subscriptions', account.Subscriptions, name="subscriptions"),
+    webapp2.Route(r'/account/subscribed', account.Subscribed, name="subscribed_users"),
     webapp2.Route(r'/history', account.History, name="history"),    
     webapp2.Route(r'/verify', account.SendVerification, name='send_verification'),
     webapp2.Route(r'/verify/<user_id:\d+>-<signup_token:.+>', account.Verification, name='verification'),
@@ -49,6 +50,7 @@ routes = [
     webapp2.Route(r'/video/dt<video_id:\d+>/favor', views.Favor, name="favor"),
     webapp2.Route(r'/video/dt<video_id:\d+>/unfavor', views.Unfavor, name="unfavor"),
     webapp2.Route(r'/player', views.Player, name="player"),
+    webapp2.Route(r'/search', views.Search, name="search"),
 
     webapp2.Route(r'/admin/video', admin.VideoPageTest, name="Admin_Video"),
     webapp2.Route(r'/admin/danmaku', admin.DanmakuTest, name="Admin_Danmaku"),

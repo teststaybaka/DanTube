@@ -1,0 +1,136 @@
+{% extends "template/base.html" %}
+{% block head %}
+{{ super() }}
+<link rel="stylesheet" href="/static/search.css" type="text/css" />
+{% endblock %}
+
+{% block body %}
+<div class="search-scope-line">
+    <div class="search-scope active">Videos</div>
+    <div class="search-scope">Playlists</div>
+    <div class="search-scope">UPers</div>
+</div>
+<div class="search-scope-line hide">
+    <div class="search-scope active">All</div>
+    {% for key in category %}
+    <div class="search-scope" href="{{ uri_for(key) }}">{{ key }}</div>
+    {% endfor %}
+</div>
+<div class="search-scope-line hide">
+    {% for val in subcategory['Anime'] %}
+    <div class="search-scope">{{val}}</div>
+    {% endfor %}
+</div>
+<div class="search-scope-line hide">
+    <label id="view-method-label">Sorted by:</label>
+    <div id="view-method">
+        <div class="selected">Newest</div>
+        <div class="option">
+            <div class="option-entry">Most viewed</div>
+            <div class="option-entry">Most favored</div>
+        </div>
+    </div>
+</div>
+<div class="video-entry no-result">
+    No result found. Please try other keywords.
+</div>
+{% block search_result %}
+<div class="video-entry">
+    <div class="video-img-uper">
+        <a class="video-img" href="{{ video.url }}">
+            <img class="video-img" src="{{ video.thumbnail_url }}">
+        </a>
+        <a class="video-uploader">UPer: Markipier</a>
+    </div>
+    <div class="video-info">
+        <div>
+            <div class="video-category">Anime</div>
+            <div class="video-category-arrow"></div>
+            <div class="video-category">Continuing Anime</div>
+            <div class="video-time">2015-02-03 15:01:26</div>
+        </div>
+        <a href="{{ video.url }}" class="video-title">WHY!? WHY DID YOU HAVE TO DO THAT!? | Exoptable Money (Prequel to Presentable Liberty)</a>
+        <div class="video-statistic">
+            <div class="video-statistic-entry">Views: {{ video.hits }}</div>
+            <div class="video-statistic-entry">Favors: {{ video.favors }}</div>
+            <div class="video-statistic-entry">Damaku: {{ video.danmaku_counter }}</div>
+            <div class="video-statistic-entry">Comments: {{ video.comment_counter }}</div>
+        </div>
+        <div class="video-description">
+            WHY!? WHY DID YOU HAVE TO D
+        </div>
+        <div class="video-tags">
+            <div class="tag-entry">HAHAH</div>
+            <div class="tag-entry">Kanmusu</div>
+        </div>
+    </div>
+</div>
+<div class="video-entry">
+    <div class="video-img-uper">
+        <a class="video-img" href="{{ video.url }}">
+            <img class="video-img" src="{{ video.thumbnail_url }}">
+        </a>
+        <a class="video-uploader">UPer: OOOOO</a>
+    </div>
+    <div class="video-info">
+        <div>
+            <div class="video-category">Anime</div>
+            <div class="video-category-arrow"></div>
+            <div class="video-category">Continuing Anime</div>
+            <div class="video-time">2015-02-03 15:01:26</div>
+        </div>
+        <a href="{{ video.url }}" class="video-title">{{ video.title }}</a>
+        <div class="video-statistic">
+            <div class="video-statistic-entry">Views: {{ video.hits }}</div>
+            <div class="video-statistic-entry">Favors: {{ video.favors }}</div>
+            <div class="video-statistic-entry">Damaku: {{ video.danmaku_counter }}</div>
+            <div class="video-statistic-entry">Comments: {{ video.comment_counter }}</div>
+        </div>
+        <div class="video-description">
+            WHY!? WHY DID YOU HAVE TO D
+        </div>
+        <div class="video-tags">
+            <div class="tag-entry">HAHAH</div>
+            <div class="tag-entry">Kanmusu</div>
+        </div>
+    </div>
+</div>
+<div class="video-entry">
+    <div class="video-img-uper">
+        <a class="video-img" href="{{ video.url }}">
+            <img class="video-img" src="{{ video.thumbnail_url }}">
+        </a>
+        <a class="video-uploader">UPer: OOOOO</a>
+    </div>
+    <div class="video-info">
+        <div>
+            <div class="video-category">Anime</div>
+            <div class="video-category-arrow"></div>
+            <div class="video-category">Continuing Anime</div>
+            <div class="video-time">2015-02-03 15:01:26</div>
+        </div>
+        <a href="{{ video.url }}" class="video-title">{{ video.title }}</a>
+        <div class="video-statistic">
+            <div class="video-statistic-entry">Views: {{ video.hits }}</div>
+            <div class="video-statistic-entry">Favors: {{ video.favors }}</div>
+            <div class="video-statistic-entry">Damaku: {{ video.danmaku_counter }}</div>
+            <div class="video-statistic-entry">Comments: {{ video.comment_counter }}</div>
+        </div>
+        <div class="video-description">
+            WHY!? WHY DID YOU HAVE TO D
+        </div>
+        <div class="video-tags">
+            <div class="tag-entry">HAHAH</div>
+            <div class="tag-entry">Kanmusu</div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+<div class="search-pagination-line">
+    <div class="page-change hide"><</div>
+    <div class="page-num active">1</div>
+    <div class="page-num">2</div>
+    <div class="page-num">3</div>
+    <div class="page-change">></div>
+</div>
+{% endblock %}

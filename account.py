@@ -30,14 +30,19 @@ class Favorites(BaseHandler):
             context['videos'].append(video.get_basic_info())
         self.render('favorites', context)
 
-class Subscriptions(BaseHandler):
+class Subscribed(BaseHandler):
     @login_required
     def get(self):
         subscribed_users = ndb.get_multi(self.user.subscriptions)
         context = {'subscribed_users': []}
         for user in subscribed_users:
             context['subscribed_users'].append(user.get_public_info())
-        self.render('subscriptions', context)
+        self.render('subscribed_users', context)
+
+class Subscriptions(BaseHandler):
+    @login_required
+    def get(self):
+        self.render('subscriptions')
 
 class History(BaseHandler):
     @login_required
@@ -232,7 +237,10 @@ class ChangeAvatar(BaseHandler):
                     new_im.paste(rgba_im, rgba_im)
                     new_im.save(output, format='jpeg', quality=90)
                 else:
-                    im.crop((x0, y0, x0+width-1, y0+height-1)).resize((128,128), Image.ANTIALIAS).save(output, format='jpeg', quality=90)
+                    rgb_im = Image.new("RGB", (128,128))
+                    resized_im = im.crop((x0, y0, x0+width-1, y0+height-1)).resize((128,128), Image.ANTIALIAS)
+                    rgb_im.paste(resized_im)
+                    rgb_im.save(output, format='jpeg', quality=90)
             except Exception, e:
                 self.response.out.write(json.dumps({
                     'error': True,

@@ -1,0 +1,46 @@
+{% extends "template/account.html" %}
+{% block head %}
+{{ super() }}
+<link href="/static/subscriptions.css" rel="stylesheet" type="text/css">
+<script src="/static/subscriptions.js" language="JavaScript" type="text/javascript"></script>
+{% endblock %}
+
+{% block detail %}
+<div id="sub-title-line" class="container">
+    <div id="sub-title">26 UPers</div>
+    <div id="sub-search-block">
+        <input id="sub-search-input" type="text" placeholder="Search UPers">
+        <div id="sub-search-button"></div>
+    </div>
+</div>
+<div id="subs-user-list" class="container">
+  {% if subscribed_users|count == 0 %}
+  <div class="no-subscription">
+    You haven't subscribed to anyone.
+  </div>
+  {% endif %}
+  {% for subs_user in subscribed_users %}
+  <div class="subscription-user-box">
+    <a class="user-img" href="{{ subs_user.space_url}}" target="_blank">
+        <img src="{{ subs_user.avatar_url }}">
+    </a>
+    <div class="user-details">
+      <div class="user-nickname">
+        <a class="user-nickname" href="{{ subs_user.space_url}}" target="_blank">{{ subs_user.nickname }}</a>
+      </div>
+      <div class="buttons-line">
+        <div class="inline-button">Send Message</div>
+        <div class="inline-button unsubscribe-button" uid="{{ subs_user.id }}">Unsubscribe</div>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+<div class="pagination-line">
+    <div class="page-change hide"><</div>
+    <div class="page-num active">1</div>
+    <div class="page-num hide">2</div>
+    <div class="page-num hide">3</div>
+    <div class="page-change hide">></div>
+</div>
+{% endblock %}

@@ -1,19 +1,69 @@
 {% extends "template/account.html" %}
 {% block head %}
 {{ super() }}
+<link rel="stylesheet" href="/static/manage_video.css" type="text/css" />
 {% endblock %}
 
 {% block detail %}
-<h2>My Video List</h2>
-<div id="video-list">
-  {% for video in videos %}
-  <div class="video-item">
-    <div>
-      <a href="{{ video.url }}"><img src="{{ video.thumbnail_url }}"></a>
+<div id="sub-title-line" class="container">
+    <div id="sub-title">26 Videos</div>
+    <div id="sub-search-block">
+        <input id="sub-search-input" type="text" placeholder="Search Videos">
+        <div id="sub-search-button"></div>
     </div>
-    <div>Created at: {{ video.created }} </div>
-    <div>Hits: {{ video.hits }} Damakus: {{ video.danmaku_counter }}</div>
-  </div>
-  {% endfor %}
+    <div id="view-method">
+        <div class="selected">Newest</div>
+        <div class="option">
+            <div class="option-entry">Most viewed</div>
+            <div class="option-entry">Most favored</div>
+        </div>
+    </div>
+    <label id="view-method-label">Sorted by:</label>
+</div>
+{% if videos|count == 0 %}
+<div class="video-entry none">
+    No video found.
+</div>
+{% endif %}
+{% for video in videos %}
+<div class="video-entry">
+    <a class="video-img" href="{{ video.url }}">
+        <img class="video-img" src="{{ video.thumbnail_url }}">
+    </a>
+    <div class="video-info">
+        <div>
+            <div class="video-category">{{ video.category }}</div>
+            <div class="video-category-arrow"></div>
+            <div class="video-category">{{ video.subcategory }}</div>
+            <div class="video-time">{{ video.created }} </div>
+        </div>
+        <div>
+            <a href="{{ video.url }}" class="video-title">{{ video.title }}</a>
+        </div>
+        <div class="video-playlist">
+            <label>Playlist: </label>
+            <label class="list-title">Not listed</label>
+            <div class="edit-entry">[Add to Playlist]</div>
+        </div>
+        <div class="video-statistic">
+            <div class="video-statistic-entry">Views: {{ video.hits }}</div>
+            <div class="video-statistic-entry">Favors: {{ video.favors }}</div>
+            <div class="video-statistic-entry">Damaku: {{ video.danmaku_counter }}</div>
+            <div class="video-statistic-entry">Comments: {{ video.comment_counter }}</div>
+        </div>
+        <div class="video-edit">
+            <div class="edit-entry">[Edit Video]</div>
+            <div class="edit-entry">[Manage Danmaku]</div>
+        </div>
+        <div class="video-delete"></div>
+    </div>
+</div>
+{% endfor %}
+<div class="pagination-line">
+    <div class="page-change"><</div>
+    <div class="page-num">1</div>
+    <div class="page-num active">2</div>
+    <div class="page-num">3</div>
+    <div class="page-change">></div>
 </div>
 {% endblock %}

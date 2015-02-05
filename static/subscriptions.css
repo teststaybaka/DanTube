@@ -1,53 +1,176 @@
+div.no-subscription {
+  text-align: center;
+  font-size: 18px;
+  padding: 40px 0 70px 0;
+  color: rgb(100,100,100);
+}
+
 #subs-user-list {
-  margin: 10px;
+  padding: 30px 0 0 30px;
+  border-top: 1px solid rgb(230,230,230);
 }
-.user-info {
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  padding: 4px;
-  width: 210px;
-  position: relative;
+
+div.subscription-user-box {
+  float: left;
+  display: inline-table;
+  margin-right: 30px;
+  padding: 15px;
+  border-radius: 5px;
+  border: 1px solid rgb(200,200,200);
+  margin-bottom: 30px;
+}
+
+div.subscription-user-box:hover {
+  background-color: rgb(250,250,250);
+}
+
+a.user-img {
+  width: 58px;
+  height: 58px;
   display: inline-block;
-  margin: 20px 20px 0 0;
+  font-size: 0;
 }
 
-.user-avatar {
-  float: left;
-  position: relative;
-  margin-right: 10px;
+a.user-img img {
+  width: 100%;
+  height: 100%;
+  box-shadow: 0 0 1px rgb(100,100,100);
 }
 
-.user-avatar img{
-  width: 55px;
-  height: 55px;
+div.user-details {
+  display: inline-block;
+  vertical-align: top;
+  width: 240px;
 }
 
-.user-details {
-  float: left;
-}
-
-.user-intro {
-  width: 140px;
-  height: 50px;
+a.user-nickname {
+  padding-left: 10px;
+  max-width: 100%;
   overflow: hidden;
-  margin-top: 5px;
-  line-height: 18px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: inline-block;
+  -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
+  -moz-box-sizing: border-box;    /* Firefox, other Gecko */
+  box-sizing: border-box;
+  color: rgb(100,100,100);
 }
 
-.user-unsubscribe {
-  position: absolute;
-  padding: 2px 4px;
-  top: 5px;
-  right: 5px;
-  border: 1px solid #00a1d6;
-  border-radius: 4px;
+a.user-nickname:hover {
+  color: rgb(0,140,255);
 }
 
-.user-unsubscribe a {
+div.buttons-line {
+  padding-left: 10px;
+}
+
+div.pagination-line {
+  padding: 15px;
+  text-align: center;
+  border-top: 1px solid rgb(230,230,230);
+}
+
+div.activity-entry {
+  padding: 25px;
+  border-top: 1px solid rgb(230,230,230);
+  width: 100%;
+  -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
+  -moz-box-sizing: border-box;    /* Firefox, other Gecko */
+  box-sizing: border-box;
+  display: inline-table;
+}
+
+div.activity-entry.none {
+  text-align: center;
+  font-size: 18px;
+  padding: 70px 0 70px 0;
+  color: rgb(100,100,100);
+}
+
+div.activity-entry:hover {
+    background-color: rgb(250,250,250);
+}
+
+a.uploader-img {
+  width: 58px;
+  height: 58px;
+  display: inline-block;
+}
+
+img.uploader-img {
+  width: 100%;
+  height: 100%;
+  box-shadow: 0 0 1px rgb(100,100,100);
+}
+
+div.activity-detail {
+  display: inline-block;
+  vertical-align: top;
+  margin-left: 15px;
+  width: 627px;
+}
+
+div.uploader-name {
+  /*font-size: 16px;*/
+  /*margin-top: 5px;*/
   cursor: pointer;
+  display: inline-block;
+  max-width: 600px;
+  vertical-align: top;
+  word-wrap: break-word;
 }
 
-.user-unsubscribe:hover {
-  background-color: #d7f6ff;
+div.uploader-name:hover {
+  color: rgb(0,140,255);
+}
+
+div.activity-title {
   cursor: pointer;
+  display: inline-block;
+  max-width: 550px;
+  vertical-align: top;
+  word-wrap: break-word;
+}
+
+div.activity-title:hover {
+  color: rgb(0,140,255);
+}
+
+div.activity-detail label {
+  font-size: 14px;
+  color: rgb(150,150,150);
+  margin-right: 5px;
+}
+
+div.activity-intro {
+  margin-top: 10px;
+  color: rgb(100,100,100);
+  font-size: 14px;
+  word-wrap: break-word;
+}
+
+a.comment-check {
+  color: rgb(0,140,255);
+  margin-left: 5px;
+}
+
+a.comment-check:hover {
+  color: rgb(255,177,108);
+}
+
+a.comment-check:active {
+  color: rgb(0,50,200);
+}
+
+a.video-img {
+  width: 176px;
+  height: 99px;
+  display: block;
+  margin-top: 10px;
+}
+
+img.video-img {
+  width: 100%;
+  height: 100%;
+  box-shadow: 0 0 1px rgb(100,100,100);
 }

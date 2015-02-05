@@ -6,25 +6,74 @@
 {% endblock %}
 
 {% block detail %}
-<div id="subs-user-list">
-  <h2>Subscriptions</h2>
-  {% for subs_user in subscribed_users %}
-  <div class="user-info container">
-    <a href="{{ subs_user.space_url}}" target="_blank">
-      <div class="user-avatar">
-        <img src="{{ subs_user.avatar_url }}">
-      </div>
+<div id="sub-title-line">
+    <div class="search-scope active">All Activity</div>
+    <div class="search-scope">Uploads Only</div>
+</div>
+<!-- <div class="activity-entry none">
+    No item found.
+</div> -->
+<div class="activity-entry">
+    <a class="uploader-img" href="">
+        <img class="uploader-img" src="">
     </a>
-    <div class="user-details">
-      <div class="user-nickname">
-        <a href="{{ subs_user.space_url}}" target="_blank">{{ subs_user.nickname }}</a>
-      </div>
-      <div class="user-intro">{{ subs_user.intro }}</div>
-      <div class="user-unsubscribe" uid="{{ subs_user.id }}">
-        <a>Unsubscribe</a>
-      </div>
+    <div class="activity-detail">
+        <div>
+            <label>Uploaded</label>
+            <div class="activity-title">WHY? ExportableWHY? ExportableWHY? ExportableWHY? Exportable</div>
+        </div>
+        <div>
+            <label>by</label>
+            <div class="uploader-name">Markiplier</div>
+        </div>
+        <div class="activity-intro">WHY? ExportableWHY? ExportableWHY? ExportableWHY? ExportableWHY? ExportableWHY? ExportableWHY? ExportableWHY? ExportableWHY? ExportableWHY? ExportableWHY? ExportableWHY? ExportableWHY? ExportableWHY? ExportableWHY? ExportableWHY? ExportableWHY? ExportableWHY? Exportable</div>
+        <a class="video-img" href="">
+            <img class="video-img" src="">
+        </a>
     </div>
-  </div>
-  {% endfor %}
+</div>
+<div class="activity-entry">
+    <a class="uploader-img" href="">
+        <img class="uploader-img" src="">
+    </a>
+    <div class="activity-detail">
+        <div>
+            <label>Uploaded</label>
+            <div class="activity-title">WHY? ExportableWHY? ExportableWHY? ExportableWHY? Exportable</div>
+        </div>
+        <div>
+            <label>by</label>
+            <div class="uploader-name">Markiplier</div>
+        </div>
+        <div class="activity-intro">WHY? ExportableWHY? ExportableWHY? ExportableWHY? ExportableWHY? ExportableWHY? ExportableWHY? ExportableWHY? ExportableWHY? ExportableWHY? ExportableWHY? ExportableWHY? ExportableWHY? ExportableWHY? ExportableWHY? ExportableWHY? ExportableWHY? ExportableWHY? Exportable</div>
+        <a class="video-img" href="">
+            <img class="video-img" src="">
+        </a>
+    </div>
+</div>
+<div class="activity-entry">
+    <a class="uploader-img" href="">
+        <img class="uploader-img" src="">
+    </a>
+    <div class="activity-detail">
+        <div>
+            <label>Commented on</label>
+            <div class="activity-title">WHY? ExportableWHY? ExportableWHY? ExportableWHY? Exportable</div>
+        </div>
+        <div>
+            <label>by</label>
+            <div class="uploader-name">Markiplier</div>
+        </div>
+            <div class="activity-intro">WHY? ExportableWHY? ExportableWHY? ExportableWHY? ExportableWHY? ExportableWHY? ExportableWHY? ExportableWHY? ExportableWHY? ExportableWHY? ExportableWHY? ExportableWHY? ExportableWHY? ExportableWHY? ExportableWHY? ExportableWHY? ExportableWHY? ExportableWHY? Exportable
+            <a class="comment-check" href="">[Check it out]</a>
+        </div>
+    </div>
+</div>
+<div class="pagination-line">
+    <div class="page-change hide"><</div>
+    <div class="page-num active">1</div>
+    <div class="page-num hide">2</div>
+    <div class="page-num hide">3</div>
+    <div class="page-change hide">></div>
 </div>
 {% endblock %}

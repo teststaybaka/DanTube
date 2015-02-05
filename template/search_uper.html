@@ -1,0 +1,27 @@
+{% extends "template/search.html" %}
+{% block head %}
+{{ super() }}
+{% endblock %}
+
+{% block search_result %}
+<div class="video-entry">
+    <a class="uper-img" href="{{ video.url }}">
+        <img class="uper-img" src="{{ video.thumbnail_url }}">
+    </a>
+    <div class="uper-info">
+        <a class="uploader" href="{{ video.url }}">UPer: Markipier</a>
+        <div class="uper-detail-line">
+            <div class="uper-detail-info">Videos: 10</div>
+            <div class="uper-detail-info">Subscribers: 10</div>
+            <div class="uper-detail-info">Subscriptions: 10</div>
+        </div>
+        <div class="uper-description">
+            WHY!? WHY DID YOU HAVE TO
+        </div>
+        <div class="uper-buttons">
+            <div class="inline-button">+ Subscribe</div>
+            <div class="inline-button">Send Message</div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -88,9 +88,72 @@ a.sub-option.active {
 #account-top-title {
     border-bottom: 1px solid rgb(200,200,200);
     padding: 13px 25px;
-    font-size: 23px;
     font-weight: bold;
     color: rgb(100,100,100);
+    font-size: 23px;
+}
+
+#sub-title-line {
+    padding: 13px 25px;
+}
+
+#sub-title {
+    float: left;
+    padding: 2px 0;
+    font-size: 18px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 360px;
+}
+
+#view-method {
+    float: right;
+    font-size: 14px;
+}
+
+#view-method-label {
+    float: right;
+    padding: 4px 8px;
+    font-size: 14px;
+}
+
+#sub-search-block {
+    float: right;
+    display: inline-table;
+    border: 1px solid rgb(200,200,200);
+}
+
+#sub-search-input {
+    outline: none;
+    padding: 5px;
+    display: inline-block;
+    border: 0;
+    font-size: 12px;
+    width: 140px;
+}
+
+#sub-search-button {
+    width: 24px;
+    height: 24px;
+    background-color: rgb(240,240,240);
+    display: inline-block;
+    vertical-align: middle;
+    border-left: 1px solid rgb(200,200,200);
+    background-image: url("/static/img/search-icon.png");
+    background-repeat: no-repeat;
+    background-position: 4px 4px;
+    background-size: 16px 16px;
+    cursor: pointer;
+}
+
+#sub-search-button:hover{
+    background-image: url("/static/img/search-icon-hover.png");
+}
+
+#sub-search-button:active {
+    background-image: url("/static/img/search-icon-active.png");
+    background-color: rgb(0,135,255);
 }
 
 #account-profile-img {
@@ -430,23 +493,23 @@ form.change div.option-button {
     font-size: 15px;
     padding: 7px 10px;
     border-radius: 5px;
-    background-color: rgb(240,240,240);
     cursor: pointer;
     font-family:"Times New Roman",Georgia,Serif;
     outline: none;
     font-weight: normal;
-    color: rgb(130,130,130);
+    color: rgb(100,100,100);
     display: inline-block;
     margin-right: 10px;
 }
 
 form.change div.option-button:hover {
-    background-color: rgb(220,220,220);
+    color: rgb(0,140,255);
+    background-color: rgb(240,240,240);
 }
 
 form.change div.option-button.select {
+    color: white;
     background-color: rgb(85,178,255);
-    color: rgb(255,255,255);  
 }
 
 form.change div.input-error {
@@ -495,8 +558,8 @@ form.change div.input-error.show {
 
 #thumbnail-preview {
     background: rgb(240,240,240);
-    width: 160px;
-    height: 90px;
+    width: 176px;
+    height: 99px;
     display: inline-block;
     vertical-align: text-top;
     cursor: pointer;
@@ -510,7 +573,7 @@ form.change div.input-error.show {
     color: rgb(150,150,150);
     margin: auto;
     text-align: center;
-    margin-top: 20px;
+    margin-top: 25px;
     pointer-events: none;
 }
 

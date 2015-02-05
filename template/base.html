@@ -74,8 +74,10 @@
             <div class="category">
                 <a class="category-name">Channels</a>
             </div>
-            <button id="search-button" type="button"></button>
-            <input type="text" name="keywords" id="search-input">
+            <form id="search-form" method="get" action="{{ uri_for('search') }}">
+                <input type="text" name="keywords" id="search-input" value="{{ keywords }}">
+                <button id="search-button"></button>
+            </form>
         </div>
     </div>
     {% endblock %}

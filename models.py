@@ -414,7 +414,7 @@ class Video(ndb.Model):
 
   def get_basic_info(self):
     if self.thumbnail is None:
-      thumbnail_url = 'http://img.youtube.com/vi/' + self.vid + '/default.jpg'
+      thumbnail_url = 'http://img.youtube.com/vi/' + self.vid + '/mqdefault.jpg'
     else:
       thumbnail_url = images.get_serving_url(self.thumbnail)
 
@@ -428,6 +428,7 @@ class Video(ndb.Model):
       'subcategory': self.subcategory,
       'hits': self.hits,
       'danmaku_counter': self.danmaku_counter, 
+      'comment_counter': self.comment_counter,
       'likes': self.likes,
       'favors': self.favors
     }
@@ -457,7 +458,7 @@ class Video(ndb.Model):
       return {'url': url, 'vid': vid, 'source': source}
 
   @classmethod
-  @ndb.transactional(retries=2)
+  @ndb.transactional(retries=10)
   def getID(cls):
     try:
       cls.id_counter += 1
@@ -469,7 +470,6 @@ class Video(ndb.Model):
         cls.id_counter = max_id + 1
       else:
         cls.id_counter = 1
-      # cls.id_counter = 1
     return cls.id_counter
 
   @classmethod
@@ -504,7 +504,7 @@ class Video(ndb.Model):
           logging.info(e)
           cls._dec_video_count(category)
           cls._dec_video_count(category, subcategory)
-          raise Exception('Failed to submit video')
+          raise Exception('Failed to submit video. Please try again.')
         else:
           return video
       else:

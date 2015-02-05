@@ -73,6 +73,12 @@ $(document).ready(function() {
     } else if (urls[urls.length-1] === "submit") {
         $("#sub-submit").addClass("active");
         $("#account-top-title").text("Video Submission");
+    } else if (urls[urls.length-1] === "subscriptions") {
+        $("#subscriptions").addClass("active");
+        $("#account-top-title").text("Subscriptions");
+    } else if (urls[urls.length-1] === "subscribed") {
+        $("#subscribed-users").addClass("active");
+        $("#account-top-title").text("UPers Subscribed");
     }
 
     $('#resend-email-link').click(function(evt) {

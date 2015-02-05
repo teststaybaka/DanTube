@@ -1,0 +1,155 @@
+div.video-entry {
+    display: inline-table;
+    padding: 25px;
+    border-top: 1px solid rgb(230,230,230);
+    width: 100%;
+    -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
+    -moz-box-sizing: border-box;    /* Firefox, other Gecko */
+    box-sizing: border-box;
+}
+
+div.video-entry.none {
+    text-align: center;
+    padding: 70px 50px;
+    font-size: 18px;
+    color: rgb(100,100,100);
+}
+
+div.video-entry:hover {
+    background-color: rgb(250,250,250);
+}
+
+a.video-img {
+    display: inline-block;
+    font-size: 0;
+}
+
+img.video-img {
+    width: 176px;
+    height: 99px;
+    box-shadow: 0 0 1px rgb(100,100,100);
+}
+
+div.video-info {
+    display: inline-block;
+    padding-left: 20px;
+    vertical-align: top;
+    height: 99px;
+    width: 488px;
+    position: relative;
+}
+
+div.video-category {
+    display: inline-block;
+    font-size: 14px;
+    border: 1px solid rgb(220,220,220);
+    padding: 3px 8px;
+}
+
+div.video-category-arrow {
+    display: inline-block;
+    vertical-align: middle;
+    width: 8px;
+    height: 8px;
+    background-image: url("/static/img/arrow.png");
+    margin: 0 5px;
+}
+
+div.video-time {
+    color: rgb(150,150,150);
+    font-size: 14px;
+    vertical-align: middle;
+    display: inline-block;
+    margin-left: 10px;
+}
+
+a.video-title {
+    /*font-size: 14px;*/
+    /*color: rgb(100,100,100);*/
+    /*font-weight: bold;*/
+    margin-top: 2px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: inline-block;
+    max-width: 100%;
+}
+
+a.video-title:hover {
+    color: rgb(0,140,255);
+}
+
+div.video-statistic {
+    margin-top: 2px;
+    font-size: 14px;
+}
+
+div.video-statistic-entry {
+    display: inline-block;
+    margin-right: 10px;
+}
+
+div.video-playlist {
+    margin-top: 2px;
+    font-size: 14px;
+}
+
+div.video-playlist label {
+    margin-right: 4px;
+    color: rgb(100,100,100);
+    max-width: 330px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+div.video-edit {
+    margin-top: 2px;
+    font-size: 14px;
+}
+
+div.edit-entry {
+    display: inline-block;
+    margin-right: 10px;
+    color: rgb(0,140,255);
+    cursor: pointer;
+}
+
+div.edit-entry:hover {
+    color: rgb(255,177,108);
+}
+
+div.edit-entry:active {
+    color: rgb(0,50,200);
+}
+
+div.video-delete {
+    width: 16px;
+    height: 16px;
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    background-image: url("/static/img/delete.png");
+    background-repeat: no-repeat;
+    cursor: pointer;
+    background-size: contain;
+    display: none;
+}
+
+div.video-entry:hover div.video-delete {
+    display: inline-block;
+}
+
+div.video-delete:hover {
+    background-image: url("/static/img/delete-hover.png");
+}
+
+div.video-delete:active {
+    background-image: url("/static/img/delete-active.png");
+}
+
+div.pagination-line {
+    text-align: center;
+    padding: 15px 0 15px 0;
+    border-top: 1px solid rgb(220,220,220);
+}

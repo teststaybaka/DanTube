@@ -25,9 +25,14 @@
         <a class="main-option" href="{{ uri_for('manage_video') }}">Video Manager</a>
         <div class="sub-menu">
             <a class="sub-option" id="sub-videos" href="{{ uri_for('manage_video') }}">Videos</a>
+            <a class="sub-option" id="sub-playlists" href="">Playlists</a>
             <a class="sub-option" id="sub-submit" href="{{ uri_for('submit') }}">Submission</a>
         </div>
         <a class="main-option" href="{{ uri_for('subscriptions') }}">Subscription</a>
+        <div class="sub-menu">
+            <a class="sub-option" id="subscriptions" href="{{ uri_for('subscriptions') }}">Subscriptions</a>
+            <a class="sub-option" id="subscribed-users" href="{{ uri_for('subscribed_users') }}">Manage Subscription</a>
+        </div>
         <a class="main-option" href="{{ uri_for('favorites') }}">Favorites</a>
         <a class="main-option" href="{{ uri_for('history') }}">History</a>
         <a class="main-option">Messages</a>
@@ -36,7 +41,6 @@
 </div>
 <div id="account-right-section">
     <div id="account-top-title">
-        
     </div>
     {% block detail %}
     <div>

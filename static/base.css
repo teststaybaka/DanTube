@@ -83,7 +83,7 @@ div.link:hover, a.link:hover {
   padding: 7px 10px;
   border: 1px solid rgb(200,200,200);
   border-radius: 5px;
-  background-color: rgb(250,250,250);
+  /*background-color: rgb(250,250,250);*/
   font-family: "Times New Roman",Georgia,Serif;
   font-weight: bold;
   color: rgb(100,100,100);
@@ -97,7 +97,7 @@ div.link:hover, a.link:hover {
 #signin-nav-button:hover {
   box-shadow: 0 0 2px rgb(81,203,238);
   border: 1px solid rgb(81,203,238);
-  color: rgb(0,150,255);
+  color: rgb(0,140,255);
 }
 
 #signin-nav-button:active {
@@ -334,6 +334,11 @@ a.category-name {
 	text-shadow:0 0 2px rgb(150,150,150);
 }
 
+#search-form {
+    float: right;
+    display: inline-table;
+}
+
 #search-input {
 	outline: none;
 	margin: 0;
@@ -350,7 +355,7 @@ a.category-name {
 	width: 155px;
 	height: 38px;
 	background-color: white;
-	float: right;
+    vertical-align: middle;
 }
 
 #search-button {
@@ -363,11 +368,11 @@ a.category-name {
 	background-color: rgb(240,240,240);
 	width: 38px;
 	height: 38px;
-	float: right;
 	background-position: 9px 9px;
 	background-repeat: no-repeat;
 	border-right: 1px solid rgb(200,200,200);
 	cursor: pointer;
+    vertical-align: middle;
 }
 
 #search-button:hover {
@@ -444,4 +449,124 @@ span.category-arrow {
 	width: 1024px;
     margin-left: auto;
     margin-right: auto;
+}
+
+div.page-change {
+    display: inline-block;
+    font-weight: bold;
+    font-size: 14px;
+    cursor: pointer;
+    margin: 0 10px;
+}
+
+div.page-num {
+    display: inline-block;
+    font-size: 14px;
+    text-align: center;
+    border-radius: 10px;
+    height: 16px;
+    cursor: pointer;
+}
+
+div.page-change:hover, div.page-num:hover {
+    color: rgb(0,140,255);
+}
+
+div.page-num.active {
+    font-weight: bold;
+    background-color: rgb(85,178,255);
+    color: white;
+    width: 16px;
+}
+
+div.page-num.hide, div.page-change.hide {
+    display: none;
+}
+
+#view-method div.selected {
+    padding: 4px 22px 4px 8px;
+    margin-right: 25px;
+    border: 1px solid rgb(220,220,220);
+    background-color: white;
+    position: relative;
+}
+
+#view-method div.selected:after {
+    width: 8px;
+    height: 16px;
+    position: absolute;
+    content: "";
+    right: 6px;
+    background-repeat: no-repeat;
+    background-image: url("/static/img/arrow_down.png");
+    background-position: 0 4px;
+}
+
+#view-method div.option {
+    position: absolute;
+    border: 1px solid rgb(220,220,220);
+    margin-top: -1px;
+    display: none;
+    cursor: pointer;
+    width: 100px;
+    z-index: 1;
+    background-color: white;
+}
+
+#view-method:hover div.option {
+    display: block;
+}
+
+#view-method div.option-entry {
+    padding: 8px 8px;
+}
+
+#view-method div.option-entry:hover {
+    background-color: rgb(245,245,245);
+}
+
+div.inline-button {
+    border: 1px solid rgb(81,203,238);
+    padding: 5px 8px;
+    font-size: 14px;
+    display: inline-block;
+    border-radius: 5px;
+    margin-top: 8px;
+    margin-right: 10px;
+    cursor: pointer;
+    /*color: rgb(100,100,100);*/
+    font-weight: bold;
+    color: rgb(81,203,238);
+}
+
+div.inline-button:hover {
+    /*box-shadow: 0 0 2px rgb(81,203,238);
+    border: 1px solid rgb(81,203,238);*/
+    background-color: rgb(232,250,255);
+    /*color: rgb(0,140,255);*/
+}
+
+div.inline-button:active {
+    background-color: rgb(81,203,238);
+    color: rgb(255,255,255);
+}
+
+div.search-scope {
+    display: inline-block;
+    border-radius: 3px;
+    padding: 5px 10px;
+    font-size: 14px;
+    color: rgb(100,100,100);
+    cursor: pointer;
+    margin-right: 10px;
+}
+
+div.search-scope:hover {
+    color: rgb(0,140,255);
+    background-color: rgb(240,240,240);
+}
+
+div.search-scope.active {
+    color: white;
+    background-color: rgb(85,178,255);
 }

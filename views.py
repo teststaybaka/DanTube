@@ -601,3 +601,9 @@ class Unsubscribe(BaseHandler):
                 'error': True,
                 'message': 'user not subscribed'
             }))
+
+class Search(BaseHandler):
+    def get(self):
+        key_words_ori = self.request.get('keywords')
+        logging.info(key_words_ori)
+        self.render('search_playlist', {'keywords': key_words_ori})
