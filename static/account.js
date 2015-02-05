@@ -79,6 +79,9 @@ $(document).ready(function() {
     } else if (urls[urls.length-1] === "subscribed") {
         $("#subscribed-users").addClass("active");
         $("#account-top-title").text("UPers Subscribed");
+    } else if (urls[urls.length-1] === "favorites") {
+        $("#favorites").addClass("active");
+        $("#account-top-title").text("Favorite Videos");
     }
 
     $('#resend-email-link').click(function(evt) {

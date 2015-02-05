@@ -1,8 +1,27 @@
+#subscription-block {
+  border: 1px solid rgb(200,200,200);
+  width: 750px;
+  margin-top: 40px;
+  float: left;
+}
+
+#subscription-upers {
+  float: right;
+  width: 230px;
+  border: 1px solid rgb(200,200,200);
+  margin-top: 40px;
+}
+
 div.no-subscription {
   text-align: center;
   font-size: 18px;
   padding: 40px 0 70px 0;
   color: rgb(100,100,100);
+}
+
+div.no-subscription.quick {
+  padding: 10px 38px 30px 0;
+  font-size: 16px;
 }
 
 #subs-user-list {
@@ -111,28 +130,18 @@ div.activity-detail {
 }
 
 div.uploader-name {
-  /*font-size: 16px;*/
-  /*margin-top: 5px;*/
-  cursor: pointer;
-  display: inline-block;
-  max-width: 600px;
-  vertical-align: top;
   word-wrap: break-word;
 }
 
-div.uploader-name:hover {
+a.uploader-name:hover {
   color: rgb(0,140,255);
 }
 
 div.activity-title {
-  cursor: pointer;
-  display: inline-block;
-  max-width: 550px;
-  vertical-align: top;
   word-wrap: break-word;
 }
 
-div.activity-title:hover {
+a.activity-title:hover {
   color: rgb(0,140,255);
 }
 
@@ -173,4 +182,16 @@ img.video-img {
   width: 100%;
   height: 100%;
   box-shadow: 0 0 1px rgb(100,100,100);
+}
+
+div.upers-block {
+  border-top: 1px solid rgb(230,230,230);
+  padding-left: 38px;
+  padding-top: 20px;
+}
+
+div.quick-uper {
+  margin-right: 38px;
+  margin-bottom: 20px;
+  float: left;
 }

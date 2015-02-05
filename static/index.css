@@ -198,10 +198,20 @@ div.more-video {
     font-size: 16px;
     margin-top: 3px;
     cursor: pointer;
+    color: rgb(100,100,100);
+}
+
+div.more-video.fresh {
+    margin-right: 40px;
 }
 
 div.category-title:hover, div.more-video:hover {
     color: rgb(0,140,255);
+}
+
+div.category-title.random {
+    cursor: default;
+    color: rgb(100,100,100);   
 }
 
 div.side-title {
@@ -221,6 +231,10 @@ div.video-preview {
     width: 176px;
     position: relative;
     cursor: pointer;
+}
+
+div.video-preview.random {
+    margin-right: 28px;
 }
 
 div.video-preview-thumbnail {
@@ -277,6 +291,7 @@ div.video-preview-hits, div.video-preview-danmaku-num {
 
 div.video-preview-danmaku-num {
     width: 50px;
+    background-position: 0 3px;
     background-image: url("/static/img/danmaku-preview.png");
 }
 
@@ -327,6 +342,7 @@ div.popup-statistic-entry.favorites {
 }
 
 div.popup-statistic-entry.danmaku {
+    background-position: 0 10px;
     background-image: url("/static/img/danmaku-preview.png");
 }
 

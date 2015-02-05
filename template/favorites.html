@@ -1,22 +1,73 @@
 {% extends "template/account.html" %}
 {% block head %}
 {{ super() }}
+<link rel="stylesheet" href="/static/manage_video.css" type="text/css" />
 <script src="/static/favorites.js" language="JavaScript" type="text/javascript"></script>
 {% endblock %}
 
 {% block detail %}
-<h2>Favorites</h2>
-<div id="video-list">
-  {% for video in videos %}
-  <div class="video-item">
-    <div>{{ video.title }}</div>
-    <div class="video-thumbnail">
-      <a href="{{ video.url }}"><img src="{{ video.thumbnail_url }}"></a>
-    </div>
-    <div>Created at: {{ video.created }} </div>
-    <div>Hits: {{ video.hits }} Damakus: {{ video.danmaku_counter }}</div>
-    <button class="unfavor-button" type="button">Unfavor</button>
+<div id="sub-title-line" class="container">
+  <div id="sub-title">40/100 Videos</div>
+  <div id="sub-search-block">
+      <input id="sub-search-input" type="text" placeholder="Search Videos">
+      <div id="sub-search-button"></div>
   </div>
-  {% endfor %}
+  <div id="view-method">
+      <div class="selected">Newest</div>
+      <div class="option">
+          <div class="option-entry">Most viewed</div>
+          <div class="option-entry">Most favored</div>
+      </div>
+  </div>
+  <label id="view-method-label">Sorted by:</label>
+</div>
+{% if videos|count == 0 %}
+<div class="video-entry none">
+    No video found.
+</div>
+{% endif %}
+<div class="video-entry">
+  <a class="video-img" href="/video/dt1" target="_blank">
+      <img class="video-img" src="http://localhost:8080/_ah/img/Shnw-TknJQDdcCFb7AHQaw==">
+  </a>
+  <div class="video-info">
+      <div>
+          <div class="video-category">Anime</div>
+          <div class="video-category-arrow"></div>
+          <div class="video-category">Continuing Anime</div>
+      </div>
+      <div>
+          <a href="/video/dt1" class="video-title favored" target="_blank">sdf</a>
+      </div>
+      <div class="video-statistic favored">
+          <div class="video-statistic-entry">Views: 15</div>
+          <div class="video-statistic-entry">Favors: 0</div>
+          <div class="video-statistic-entry">Damaku: 0</div>
+          <div class="video-statistic-entry">Comments: 0</div>
+      </div>
+      <div class="favored-time">
+        <label>Favored at: </label>
+        2015-01-13 21:30
+      </div>
+      <div class="video-delete"></div>
+  </div>
+</div>
+<!--   {% for video in videos %}
+<div class="video-entry">
+  <div>{{ video.title }}</div>
+  <div class="video-thumbnail">
+    <a href="{{ video.url }}"><img src="{{ video.thumbnail_url }}"></a>
+  </div>
+  <div>Created at: {{ video.created }} </div>
+  <div>Hits: {{ video.hits }} Damakus: {{ video.danmaku_counter }}</div>
+  <button class="unfavor-button" type="button">Unfavor</button>
+</div>
+{% endfor %} -->
+<div class="pagination-line">
+  <div class="page-change"><</div>
+  <div class="page-num">1</div>
+  <div class="page-num active">2</div>
+  <div class="page-num">3</div>
+  <div class="page-change">></div>
 </div>
 {% endblock %}

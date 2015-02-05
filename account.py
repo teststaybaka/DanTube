@@ -44,6 +44,14 @@ class Subscriptions(BaseHandler):
     def get(self):
         self.render('subscriptions')
 
+    @login_required
+    def quick(self):
+        subscribed_users = ndb.get_multi(self.user.subscriptions)
+        context = {'subscribed_users': []}
+        for user in subscribed_users:
+            context['subscribed_users'].append(user.get_public_info())
+        self.render('subscriptions_quick', context)
+
 class History(BaseHandler):
     @login_required
     def get(self):

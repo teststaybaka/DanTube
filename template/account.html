@@ -28,14 +28,21 @@
             <a class="sub-option" id="sub-playlists" href="">Playlists</a>
             <a class="sub-option" id="sub-submit" href="{{ uri_for('submit') }}">Submission</a>
         </div>
-        <a class="main-option" href="{{ uri_for('subscriptions') }}">Subscription</a>
+        <a class="main-option" href="{{ uri_for('subscribed_users') }}">Subscription</a>
         <div class="sub-menu">
-            <a class="sub-option" id="subscriptions" href="{{ uri_for('subscriptions') }}">Subscriptions</a>
             <a class="sub-option" id="subscribed-users" href="{{ uri_for('subscribed_users') }}">Manage Subscription</a>
+            <a class="sub-option" id="subscriptions" href="{{ uri_for('subscriptions') }}">Subscriptions</a>
         </div>
         <a class="main-option" href="{{ uri_for('favorites') }}">Favorites</a>
-        <a class="main-option" href="{{ uri_for('history') }}">History</a>
+        <div class="sub-menu">
+            <a class="sub-option" id="favorites" href="{{ uri_for('favorites') }}">Favorites</a>
+        </div>
         <a class="main-option">Messages</a>
+        <div class="sub-menu">
+            <a class="sub-option" id="favorites" href="{{ uri_for('favorites') }}">Messages</a>
+            <a class="sub-option" id="favorites" href="{{ uri_for('favorites') }}">Mentioned Me</a>
+            <a class="sub-option" id="favorites" href="{{ uri_for('favorites') }}">Notification</a>
+        </div>
         <a class="main-option" href="{{ user.space_url }}">Personal Space</a>
     </div>
 </div>

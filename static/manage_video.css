@@ -15,10 +15,6 @@ div.video-entry.none {
     color: rgb(100,100,100);
 }
 
-div.video-entry:hover {
-    background-color: rgb(250,250,250);
-}
-
 a.video-img {
     display: inline-block;
     font-size: 0;
@@ -34,7 +30,6 @@ div.video-info {
     display: inline-block;
     padding-left: 20px;
     vertical-align: top;
-    height: 99px;
     width: 488px;
     position: relative;
 }
@@ -63,16 +58,25 @@ div.video-time {
     margin-left: 10px;
 }
 
+div.video-title {
+    font-size: 0;
+}
+
 a.video-title {
     /*font-size: 14px;*/
     /*color: rgb(100,100,100);*/
     /*font-weight: bold;*/
-    margin-top: 2px;
+    margin-top: 3px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
     display: inline-block;
     max-width: 100%;
+    font-size: 16px;
+}
+
+a.video-title.favored {
+    margin-top: 7px;
 }
 
 a.video-title:hover {
@@ -82,6 +86,10 @@ a.video-title:hover {
 div.video-statistic {
     margin-top: 2px;
     font-size: 14px;
+}
+
+div.video-statistic.favored {
+    margin-top: 7px;
 }
 
 div.video-statistic-entry {
@@ -152,4 +160,13 @@ div.pagination-line {
     text-align: center;
     padding: 15px 0 15px 0;
     border-top: 1px solid rgb(220,220,220);
+}
+
+div.favored-time {
+    font-size: 14px;
+    margin-top: 7px;
+}
+
+div.favored-time label {
+    color: rgb(150,150,150);
 }

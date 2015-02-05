@@ -587,7 +587,11 @@ function secondsToTime(secs)
 }
 
 function danmaku_timestamp_lower_compare(x, y) {
-    return x.timestamp < y.timestamp;
+    if (x.timestamp != y.timestamp) {
+        return x.timestamp < y.timestamp;
+    } else {
+        return danmaku_content_lower_compare(x, y);
+    }
 }
 
 function danmaku_timestamp_upper_compare(x, y) {

@@ -47,7 +47,7 @@
             </div>
             <a href="{{ uri_for('favorites') }}" class="navi right link">Favorites</a>
             <a href="{{ uri_for('history') }}" class="navi right link">History</a>
-            <a href="{{ uri_for('subscriptions') }}" class="navi right link">Subscriptions</a>
+            <a href="{{ uri_for('subscriptions_quick') }}" class="navi right link">Subscriptions</a>
             <a href="{{ uri_for('submit') }}" class="navi right link">Submit</a>
             {% else %}
             <a href="{{ uri_for('signup') }}" id="signup-nav-button" class="navi right link">Sign up</a>
@@ -71,9 +71,9 @@
                 </div>
             </div>
             {% endfor %}
-            <div class="category">
-                <a class="category-name">Channels</a>
-            </div>
+            <!-- <div class="category">
+                <a class="category-name">Forum</a>
+            </div> -->
             <form id="search-form" method="get" action="{{ uri_for('search') }}">
                 <input type="text" name="keywords" id="search-input" value="{{ keywords }}">
                 <button id="search-button"></button>

@@ -10,18 +10,18 @@
     <div class="search-scope">Playlists</div>
     <div class="search-scope">UPers</div>
 </div>
-<div class="search-scope-line hide">
+<div class="search-scope-line">
     <div class="search-scope active">All</div>
     {% for key in category %}
     <div class="search-scope" href="{{ uri_for(key) }}">{{ key }}</div>
     {% endfor %}
 </div>
-<div class="search-scope-line hide">
+<div class="search-scope-line">
     {% for val in subcategory['Anime'] %}
     <div class="search-scope">{{val}}</div>
     {% endfor %}
 </div>
-<div class="search-scope-line hide">
+<div class="search-scope-line">
     <label id="view-method-label">Sorted by:</label>
     <div id="view-method">
         <div class="selected">Newest</div>
@@ -70,7 +70,10 @@
         <a class="video-img" href="{{ video.url }}">
             <img class="video-img" src="{{ video.thumbnail_url }}">
         </a>
-        <a class="video-uploader">UPer: OOOOO</a>
+        <div class="uper-line">
+            <label>UPer: </label>
+            <a href="" class="video-uploader">OOOOO</a>
+        </div>
     </div>
     <div class="video-info">
         <div>

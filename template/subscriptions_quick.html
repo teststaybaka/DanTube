@@ -1,0 +1,89 @@
+{% extends "template/base.html" %}
+{% block head %}
+{{ super() }}
+<link href="/static/subscriptions.css" rel="stylesheet" type="text/css">
+<script src="/static/subscriptions.js" language="JavaScript" type="text/javascript"></script>
+{% endblock %}
+
+{% block body %}
+<div id="subscription-block">
+    <div class="quick-title-line">
+        <div class="quick-title-head"></div>
+        <div class="quick-title">Subscriptions</div>
+        <div class="search-scope active">All Activity</div>
+        <div class="search-scope">Uploads Only</div>
+    </div>
+    <!-- <div class="activity-entry none">
+        No item found.
+    </div> -->
+    <div class="activity-entry">
+        <a class="uploader-img" href="">
+            <img class="uploader-img" src="">
+        </a>
+        <div class="activity-detail">
+            <div class="activity-title">
+                <label>Uploaded</label>
+                <a href="" class="activity-title" target="_blank">WHY? ExportableWHY? ExportableWHY? ExportableWHY? Exportable</a>
+            </div>
+            <div class="uploader-name">
+                <label>by</label>
+                <a href="" class="uploader-name" target="_blank">Markiplier</a>
+            </div>
+            <div class="activity-intro">WHY? ExportableWHY? ExportableWHY? ExportableWHY? ExportableWHY? ExportableWHY? ExportableWHY? ExportableWHY? ExportableWHY? ExportableWHY? ExportableWHY? ExportableWHY? ExportableWHY? ExportableWHY? ExportableWHY? ExportableWHY? ExportableWHY? ExportableWHY? Exportable</div>
+            <a class="video-img" href="" target="_blank">
+                <img class="video-img" src="">
+            </a>
+        </div>
+    </div>
+    <div class="activity-entry">
+        <a class="uploader-img" href="">
+            <img class="uploader-img" src="">
+        </a>
+        <div class="activity-detail">
+            <div class="activity-title">
+                <label>Commented on</label>
+                <a href="" class="activity-title" target="_blank">WHY? ExportableWHY? ExportableWHY? ExportableWHY? Exportable</a>
+            </div>
+            <div class="uploader-name">
+                <label>by</label>
+                <a href="" class="uploader-name" target="_blank">Markiplier</a>
+            </div>
+                <div class="activity-intro">WHY? ExportableWHY? ExportableWHY? ExportableWHY? ExportableWHY? ExportableWHY? ExportableWHY? ExportableWHY? ExportableWHY? ExportableWHY? ExportableWHY? ExportableWHY? ExportableWHY? ExportableWHY? ExportableWHY? ExportableWHY? ExportableWHY? ExportableWHY? Exportable
+                <a class="comment-check" href="">[Check it out]</a>
+            </div>
+        </div>
+    </div>
+    <div class="pagination-line">
+        <div class="page-change hide"><</div>
+        <div class="page-num active">1</div>
+        <div class="page-num hide">2</div>
+        <div class="page-num hide">3</div>
+        <div class="page-change hide">></div>
+    </div>
+</div>
+<div id="subscription-upers">
+    <div class="quick-title-line">
+        <div class="quick-title-head"></div>
+        <div class="quick-title">UPers</div>
+    </div>
+    <div class="upers-block container">
+        {% if subscribed_users|count == 0 %}
+        <div class="no-subscription quick">You haven't subscribed to anyone.</div>
+        {% endif %}
+        {% for subs_user in subscribed_users %}
+        <div class="quick-uper">
+            <a href="{{ subs_user.space_url}}" class="user-img" target="_blank">
+                <img src="{{ subs_user.avatar_url }}">
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+    <div class="pagination-line">
+        <div class="page-change hide"><</div>
+        <div class="page-num active">1</div>
+        <div class="page-num hide">2</div>
+        <div class="page-num hide">3</div>
+        <div class="page-change hide">></div>
+    </div>
+</div>
+{% endblock %}

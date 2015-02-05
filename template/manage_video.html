@@ -27,7 +27,7 @@
 {% endif %}
 {% for video in videos %}
 <div class="video-entry">
-    <a class="video-img" href="{{ video.url }}">
+    <a class="video-img" href="{{ video.url }}" target="_blank">
         <img class="video-img" src="{{ video.thumbnail_url }}">
     </a>
     <div class="video-info">
@@ -37,8 +37,8 @@
             <div class="video-category">{{ video.subcategory }}</div>
             <div class="video-time">{{ video.created }} </div>
         </div>
-        <div>
-            <a href="{{ video.url }}" class="video-title">{{ video.title }}</a>
+        <div class="video-title">
+            <a href="{{ video.url }}" class="video-title" target="_blank">{{ video.title }}</a>
         </div>
         <div class="video-playlist">
             <label>Playlist: </label>

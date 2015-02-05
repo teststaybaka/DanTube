@@ -61,16 +61,17 @@ img.video-img {
     box-shadow: 0 0 1px rgb(100,100,100);
 }
 
-a.video-uploader {
-    display: block;
-    font-size: 14px;
-    vertical-align: middle;
+div.uper-line {
     width: 192px;
     word-wrap: break-word;
     max-height: 64px;
+    font-size: 14px;
     overflow: hidden;
     margin-top: 10px;
-    cursor: pointer;
+}
+
+a.video-uploader {
+    vertical-align: middle;
 }
 
 a.video-uploader:hover {

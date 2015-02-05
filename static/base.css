@@ -456,7 +456,7 @@ div.page-change {
     font-weight: bold;
     font-size: 14px;
     cursor: pointer;
-    margin: 0 10px;
+    margin: 0 5px;
 }
 
 div.page-num {
@@ -569,4 +569,29 @@ div.search-scope:hover {
 div.search-scope.active {
     color: white;
     background-color: rgb(85,178,255);
+}
+
+div.quick-title-line {
+  padding: 13px 10px;
+  height: 26px;
+}
+
+div.quick-title-head {
+  margin-top: 2px;
+  height: 21px;
+  width: 8px;
+  background-color: rgb(246,96,255);
+  border-radius: 5px;
+  float: left;
+  margin-right: 7px;
+  display: inline-block;
+}
+
+div.quick-title {
+  display: inline-block;
+  font-size: 18px;
+  font-weight: bold;
+  color: rgb(100,100,100);
+  margin-right: 20px;
+  margin-top: 3px;
 }
