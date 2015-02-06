@@ -82,6 +82,12 @@ $(document).ready(function() {
     } else if (urls[urls.length-1] === "favorites") {
         $("#favorites").addClass("active");
         $("#account-top-title").text("Favorite Videos");
+    } else if (urls[urls.length-1] === "messages") {
+        $("#messages").addClass("active");
+        $("#account-top-title").text("Messages");
+    } else if (urls[urls.length-1] === "compose") {
+        $("#messages").addClass("active");
+        $("#account-top-title").text("Compose New Message");
     }
 
     $('#resend-email-link').click(function(evt) {

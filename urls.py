@@ -1,6 +1,6 @@
 import webapp2
 
-import views, admin, login, account, video
+import views, admin, login, account, video, message
 import models
 
 secret_key = 'efrghtrrouhsmvnmxdiosjkgjfds68_=' \
@@ -38,6 +38,8 @@ routes = [
     webapp2.Route(r'/history', account.History, name="history"),    
     webapp2.Route(r'/verify', account.SendVerification, name='send_verification'),
     webapp2.Route(r'/verify/<user_id:\d+>-<signup_token:.+>', account.Verification, name='verification'),
+    webapp2.Route(r'/account/messages', message.Message, name='message'),
+    webapp2.Route(r'/account/messages/compose', message.Compose, name='compose'),
 
     webapp2.Route(r'/user/<user_id:\d+>', views.Space, name='space'),
     webapp2.Route(r'/user/<user_id:\d+>/subscribe', views.Subscribe, name='subscribe'),

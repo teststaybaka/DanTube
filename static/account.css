@@ -108,6 +108,15 @@ a.sub-option.active {
     color: rgb(100,100,100);
 }
 
+div.inline-button.sub {
+    float: right;
+    margin-top: 0;
+    margin-right: 10px;
+    cursor: pointer;
+    min-width: 40px;
+    text-align: center;
+}
+
 #view-method {
     float: right;
     font-size: 14px;
@@ -438,9 +447,10 @@ form.change div.input-line.show {
 
 form.change label {
     color: rgb(100,100,100);
-    font-weight: bold;
-    width: 150px;
+    /*font-weight: bold;*/
+    width: 135px;
     display: inline-block;
+    margin-right: 15px;
 }
 
 form.change input[type=password], form.change input[type=text], form.change select, form.change textarea {
@@ -484,7 +494,7 @@ form.change label.explain {
     left: 0;
     font-size: 14px;
     color: rgb(150,150,150);
-    width: 150px;
+    width: 135px;
     margin-top: 25px;
     font-weight: normal;
     display: inline-block;

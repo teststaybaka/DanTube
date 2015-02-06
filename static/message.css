@@ -1,0 +1,331 @@
+div.message-entry {
+    border-top: 1px solid rgb(230,230,230);
+    padding: 25px;
+    width: 100%;
+    display: inline-table;
+    -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
+    -moz-box-sizing: border-box;    /* Firefox, other Gecko */
+    box-sizing: border-box;
+    background-color: rgb(250,250,250);
+}
+
+div.message-entry.unread {
+    background-color: rgb(255,255,255);
+}
+
+div.message-entry.none {
+    padding: 50px;
+    text-align: center;
+    color: rgb(100,100,100);
+    font-size: 18px;
+}
+
+a.user-img {
+    display: inline-block;
+    width: 58px;
+    height: 58px;
+    font-size: 0;
+}
+
+a.user-img img {
+    width: 100%;
+    height: 100%;
+    box-shadow: 0 0 1px rgb(100,100,100);
+}
+
+div.message-info {
+    display: inline-block;
+    margin-left: 20px;
+    width: 600px;
+    vertical-align: top;
+    position: relative;
+}
+
+div.info-line {
+    font-size: 0;
+    width: 100%;
+    word-wrap: break-word;
+    margin-top: 2px;
+}
+
+div.info-line label {
+    font-size: 14px;
+    color: rgb(150,150,150);
+    margin-right: 5px;
+}
+
+div.info-line a {
+    font-size: 16px;
+    cursor: pointer;
+    color: rgb(100,100,100);
+}
+
+div.message-entry.unread a.message-title {
+    font-weight: bold;
+    color: rgb(0,0,0);
+}
+
+div.info-line a:hover, div.message-entry.unread a.message-title:hover {
+    color: rgb(0,140,255);
+}
+
+div.message-delete {
+    width: 16px;
+    height: 16px;
+    position: absolute;
+    right: -16px;
+    top: 50%;
+    background-image: url("/static/img/delete.png");
+    background-repeat: no-repeat;
+    cursor: pointer;
+    background-size: contain;
+    display: none;
+}
+
+div.message-entry:hover div.message-delete {
+    display: inline-block;
+}
+
+div.message-delete:hover {
+    background-image: url("/static/img/delete-hover.png");
+}
+
+div.message-delete:active {
+    background-image: url("/static/img/delete-active.png");
+}
+
+div.pagination-line {
+    padding: 15px 0;
+    border-top: 1px solid rgb(230,230,230);
+    text-align: center;
+}
+
+#sub-title {
+    max-width: 600px;
+    white-space: normal;
+    word-wrap: break-word;
+}
+
+#message-block {
+    width: 100%;
+    height: 450px;
+    border-top: 1px solid rgb(200,200,200);
+    position: relative;
+}
+
+#message-contain-body {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    max-height: 100%;
+    overflow: auto;
+    padding: 25px;
+    -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
+    -moz-box-sizing: border-box;    /* Firefox, other Gecko */
+    box-sizing: border-box;
+}
+
+div.message-detail-entry {
+    padding-bottom: 10px;
+}
+
+div.message-date {
+    font-size: 14px;
+    color: rgb(150,150,150);
+    padding: 8px 0;
+}
+
+div.message-date.send {
+    text-align: left;
+}
+
+div.message-date.receive {
+    text-align: right;
+}
+
+a.user-img {
+    width: 58px;
+    height: 58px;
+    display: inline-block;
+}
+
+a.user-img img {
+    width: 100%;
+    height: 100%;
+    box-shadow: 0 0 1px rgb(100,100,100);
+}
+
+div.message-content {
+    margin: 0 20px;
+    max-width: 450px;
+    border: 1px solid rgb(200,200,200);
+    border-radius: 3px;
+    padding: 10px 15px;
+    position: relative;
+    word-wrap: break-word;
+}
+
+a.user-img.send, div.message-content.send {
+    float: left;
+}
+
+a.user-img.receive, div.message-content.receive {
+    float: right;
+}
+
+div.message-content:before, div.message-content:after {
+    border: solid transparent;
+    content: "";
+    position: absolute;
+    pointer-events: none;
+}
+
+div.message-content.send:after {
+    border-right-color: rgb(255, 255, 255);
+    border-width: 10px;
+    top: 10px;
+    right: 100%;
+}
+
+div.message-content.send:before {
+    border-right-color: rgb(200, 200, 200);
+    border-width: 11px;
+    top: 9px;
+    right: 100%;
+}
+
+div.message-content.receive:after {
+    border-left-color: rgb(255, 255, 255);
+    border-width: 10px;
+    top: 10px;
+    left: 100%;
+}
+
+div.message-content.receive:before {
+    border-left-color: rgb(200, 200, 200);
+    border-width: 11px;
+    top: 9px;
+    left: 100%;
+}
+
+form.message-block {
+    padding: 25px;
+    padding-bottom: 0;
+}
+
+form.reply-block {
+    border-top: 1px solid rgb(200,200,200);
+    padding: 25px;
+}
+
+#self-img {
+    width: 58px;
+    height: 58px;
+    display: inline-block;
+    box-shadow: 0 0 1px rgb(100,100,100);
+    margin-right: 15px;
+}
+
+#send-message-block {
+    display: inline-block;
+    vertical-align: top;
+}
+
+#reply-message {
+    resize: none;
+    height: 50px;
+    min-height: 50px;
+    width: 500px;
+}
+
+#send-message {
+    resize: none;
+    height: 100px;
+    min-height: 100px;
+    width: 500px;
+}
+
+div.emoticons-select {
+    margin-top: 15px;
+    display: inline-block;
+    float: left;
+    color: rgb(100,100,100);
+    font-size: 14px;
+    position: relative;
+}
+
+div.emoticons-label {
+    cursor: pointer;
+    border-radius: 5px;
+    border: 1px solid rgb(200,200,200);
+    padding: 4px 8px;
+    position: relative;
+    z-index: 1;
+    background-color: white;
+}
+
+div.emoticons-menu {
+    position: absolute;
+    bottom: 24px;
+    left: 0;
+    width: 470px;
+    display: none;
+    background-color: white;
+    border: 1px solid rgb(200,200,200);
+    padding: 10px;
+    border-radius: 5px;
+    border-bottom-left-radius: 0;
+}
+
+div.emoticons-select.show div.emoticons-menu {
+    display: inline-block;
+}
+
+div.emoticons-select.show div.emoticons-label {
+    border-top: 1px solid rgb(255,255,255);
+    border-top-right-radius: 0;
+    border-top-left-radius: 0;
+}
+
+div.emoticons-option {
+    float: left;
+    padding: 5px;
+    font-size: 12px;
+    height: 16px;
+    border-radius: 5px;
+    margin-right: 5px;
+    cursor: pointer;
+}
+
+div.emoticons-option:hover {
+    color: rgb(0,140,255);
+    background-color: rgb(240,240,240);
+}
+
+div.emoticons-option:active {
+    color: white;
+    background-color: rgb(85,178,255);
+}
+
+div.send-button {
+    float: right;
+    margin-right: 0;
+    min-width: 40px;
+    text-align: center;
+    margin-top: 15px;
+    background-color: rgb(0,140,255);
+    color: rgb(255,255,255);
+    border-radius: 5px;
+    padding: 5px 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+div.send-button:hover {
+    background-color: rgb(81,203,238);
+}
+
+form.change label {
+    width: 58px;
+}
