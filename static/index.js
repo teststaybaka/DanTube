@@ -22,7 +22,6 @@ $(document).ready(function() {
 
     window.slideTimeout = setTimeout(slideChange, 5000);
     $('div.slide-dot').click(function(evt) {
-        if (isSlideAnimating) return;
         if ($(evt.target).hasClass('active')) return;
         
         clearTimeout(window.slideTimeout);
