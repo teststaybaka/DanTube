@@ -88,6 +88,12 @@ $(document).ready(function() {
     } else if (urls[urls.length-1] === "compose") {
         $("#messages").addClass("active");
         $("#account-top-title").text("Compose New Message");
+    } else if (urls[urls.length-1] === "mentioned") {
+        $("#mentioned").addClass("active");
+        $("#account-top-title").text("Who Mentioned Me");
+    } else if (urls[urls.length-1] === "notifications") {
+        $("#notifications").addClass("active");
+        $("#account-top-title").text("System Notifications");
     }
 
     $('#resend-email-link').click(function(evt) {

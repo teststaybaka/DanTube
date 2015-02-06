@@ -1,0 +1,41 @@
+{% extends "template/account.html" %}
+{% block head %}
+{{ super() }}
+<link rel="stylesheet" href="/static/message.css" type="text/css" />
+<script src="/static/message.js" language="JavaScript" type="text/javascript"></script>
+{% endblock %}
+
+{% block detail %}
+<div class="message-entry mentioned none">
+    No messages found.
+</div>
+<div class="message-entry mentioned">
+    <a href="" target="_blank" class="user-img">
+        <img src="">
+    </a>
+    <div class="message-info">
+        <div class="info-line">
+            <a href="" target="_blank" class="user-name">OOOOOOOOOOOOOOOOOOOOOOOOOOOOOO</a>
+            <label class="time">2013-03-12 09:23</label>
+        </div>
+        <div class="info-line">
+            <label>Mentioned you in </label>
+            <a class="message-title" href="" target="_blank">How's everthing going?How's everthing going?How's everth?</a>
+        </div>
+        <div class="info-line">
+            <div class="comment-content">SOSJDFOIJFSOIDJF</div>
+        </div>
+        <div class="info-line">
+            <a class="reply-link" href="" target="_blank">Reply</a>
+        </div>
+        <div class="message-delete"></div>
+    </div>
+</div>
+<div class="pagination-line">
+  <div class="page-change"><</div>
+  <div class="page-num">1</div>
+  <div class="page-num active">2</div>
+  <div class="page-num">3</div>
+  <div class="page-change">></div>
+</div>
+{% endblock %}

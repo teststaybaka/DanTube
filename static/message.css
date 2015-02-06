@@ -9,7 +9,7 @@ div.message-entry {
     background-color: rgb(250,250,250);
 }
 
-div.message-entry.unread {
+div.message-entry.unread, div.message-entry.mentioned {
     background-color: rgb(255,255,255);
 }
 
@@ -54,10 +54,13 @@ div.info-line label {
     margin-right: 5px;
 }
 
+div.info-line label.time {
+    margin-left: 10px;
+}
+
 div.info-line a {
     font-size: 16px;
     cursor: pointer;
-    color: rgb(100,100,100);
 }
 
 div.message-entry.unread a.message-title {
@@ -67,6 +70,28 @@ div.message-entry.unread a.message-title {
 
 div.info-line a:hover, div.message-entry.unread a.message-title:hover {
     color: rgb(0,140,255);
+}
+
+div.comment-content {
+    font-size: 16px;
+    word-wrap: break-word;
+    color: rgb(100,100,100);
+    max-width: 100%;
+    margin-top: 10px;
+}
+
+div.info-line a.reply-link {
+    margin-top: 5px;
+    font-size: 14px;
+    color: rgb(0,140,255);
+}
+
+div.info-line a.reply-link:hover {
+    color: rgb(255,177,108);
+}
+
+div.info-line a.reply-link:active {
+    color: rgb(0,50,200);
 }
 
 div.message-delete {
@@ -292,7 +317,7 @@ div.emoticons-option {
     padding: 5px;
     font-size: 12px;
     height: 16px;
-    border-radius: 5px;
+    border-radius: 3px;
     margin-right: 5px;
     cursor: pointer;
 }
@@ -300,11 +325,6 @@ div.emoticons-option {
 div.emoticons-option:hover {
     color: rgb(0,140,255);
     background-color: rgb(240,240,240);
-}
-
-div.emoticons-option:active {
-    color: white;
-    background-color: rgb(85,178,255);
 }
 
 div.send-button {
@@ -328,4 +348,31 @@ div.send-button:hover {
 
 form.change label {
     width: 58px;
+}
+
+div.notification-type {
+    width: 38px;
+    height: 38px;
+    display: inline-block;
+}
+
+div.notification-type.info {
+    background-image: url("/static/img/note_info.png");
+}
+
+div.notification-type.warning {
+    background-image: url("/static/img/note_warning.png");
+}
+
+div.notification-detail {
+    margin-top: 10px;
+    word-wrap: break-word;
+    width: 100%;
+}
+
+div.notification-detail {
+    overflow: hidden;
+    height: 0;
+    -webkit-transition: height .3s; /* For Safari 3.1 to 6.0 */
+    transition: height .3s;
 }

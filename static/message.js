@@ -16,4 +16,15 @@ $(document).ready(function() {
         var textarea = document.getElementById('send-message');
         textarea.value += $(evt.target).text();
     });
+
+    $('a.notification-title').click(function(evt) {
+        var content = $(evt.target).parent().siblings('div.notification-detail');
+        if (content.hasClass('show')) {
+            content.height(0);
+            content.removeClass('show');
+        } else {
+            content.height(content[0].scrollHeight);
+            content.addClass('show');
+        }
+    });
 });
