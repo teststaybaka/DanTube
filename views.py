@@ -606,4 +606,4 @@ class Search(BaseHandler):
     def get(self):
         key_words_ori = self.request.get('keywords')
         logging.info(key_words_ori)
-        self.render('search_uper', {'keywords': key_words_ori})
+        self.render('search', {'keywords': key_words_ori})

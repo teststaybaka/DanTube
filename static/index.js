@@ -3,8 +3,8 @@ function slideChange() {
     var index = (preIndex + 1)%5;
     $('div.slide-dot.active').removeClass('active');
     $('div.slide-dot:eq('+(4-index)+')').addClass('active');
-    $('div.slide-title').remove();
-    $('div.slide-bottom').append('<div class="slide-title show">WHY!? WHY DID YOU HAVE TO DO THAT!? | Exoptable Money (Prequel to Presentable Liberty)</div>');
+    $('a.slide-title').remove();
+    $('div.slide-bottom').append('<a class="slide-title show">WHY!? WHY DID YOU HAVE TO DO THAT!? | Exoptable Money (Prequel to Presentable Liberty)</a>');
     document.getElementById('slide-container').style.left = -index*document.getElementById('ranking-slides').offsetWidth+'px';
 }
 
@@ -30,8 +30,8 @@ $(document).ready(function() {
         $('div.slide-dot.active').removeClass('active');
         $(evt.target).addClass('active');
         var index = 4 - $('div.slide-dot').index(evt.target);
-        $('div.slide-title').remove();
-        $('div.slide-bottom').append('<div class="slide-title show">WHY!? WHY DID YOU HAVE TO DO THAT!? | Exoptable Money (Prequel to Presentable Liberty)</div>');
+        $('a.slide-title').remove();
+        $('div.slide-bottom').append('<a class="slide-title show">WHY!? WHY DID YOU HAVE TO DO THAT!? | Exoptable Money (Prequel to Presentable Liberty)</a>');
         document.getElementById('slide-container').style.left = -index*document.getElementById('ranking-slides').offsetWidth+'px';
     });
 });
