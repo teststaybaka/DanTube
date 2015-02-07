@@ -1,0 +1,76 @@
+{% extends "template/account.html" %}
+{% block head %}
+{{ super() }}
+<link rel="stylesheet" href="/static/message.css" type="text/css" />
+<script src="/static/message.js" language="JavaScript" type="text/javascript"></script>
+{% endblock %}
+
+{% block detail %}
+<div id="sub-title-line" class="container">
+  <div id="sub-title">How's everthing goiow's everthing going?How's everthing going?How's everth?</div>
+  <div class="inline-button sub">Back</div>
+</div>
+<div id="message-block">
+    <div id="message-contain-body">
+        <div class="message-detail-entry container">
+            <div class="message-date send">2013-10-23 23:90</div>
+            <a class="user-img send" href="" target="_blank"><img src=""></a>
+            <div class="message-content send">sdfsdfsdfsfd</div>
+        </div>
+        <div class="message-detail-entry container">
+            <div class="message-date receive">2013-10-23 23:90</div>
+            <a class="user-img receive" href="" target="_blank"><img src=""></a>
+            <div class="message-content receive">sdfsdf</div>
+        </div>
+    </div>
+</div>
+<form class="reply-block change" method="POST">
+    <img id="self-img" src="">
+    <div id="send-message-block">
+        <textarea id="reply-message" placeholder="No longer than 1000 characters."></textarea>
+        <div class="container">
+            <div class="emoticons-select">
+                <div class="emoticons-menu container">
+                    <div class="emoticons-option">(⌒▽⌒)</div>
+                    <div class="emoticons-option">（￣▽￣）</div>
+                    <div class="emoticons-option">(=・ω・=)</div>
+                    <div class="emoticons-option">(｀・ω・´)</div>
+                    <div class="emoticons-option">(〜￣△￣)〜</div>
+                    <div class="emoticons-option">(･∀･)</div>
+                    <div class="emoticons-option">(°∀°)ﾉ</div>
+                    <div class="emoticons-option">(￣3￣)</div>
+                    <div class="emoticons-option">╮(￣▽￣)╭</div>
+                    <div class="emoticons-option">( ´_ゝ｀)</div>
+                    <div class="emoticons-option">←_←</div>
+                    <div class="emoticons-option">→_→</div>
+                    <div class="emoticons-option">(&lt;_&lt;)</div>
+                    <div class="emoticons-option">(&gt;_&gt;)</div>
+                    <div class="emoticons-option">(;¬_¬)</div>
+                    <div class="emoticons-option">("▔□▔)/</div>
+                    <div class="emoticons-option">(ﾟДﾟ≡ﾟдﾟ)!?</div>
+                    <div class="emoticons-option">Σ(ﾟдﾟ;)</div>
+                    <div class="emoticons-option">Σ( ￣□￣||)</div>
+                    <div class="emoticons-option">(´；ω；`)</div>
+                    <div class="emoticons-option">（/TДT)/</div>
+                    <div class="emoticons-option">(^・ω・^ )</div>
+                    <div class="emoticons-option">(｡･ω･｡)</div>
+                    <div class="emoticons-option">(●￣(ｴ)￣●)</div>
+                    <div class="emoticons-option">ε=ε=(ノ≧∇≦)ノ</div>
+                    <div class="emoticons-option">(´･_･`)</div>
+                    <div class="emoticons-option">(-_-#)</div>
+                    <div class="emoticons-option">（￣へ￣）</div>
+                    <div class="emoticons-option">(￣ε(#￣) Σ</div>
+                    <div class="emoticons-option">ヽ(`Д´)ﾉ</div>
+                    <div class="emoticons-option">(╯°口°)╯(┴—┴</div>
+                    <div class="emoticons-option">（#-_-)┯━┯</div>
+                    <div class="emoticons-option">_(:3」∠)_</div>
+                    <div class="emoticons-option">T_T</div>
+                    <div class="emoticons-option">OTL</div>
+                </div>
+                <div class="emoticons-label">Emoticons</div>
+            </div>
+            <div class="send-button">Send</div>
+        </div>
+    </div>
+</form>
+{% endblock %}

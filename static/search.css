@@ -215,3 +215,18 @@ div.uper-detail-info {
     margin-right: 20px;
     color: rgb(150,150,150);
 }
+
+div.inline-button {
+    color: rgb(81,203,238);
+    border: 1px solid rgb(81,203,238);
+}
+
+div.inline-button:hover {
+    color: rgb(81,203,238);
+    background-color: rgb(232,250,255);
+}
+
+div.inline-button:active {
+    background-color: rgb(81,203,238);
+    color: rgb(255,255,255);
+}

@@ -1,0 +1,52 @@
+{% extends "template/account.html" %}
+{% block head %}
+{{ super() }}
+<link rel="stylesheet" href="/static/message.css" type="text/css" />
+<script src="/static/message.js" language="JavaScript" type="text/javascript"></script>
+{% endblock %}
+
+{% block detail %}
+<div id="sub-title-line" class="container">
+  <div id="sub-title">24 New Notifcations</div>
+</div>
+<div class="message-entry none">
+    No messages found.
+</div>
+<div class="message-entry unread">
+    <div class="notification-type info"></div>
+    <div class="message-info">
+        <div class="info-line">
+            <a class="message-title notification-title">How's everthing going?How's everthing going?How's everth?</a>
+        </div>
+        <div class="info-line">
+            <label>2013-03-12 09:23</label>
+        </div>
+        <div class="message-delete"></div>
+        <div class="notification-detail">
+        sdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdf
+        </div>
+    </div>
+</div>
+<div class="message-entry">
+    <div class="notification-type warning"></div>
+    <div class="message-info">
+        <div class="info-line">
+            <a class="message-title notification-title">How's everthing going?How's everthing going?How's everth?</a>
+        </div>
+        <div class="info-line">
+            <label>2013-03-12 09:23</label>
+        </div>
+        <div class="message-delete"></div>
+        <div class="notification-detail">
+        sdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdf
+        </div>
+    </div>
+</div>
+<div class="pagination-line">
+  <div class="page-change"><</div>
+  <div class="page-num">1</div>
+  <div class="page-num active">2</div>
+  <div class="page-num">3</div>
+  <div class="page-change">></div>
+</div>
+{% endblock %}

@@ -135,7 +135,7 @@ div.video-delete {
     width: 16px;
     height: 16px;
     position: absolute;
-    right: 10px;
+    right: 0px;
     top: 50%;
     background-image: url("/static/img/delete.png");
     background-repeat: no-repeat;
