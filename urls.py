@@ -50,6 +50,7 @@ routes = [
     webapp2.Route(r'/video/dt<video_id:\d+>/danmaku', views.Danmaku, name="danmaku"),
     webapp2.Route(r'/video/dt<video_id:\d+>/favor', views.Favor, name="favor"),
     webapp2.Route(r'/video/dt<video_id:\d+>/unfavor', views.Unfavor, name="unfavor"),
+    webapp2.Route(r'/video/dt<video_id:\d+>/like', views.Like, name="like"),
     webapp2.Route(r'/player', views.Player, name="player"),
     webapp2.Route(r'/search', views.Search, name="search"),
 

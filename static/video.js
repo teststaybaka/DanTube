@@ -747,4 +747,23 @@ $(document).ready(function() {
             }
         });
     })
+
+    $('#like').click(function(e) {
+        e.preventDefault();
+        $.ajax({
+            type: "POST",
+            url: url + "/like",
+            success: function(result) {
+                if(!result.error) {
+                    alert('success!');
+                } else {
+                    alert(result.message);
+                }
+            },
+            error: function (xhr, ajaxOptions, thrownError) {
+                console.log(xhr.status);
+                console.log(thrownError);
+            }
+        });
+    })
 });

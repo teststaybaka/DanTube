@@ -267,7 +267,7 @@ class Video(ndb.Model):
   vid = ndb.StringProperty(required=True, indexed=False)
   source = ndb.StringProperty(required=True, choices=['youtube'])
   created = ndb.DateTimeProperty(auto_now_add=True)
-  last_liked = ndb.DateTimeProperty(default=datetime.now())
+  last_liked = ndb.DateTimeProperty(default=datetime.fromtimestamp(0))
   uploader = ndb.KeyProperty(kind='User', required=True)
   description = ndb.StringProperty(required=True)
   title = ndb.StringProperty(required=True)
@@ -340,7 +340,16 @@ class Video(ndb.Model):
     logging.info(video_count)
     page_count = -(-video_count // cls._page_size)
 
-    return page_count
+    return min(page_count, 100)
+
+  @classmethod
+  def get_page(cls, category="", subcategory="", order="", page=1):
+    page_count = cls.get_page_count(category, subcategory)
+    if page > page_count:
+      return []
+    offset = (page - 1) * cls._page_size
+    videos = cls._get_query(category, subcategory).order(-order).fetch(limit=cls._page_size, offset=offset)
+    return videos, page_count
 
   @classmethod
   def fetch_page(cls, category="", subcategory="", order="", page=1):
@@ -430,7 +439,8 @@ class Video(ndb.Model):
       'danmaku_counter': self.danmaku_counter, 
       'comment_counter': self.comment_counter,
       'likes': self.likes,
-      'favors': self.favors
+      'favors': self.favors,
+      'last_liked': self.last_liked.strftime("%Y-%m-%d %H:%M:%S")
     }
     return basic_info
 

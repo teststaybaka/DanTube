@@ -4,7 +4,8 @@ render_video_div = function(video) {
         '<a href="' + video.url + '"><div><img src="' + video.thumbnail_url + '"></a></div>' + 
         '<div>Uploader: ' +  video.uploader.nickname + '</div>' + 
         '<div>Created at: ' + video.created + '</div>' + 
-        '<div>Hits: ' + video.hits + ' Damakus: ' + video.danmaku_counter + ' </div></div>';
+        '<div>Hits: ' + video.hits + ' Damakus: ' + video.danmaku_counter + ' </div>' + 
+        '<div>Likes: ' + video.likes + ' Last liked: ' + video.last_liked + ' </div></div>';
     return div;
 }
 

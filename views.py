@@ -228,8 +228,8 @@ class Video(BaseHandler):
             order = models.Video.hits
         elif order_str == 'created':
             order = models.Video.created
-        # elif order_str == 'last_liked':
-        #     order = models.Video.last_liked
+        elif order_str == 'last_liked':
+            order = models.Video.last_liked
         else:
             self.response.out.write(json.dumps({
                 'error': True,
@@ -250,7 +250,9 @@ class Video(BaseHandler):
                 }))
                 return
 
-        videos, more = models.Video.fetch_page(category, subcategory, order, page)
+        # videos, more = models.Video.fetch_page(category, subcategory, order, page)
+        videos, total_pages = models.Video.get_page(category, subcategory, order, page)
+
         # try:
         #     videos, more = models.Video.fetch_page(category, subcategory, order, page)
         # except Exception, e:
@@ -266,14 +268,16 @@ class Video(BaseHandler):
         except ValueError:
             limit = len(videos)
 
-        results = []
+        result = {}
+        result['videos'] = []
         for video in videos[0:limit]:
             uploader = models.User.get_by_id(video.uploader.id())
             video_info = video.get_basic_info()
             video_info['uploader'] = uploader.get_public_info()
-            results.append(video_info)
+            result['videos'].append(video_info)
+        result['total_pages'] = total_pages
 
-        self.response.out.write(json.dumps(results))
+        self.response.out.write(json.dumps(result))
 
     @login_required
     def post(self):
@@ -440,6 +444,26 @@ class Unfavor(BaseHandler):
             self.response.out.write(json.dumps({
                 'error': True,
                 'message': 'video not found',
+            }))
+
+class Like(BaseHandler):
+    @login_required
+    def post(self, video_id):
+        self.response.headers['Content-Type'] = 'application/json'
+        user = self.user
+
+        video = models.Video.get_by_id('dt'+video_id)
+        if video is not None:
+            video.likes += 1
+            video.last_liked = datetime.now()
+            video.put()
+            self.response.out.write(json.dumps({
+                'message': 'success'
+            }))
+        else:
+            self.response.out.write(json.dumps({
+                'error': True,
+                'message': 'video not found'
             }))
 
 class Danmaku(BaseHandler):

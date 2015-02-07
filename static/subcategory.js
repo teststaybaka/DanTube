@@ -1,7 +1,7 @@
 $(document).ready(function() {
 
     var cur_page = 1, cur_order = 'hits';
-    var total_page = parseInt(document.getElementById('page-count').innerHTML, 10);
+    var total_pages;
     // Retrieve Videos
     var urlparts = window.location.pathname.split('/');
     var hash = window.location.hash;
@@ -15,7 +15,7 @@ $(document).ready(function() {
             if(key == 'page') {
                 value = parseInt(value, 10);
                 if(!isNaN(value)) {
-                    cur_page = Math.min(Math.max(1, value), total_page);
+                    cur_page = Math.min(Math.max(1, value), 100);
                 } else {
                     console.log('page number is not integer');
                     cur_page = 1;
@@ -46,7 +46,7 @@ $(document).ready(function() {
     $('.page-navigator').on('click', 'a', function() {
         var next_page = parseInt($(this).attr('pagenum'), 10);
         if(!isNaN(next_page)) {
-            next_page = Math.min(Math.max(1, next_page), total_page);
+            next_page = Math.min(Math.max(1, next_page), total_pages);
             var query = {
                 'category': urlparts[1],
                 'subcategory': urlparts[2],
@@ -60,7 +60,6 @@ $(document).ready(function() {
     $('.order-option').on('click', 'a', function() {
         var next_order = $(this).attr('prop');
         console.log(next_order);
-        if(next_order == 'last_liked') { alert('like function not finished yet!'); return;}
         if(next_order == 'hits' || next_order == 'last_liked' || next_order == 'created' && next_order != cur_order) {
             var query = {
                 'category': urlparts[1],
@@ -73,23 +72,24 @@ $(document).ready(function() {
     });
 
     function refresh_page(query) {
-        get_video_list(query, function(err, videos) {
+        get_video_list(query, function(err, result) {
             if(err) console.log(err);
             else {
                 cur_page = query.page;
                 cur_order = query.order;
+                total_pages = result.total_pages;
                 window.location.hash = '#page=' + cur_page + '&order=' + cur_order;
                 $('.order-option a.on').removeClass("on");
-                $('.order-option a[prop="' + cur_order + '"').addClass("on");
+                $('.order-option a[prop="' + cur_order + '"]').addClass("on");
                 $('#video-list').empty();
-                for(var i = 0; i < videos.length; i++) {
-                    var div = render_video_div(videos[i]);
+                for(var i = 0; i < result.videos.length; i++) {
+                    var div = render_video_div(result.videos[i]);
                     $('#video-list').append(div);
                 }
                 $('.page-navigator a').remove();
                 $('.page-navigator strong').remove();
                 var min_page = Math.max(cur_page-2, 1);
-                var max_page = Math.min(min_page + 4, total_page);
+                var max_page = Math.min(min_page + 4, total_pages);
                 var $head = $('#total-count');
                 if(cur_page > 1) {
                     $head.after('<a pagenum="' + 1 + '">First</a>');
@@ -105,10 +105,10 @@ $(document).ready(function() {
                     }
                     $head = $head.next();
                 }
-                if(cur_page < total_page) {
+                if(cur_page < total_pages) {
                     $head.after('<a pagenum="' + (cur_page + 1) + '">Next</a>');
                     $head = $head.next();
-                    $head.after('<a pagenum="' + total_page + '">Last</a>');
+                    $head.after('<a pagenum="' + total_pages + '">Last</a>');
                     $head = $head.next();
                 }
             }
