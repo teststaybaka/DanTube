@@ -245,6 +245,8 @@ URL_NAME_DICT = {
   }],
 };
 
+PAGE_SIZE = 12
+
 class PlayList(ndb.Model):
   user_belonged = ndb.KeyProperty(kind='User', required=True)
   title = ndb.StringProperty(required=True)
@@ -335,20 +337,20 @@ class Video(ndb.Model):
     return video_count
 
   @classmethod
-  def get_page_count(cls, category="", subcategory=""):
+  def get_page_count(cls, category="", subcategory="", page_size = PAGE_SIZE):
     video_count = cls.get_video_count(category, subcategory)
     logging.info(video_count)
-    page_count = -(-video_count // cls._page_size)
+    page_count = -(-video_count // page_size)
 
     return min(page_count, 100)
 
   @classmethod
-  def get_page(cls, category="", subcategory="", order="", page=1):
-    page_count = cls.get_page_count(category, subcategory)
+  def get_page(cls, category="", subcategory="", order="", page=1, page_size = PAGE_SIZE):
+    page_count = cls.get_page_count(category, subcategory, page_size)
     if page > page_count:
-      return []
-    offset = (page - 1) * cls._page_size
-    videos = cls._get_query(category, subcategory).order(-order).fetch(limit=cls._page_size, offset=offset)
+      return [], page_count
+    offset = (page - 1) * page_size
+    videos = cls._get_query(category, subcategory).order(-order).fetch(limit=page_size, offset=offset)
     return videos, page_count
 
   @classmethod
@@ -424,19 +426,24 @@ class Video(ndb.Model):
   def get_basic_info(self):
     if self.thumbnail is None:
       thumbnail_url = 'http://img.youtube.com/vi/' + self.vid + '/mqdefault.jpg'
+      thumbnail_url_hq = 'http://img.youtube.com/vi/' + self.vid + '/hqdefault.jpg'
     else:
       thumbnail_url = images.get_serving_url(self.thumbnail)
+      thumbnail_url_hq = thumbnail_url
 
     basic_info = {
       'title': self.title,
       'vid': self.vid,
       'url': '/video/'+ str(self.key.id()),
       'thumbnail_url': thumbnail_url,
-      'created': self.created.strftime("%Y-%m-%d %H:%M:%S"),
+      'thumbnail_url_hq': thumbnail_url_hq,
+      'description': self.description,
+      'created': self.created.strftime("%Y-%m-%d %H:%M"),
       'category': self.category,
       'subcategory': self.subcategory,
       'hits': self.hits,
-      'danmaku_counter': self.danmaku_counter, 
+      'danmaku_counter': self.danmaku_counter,
+      'bullets': self.bullets,
       'comment_counter': self.comment_counter,
       'likes': self.likes,
       'favors': self.favors,
@@ -466,6 +473,18 @@ class Video(ndb.Model):
       else:
         url = raw_url
       return {'url': url, 'vid': vid, 'source': source}
+
+  @classmethod
+  def get_max_id(cls):
+    try:
+      return cls.id_counter
+    except AttributeError:
+      latest_video = cls.query().order(-cls.created).get()
+      if latest_video is not None:
+        max_id = int(latest_video.key.id()[2:])
+        return max_id
+      else:
+        return 0
 
   @classmethod
   @ndb.transactional(retries=10)

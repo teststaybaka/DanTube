@@ -45,6 +45,7 @@ a.slide {
     width: 20%;
     height: 100%;
     display: inline-block;
+    cursor: pointer;
 }
 
 a.slide img {
@@ -73,9 +74,11 @@ a.slide-title {
     width: 350px;
     font-size: 14px;
     color: white;
+    display: none;
 }
 
-a.slide-title.show {
+a.slide-title.active {
+    display: inline-block;
     -webkit-animation: opacity_show .4s; /* Chrome, Safari, Opera */
     animation: opacity_show .4s;
 }

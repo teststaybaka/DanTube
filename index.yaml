@@ -13,6 +13,18 @@ indexes:
 - kind: Video
   properties:
   - name: category
+  - name: hits
+    direction: desc
+
+- kind: Video
+  properties:
+  - name: category
+  - name: last_liked
+    direction: desc
+
+- kind: Video
+  properties:
+  - name: category
   - name: subcategory
   - name: created
 

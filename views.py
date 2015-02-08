@@ -23,6 +23,7 @@ from google.appengine.api import mail
 import models
 import json
 import re
+import random
 
 class SilentUndefined(Undefined):
     '''
@@ -190,7 +191,15 @@ class MultiPartForm(object):
 
 class Home(BaseHandler):
     def get(self):
-        self.render('index')
+        context = {}
+        context['top_ten_videos'] = []
+        videos, total_page = models.Video.get_page(order=models.Video.hits, page=1, page_size=10)
+        for video in videos:
+            uploader = models.User.get_by_id(video.uploader.id())
+            video_info = video.get_basic_info()
+            video_info['uploader'] = uploader.get_public_info()
+            context['top_ten_videos'].append(video_info)
+        self.render('index', context)
 
 class Video(BaseHandler):
     def get(self):
@@ -250,8 +259,13 @@ class Video(BaseHandler):
                 }))
                 return
 
+        try:
+            page_size = int(self.request.get('page_size'))
+        except ValueError:
+            page_size = models.PAGE_SIZE
+
         # videos, more = models.Video.fetch_page(category, subcategory, order, page)
-        videos, total_pages = models.Video.get_page(category, subcategory, order, page)
+        videos, total_pages = models.Video.get_page(category, subcategory, order, page, page_size)
 
         # try:
         #     videos, more = models.Video.fetch_page(category, subcategory, order, page)
@@ -347,6 +361,46 @@ class Video(BaseHandler):
         }))
         user.videos_submited += 1
         user.put()
+
+class RandomVideos(BaseHandler):
+    def get(self):
+        self.response.headers['Content-Type'] = 'application/json'
+        try:
+            size = int(self.request.get('size'))
+        except ValueError:
+            size = 5
+
+        size = min(100, models.Video.get_video_count() / 2, size)
+
+        try:
+            result = {}
+            result['videos'] = []
+            max_id = models.Video.get_max_id()
+            random_ids = random.sample(xrange(1,models.Video.get_max_id()+1), min(size * 2, max_id))
+            fetched = 0
+            for video_id in random_ids:
+                video = models.Video.get_by_id('dt'+str(video_id))
+                if video is not None:
+                    uploader = models.User.get_by_id(video.uploader.id())
+                    video_info = video.get_basic_info()
+                    video_info['uploader'] = uploader.get_public_info()
+                    result['videos'].append(video_info)
+                    fetched += 1
+                    if fetched == size:
+                        result['size'] = size
+                        self.response.out.write(json.dumps(result))
+                        return
+
+            result['size'] = fetched
+            self.response.out.write(json.dumps(result))
+            
+        except Exception, e:
+            logging.info('error occurred fetching random videos')
+            self.response.out.write(json.dumps({
+                'error': True,
+                'message': str(e)
+            }))
+            
 
 class Watch(BaseHandler):
     def get(self, video_id):

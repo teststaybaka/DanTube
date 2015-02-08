@@ -451,7 +451,27 @@ span.category-arrow {
     margin-right: auto;
 }
 
-div.page-change {
+.video-pagination-line div {
+    display: inline-block;
+    font-size: 14px;
+    text-align: center;
+    border-radius: 4px;
+    height: 16px;
+    min-width: 16px;
+    cursor: pointer;
+}
+
+.video-pagination-line div:hover {
+  color: rgb(0,140,255);
+}
+
+.video-pagination-line .active {
+  font-weight: bold;
+  background-color: rgb(85,178,255);
+  color: white;
+}
+
+/*div.page-change {
     display: inline-block;
     font-weight: bold;
     font-size: 14px;
@@ -463,8 +483,9 @@ div.page-num {
     display: inline-block;
     font-size: 14px;
     text-align: center;
-    border-radius: 10px;
+    border-radius: 4px;
     height: 16px;
+    min-width: 16px;
     cursor: pointer;
 }
 
@@ -476,12 +497,11 @@ div.page-num.active {
     font-weight: bold;
     background-color: rgb(85,178,255);
     color: white;
-    width: 16px;
 }
 
 div.page-num.hide, div.page-change.hide {
     display: none;
-}
+}*/
 
 #view-method div.selected {
     padding: 4px 22px 4px 8px;
