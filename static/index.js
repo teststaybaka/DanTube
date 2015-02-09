@@ -166,8 +166,13 @@ render_ranking_video_div = function(video, rank) {
                 '<div class="top-video-title">' + video.title + '</div>' + 
             '</div>' + 
             '<div class="top-video-hits">' + video.hits + '</div>' + 
-            '<div class="top-video-danmaku-num">' + video.danmaku_counter + '</div>' + 
-            '<div class="video-preview-popup">' + 
+            '<div class="top-video-danmaku-num">' + video.danmaku_counter + '</div>';
+    } else {
+        div = '<a class="ranking-video-entry" href="' + video.url + '">' + 
+                '<div class="ranking-No">' + rank + '</div>' + 
+                '<div class="ranking-video-title">' + video.title + '</div>';
+    }
+    div += '<div class="video-preview-popup">' + 
                 '<div class="popup-title">' + video.title + '</div>' + 
                 '<div class="popup-statistic-line">' + 
                     '<div class="popup-statistic-entry views">' + video.hits + '</div>' + 
@@ -189,11 +194,5 @@ render_ranking_video_div = function(video, rank) {
                 '</div>' + 
             '</div>' + 
         '</a>';
-    } else {
-        div = '<a class="ranking-video-entry" href="' + video.url + '">' + 
-                '<div class="ranking-No">' + rank + '</div>' + 
-                '<div class="ranking-video-title">' + video.title + '</div>' + 
-            '</a>';
-    }
     return div;
 }
