@@ -47,11 +47,15 @@ class ManageVideo(BaseHandler):
             
             video_count = user.videos_submited
             total_pages = -(-video_count // page_size)
-            if page > total_pages:
+            if total_pages == 0:
                 self.response.out.write(json.dumps({
                     'videos': [],
-                    'total_pages': total_pages
+                    'total_pages': 0
                 }))
+                return
+                
+            if page > total_pages:
+                page = total_pages
 
             offset = (page - 1) * page_size
             videos = models.Video.query(models.Video.uploader==self.user.key).order(-order).fetch(limit=page_size, offset=offset)
