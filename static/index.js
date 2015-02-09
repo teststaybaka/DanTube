@@ -168,7 +168,7 @@ render_ranking_video_div = function(video, rank) {
             '<div class="top-video-hits">' + video.hits + '</div>' + 
             '<div class="top-video-danmaku-num">' + video.danmaku_counter + '</div>';
     } else {
-        div = '<a class="ranking-video-entry" href="' + video.url + '">' + 
+        div = '<a class="ranking-video-entry" target="_blank" href="' + video.url + '">' + 
                 '<div class="ranking-No">' + rank + '</div>' + 
                 '<div class="ranking-video-title">' + video.title + '</div>';
     }

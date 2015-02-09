@@ -537,6 +537,21 @@ form.change label.explain {
     display: inline-block;
 }
 
+form.change label.check-label {
+    font-size: 14px;
+    width: 170px;
+    margin-top: 15px;
+    cursor: pointer;
+}
+
+input.checkbox {
+    margin: 0;
+}
+
+span.checklabel {
+    vertical-align: top;
+}
+
 form.change div.option-button {
     font-size: 15px;
     padding: 7px 10px;

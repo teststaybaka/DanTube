@@ -32,15 +32,11 @@ div.no-subscription.quick {
 div.subscription-user-box {
   float: left;
   display: inline-table;
-  margin-right: 30px;
+  margin-right: 25px;
   padding: 15px;
   border-radius: 5px;
   border: 1px solid rgb(200,200,200);
   margin-bottom: 30px;
-}
-
-div.subscription-user-box:hover {
-  background-color: rgb(250,250,250);
 }
 
 a.user-img {
@@ -59,11 +55,11 @@ a.user-img img {
 div.user-details {
   display: inline-block;
   vertical-align: top;
-  width: 240px;
+  width: 125px;
 }
 
 a.user-nickname {
-  padding-left: 10px;
+  margin-left: 10px;
   max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -73,14 +69,32 @@ a.user-nickname {
   -moz-box-sizing: border-box;    /* Firefox, other Gecko */
   box-sizing: border-box;
   color: rgb(100,100,100);
+  font-size: 14px;
 }
 
 a.user-nickname:hover {
   color: rgb(0,140,255);
 }
 
-div.buttons-line {
-  padding-left: 10px;
+a.send-message {
+  color: rgb(0,140,255);
+  font-size: 14px;
+  display: inline-block;
+  cursor: pointer;
+  margin-left: 10px;
+}
+
+a.send-message:hover {
+  color: rgb(255,177,108);
+}
+
+a.send-message:active {
+  color: rgb(0,50,200);
+}
+
+div.unsubscribe-button {
+  margin-top: 5px;
+  margin-left: 10px;
 }
 
 div.pagination-line {
@@ -189,19 +203,4 @@ div.quick-uper {
   margin-right: 38px;
   margin-bottom: 20px;
   float: left;
-}
-
-div.inline-button {
-    color: rgb(81,203,238);
-    border: 1px solid rgb(81,203,238);
-}
-
-div.inline-button:hover {
-    color: rgb(81,203,238);
-    background-color: rgb(232,250,255);
-}
-
-div.inline-button:active {
-    background-color: rgb(81,203,238);
-    color: rgb(255,255,255);
 }

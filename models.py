@@ -292,8 +292,9 @@ class Video(ndb.Model):
   video_order = ndb.IntegerProperty()
   danmaku_counter = ndb.IntegerProperty(required=True, default=0)
   comment_counter = ndb.IntegerProperty(required=True, default=0)
-  tags = ndb.StringProperty(repeated=True);
-  banned_tags = ndb.StringProperty(repeated=True);
+  allow_tag_add = ndb.BooleanProperty(required=True, default=True)
+  tags = ndb.StringProperty(repeated=True)
+  banned_tags = ndb.StringProperty(repeated=True)
 
   hits = ndb.IntegerProperty(required=True, default=0)
   likes = ndb.IntegerProperty(required=True, default=0)

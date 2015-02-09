@@ -12,17 +12,17 @@
         <div id="ranking-slides">
             <div id="slide-container">
                 {% for video in top_ten_videos[:5]%}
-                <a href="{{ video.url }}" class="slide">
+                <a href="{{ video.url }}" target="_blank" class="slide">
                     <img src="{{ video.thumbnail_url_hq }}">
                 </a>
                 {% endfor %}
             </div>
             <div class="slide-bottom container">
-                <a href="{{ top_ten_videos[4].url }}" class="slide-title">{{ top_ten_videos[4].title }}</a>
-                <a href="{{ top_ten_videos[3].url }}" class="slide-title">{{ top_ten_videos[3].title }}</a>
-                <a href="{{ top_ten_videos[2].url }}" class="slide-title">{{ top_ten_videos[2].title }}</a>
-                <a href="{{ top_ten_videos[1].url }}" class="slide-title">{{ top_ten_videos[1].title }}</a>
-                <a href="{{ top_ten_videos[0].url }}" class="slide-title active">{{ top_ten_videos[0].title }}</a>
+                <a href="{{ top_ten_videos[4].url }}" target="_blank" class="slide-title">{{ top_ten_videos[4].title }}</a>
+                <a href="{{ top_ten_videos[3].url }}" target="_blank" class="slide-title">{{ top_ten_videos[3].title }}</a>
+                <a href="{{ top_ten_videos[2].url }}" target="_blank" class="slide-title">{{ top_ten_videos[2].title }}</a>
+                <a href="{{ top_ten_videos[1].url }}" target="_blank" class="slide-title">{{ top_ten_videos[1].title }}</a>
+                <a href="{{ top_ten_videos[0].url }}" target="_blank" class="slide-title active">{{ top_ten_videos[0].title }}</a>
                 <div class="slide-dot"></div>
                 <div class="slide-dot"></div>
                 <div class="slide-dot"></div>
@@ -31,7 +31,7 @@
             </div>
         </div>
         {% for video in top_ten_videos[5:] %}
-        <a class="next-top-videos" href="{{ video.url }}">
+        <a class="next-top-videos" target="_blank" href="{{ video.url }}">
             <div class="hover-cover">
                 <div class="cover-title">{{ video.title }}</div>
                 <div class="cover-uploader">Uper: {{ video.uploader.nickname }}</div>

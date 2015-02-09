@@ -20,6 +20,7 @@ $(document).ready(function() {
     function update_page(page) {
         if (total_videos == 0) {
             video_container.append('<div class="video-entry none">No video found.</div>');
+            pagination_container.remove();
             return;
         }
         if (page < 1 || page > total_pages) return;

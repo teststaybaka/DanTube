@@ -7,10 +7,10 @@ $(document).ready(function() {
             url: "/user/" + user_id + "/unsubscribe",
             success: function(result) {
                 if(!result.error) {
-                    // alert('success!');
+                    pop_ajax_message('UPer unsubscribed!', 'success');
                     user_div.remove();
                 } else {
-                    // alert(result.message);
+                    pop_ajax_message(result.message, 'error');
                     console.log(result.message);
                 }
             },

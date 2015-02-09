@@ -183,11 +183,18 @@ a.user-img img {
 div.message-content {
     margin: 0 20px;
     max-width: 450px;
-    border: 1px solid rgb(200,200,200);
-    border-radius: 3px;
+    border-radius: 4px;
     padding: 10px 15px;
     position: relative;
     word-wrap: break-word;
+}
+
+div.message-content.send {
+    border: 1px solid rgb(97,194,84);
+}
+
+div.message-content.receive {
+    border: 1px solid rgb(85,178,255);
 }
 
 a.user-img.send, div.message-content.send {
@@ -213,7 +220,7 @@ div.message-content.send:after {
 }
 
 div.message-content.send:before {
-    border-right-color: rgb(200, 200, 200);
+    border-right-color: rgb(97,194,84);
     border-width: 11px;
     top: 9px;
     right: 100%;
@@ -227,7 +234,7 @@ div.message-content.receive:after {
 }
 
 div.message-content.receive:before {
-    border-left-color: rgb(200, 200, 200);
+    border-left-color: rgb(85,178,255);
     border-width: 11px;
     top: 9px;
     left: 100%;

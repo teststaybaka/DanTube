@@ -32,17 +32,14 @@
         <img src="{{ subs_user.avatar_url }}">
     </a>
     <div class="user-details">
-      <div class="user-nickname">
-        <a class="user-nickname" href="{{ subs_user.space_url}}" target="_blank">{{ subs_user.nickname }}</a>
-      </div>
-      <div class="buttons-line">
-        <div class="inline-button">Send Message</div>
-        <div class="inline-button unsubscribe-button" uid="{{ subs_user.id }}">Unsubscribe</div>
-      </div>
+      <div><a class="user-nickname" href="{{ subs_user.space_url}}" target="_blank">{{ subs_user.nickname }}</a></div>
+      <div><a class="send-message">Send Message</a></div>
+      <div class="inline-button unsubscribe-button" uid="{{ subs_user.id }}">Unsubscribe</div>
     </div>
   </div>
   {% endfor %}
 </div>
+{% if subscribed_users|count != 0 %}
 <div class="pagination-line">
     <div class="page-change hide"><</div>
     <div class="page-num active">1</div>
@@ -50,4 +47,5 @@
     <div class="page-num hide">3</div>
     <div class="page-change hide">></div>
 </div>
+{% endif %}
 {% endblock %}
