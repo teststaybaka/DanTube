@@ -465,11 +465,13 @@ class Video(ndb.Model):
 
   def create_index(self, index_name, rank):
     index = search.Index(name=index_name)
+    searchable = " ".join(self.tags + [self.title, self.description]);
     doc = search.Document(
       doc_id=self.key.urlsafe(), 
       fields = [
-        search.TextField(name='title', value=self.title),
-        search.TextField(name='description', value=self.description),
+        search.TextField(name='content', value=searchable),
+        search.AtomField(name='category', value=self.category),
+        search.AtomField(name='subcategory', value=self.subcategory)
       ],
       rank = rank
     )

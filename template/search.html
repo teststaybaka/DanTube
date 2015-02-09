@@ -2,34 +2,61 @@
 {% block head %}
 {{ super() }}
 <link rel="stylesheet" href="/static/search.css" type="text/css" />
+<script src="/static/search.js" language="JavaScript" type="text/javascript"></script>
 {% endblock %}
 
 {% block body %}
 <div class="search-scope-line">
-    <div class="search-scope active">Videos</div>
-    <div class="search-scope">Playlists</div>
-    <div class="search-scope">UPers</div>
+    <a class="search-scope active">Videos</a>
+    <a class="search-scope">Playlists</a>
+    <a class="search-scope">UPers</a>
 </div>
 <div class="search-scope-line">
-    <div class="search-scope active">All</div>
+    {% if not cur_category %}
+        <a class="search-scope active">All</a>
+    {% else %}
+        <a class="search-scope" href="/search?keywords={{ keywords }}&order={{ order }}&page=1">All</a>
+    {% endif %}
     {% for key in category %}
-    <div class="search-scope" href="{{ uri_for(key) }}">{{ key }}</div>
+        {% if key == cur_category %}
+            <a class="search-scope active">{{ key }}</a>
+        {% else %}
+            <a class="search-scope" href="/search?keywords={{ keywords }}&order={{ order }}&category={{ key }}&page=1">{{ key }}</a>
+        {% endif %}
     {% endfor %}
 </div>
 <div class="search-scope-line">
-    {% for val in subcategory['Anime'] %}
-    <div class="search-scope">{{val}}</div>
-    {% endfor %}
+    {% if cur_category %}
+        {% if not cur_subcategory %}
+            <a class="search-scope active">All</a>
+        {% else %}
+            <a class="search-scope" href="/search?keywords={{ keywords }}&order={{ order }}&category={{ cur_category }}&page=1">All</a>
+        {% endif %}
+        {% for val in subcategory[cur_category] %}
+            {% if val == cur_subcategory %}
+                <a class="search-scope active">{{val}}</a>
+            {% else %}
+                <a class="search-scope" href="/search?keywords={{ keywords }}&order={{ order }}&category={{ cur_category }}&subcategory={{ val }}&page=1">{{val}}</a>
+            {% endif %}
+        {% endfor %}
+    {% endif %}
 </div>
 <div class="search-scope-line container">
     <div class="search-result-num">Found {{ total_found }} videos.</div>
     <div id="view-method-block">
         <label id="view-method-label">Sorted by:</label>
         <div id="view-method">
-            <div class="selected">Newest</div>
+            {% if order == "created" %}
+            <div class="selected">Latest</div>
+            {% elif order == "favors" %}
+            <div class="selected">Most favored</div>
+            {% else %}
+            <div class="selected">Most viewed</div>
+            {% endif %}
             <div class="option">
-                <div class="option-entry">Most viewed</div>
-                <div class="option-entry">Most favored</div>
+                <div class="option-entry" data-order="hits">Most viewed</div>
+                <div class="option-entry" data-order="created">Latest</div>
+                <div class="option-entry" data-order="favors">Most favored</div>
             </div>
         </div>
     </div>
@@ -79,19 +106,19 @@
     {% endblock %}
     <div class="search-pagination-line">
         {% if cur_page > 1%}
-            <a class="page-change" href="/search?keywords={{ keywords }}&order={{ order }}&page=1"><<</a>
-            <a class="page-change" href="/search?keywords={{ keywords }}&order={{ order }}&page={{ cur_page - 1 }}"><</a>
+            <a class="page-change" href="/search?keywords={{ keywords }}&order={{ order }}&category={{ cur_category }}&subcategory={{ cur_subcategory }}&page=1"><<</a>
+            <a class="page-change" href="/search?keywords={{ keywords }}&order={{ order }}&category={{ cur_category }}&subcategory={{ cur_subcategory }}&page={{ cur_page - 1 }}"><</a>
         {% endif %}
         {% for page in page_range %}
             {% if page == cur_page %}
-                <a class="page-num active" href="/search?keywords={{ keywords }}&order={{ order }}&page={{ page }}">{{ page }}</a>
+                <a class="page-num active" href="/search?keywords={{ keywords }}&order={{ order }}&category={{ cur_category }}&subcategory={{ cur_subcategory }}&page={{ page }}">{{ page }}</a>
             {% else %}
-                <a class="page-num" href="/search?keywords={{ keywords }}&order={{ order }}&page={{ page }}">{{ page }}</a>
+                <a class="page-num" href="/search?keywords={{ keywords }}&order={{ order }}&category={{ cur_category }}&subcategory={{ cur_subcategory }}&page={{ page }}">{{ page }}</a>
             {% endif %}
         {% endfor %}
         {% if cur_page < total_pages %}
-            <a class="page-change" href="/search?keywords={{ keywords }}&order={{ order }}&page={{ cur_page + 1 }}">></a>
-            <a class="page-change" href="/search?keywords={{ keywords }}&order={{ order }}&page={{ total_pages }}">>></a>
+            <a class="page-change" href="/search?keywords={{ keywords }}&order={{ order }}&category={{ cur_category }}&subcategory={{ cur_subcategory }}&page={{ cur_page + 1 }}">></a>
+            <a class="page-change" href="/search?keywords={{ keywords }}&order={{ order }}&category={{ cur_category }}&subcategory={{ cur_subcategory }}&page={{ total_pages }}">>></a>
         {% endif %}
     </div>
 {% endif %}

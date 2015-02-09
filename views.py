@@ -710,12 +710,34 @@ class Search(BaseHandler):
 
         offset = (page - 1) * page_size
 
-        key_words_ori = self.request.get('keywords')
-        if not key_words_ori:
-            key_words_ori = ""
+        keywords_raw = self.request.get('keywords')
+        if not keywords_raw:
+            keywords = ''
+            query_string = ''
+        else:
+            keywords = keywords_raw.strip().lower()
+            if keywords:
+                query_string = 'content: ' + keywords
+            else:
+                query_string = ''
 
+        context = {}
+        category = self.request.get('category')
+        if category:
+            if category in models.Video_Category:
+                context['cur_category'] = category
+                if not keywords:
+                    query_string += 'category: \"' + category + '\"'
+                else:
+                    query_string += ' AND category: \"' + category + '\"'
+                subcategory = self.request.get('subcategory')
+                if subcategory:
+                    if subcategory in models.Video_SubCategory[category]:
+                        context['cur_subcategory'] = subcategory
+                        query_string += ' AND subcategory: \"' + subcategory + '\"'
+                                   
         options = search.QueryOptions(offset=offset, limit=page_size)
-        query = search.Query(query_string=key_words_ori, options=options)
+        query = search.Query(query_string=query_string, options=options)
 
         order = self.request.get('order')
         if not order:
@@ -741,7 +763,7 @@ class Search(BaseHandler):
                 page = total_pages
                 offset = (page - 1) * page_size
                 options = search.QueryOptions(offset=offset, limit=page_size)
-                query = search.Query(query_string=key_words_ori, options=options)
+                query = search.Query(query_string=query_string, options=options)
                 result = index.search(query)
 
             video_keys = []
@@ -751,8 +773,8 @@ class Search(BaseHandler):
 
             min_page = max(page-2, 1);
             max_page = min(min_page + 4, total_pages);
-            context = {
-                'keywords': key_words_ori,
+            context.update({
+                'keywords': keywords_raw,
                 'order': order,
                 'videos': [], 
                 'total_found': total_found,
@@ -760,7 +782,7 @@ class Search(BaseHandler):
                 'total_pages': total_pages,
                 'cur_page': page,
                 'page_range': range(min_page, max_page+1)
-            }
+            })
 
             for video in videos:
                 video_info = video.get_basic_info()
@@ -768,7 +790,7 @@ class Search(BaseHandler):
                 video_info['uploader'] = uploader.get_public_info()
                 context['videos'].append(video_info)
 
-            logging.info(videos)
+            # logging.info(videos)
             self.render('search', context)
 
         except search.Error:

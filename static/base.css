@@ -575,7 +575,7 @@ div.inline-button:active {
     color: rgb(255,255,255);
 }
 
-div.search-scope {
+a.search-scope {
     display: inline-block;
     border-radius: 3px;
     padding: 5px 10px;
@@ -585,12 +585,12 @@ div.search-scope {
     margin-right: 10px;
 }
 
-div.search-scope:hover {
+a.search-scope:hover {
     color: rgb(0,140,255);
     background-color: rgb(240,240,240);
 }
 
-div.search-scope.active {
+a.search-scope.active {
     color: white;
     background-color: rgb(85,178,255);
 }
