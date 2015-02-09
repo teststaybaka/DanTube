@@ -342,6 +342,7 @@ div.video-preview-popup {
     width: 370px;
     padding: 15px 18px;
     display: none;
+    z-index: 1;
 }
 
 a.video-preview:hover div.video-preview-popup {

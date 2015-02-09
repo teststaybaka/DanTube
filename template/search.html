@@ -21,13 +21,16 @@
     <div class="search-scope">{{val}}</div>
     {% endfor %}
 </div>
-<div class="search-scope-line">
-    <label id="view-method-label">Sorted by:</label>
-    <div id="view-method">
-        <div class="selected">Newest</div>
-        <div class="option">
-            <div class="option-entry">Most viewed</div>
-            <div class="option-entry">Most favored</div>
+<div class="search-scope-line container">
+    <div class="search-result-num">Found {{ total_found }} videos.</div>
+    <div id="view-method-block">
+        <label id="view-method-label">Sorted by:</label>
+        <div id="view-method">
+            <div class="selected">Newest</div>
+            <div class="option">
+                <div class="option-entry">Most viewed</div>
+                <div class="option-entry">Most favored</div>
+            </div>
         </div>
     </div>
 </div>
@@ -36,9 +39,6 @@
     No result found. Please try other keywords.
 </div>
 {% else %}
-    <div class="video-entry">
-        Found {{ total_found }} videos.
-    </div>
     {% block search_result %}
     {% for video in videos %}
     <div class="video-entry">

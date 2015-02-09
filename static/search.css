@@ -16,6 +16,17 @@ div.search-scope-line.hide {
     display: none;
 }
 
+div.search-result-num {
+    display: inline-block;
+    margin-top: 4px;
+    float: left;
+    color: rgb(100,100,100);
+}
+
+#view-method-block {
+    float: right;
+}
+
 #view-method, #view-method-label {
     font-size: 14px;
     display: inline-block;

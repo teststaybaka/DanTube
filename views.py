@@ -372,7 +372,7 @@ class RandomVideos(BaseHandler):
         except ValueError:
             size = 5
 
-        size = min(100, models.Video.get_video_count() / 2, size)
+        size = min(100, models.Video.get_video_count(), size)
 
         try:
             result = {}
