@@ -34,11 +34,12 @@ div.site-ranking-block {
 #slide-container {
     width: 500%;
     height: 100%;
-    display: inline-table;
+    display: inline-block;
     position: relative;
     left: 0;
     -webkit-transition: left .3s; /* For Safari 3.1 to 6.0 */
     transition: left .3s;
+    font-size: 0;
 }
 
 a.slide {

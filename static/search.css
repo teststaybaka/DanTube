@@ -38,10 +38,6 @@ div.video-entry.no-result {
     font-size: 18px;
     color: rgb(100,100,100);
     padding: 50px;
-    display: none;
-}
-
-div.video-entry.no-result.show {
     display: block;
 }
 

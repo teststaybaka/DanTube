@@ -451,7 +451,7 @@ span.category-arrow {
     margin-left: auto;
     margin-right: auto;
 }
-
+/*
 .video-pagination-line div {
     display: inline-block;
     font-size: 14px;
@@ -475,9 +475,9 @@ span.category-arrow {
   font-weight: bold;
   background-color: rgb(85,178,255);
   color: white;
-}
+}*/
 
-/*div.page-change {
+a.page-change, div.page-change {
     display: inline-block;
     font-weight: bold;
     font-size: 14px;
@@ -485,7 +485,7 @@ span.category-arrow {
     margin: 0 5px;
 }
 
-div.page-num {
+a.page-num, div.page-num {
     display: inline-block;
     font-size: 14px;
     text-align: center;
@@ -495,19 +495,19 @@ div.page-num {
     cursor: pointer;
 }
 
-div.page-change:hover, div.page-num:hover {
+a.page-change:hover, a.page-num:hover, div.page-change:hover, div.page-num:hover {
     color: rgb(0,140,255);
 }
 
-div.page-num.active {
+a.page-num.active, div.page-num.active {
     font-weight: bold;
     background-color: rgb(85,178,255);
     color: white;
 }
 
-div.page-num.hide, div.page-change.hide {
+a.page-num.hide, a.page-change.hide, div.page-num.hide, div.page-change.hide {
     display: none;
-}*/
+}
 
 #view-method div.selected {
     padding: 4px 22px 4px 8px;

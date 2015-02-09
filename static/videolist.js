@@ -4,19 +4,19 @@ render_pagination = function(cur_page, total_pages) {
     var max_page = Math.min(min_page + 4, total_pages);
     
     if(cur_page > 1) {
-        pagination += '<div data-page="' + 1 + '"><<</div>';
-        pagination += '<div data-page="' + (cur_page - 1) + '"><</div>';
+        pagination += '<div class="page-change" data-page="' + 1 + '"><<</div>';
+        pagination += '<div class="page-change" data-page="' + (cur_page - 1) + '"><</div>';
     }
     for(var i = min_page; i <= max_page; i++) {
         if(i == cur_page) {
-            pagination += '<div class="active" data-page="' + i + '">' + i + '</div>';
+            pagination += '<div class="page-num active" data-page="' + i + '">' + i + '</div>';
         } else {
-            pagination += '<div data-page="' + i + '">' + i + '</div>';
+            pagination += '<div class="page-num" data-page="' + i + '">' + i + '</div>';
         }
     }
     if(cur_page < total_pages) {
-        pagination += '<div data-page="' + (cur_page + 1) + '">></div>';
-        pagination += '<div data-page="' + total_pages + '">>></div>';
+        pagination += '<div class="page-change" data-page="' + (cur_page + 1) + '">></div>';
+        pagination += '<div class="page-change" data-page="' + total_pages + '">>></div>';
     }
     return pagination;
 }
