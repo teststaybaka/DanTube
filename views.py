@@ -19,10 +19,13 @@ from webapp2_extras import sessions_ndb
 from google.appengine.api.datastore_errors import BadValueError
 from google.appengine.ext.webapp import blobstore_handlers
 from google.appengine.api import mail
+from google.appengine.api import search
+from google.appengine.ext import ndb
 
 import models
 import json
 import re
+import random
 
 class SilentUndefined(Undefined):
     '''
@@ -190,7 +193,15 @@ class MultiPartForm(object):
 
 class Home(BaseHandler):
     def get(self):
-        self.render('index')
+        context = {}
+        context['top_ten_videos'] = []
+        videos, total_page = models.Video.get_page(order=models.Video.hits, page=1, page_size=10)
+        for video in videos:
+            uploader = models.User.get_by_id(video.uploader.id())
+            video_info = video.get_basic_info()
+            video_info['uploader'] = uploader.get_public_info()
+            context['top_ten_videos'].append(video_info)
+        self.render('index', context)
 
 class Video(BaseHandler):
     def get(self):
@@ -228,8 +239,8 @@ class Video(BaseHandler):
             order = models.Video.hits
         elif order_str == 'created':
             order = models.Video.created
-        # elif order_str == 'last_liked':
-        #     order = models.Video.last_liked
+        elif order_str == 'last_liked':
+            order = models.Video.last_liked
         else:
             self.response.out.write(json.dumps({
                 'error': True,
@@ -250,7 +261,14 @@ class Video(BaseHandler):
                 }))
                 return
 
-        videos, more = models.Video.fetch_page(category, subcategory, order, page)
+        try:
+            page_size = int(self.request.get('page_size'))
+        except ValueError:
+            page_size = models.PAGE_SIZE
+
+        # videos, more = models.Video.fetch_page(category, subcategory, order, page)
+        videos, total_pages = models.Video.get_page(category, subcategory, order, page, page_size)
+
         # try:
         #     videos, more = models.Video.fetch_page(category, subcategory, order, page)
         # except Exception, e:
@@ -266,14 +284,16 @@ class Video(BaseHandler):
         except ValueError:
             limit = len(videos)
 
-        results = []
+        result = {}
+        result['videos'] = []
         for video in videos[0:limit]:
             uploader = models.User.get_by_id(video.uploader.id())
             video_info = video.get_basic_info()
             video_info['uploader'] = uploader.get_public_info()
-            results.append(video_info)
+            result['videos'].append(video_info)
+        result['total_pages'] = total_pages
 
-        self.response.out.write(json.dumps(results))
+        self.response.out.write(json.dumps(result))
 
     @login_required
     def post(self):
@@ -344,6 +364,46 @@ class Video(BaseHandler):
         user.videos_submited += 1
         user.put()
 
+class RandomVideos(BaseHandler):
+    def get(self):
+        self.response.headers['Content-Type'] = 'application/json'
+        try:
+            size = int(self.request.get('size'))
+        except ValueError:
+            size = 5
+
+        size = min(100, models.Video.get_video_count() / 2, size)
+
+        try:
+            result = {}
+            result['videos'] = []
+            max_id = models.Video.get_max_id()
+            random_ids = random.sample(xrange(1,models.Video.get_max_id()+1), min(size * 2, max_id))
+            fetched = 0
+            for video_id in random_ids:
+                video = models.Video.get_by_id('dt'+str(video_id))
+                if video is not None:
+                    uploader = models.User.get_by_id(video.uploader.id())
+                    video_info = video.get_basic_info()
+                    video_info['uploader'] = uploader.get_public_info()
+                    result['videos'].append(video_info)
+                    fetched += 1
+                    if fetched == size:
+                        result['size'] = size
+                        self.response.out.write(json.dumps(result))
+                        return
+
+            result['size'] = fetched
+            self.response.out.write(json.dumps(result))
+            
+        except Exception, e:
+            logging.info('error occurred fetching random videos')
+            self.response.out.write(json.dumps({
+                'error': True,
+                'message': str(e)
+            }))
+            
+
 class Watch(BaseHandler):
     def get(self, video_id):
         video = models.Video.get_by_id('dt'+video_id)
@@ -354,6 +414,7 @@ class Watch(BaseHandler):
 
             video.hits += 1
             video.put()
+            video.create_index('videos_by_hits', video.hits )
             uploader.videos_watched += 1
             uploader.put()
 
@@ -383,7 +444,7 @@ class Favor(BaseHandler):
 
         video = models.Video.get_by_id('dt'+video_id)
         if video is not None:
-            if video.key not in user.favorites:
+            if video.key not in [f.video for f in user.favorites]:
                 if len(user.favorites) >= user.favorites_limit:
                     self.response.out.write(json.dumps({
                         'error': True,
@@ -391,13 +452,15 @@ class Favor(BaseHandler):
                     }))
                     return
 
-                user.favorites.append(video.key)
+                new_favorite = models.Favorite(video=video.key)
+                user.favorites.append(new_favorite)
                 user.put()
                 self.response.out.write(json.dumps({
                     'message': 'success'
                 }))
                 video.favors += 1
                 video.put()
+                video.create_index('videos_by_favors', video.favors )
                 uploader = models.User.get_by_id(video.uploader.id())
                 uploader.videos_favored += 1
                 uploader.put()
@@ -420,14 +483,17 @@ class Unfavor(BaseHandler):
 
         video = models.Video.get_by_id('dt'+video_id)
         if video is not None:
+            video_keys = [f.video for f in user.favorites]
             try:
-                user.favorites.remove(video.key)
+                idx = video_keys.index(video.key)
+                user.favorites.pop(idx)
                 user.put()
                 self.response.out.write(json.dumps({
                     'message': 'success'
                 }))
                 video.favors -= 1
                 video.put()
+                video.create_index('videos_by_favors', video.favors )
                 uploader = models.User.get_by_id(video.uploader.id())
                 uploader.videos_favored -= 1
                 uploader.put()
@@ -440,6 +506,26 @@ class Unfavor(BaseHandler):
             self.response.out.write(json.dumps({
                 'error': True,
                 'message': 'video not found',
+            }))
+
+class Like(BaseHandler):
+    @login_required
+    def post(self, video_id):
+        self.response.headers['Content-Type'] = 'application/json'
+        user = self.user
+
+        video = models.Video.get_by_id('dt'+video_id)
+        if video is not None:
+            video.likes += 1
+            video.last_liked = datetime.now()
+            video.put()
+            self.response.out.write(json.dumps({
+                'message': 'success'
+            }))
+        else:
+            self.response.out.write(json.dumps({
+                'error': True,
+                'message': 'video not found'
             }))
 
 class Danmaku(BaseHandler):
@@ -604,6 +690,98 @@ class Unsubscribe(BaseHandler):
 
 class Search(BaseHandler):
     def get(self):
+        # all_videos = models.Video.query().fetch()
+        # for video in all_videos:
+        #     video.create_index('videos_by_created', models.time_to_seconds(video.created))
+        #     video.create_index('videos_by_hits', video.hits)
+        #     video.create_index('videos_by_favors', video.favors)
+
+        try:
+            page_size = int(self.request.get('page_size'))
+        except ValueError:
+            page_size = models.PAGE_SIZE
+
+        try:
+            page = int(self.request.get('page') )
+        except ValueError:
+            page = 1
+
+        page =  min(page, -(-models.MAX_QUERY_RESULT // page_size))
+
+        offset = (page - 1) * page_size
+
         key_words_ori = self.request.get('keywords')
-        logging.info(key_words_ori)
-        self.render('search', {'keywords': key_words_ori})
+        if not key_words_ori:
+            key_words_ori = ""
+
+        options = search.QueryOptions(offset=offset, limit=page_size)
+        query = search.Query(query_string=key_words_ori, options=options)
+
+        order = self.request.get('order')
+        if not order:
+            index = search.Index(name='videos_by_hits')
+        elif order == 'hits':
+            index = search.Index(name='videos_by_hits')
+        elif order == 'created':
+            index = search.Index(name='videos_by_created')
+        elif order == 'favors':
+            index = search.Index(name='videos_by_favors')
+        else:
+            index = search.Index(name='videos_by_hits')
+        
+        try:
+            result = index.search(query)                
+            total_found = result.number_found
+            total_videos = min(total_found, 1000)
+            total_pages = -(-total_videos // page_size)
+            
+            fetched_videos = len(result.results)
+            if total_videos > 0 and fetched_videos == 0:
+                # fetch last page
+                page = total_pages
+                offset = (page - 1) * page_size
+                options = search.QueryOptions(offset=offset, limit=page_size)
+                query = search.Query(query_string=key_words_ori, options=options)
+                result = index.search(query)
+
+            video_keys = []
+            for video_doc in result.results:
+                video_keys.append(ndb.Key(urlsafe=video_doc.doc_id))
+            videos = ndb.get_multi(video_keys)
+
+            min_page = max(page-2, 1);
+            max_page = min(min_page + 4, total_pages);
+            context = {
+                'keywords': key_words_ori,
+                'order': order,
+                'videos': [], 
+                'total_found': total_found,
+                'total_videos': total_videos,
+                'total_pages': total_pages,
+                'cur_page': page,
+                'page_range': range(min_page, max_page+1)
+            }
+
+            for video in videos:
+                video_info = video.get_basic_info()
+                uploader = models.User.get_by_id(video.uploader.id())
+                video_info['uploader'] = uploader.get_public_info()
+                context['videos'].append(video_info)
+
+            logging.info(videos)
+            self.render('search', context)
+
+        except search.Error:
+            logging.info("search failed")
+            self.render('search', {'error': 'search failed due to internal error.'})
+
+        # total_pages = -(-total_videos // page_size)
+
+        # result = index.search("")
+        # logging.info(result.number_found)
+        # for doc in result.results:
+        #     logging.info(doc)
+
+        # key_words_ori = self.request.get('keywords')
+        # logging.info(key_words_ori)
+        # self.render('search', {'keywords': key_words_ori})

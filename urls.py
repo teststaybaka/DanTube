@@ -52,10 +52,12 @@ routes = [
     webapp2.Route(r'/cover_upload/dt<video_id:\d+>', video.Submit, name="cover_upload", handler_method='cover_upload'),
 
     webapp2.Route(r'/video', views.Video, name="video"),
+    webapp2.Route(r'/video/random', views.RandomVideos, name="random_videos"),
     webapp2.Route(r'/video/dt<video_id:\d+>', views.Watch, name="watch"),
     webapp2.Route(r'/video/dt<video_id:\d+>/danmaku', views.Danmaku, name="danmaku"),
     webapp2.Route(r'/video/dt<video_id:\d+>/favor', views.Favor, name="favor"),
     webapp2.Route(r'/video/dt<video_id:\d+>/unfavor', views.Unfavor, name="unfavor"),
+    webapp2.Route(r'/video/dt<video_id:\d+>/like', views.Like, name="like"),
     webapp2.Route(r'/player', views.Player, name="player"),
     webapp2.Route(r'/search', views.Search, name="search"),
 

@@ -1,11 +1,14 @@
 $(document).ready(function() {
 
-    var cur_page = 1, cur_order = 'hits';
-    var total_page = parseInt(document.getElementById('page-count').innerHTML, 10);
-    // Retrieve Videos
-    var urlparts = window.location.pathname.split('/');
-    var hash = window.location.hash;
+    var cur_page = 1, cur_order = 'last_liked';
 
+    var urlparts = window.location.pathname.split('/');
+    var category = urlparts[1];
+    var subcategory = urlparts[2];
+    var video_container = $('.video-preview-container');
+    var pagination_container = $('.video-pagination-line');
+
+    var hash = window.location.hash;
     if(hash) {
         hash = hash.slice(1).split('&');
         for(var i = 0; i < hash.length; i++) {
@@ -15,7 +18,7 @@ $(document).ready(function() {
             if(key == 'page') {
                 value = parseInt(value, 10);
                 if(!isNaN(value)) {
-                    cur_page = Math.min(Math.max(1, value), total_page);
+                    cur_page = Math.min(Math.max(1, value), 100);
                 } else {
                     console.log('page number is not integer');
                     cur_page = 1;
@@ -26,7 +29,7 @@ $(document).ready(function() {
                     cur_order = value;
                 } else {
                     console.log('unknown value for order');
-                    cur_order = 'hits';
+                    cur_order = 'last_liked';
                 }
             } else {
                 console.log('unknown key');
@@ -35,83 +38,69 @@ $(document).ready(function() {
     }
 
     var query = {
-        'category': urlparts[1],
-        'subcategory': urlparts[2],
+        'category': category,
+        'subcategory': subcategory,
         'page': cur_page,
         'order': cur_order
     };
-    console.log(query);
-    refresh_page(query);
+    update_page(query);
     
-    $('.page-navigator').on('click', 'a', function() {
-        var next_page = parseInt($(this).attr('pagenum'), 10);
-        if(!isNaN(next_page)) {
-            next_page = Math.min(Math.max(1, next_page), total_page);
-            var query = {
-                'category': urlparts[1],
-                'subcategory': urlparts[2],
-                'page': next_page,
-                'order': cur_order
-            };
-            refresh_page(query);
-        }
+    $('.video-pagination-line').on('click', 'div', function() {
+        var next_page = $(this).attr('data-page');
+        query = {
+            'category': category,
+            'subcategory': subcategory,
+            'page': next_page,
+            'order': cur_order
+        };
+        update_page(query);
     });
 
     $('.order-option').on('click', 'a', function() {
         var next_order = $(this).attr('prop');
-        console.log(next_order);
-        if(next_order == 'last_liked') { alert('like function not finished yet!'); return;}
         if(next_order == 'hits' || next_order == 'last_liked' || next_order == 'created' && next_order != cur_order) {
             var query = {
-                'category': urlparts[1],
-                'subcategory': urlparts[2],
-                'page': cur_page,
+                'category': category,
+                'subcategory': subcategory,
+                'page': 1,
                 'order': next_order
             };
-            refresh_page(query);
+            update_page(query);
         }
     });
 
-    function refresh_page(query) {
-        get_video_list(query, function(err, videos) {
+    function update_page(query) {
+        get_video_list('/video', query, function(err, result) {
             if(err) console.log(err);
             else {
-                cur_page = query.page;
+                video_container.empty();
+                pagination_container.empty();
                 cur_order = query.order;
-                window.location.hash = '#page=' + cur_page + '&order=' + cur_order;
+                cur_page = query.page;
                 $('.order-option a.on').removeClass("on");
-                $('.order-option a[prop="' + cur_order + '"').addClass("on");
-                $('#video-list').empty();
-                for(var i = 0; i < videos.length; i++) {
-                    var div = render_video_div(videos[i]);
-                    $('#video-list').append(div);
-                }
-                $('.page-navigator a').remove();
-                $('.page-navigator strong').remove();
-                var min_page = Math.max(cur_page-2, 1);
-                var max_page = Math.min(min_page + 4, total_page);
-                var $head = $('#total-count');
-                if(cur_page > 1) {
-                    $head.after('<a pagenum="' + 1 + '">First</a>');
-                    $head = $head.next();
-                    $head.after('<a pagenum="' + (cur_page - 1) + '">Previous</a>');
-                    $head = $head.next();
-                }
-                for(var i = min_page; i <= max_page; i++) {
-                    if(i == cur_page) {
-                        $head.after('<strong>' + i + '</strong>');
-                    } else {
-                        $head.after('<a pagenum="' + i + '">' + i + '</a>');
+                $('.order-option a[prop="' + cur_order + '"]').addClass("on");
+                if(result.videos.length == 0)
+                    video_container.append('<p>No video</p>');
+                else {
+                    for(var i = 0; i < result.videos.length; i++) {
+                        var video_div = render_video_div(result.videos[i]);
+                        video_container.append(video_div);
                     }
-                    $head = $head.next();
-                }
-                if(cur_page < total_page) {
-                    $head.after('<a pagenum="' + (cur_page + 1) + '">Next</a>');
-                    $head = $head.next();
-                    $head.after('<a pagenum="' + total_page + '">Last</a>');
-                    $head = $head.next();
+                    var pagination = render_pagination(query.page, result.total_pages);
+                    pagination_container.append(pagination);
                 }
             }
         });
     }
 });
+
+render_video_div = function(video) {
+    var div = '<div class="video-item">' + 
+        '<div>' + video.title + '</div>' + 
+        '<a href="' + video.url + '"><div><img src="' + video.thumbnail_url + '"></a></div>' + 
+        '<div>Uploader: ' +  video.uploader.nickname + '</div>' + 
+        '<div>Created at: ' + video.created + '</div>' + 
+        '<div>Hits: ' + video.hits + ' Damakus: ' + video.danmaku_counter + ' </div>' + 
+        '<div>Likes: ' + video.likes + ' Last liked: ' + video.last_liked + ' </div></div>';
+    return div;
+}

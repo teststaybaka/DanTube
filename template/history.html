@@ -2,6 +2,8 @@
 {% block head %}
 {{ super() }}
 <link rel="stylesheet" href="/static/history.css" type="text/css" />
+<script src="/static/videolist.js" language="JavaScript" type="text/javascript"></script>
+<script src="/static/history.js" language="JavaScript" type="text/javascript"></script>
 {% endblock %}
 
 {% block body %}
@@ -9,7 +11,8 @@
     <div class="quick-title-head"></div>
     <div class="quick-title">Watch History</div>
 </div>
-{% if videos|count == 0 %}
+<div class="history-video-container container">
+<!-- {% if videos|count == 0 %}
 <div class="no-history">
   No watch history found.
 </div>
@@ -36,12 +39,8 @@
     <div class="last-viewed">Last watched: {{ video.last_viewed_time }}</div>
   </div>
 </div>
-{% endfor %}
-<div class="pagination-line">
-  <div class="page-change"><</div>
-  <div class="page-num">1</div>
-  <div class="page-num active">2</div>
-  <div class="page-num">3</div>
-  <div class="page-change">></div>
+{% endfor %} -->
+</div>
+<div class="video-pagination-line">
 </div>
 {% endblock %}

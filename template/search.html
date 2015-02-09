@@ -31,18 +31,25 @@
         </div>
     </div>
 </div>
-<div class="video-entry no-result">
+{% if total_videos == 0 %}
+<div class="video-entry">
     No result found. Please try other keywords.
 </div>
+{% else %}
+<div class="video-entry">
+    Found {{ total_found }} videos.
+</div>
+{% endif %}
 {% block search_result %}
+{% for video in videos %}
 <div class="video-entry">
     <div class="video-img-uper">
-        <a class="video-img" href="{{ video.url }}">
+        <a class="video-img" target="_blank" href="{{ video.url }}">
             <img class="video-img" src="{{ video.thumbnail_url }}">
         </a>
         <div class="uper-line">
             <label>UPer: </label>
-            <a href="" class="video-uploader">OOOOO</a>
+            <a href="{{ video.uploader.space_url }}" target="_blank" class="video-uploader">{{ video.uploader.nickname }}</a>
         </div>
     </div>
     <div class="video-info">
@@ -50,40 +57,7 @@
             <div class="video-category">Anime</div>
             <div class="video-category-arrow"></div>
             <div class="video-category">Continuing Anime</div>
-            <div class="video-time">2015-02-03 15:01:26</div>
-        </div>
-        <a href="{{ video.url }}" class="video-title">WHY!? WHY DID YOU HAVE TO DO THAT!? | Exoptable Money (Prequel to Presentable Liberty)</a>
-        <div class="video-statistic">
-            <div class="video-statistic-entry">Views: {{ video.hits }}</div>
-            <div class="video-statistic-entry">Favors: {{ video.favors }}</div>
-            <div class="video-statistic-entry">Damaku: {{ video.danmaku_counter }}</div>
-            <div class="video-statistic-entry">Comments: {{ video.comment_counter }}</div>
-        </div>
-        <div class="video-description">
-            WHY!? WHY DID YOU HAVE TO D
-        </div>
-        <div class="video-tags">
-            <div class="tag-entry">HAHAH</div>
-            <div class="tag-entry">Kanmusu</div>
-        </div>
-    </div>
-</div>
-<div class="video-entry">
-    <div class="video-img-uper">
-        <a class="video-img" href="{{ video.url }}">
-            <img class="video-img" src="{{ video.thumbnail_url }}">
-        </a>
-        <div class="uper-line">
-            <label>UPer: </label>
-            <a href="" class="video-uploader">OOOOO</a>
-        </div>
-    </div>
-    <div class="video-info">
-        <div>
-            <div class="video-category">Anime</div>
-            <div class="video-category-arrow"></div>
-            <div class="video-category">Continuing Anime</div>
-            <div class="video-time">2015-02-03 15:01:26</div>
+            <div class="video-time">{{ video.created }}</div>
         </div>
         <a href="{{ video.url }}" class="video-title">{{ video.title }}</a>
         <div class="video-statistic">
@@ -93,53 +67,32 @@
             <div class="video-statistic-entry">Comments: {{ video.comment_counter }}</div>
         </div>
         <div class="video-description">
-            WHY!? WHY DID YOU HAVE TO D
+            {{ video.description }}
         </div>
         <div class="video-tags">
-            <div class="tag-entry">HAHAH</div>
-            <div class="tag-entry">Kanmusu</div>
+            {% for tag in video.tags %}
+            <div class="tag-entry">{{ tag }}</div>
+            {% endfor %}
         </div>
     </div>
 </div>
-<div class="video-entry">
-    <div class="video-img-uper">
-        <a class="video-img" href="{{ video.url }}">
-            <img class="video-img" src="{{ video.thumbnail_url }}">
-        </a>
-        <div class="uper-line">
-            <label>UPer: </label>
-            <a href="" class="video-uploader">OOOOO</a>
-        </div>
-    </div>
-    <div class="video-info">
-        <div>
-            <div class="video-category">Anime</div>
-            <div class="video-category-arrow"></div>
-            <div class="video-category">Continuing Anime</div>
-            <div class="video-time">2015-02-03 15:01:26</div>
-        </div>
-        <a href="{{ video.url }}" class="video-title">{{ video.title }}</a>
-        <div class="video-statistic">
-            <div class="video-statistic-entry">Views: {{ video.hits }}</div>
-            <div class="video-statistic-entry">Favors: {{ video.favors }}</div>
-            <div class="video-statistic-entry">Damaku: {{ video.danmaku_counter }}</div>
-            <div class="video-statistic-entry">Comments: {{ video.comment_counter }}</div>
-        </div>
-        <div class="video-description">
-            WHY!? WHY DID YOU HAVE TO D
-        </div>
-        <div class="video-tags">
-            <div class="tag-entry">HAHAH</div>
-            <div class="tag-entry">Kanmusu</div>
-        </div>
-    </div>
-</div>
+{% endfor %}
 {% endblock %}
-<div class="search-pagination-line">
-    <div class="page-change hide"><</div>
-    <div class="page-num active">1</div>
-    <div class="page-num">2</div>
-    <div class="page-num">3</div>
-    <div class="page-change">></div>
+<div class="video-pagination-line">
+    {% if cur_page > 1%}
+        <div onclick="location.href='/search?keywords={{ keywords }}&order={{ order }}&page=1'" data-page="1"><<</div>
+        <div onclick="location.href='/search?keywords={{ keywords }}&order={{ order }}&page={{ cur_page - 1 }}'" data-page="{{ cur_page - 1 }}"><</div>
+    {% endif %}
+    {% for page in page_range %}
+        {% if page == cur_page %}
+            <div onclick="location.href='/search?keywords={{ keywords }}&order={{ order }}&page={{ page }}'" class="active" data-page="{{ page }}">{{ page }}</div>
+        {% else %}
+            <div onclick="location.href='/search?keywords={{ keywords }}&order={{ order }}&page={{ page }}'" data-page="{{ page }}">{{ page }}</div>
+        {% endif %}
+    {% endfor %}
+    {% if cur_page < total_pages %}
+        <div onclick="location.href='/search?keywords={{ keywords }}&order={{ order }}&page={{ cur_page + 1 }}'" data-page="{{ cur_page + 1 }}">></div>
+        <div onclick="location.href='/search?keywords={{ keywords }}&order={{ order }}&page={{ total_pages }}'" data-page="{{ total_pages }}">>></div>
+    {% endif %}
 </div>
 {% endblock %}
