@@ -461,6 +461,11 @@ span.category-arrow {
     cursor: pointer;
 }
 
+.video-pagination-line {
+  text-align: center;
+  margin-bottom: 10px;
+}
+
 .video-pagination-line div:hover {
   color: rgb(0,140,255);
 }

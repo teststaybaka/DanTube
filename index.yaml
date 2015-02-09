@@ -62,6 +62,12 @@ indexes:
     direction: desc
 
 - kind: Video
+  properties:
+  - name: uploader
+  - name: created
+    direction: desc
+
+- kind: Video
   ancestor: yes
   properties:
   - name: __key__

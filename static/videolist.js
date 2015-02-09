@@ -21,10 +21,10 @@ render_pagination = function(cur_page, total_pages) {
     return pagination;
 }
 
-get_video_list = function(query, callback) {
+get_video_list = function(url, query, callback) {
     $.ajax({
         type: "GET",
-        url: "/video",
+        url: url,
         data: query,
         success: function(result) {
             if (callback && typeof(callback) === "function") {

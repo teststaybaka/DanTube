@@ -2,17 +2,19 @@
 {% block head %}
 {{ super() }}
 <link rel="stylesheet" href="/static/manage_video.css" type="text/css" />
+<script src="/static/videolist.js" language="JavaScript" type="text/javascript"></script>
+<script src="/static/manage_video.js" language="JavaScript" type="text/javascript"></script>
 {% endblock %}
 
 {% block detail %}
 <div id="sub-title-line" class="container">
-    <div id="sub-title">26 Videos</div>
+    <div id="sub-title">{{ user.videos_submitted }} Videos</div>
     <div id="sub-search-block">
         <input id="sub-search-input" type="text" placeholder="Search Videos">
         <div id="sub-search-button"></div>
     </div>
     <div id="view-method">
-        <div class="selected">Newest</div>
+        <div class="selected">Latest</div>
         <div class="option">
             <div class="option-entry">Most viewed</div>
             <div class="option-entry">Most favored</div>
@@ -20,7 +22,8 @@
     </div>
     <label id="view-method-label">Sorted by:</label>
 </div>
-{% if videos|count == 0 %}
+<div class="submitted-video-container container">
+<!-- {% if videos|count == 0 %}
 <div class="video-entry none">
     No video found.
 </div>
@@ -58,12 +61,8 @@
         <div class="video-delete"></div>
     </div>
 </div>
-{% endfor %}
-<div class="pagination-line">
-    <div class="page-change"><</div>
-    <div class="page-num">1</div>
-    <div class="page-num active">2</div>
-    <div class="page-num">3</div>
-    <div class="page-change">></div>
+{% endfor %} -->
+</div>
+<div class="video-pagination-line">
 </div>
 {% endblock %}

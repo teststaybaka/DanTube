@@ -70,7 +70,7 @@ $(document).ready(function() {
     });
 
     function update_page(query) {
-        get_video_list(query, function(err, result) {
+        get_video_list('/video', query, function(err, result) {
             if(err) console.log(err);
             else {
                 video_container.empty();

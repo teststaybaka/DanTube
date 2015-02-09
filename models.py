@@ -1,6 +1,7 @@
 from google.appengine.ext import db
 from google.appengine.ext import ndb
 from google.appengine.datastore.datastore_query import Cursor
+from google.appengine.api import search
 import webapp2_extras.appengine.auth.models
 from webapp2_extras import security
 from google.appengine.ext import blobstore
@@ -12,10 +13,17 @@ import time
 import re
 import logging
 
+def time_to_seconds(time):
+  return int((time - datetime(2000, 1, 1)).total_seconds())
+
 class History(ndb.Model):
   video = ndb.KeyProperty(kind='Video', required=True)
   last_viewed_time = ndb.DateTimeProperty(auto_now_add=True)
   # last_viewed_timestamp
+
+class Favorite(ndb.Model):
+  video = ndb.KeyProperty(kind='Video', required=True)
+  favored_time = ndb.DateTimeProperty(auto_now=True)
 
 class User(webapp2_extras.appengine.auth.models.User):
   verified = ndb.BooleanProperty(required=True)
@@ -23,7 +31,8 @@ class User(webapp2_extras.appengine.auth.models.User):
   intro = ndb.StringProperty(default="")
   avatar = ndb.BlobKeyProperty()
   default_avatar = ndb.IntegerProperty(default=1, choices=[1,2,3,4,5,6])
-  favorites = ndb.KeyProperty(kind='Video', repeated=True)
+  # favorites = ndb.KeyProperty(kind='Video', repeated=True)
+  favorites = ndb.StructuredProperty(Favorite, repeated=True)
   favorites_limit = ndb.IntegerProperty(default=100, required=True)
   # history = ndb.KeyProperty(kind='Video', repeated=True)
   history = ndb.StructuredProperty(History, repeated=True)
@@ -246,6 +255,7 @@ URL_NAME_DICT = {
 };
 
 PAGE_SIZE = 12
+MAX_QUERY_RESULT = 1000
 
 class PlayList(ndb.Model):
   user_belonged = ndb.KeyProperty(kind='User', required=True)
@@ -447,9 +457,25 @@ class Video(ndb.Model):
       'comment_counter': self.comment_counter,
       'likes': self.likes,
       'favors': self.favors,
-      'last_liked': self.last_liked.strftime("%Y-%m-%d %H:%M:%S")
+      'last_liked': self.last_liked.strftime("%Y-%m-%d %H:%M:%S"),
+      'tags': self.tags
     }
     return basic_info
+
+  def create_index(self, index_name, rank):
+    index = search.Index(name=index_name)
+    doc = search.Document(
+      doc_id=self.key.urlsafe(), 
+      fields = [
+        search.TextField(name='title', value=self.title),
+        search.TextField(name='description', value=self.description),
+      ],
+      rank = rank
+    )
+    try:
+      add_result = index.put(doc)
+    except search.Error:
+      logging.info('failed to create %s index for video %s' % (index_name, self.key.id()))
 
   @classmethod
   def get_by_id(cls, id):
@@ -535,6 +561,9 @@ class Video(ndb.Model):
           cls._dec_video_count(category, subcategory)
           raise Exception('Failed to submit video. Please try again.')
         else:
+          video.create_index('videos_by_created', time_to_seconds(video.created) )
+          video.create_index('videos_by_hits', video.hits )
+          video.create_index('videos_by_favors', video.favors )
           return video
       else:
         # return 'Category mismatch.'
