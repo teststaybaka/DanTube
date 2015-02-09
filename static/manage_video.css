@@ -10,7 +10,7 @@ div.video-entry {
 
 div.video-entry.none {
     text-align: center;
-    padding: 70px 50px;
+    padding: 100px 50px;
     font-size: 18px;
     color: rgb(100,100,100);
 }
@@ -116,18 +116,18 @@ div.video-edit {
     font-size: 14px;
 }
 
-div.edit-entry {
+a.edit-entry {
     display: inline-block;
     margin-right: 10px;
     color: rgb(0,140,255);
     cursor: pointer;
 }
 
-div.edit-entry:hover {
+a.edit-entry:hover {
     color: rgb(255,177,108);
 }
 
-div.edit-entry:active {
+a.edit-entry:active {
     color: rgb(0,50,200);
 }
 

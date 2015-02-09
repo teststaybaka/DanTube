@@ -15,7 +15,7 @@
 div.no-subscription {
   text-align: center;
   font-size: 18px;
-  padding: 40px 0 70px 0;
+  padding: 70px 0 100px 0;
   color: rgb(100,100,100);
 }
 
@@ -102,7 +102,7 @@ div.activity-entry {
 div.activity-entry.none {
   text-align: center;
   font-size: 18px;
-  padding: 70px 0 70px 0;
+  padding: 100px 0 100px 0;
   color: rgb(100,100,100);
 }
 
@@ -125,19 +125,11 @@ div.activity-detail {
   width: 627px;
 }
 
-div.uploader-name {
+div.uploader-name, div.activity-title {
   word-wrap: break-word;
 }
 
-a.uploader-name:hover {
-  color: rgb(0,140,255);
-}
-
-div.activity-title {
-  word-wrap: break-word;
-}
-
-a.activity-title:hover {
+a.uploader-name:hover, a.activity-title:hover {
   color: rgb(0,140,255);
 }
 
@@ -145,6 +137,13 @@ div.activity-detail label {
   font-size: 14px;
   color: rgb(150,150,150);
   margin-right: 5px;
+}
+
+div.activity-time {
+  display: inline-block;
+  font-size: 14px;
+  color: rgb(100,100,100);
+  margin-left: 10px;
 }
 
 div.activity-intro {

@@ -10,6 +10,13 @@ var video_subcategories = {};
 <script src="/static/submit.js" language="JavaScript" type="text/javascript"></script>
 {% endblock %}
 
+{% block topTitle %}
+<a class="top-title active" href="{{ uri_for('submit') }}">
+    <div class="top-title-dot"></div>
+    Submit
+</a>
+{% endblock %}
+
 {% block detail %}
 <div id="submit-container">
   <form class="change" id="video-submission-form" method="post" enctype="multipart/form-data">
@@ -80,7 +87,6 @@ var video_subcategories = {};
       <div>
         <input class="save_change-button" type="submit" value="Submit Video" />
         <div id="change-applying"></div>
-        <div id="save-change-message">Change applied!</div>
     </div>
   </form>
 </div>

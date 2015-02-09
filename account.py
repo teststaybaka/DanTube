@@ -21,6 +21,12 @@ class ManageVideo(BaseHandler):
             context['videos'].append(video.get_basic_info())
         self.render('manage_video', context)
 
+class EditVideo(BaseHandler):
+    @login_required
+    def get(self, video_id):
+        video = models.Video.get_by_id('dt'+video_id)
+        self.render('edit_video', video.get_basic_info())
+
 class Favorites(BaseHandler):
     @login_required
     def get(self):
@@ -79,14 +85,14 @@ class Verification(BaseHandler):
         user, ts = self.user_model.get_by_auth_token(user_id, signup_token, 'signup')
 
         if not user:
-          logging.info('Could not find any user with id "%s" and token "%s"', user_id, signup_token)
-          self.render('verification', {'error':True, 'message':"Url not found."})
-          return
+            logging.info('Could not find any user with id "%s" and token "%s"', user_id, signup_token)
+            self.render('notice', {'type':'error', 'notice':"Url not found."})
+            return
         
         time_passed = time.mktime(datetime.now().timetuple()) - ts
         if time_passed > 24 * 60 * 60: # 24 hours
             self.user_model.delete_signup_token(user_id, signup_token)
-            self.render('verification', {'error':True, 'message':"Url has expired. Please make a new request."})
+            self.render('notice', {'type':'error', 'notice':"Url has expired. Please make a new request."})
             return
 
         # current_user = self.user
@@ -106,7 +112,7 @@ class Verification(BaseHandler):
             user.verified = True
             user.put()
 
-        self.render('verification', {'error':False, 'message':"Your account %s has been activated!" % (user.email)})
+        self.render('notice', {'type':'success', 'notice':"Your account %s has been activated!" % (user.email)})
 
 class SendVerification(BaseHandler):
     @login_required
@@ -243,12 +249,12 @@ class ChangeAvatar(BaseHandler):
                     rgba_im.paste(resized_im)
                     new_im = Image.new("RGB", (128,128), (255,255,255))
                     new_im.paste(rgba_im, rgba_im)
-                    new_im.save(output, format='jpeg', quality=90)
+                    new_im.save(output, format='jpeg', quality=100)
                 else:
                     rgb_im = Image.new("RGB", (128,128))
                     resized_im = im.crop((x0, y0, x0+width-1, y0+height-1)).resize((128,128), Image.ANTIALIAS)
                     rgb_im.paste(resized_im)
-                    rgb_im.save(output, format='jpeg', quality=90)
+                    rgb_im.save(output, format='jpeg', quality=100)
             except Exception, e:
                 self.response.out.write(json.dumps({
                     'error': True,

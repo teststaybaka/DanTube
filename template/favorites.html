@@ -5,6 +5,13 @@
 <script src="/static/favorites.js" language="JavaScript" type="text/javascript"></script>
 {% endblock %}
 
+{% block topTitle %}
+<a class="top-title active" href="{{ uri_for('favorites') }}">
+    <div class="top-title-dot"></div>
+    Favorites
+</a>
+{% endblock %}
+
 {% block detail %}
 <div id="sub-title-line" class="container">
   <div id="sub-title">40/100 Videos</div>
@@ -35,6 +42,7 @@
           <div class="video-category">Anime</div>
           <div class="video-category-arrow"></div>
           <div class="video-category">Continuing Anime</div>
+          <div class="video-time">2013-01-12 23:20</div>
       </div>
       <div>
           <a href="/video/dt1" class="video-title favored" target="_blank">sdf</a>

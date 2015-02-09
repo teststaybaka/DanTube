@@ -41,14 +41,6 @@ function confirm_password_check(confirm_pw) {
 }
 
 $(document).ready(function() {
-    if (error === 'True') {
-        var button = document.querySelector('#resetpasswordform input[type="submit"]');
-        button.disabled = true;
-        setTimeout(function(){
-            window.location.replace('/'); 
-        }, 3000);
-    }
-
     $("#new-password").focusout(function(evt) {
         var new_pw = evt.target.value;
         new_password_check(new_pw);
@@ -60,8 +52,6 @@ $(document).ready(function() {
     });
 
     $('#resetpasswordform').submit(function(evt) {
-        $('#signup-message').remove();
-
         var button = document.querySelector('#resetpasswordform input[type="submit"]');
         button.disabled = true;
 
@@ -87,12 +77,12 @@ $(document).ready(function() {
             success: function(result) {
                 console.log(result);
                 if(!result.error) {
-                    $('#resetpasswordform').prepend('<div id="signup-message" class="success">Password has been reset. Please sign in with the new password.</div>');
+                    pop_ajax_message('Password has been reset. Please sign in with the new password.', 'success');
                     setTimeout(function(){
                         window.location.replace('/signin'); 
                     }, 3000);
                 } else {
-                    $('#resetpasswordform').prepend('<div id="signup-message" class="fail">'+result.message+'</div>');
+                    pop_ajax_message(result.message, 'error');
                     button.disabled = false;
                 }
             },

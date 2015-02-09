@@ -140,41 +140,6 @@ span.other-option {
   margin-right: 0;
 }
 
-/* Chrome, Safari, Opera */
-@-webkit-keyframes message_show {
-    from {height: 0px;
-          opacity: 0;}
-    to {height: 45px;
-        opacity: 1;}
-}
-
-/* Standard syntax */
-@keyframes message_show {
-    from {height: 0px;
-          opacity: 0;}
-    to {height: 45px;
-        opacity: 1;}
-}
-
-#signup-message, #signin-message {
-  margin-bottom: 20px;
-  width: 312px;
-  font-size: 18px;
-  height: 0;
-  overflow-y: hidden;
-  -webkit-animation: message_show .5s; /* Chrome, Safari, Opera */
-  animation: message_show .5s;
-  height: 45px;
-}
-
-#signup-message.success, #signin-message.success {
-  color: rgb(48,182,1);
-}
-
-#signup-message.fail, #signin-message.fail {
-  color: rgb(192,62,62);
-}
-
 div.input-error {
     position: absolute;
     display: none;

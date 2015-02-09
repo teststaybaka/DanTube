@@ -131,7 +131,6 @@ $(document).ready(function() {
     document.getElementById('upload-avatar').addEventListener("change", readImage);
     
     $('#avatar-upload-form').submit(function(evt) {
-        $('#save-change-message').remove();
         var file = document.getElementById("upload-avatar").files[0];
         if (file) {
         // if ($('#avatar-crop').length) {
@@ -168,12 +167,12 @@ $(document).ready(function() {
                     console.log(result);
                     if (!result.error) {
                         // uploadImage(result.url, dataURL);
-                        $('input.save_change-button').after('<div id="save-change-message" class="success show">Change applied successfully!</div>');
+                        pop_ajax_message('Change applied successfully!', 'success');
                         setTimeout(function(){
                             window.location.replace('/account'); 
                         }, 1500);
                     } else {
-                        $('input.save_change-button').after('<div id="save-change-message" class="fail show">'+result.message+'</div>');
+                        pop_ajax_message(result.message, 'error');
                         button.disabled = false;
                     }
                     $('#change-applying').removeClass('show');

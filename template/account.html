@@ -47,7 +47,13 @@
     </div>
 </div>
 <div id="account-right-section">
-    <div id="account-top-title">
+    <div id="account-top-title" class="container">
+        {% block topTitle %}
+        <a class="top-title active" href="{{ uri_for('account') }}">
+            <div class="top-title-dot"></div>
+            Overview
+        </a>
+        {% endblock %}
     </div>
     {% block detail %}
     <div>

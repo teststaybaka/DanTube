@@ -1,9 +1,23 @@
 {% extends "template/base.html" %}
 {% block head %}
 {{ super() }}
+<script type="text/javascript">
+$(document).ready(function() {
+    setTimeout(function(){
+        window.location.replace('/'); 
+    }, 3000);
+});
+</script>
 {% endblock %}
 
 {% block body %}
-<p>{{ notice }}</p>
-<p> Go to <a href="{{ uri_for('home') }}">Home</a></p>
+<div id="notice-block">
+    <div>
+        <div class="ajax-icon {{ type }}"></div>
+        <div id="notice-content">{{ notice }}</div>
+    </div>
+    <div id="notice-redirect-line">
+        <a id="notice-redirect" href="{{ uri_for('home') }}"> Redirecting to Home in 3 seconds...</a>
+    </div>
+</div>
 {% endblock %}

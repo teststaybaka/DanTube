@@ -220,6 +220,7 @@ div.link:hover, a.link:hover {
 	padding-bottom: 4px;
 	margin-bottom: 10px;
 	cursor: pointer;
+    display: inline-block;
 }
 
 #user-at {
@@ -592,4 +593,95 @@ div.quick-title {
   color: rgb(100,100,100);
   margin-right: 20px;
   margin-top: 3px;
+}
+
+#ajax-message-box {
+    position: fixed;
+    bottom: 0;
+    right: 0;
+}
+
+div.ajax-message {
+    border: 1px solid rgb(200,200,200);
+    background-color: rgb(255,255,255);
+    -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
+    -moz-box-sizing: border-box;    /* Firefox, other Gecko */
+    box-sizing: border-box;
+    height: 0;
+    -webkit-transition: height .3s; /* For Safari 3.1 to 6.0 */
+    transition: height .3s;
+    overflow: hidden;
+    box-shadow: -2px 2px 4px rgb(200,200,200);
+}
+
+div.ajax-icon {
+    width: 32px;
+    height: 32px;
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: 5px;
+    margin-left: 15px;
+}
+
+div.ajax-icon.success {
+    background-image: url("/static/img/note_success.png");
+}
+
+div.ajax-icon.info {
+    background-image: url("/static/img/note_info.png");
+}
+
+div.ajax-icon.warning {
+    background-image: url("/static/img/note_warning.png");
+}
+
+div.ajax-icon.error {
+    background-image: url("/static/img/note_error.png");
+}
+
+div.ajax-content {
+    display: inline-block;
+    vertical-align: middle;
+    word-wrap: break-word;
+    width: 220px;
+    /*font-size: 14px;*/
+    color: rgb(100,100,100);
+    padding: 20px 20px 20px 0;
+}
+
+#notice-block {
+    width: 400px;
+    border: 1px solid rgb(200,200,200);
+    margin: auto;
+    margin-top: 120px;
+    box-shadow: -2px 2px 4px rgb(200,200,200);
+    padding: 40px 25px;
+}
+
+#notice-content {
+    display: inline-block;
+    vertical-align: middle;
+    width: 340px;
+    word-wrap: break-word;
+    color: rgb(100,100,100);
+}
+
+#notice-redirect-line {
+    display: block;
+    text-align: center;
+    margin-top: 30px;
+    padding-top: 15px;
+    border-top: 1px solid rgb(200,200,200);
+}
+
+#notice-redirect {
+    color: rgb(0,140,255);
+}
+
+#notice-redirect:hover {
+    color: rgb(255,177,108);
+}
+
+#notice-redirect:active {
+    color: rgb(0,50,200);
 }

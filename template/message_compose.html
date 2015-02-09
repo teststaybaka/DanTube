@@ -5,6 +5,17 @@
 <script src="/static/message.js" language="JavaScript" type="text/javascript"></script>
 {% endblock %}
 
+{% block topTitle %}
+<a class="top-title" href="{{ uri_for('message') }}">
+    <div class="top-title-dot"></div>
+    Messages
+</a>
+<a class="top-title active" href="{{ uri_for('compose') }}">
+    <div class="top-title-dot"></div>
+    Compose
+</a>
+{% endblock %}
+
 {% block detail %}
 <form class="message-block change" method="POST">
     <div class="input-line">

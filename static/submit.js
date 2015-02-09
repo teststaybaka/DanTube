@@ -166,7 +166,6 @@ $(document).ready(function() {
     document.getElementById('thumbnail-input').addEventListener("change", thumbnail_change);
 
     $('#video-submission-form').submit(function(evt) {
-        $('#save-change-message').remove();
         $('#thumbnail-error').removeClass('show');
         $('#change-applying').addClass('show');
 
@@ -208,14 +207,14 @@ $(document).ready(function() {
                         $('#video-url-error').text('Video url invalid.');
                         $('#video-url').addClass('error');
                     } else {
-                        $('input.save_change-button').after('<div id="save-change-message" class="fail show">'+result.message+'</div>');
+                        pop_ajax_message(result.message, 'error');
                     }
                     button.disabled = false;
                 } else {
-                    $('input.save_change-button').after('<div id="save-change-message" class="success show">Video submitted successfully!</div>');
+                    pop_ajax_message('Video submitted successfully!', 'success');
                     setTimeout(function(){
                         window.location.replace('/account/video'); 
-                    }, 1500);
+                    }, 3000);
                 }
                 $('#change-applying').removeClass('show');
             },

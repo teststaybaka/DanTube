@@ -10,14 +10,12 @@ $(document).ready(function() {
             success: function(result) {
                 console.log(result);
                 if(!result.error) {
-                    $('#signup-message').remove();
-                    $('#forgotpasswordform').prepend('<div id="signup-message" class="success">An email has been sent to reset your password.</div>');
+                    pop_ajax_message('An email has been sent to reset your password.', 'success');
                     setTimeout(function(){
                         window.location.replace('/'); 
                     }, 3000);
                 } else {
-                    $('#signup-message').remove();
-                    $('#forgotpasswordform').prepend('<div id="signup-message" class="fail">'+result.message+'</div>');
+                    pop_ajax_message(result.message, 'error');
                     button.disabled = false;
                 }
                 $('#signin_up-header').removeClass('loading');

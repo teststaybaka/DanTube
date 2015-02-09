@@ -92,7 +92,6 @@ $(document).ready(function() {
     $('#signupform').submit(function(evt) {
         // evt.preventDefault();
         $('#signup-header').addClass('loading');
-        $('#signup-message').remove();
         
         var button = document.querySelector('#signupform input[type="submit"]');
         button.disabled = true;
@@ -157,7 +156,7 @@ $(document).ready(function() {
             success: function(result) {
                 console.log(result);
                 if(!result.error) {
-                    $('#signupform').prepend('<div id="signup-message" class="success">Sign up successfully! Check your email to activate your account.</div>');
+                    pop_ajax_message('Sign up successfully! Check your email to activate your account.', 'success');
                     setTimeout(function(){
                         window.location.replace('/'); 
                     }, 3000);

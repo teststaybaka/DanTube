@@ -5,6 +5,13 @@
 <script src="/static/message.js" language="JavaScript" type="text/javascript"></script>
 {% endblock %}
 
+{% block topTitle %}
+<a class="top-title active" href="{{ uri_for('notifications') }}">
+    <div class="top-title-dot"></div>
+    Notifications
+</a>
+{% endblock %}
+
 {% block detail %}
 <div id="sub-title-line" class="container">
   <div id="sub-title">24 New Notifcations</div>

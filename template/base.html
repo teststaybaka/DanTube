@@ -32,9 +32,9 @@
                 <div id="user-box">
                     <div id="user-box-nickname">{{ user.nickname }}</div>
                     <div id="user-message-container" class="container">
-                        <div id="user-at">@Me</div>
-                        <div id="user-notification">Notifications</div>
-                        <div id="user-message">Messages</div>
+                        <a href="{{ uri_for('mentioned') }}" id="user-at">@Me</a>
+                        <a href="{{ uri_for('notifications') }}" id="user-notification">Notifications</a>
+                        <a href="{{ uri_for('message') }}" id="user-message">Messages</a>
                     </div>
                     <div id="user-box-bottom-line" class="container">
                         <a href="{{ uri_for('account') }}" id="user-config">
@@ -91,5 +91,8 @@
 
     {% block footscript %}
     {% endblock %}
+
+    <div id="ajax-message-box">
+    </div>
     </body>
 </html>

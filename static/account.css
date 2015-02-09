@@ -86,10 +86,48 @@ a.sub-option.active {
 
 #account-top-title {
     border-bottom: 1px solid rgb(200,200,200);
-    padding: 13px 25px;
-    font-weight: bold;
-    color: rgb(100,100,100);
+    padding: 0 25px;
     font-size: 23px;
+}
+
+a.top-title {
+    padding: 0 5px;
+    padding-top: 13px;
+    float: left;
+    margin-right: 15px;
+    display: block;
+    padding-bottom: 13px;
+    color: rgb(100,100,100);
+}
+
+div.top-title-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 8px;
+    background-color: rgb(150,150,150);
+    vertical-align: top;
+    margin-top: 8px;
+    display: inline-block;
+    margin-right: 3px;
+}
+
+a.top-title:hover {
+    border-top: 3px solid rgb(171,217,255);
+    padding-top: 10px;
+}
+
+a.top-title:hover div.top-title-dot {
+    background-color: rgb(171,217,255);
+}
+
+a.top-title.active {
+    border-top: 4px solid rgb(85,178,255);
+    padding-top: 9px;
+    font-weight: bold;
+}
+
+a.top-title.active div.top-title-dot {
+    background-color: rgb(85,178,255);
 }
 
 #sub-title-line {
@@ -229,7 +267,7 @@ div.detail-entry {
 
 #account-joint-time {
     font-size: 14px;
-    content: rgb(150,150,150);
+    color: rgb(150,150,150);
     padding: 1px 0;
 }
 
@@ -641,25 +679,4 @@ input.save_change-button:disabled {
 
 #change-applying.show {
     display: inline-block;
-}
-
-#save-change-message {
-    position: absolute;
-    display: none;
-    margin: 16px;
-    padding: 7px 10px;
-}
-
-#save-change-message.success {
-    color: rgb(48,182,1);
-}
-
-#save-change-message.fail {
-    color: rgb(192,62,62);
-}
-
-#save-change-message.show {
-    display: inline-block;
-    -webkit-animation: left_to_right_show .5s; /* Chrome, Safari, Opera */
-    animation: left_to_right_show .5s;
 }

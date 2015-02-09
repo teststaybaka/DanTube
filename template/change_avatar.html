@@ -7,6 +7,13 @@
 <link rel="stylesheet" href="/static/change_avatar.css" type="text/css" />
 {% endblock %}
 
+{% block topTitle %}
+<a class="top-title active" href="{{ uri_for('change_avatar') }}">
+    <div class="top-title-dot"></div>
+    Avatar
+</a>
+{% endblock %}
+
 {% block detail %}
 <div id="avatar-container" class="container">
   <div id="avatar-edit">
@@ -22,7 +29,6 @@
       </div>
       <input class="save_change-button" type="submit" value="Save Change" />
       <div id="change-applying"></div>
-      <div id="save-change-message">Change applied!</div>
     </form>
   </div>
   <div id="avatar-preview">

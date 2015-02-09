@@ -63,6 +63,24 @@ function hsl2rgb(hsl) {
     return [Math.round((r+m)*255), Math.round((g+m)*255), Math.round((b+m)*255)];
 }
 
+function pop_ajax_message(content, type) {
+     $('#ajax-message-box').append('<div class="ajax-message"> \
+            <div class="ajax-icon '+type+'"></div> \
+            <div class="ajax-content">'+content+'</div> \
+        </div>');
+
+    var lasts = $('div.ajax-message:last-child');
+    lasts.height(lasts[0].scrollHeight);
+    console.log(lasts[0].scrollHeight);
+
+    setTimeout(function() {
+        lasts.height(0);
+        setTimeout(function() {
+            lasts.remove();
+        }, 280);
+    }, 5000);
+}
+
 $(document).ready(function() {
     $('#portrait').mouseover(function() {
         $('#user-box').addClass('show');

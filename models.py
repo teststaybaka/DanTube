@@ -422,6 +422,7 @@ class Video(ndb.Model):
       'title': self.title,
       'vid': self.vid,
       'url': '/video/'+ str(self.key.id()),
+      'id_num': self.key.id().replace('dt', ''),
       'thumbnail_url': thumbnail_url,
       'created': self.created.strftime("%Y-%m-%d %H:%M:%S"),
       'category': self.category,

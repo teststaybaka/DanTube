@@ -57,43 +57,43 @@ $(document).ready(function() {
     var urls = window.location.href.split('/');
     if (urls[urls.length-1] === "account") {
         $("#sub-overview").addClass("active");
-        $("#account-top-title").text("Overview");
+        // $("#account-top-title").text("Overview");
     } else if (urls[urls.length-1] === "password") {
         $("#sub-change-password").addClass("active");
-        $("#account-top-title").text("Change Password");
+        // $("#account-top-title").text("Change Password");
     } else if (urls[urls.length-1] === "avatar") {
         $("#sub-change-avatar").addClass("active");
-        $("#account-top-title").text("Change Avatar");
+        // $("#account-top-title").text("Change Avatar");
     } else if (urls[urls.length-1] === "nickname") {
         $("#sub-change-nickname").addClass("active");
-        $("#account-top-title").text("Change Nickname");
+        // $("#account-top-title").text("Change Nickname");
     } else if (urls[urls.length-1] === "video") {
         $("#sub-videos").addClass("active");
-        $("#account-top-title").text("Your videos");
+        // $("#account-top-title").text("Your videos");
     } else if (urls[urls.length-1] === "submit") {
         $("#sub-submit").addClass("active");
-        $("#account-top-title").text("Video Submission");
+        // $("#account-top-title").text("Video Submission");
     } else if (urls[urls.length-1] === "subscriptions") {
         $("#subscriptions").addClass("active");
-        $("#account-top-title").text("Subscriptions");
+        // $("#account-top-title").text("Subscriptions");
     } else if (urls[urls.length-1] === "subscribed") {
         $("#subscribed-users").addClass("active");
-        $("#account-top-title").text("UPers Subscribed");
+        // $("#account-top-title").text("UPers Subscribed");
     } else if (urls[urls.length-1] === "favorites") {
         $("#favorites").addClass("active");
-        $("#account-top-title").text("Favorite Videos");
+        // $("#account-top-title").text("Favorite Videos");
     } else if (urls[urls.length-1] === "messages") {
         $("#messages").addClass("active");
-        $("#account-top-title").text("Messages");
+        // $("#account-top-title").text("Messages");
     } else if (urls[urls.length-1] === "compose") {
         $("#messages").addClass("active");
-        $("#account-top-title").text("Compose New Message");
+        // $("#account-top-title").text("Compose New Message");
     } else if (urls[urls.length-1] === "mentioned") {
         $("#mentioned").addClass("active");
-        $("#account-top-title").text("Who Mentioned Me");
+        // $("#account-top-title").text("Who Mentioned Me");
     } else if (urls[urls.length-1] === "notifications") {
         $("#notifications").addClass("active");
-        $("#account-top-title").text("System Notifications");
+        // $("#account-top-title").text("System Notifications");
     }
 
     $('#resend-email-link').click(function(evt) {
@@ -107,8 +107,10 @@ $(document).ready(function() {
             success: function(result) {
                 console.log(result);
                 if(!result.error) {
+                    pop_ajax_message('Please check your email to activate your account.', 'success');
                     $(evt.target).text('An email has been sent.');
                 } else {
+                    pop_ajax_message(result.message, 'error');
                     $(evt.target).text(result.message);
                 }
             },
@@ -148,8 +150,6 @@ $(document).ready(function() {
     });
 
     $('#change-password-form').submit(function(evt) {
-        $('#save-change-message').remove();
-
         var button = document.querySelector('input.save_change-button');
         button.disabled = true;
 
@@ -179,12 +179,12 @@ $(document).ready(function() {
             success: function(result) {
                 console.log(result);
                 if(!result.error) {
-                    $('input.save_change-button').after('<div id="save-change-message" class="success show">Change applied successfully!</div>');
+                    pop_ajax_message('Change applied successfully!', 'success');
                     setTimeout(function(){
                         window.location.replace('/account'); 
-                    }, 1500);
+                    }, 3000);
                 } else {
-                    $('input.save_change-button').after('<div id="save-change-message" class="fail show">'+result.message+'</div>');
+                    pop_ajax_message(result.message, 'error');
                     button.disabled = false;
                 }
             },
@@ -237,8 +237,6 @@ $(document).ready(function() {
     });
 
     $('#change-nickname-form').submit(function(evt) {
-        $('#save-change-message').remove();
-
         var button = document.querySelector('input.save_change-button');
         button.disabled = true;
 
@@ -260,7 +258,7 @@ $(document).ready(function() {
             $('#change-nickname-error').removeClass('show');
             $('#nickname-change').removeClass('error');
 
-            $('input.save_change-button').after('<div id="save-change-message" class="fail show">Already applied!</div>');
+            pop_ajax_message('Already applied!', 'info');
             error = true;
         }
 
@@ -277,12 +275,12 @@ $(document).ready(function() {
                 console.log(result);
                 if(!result.error) {
                     cur_nickname = nickname;
-                    $('input.save_change-button').after('<div id="save-change-message" class="success show">Change applied successfully!</div>');
+                    pop_ajax_message('Change applied successfully!', 'success');
                     setTimeout(function(){
                         window.location.replace('/account'); 
-                    }, 1500);
+                    }, 3000);
                 } else {
-                    $('input.save_change-button').after('<div id="save-change-message" class="fail show">'+result.message+'</div>');
+                    pop_ajax_message(result.message, 'error');
                     button.disabled = false;
                 }
             },

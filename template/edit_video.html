@@ -1,0 +1,20 @@
+{% extends "template/account.html" %}
+{% block head %}
+{{ super() }}
+{% endblock %}
+
+
+{% block topTitle %}
+<a class="top-title" href="{{ uri_for('manage_video') }}">
+    <div class="top-title-dot"></div>
+    Videos
+</a>
+<a class="top-title active" href="">
+    <div class="top-title-dot"></div>
+    Edit
+</a>
+{% endblock %}
+
+{% block detail %}
+
+{% endblock %}

@@ -4,6 +4,13 @@
 <link rel="stylesheet" href="/static/manage_video.css" type="text/css" />
 {% endblock %}
 
+{% block topTitle %}
+<a class="top-title active" href="{{ uri_for('manage_video') }}">
+    <div class="top-title-dot"></div>
+    Videos
+</a>
+{% endblock %}
+
 {% block detail %}
 <div id="sub-title-line" class="container">
     <div id="sub-title">26 Videos</div>
@@ -43,7 +50,7 @@
         <div class="video-playlist">
             <label>Playlist: </label>
             <label class="list-title">Not listed</label>
-            <div class="edit-entry">[Add to Playlist]</div>
+            <a class="edit-entry">[Add to Playlist]</a>
         </div>
         <div class="video-statistic">
             <div class="video-statistic-entry">Views: {{ video.hits }}</div>
@@ -52,8 +59,8 @@
             <div class="video-statistic-entry">Comments: {{ video.comment_counter }}</div>
         </div>
         <div class="video-edit">
-            <div class="edit-entry">[Edit Video]</div>
-            <div class="edit-entry">[Manage Danmaku]</div>
+            <a href="{{ uri_for('edit_video', video_id=video.id_num) }}" class="edit-entry">[Edit Video]</a>
+            <a class="edit-entry">[Manage Danmaku]</a>
         </div>
         <div class="video-delete"></div>
     </div>
