@@ -436,7 +436,7 @@ class Video(ndb.Model):
   def get_basic_info(self):
     if self.thumbnail is None:
       thumbnail_url = 'http://img.youtube.com/vi/' + self.vid + '/mqdefault.jpg'
-      thumbnail_url_hq = 'http://img.youtube.com/vi/' + self.vid + '/hqdefault.jpg'
+      thumbnail_url_hq = 'http://img.youtube.com/vi/' + self.vid + '/maxresdefault.jpg'
     else:
       thumbnail_url = images.get_serving_url(self.thumbnail)
       thumbnail_url_hq = thumbnail_url

@@ -13,7 +13,7 @@
             <div id="slide-container">
                 {% for video in top_ten_videos[:5]%}
                 <a href="{{ video.url }}" class="slide">
-                    <img src="{{ video.thumbnail_url }}">
+                    <img src="{{ video.thumbnail_url_hq }}">
                 </a>
                 {% endfor %}
             </div>
