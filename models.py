@@ -568,6 +568,7 @@ class Video(ndb.Model):
           video.create_index('videos_by_created', time_to_seconds(video.created) )
           video.create_index('videos_by_hits', video.hits )
           video.create_index('videos_by_favors', video.favors )
+          video.create_index('videos_by_user' + str(video.uploader.id()), time_to_seconds(video.created) )
           return video
       else:
         # return 'Category mismatch.'
