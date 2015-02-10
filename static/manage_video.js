@@ -36,7 +36,12 @@ $(document).ready(function() {
     });
 
     var cur_page = 1, cur_order = 'created';
-
+    var cur_keywords = "";
+    var order_labels = {
+        'created': 'Newest',
+        'hits': 'Most viewed',
+        'favors': 'Moss favored'
+    };
     var video_container = $('.submitted-video-container');
     var pagination_container = $('.video-pagination-line');
 
@@ -48,11 +53,50 @@ $(document).ready(function() {
     
     $('div.video-pagination-line').on('click', 'div', function(evt) {
         var next_page = $(this).attr('data-page');
-        query = {
-            'page': next_page,
-            'order': cur_order
-        };
-        update_page(query);
+        if(next_page != cur_page) {
+            if(cur_keywords) {
+                query = {
+                    'page': next_page,
+                    'keywords': cur_keywords
+                }
+            } else {
+                query = {
+                    'page': next_page,
+                    'order': cur_order
+                };
+            }
+            update_page(query);
+        }
+    });
+
+    $('.option-entry').click(function() {
+        var next_order = $(this).attr('data-order');
+        if(next_order != cur_order) {
+            var query = {
+                'page': 1,
+                'order': next_order
+            };
+            update_page(query);
+        }
+    })
+
+    $('#sub-search-button').click(function() {
+        var next_keywords = $('#sub-search-input').val().trim();
+        if(next_keywords) {
+            var query = {
+                'page': 1,
+                'keywords': next_keywords
+            };
+            update_page(query);
+        } else {
+            if(cur_keywords) {
+                var query = {
+                    'page': 1,
+                    'order': 'created'
+                };
+                update_page(query);
+            }
+        }
     });
 
     function update_page(query) {
@@ -63,8 +107,18 @@ $(document).ready(function() {
             else {
                 video_container.empty();
                 pagination_container.empty();
-                cur_order = query.order;
                 cur_page = query.page;
+                if(query.order)
+                    cur_order = query.order;
+                if(query.keywords) {
+                    cur_keywords = query.keywords;
+                    cur_order = 'created';
+                }
+                else {
+                    cur_keywords = "";
+                    $('#sub-search-input').val('');
+                }
+                $('#view-method .selected').html(order_labels[cur_order]);
                 // $('.order-option a.on').removeClass("on");
                 // $('.order-option a[prop="' + cur_order + '"]').addClass("on");
                 if(result.videos.length == 0) {

@@ -10,6 +10,18 @@ indexes:
 # automatically uploaded to the admin console when you next deploy
 # your application using appcfg.py.
 
+- kind: MessageThread
+  properties:
+  - name: receiver
+  - name: updated
+    direction: desc
+
+- kind: MessageThread
+  properties:
+  - name: sender
+  - name: updated
+    direction: desc
+
 - kind: Video
   properties:
   - name: category
@@ -65,6 +77,18 @@ indexes:
   properties:
   - name: uploader
   - name: created
+    direction: desc
+
+- kind: Video
+  properties:
+  - name: uploader
+  - name: favors
+    direction: desc
+
+- kind: Video
+  properties:
+  - name: uploader
+  - name: hits
     direction: desc
 
 - kind: Video

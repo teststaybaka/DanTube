@@ -40,6 +40,7 @@ routes = [
     webapp2.Route(r'/verify/<user_id:\d+>-<signup_token:.+>', account.Verification, name='verification'),
     
     webapp2.Route(r'/account/messages', message.Message, name='message'),
+    webapp2.Route(r'/account/messages/<thread_id:\d+>', message.Detail, name='message_detail'),
     webapp2.Route(r'/account/messages/compose', message.Compose, name='compose'),
     webapp2.Route(r'/account/mentioned', message.Mentioned, name='mentioned'),
     webapp2.Route(r'/account/notifications', message.Notifications, name='notifications'),

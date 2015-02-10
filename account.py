@@ -29,6 +29,61 @@ class ManageVideo(BaseHandler):
             except ValueError:
                 page_size = models.PAGE_SIZE
 
+            keywords_raw = self.request.get('keywords')
+            if keywords_raw:
+                keywords = keywords_raw.strip().lower()
+                if keywords:
+                    query_string = 'content: ' + keywords
+                    page =  min(page, -(-models.MAX_QUERY_RESULT // page_size))
+                    offset = (page - 1) * page_size
+                    options = search.QueryOptions(offset=offset, limit=page_size)
+                    query = search.Query(query_string=query_string, options=options)
+                    index = search.Index(name='videos_by_user' + str(user.key.id()))
+                    try:
+                        result = index.search(query)                
+                        total_found = result.number_found
+                        total_videos = min(total_found, 1000)
+                        total_pages = -(-total_videos // page_size)
+                        
+                        fetched_videos = len(result.results)
+                        if total_videos > 0 and fetched_videos == 0:
+                            # fetch last page
+                            page = total_pages
+                            offset = (page - 1) * page_size
+                            options = search.QueryOptions(offset=offset, limit=page_size)
+                            query = search.Query(query_string=query_string, options=options)
+                            result = index.search(query)
+
+                        video_keys = []
+                        for video_doc in result.results:
+                            video_keys.append(ndb.Key(urlsafe=video_doc.doc_id))
+                        videos = ndb.get_multi(video_keys)
+
+                        result = {
+                            'keywords': keywords_raw,
+                            'videos': [],
+                            'order': 'created',
+                            'total_found': total_found,
+                            'total_videos': total_videos,
+                            'total_pages': total_pages,
+                            'page': page
+                        }
+
+                        for video in videos:
+                            video_info = video.get_basic_info()
+                            result['videos'].append(video_info)
+
+                        self.response.out.write(json.dumps(result))
+                        return
+
+                    except search.Error:
+                        logging.info("search failed")
+                        self.response.out.write(json.dumps({
+                            'error': True,
+                            'message': 'Failed to search.'
+                        }))
+                        return
+
             order_str = self.request.get('order')
             if not order_str:
                 order = models.Video.created
@@ -53,7 +108,7 @@ class ManageVideo(BaseHandler):
                     'total_pages': 0
                 }))
                 return
-                
+
             if page > total_pages:
                 page = total_pages
 
