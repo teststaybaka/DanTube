@@ -64,7 +64,7 @@ function hsl2rgb(hsl) {
 }
 
 function pop_ajax_message(content, type) {
-     $('#ajax-message-box').append('<div class="ajax-message"> \
+     $('#ajax-message-box').append('<div class="ajax-message '+type+'"> \
             <div class="ajax-icon '+type+'"></div> \
             <div class="ajax-content">'+content+'</div> \
         </div>');

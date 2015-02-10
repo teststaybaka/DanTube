@@ -69,13 +69,6 @@ class ManageVideo(BaseHandler):
             context = {'user': {'videos_submited': user.videos_submited}}
             self.render('manage_video', context)
         
-
-class EditVideo(BaseHandler):
-    @login_required
-    def get(self, video_id):
-        video = models.Video.get_by_id('dt'+video_id)
-        self.render('edit_video', video.get_basic_info())
-
 class Favorites(BaseHandler):
     @login_required
     def get(self):

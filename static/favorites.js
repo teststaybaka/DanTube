@@ -6,6 +6,8 @@ $(document).ready(function() {
     var video_container = $('.favortite-video-container');
     var pagination_container = $('.video-pagination-line');
 
+    video_container.empty();
+    video_container.append('<div class="video-entry loading"></div>');
     get_video_list('/account/favorites', {'ajax': true}, function(err, result) {
         if(err) console.log(err);
         else {
@@ -18,14 +20,14 @@ $(document).ready(function() {
     });
 
     function update_page(page) {
+        video_container.empty();
+        pagination_container.empty();
         if (total_videos == 0) {
             video_container.append('<div class="video-entry none">No video found.</div>');
-            pagination_container.remove();
             return;
         }
         if (page < 1 || page > total_pages) return;
-        video_container.empty();
-        pagination_container.empty();
+        
         var offset = page_size * (page - 1);
         for(var i = offset; i < Math.min(offset + page_size, total_videos); i++) {
             var video_div = render_video_div(videos[i]);

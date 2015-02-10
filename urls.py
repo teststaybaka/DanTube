@@ -31,7 +31,6 @@ routes = [
     webapp2.Route(r'/account/avatar/upload/<user_id:\d+>', account.AvatarUpload, name="avatar_upload"),
     webapp2.Route(r'/account/password', account.ChangePassword, name="change_password"),
     webapp2.Route(r'/account/video', account.ManageVideo, name="manage_video"),
-    webapp2.Route(r'/account/video/edit/dt<video_id:\d+>', account.EditVideo, name="edit_video"),
     webapp2.Route(r'/account/favorites', account.Favorites, name="favorites"),
     webapp2.Route(r'/account/subscriptions', account.Subscriptions, name="subscriptions"),
     webapp2.Route(r'/subscriptions', account.Subscriptions, name="subscriptions_quick", handler_method='quick'),
@@ -50,6 +49,9 @@ routes = [
     webapp2.Route(r'/user/<user_id:\d+>/unsubscribe', views.Unsubscribe, name='unsubscribe'),
     webapp2.Route(r'/submit', video.Submit, name="submit"),
     webapp2.Route(r'/cover_upload/dt<video_id:\d+>', video.Submit, name="cover_upload", handler_method='cover_upload'),
+    webapp2.Route(r'/account/video/edit/dt<video_id:\d+>', video.EditVideo, name="edit_video"),
+    webapp2.Route(r'/cover_change/dt<video_id:\d+>', video.Submit, name="cover_change", handler_method='cover_change'),
+    webapp2.Route(r'/account/video/delete/dt<video_id:\d+>', video.DeleteVideo, name="delete_video"),
 
     webapp2.Route(r'/video', views.Video, name="video"),
     webapp2.Route(r'/video/random', views.RandomVideos, name="random_videos"),

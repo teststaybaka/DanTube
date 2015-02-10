@@ -50,9 +50,9 @@ function video_tag_check() {
         $('#video-tags-error').text('Please add at least one tag.');
         $('#video-tags').addClass('error');
         return false;
-    } else if (tags.length > 30) {
+    } else if (tags.length > 15) {
         $('#video-tags-error').addClass('show');
-        $('#video-tags-error').text('You can add at most 30 tags.');
+        $('#video-tags-error').text('You can add at most 15 tags.');
         $('#video-tags').addClass('error');
         return false;
     } else {
@@ -76,17 +76,9 @@ function url_check() {
     }
 }
 
-function resizeAndUpload(url, dataURL) {
-    var canvas = document.getElementById("crop-canvas");
-    var ctx = canvas.getContext("2d");
-    var img = document.getElementById("thumbnail-preview-img");
-    ctx.drawImage(img, 0, 0, 320, 180);
-    var dataURL = canvas.toDataURL('image/png');
-}
-
 function thumbnail_change() {
     var file = document.getElementById("thumbnail-input").files[0];
-    $('#thumbnail-preview-img').remove();
+    $('img.thumbnail-preview-img').remove();
     if (file) {
         if (file.size <= 0) {
             $('#thumbnail-error').addClass('show');
@@ -105,13 +97,13 @@ function thumbnail_change() {
                 $('#thumbnail-input').val('')
             } else {
                 $('#thumbnail-error').removeClass('show');
-                $('#thumbnail-preview').append('<img id="thumbnail-preview-img">');
+                $('#thumbnail-preview').append('<img class="thumbnail-preview-img">');
 
                 console.log('file size:'+file.size);
                 console.log('file type:'+file.type);
                 var reader = new FileReader();
                 reader.onload = function(e) {
-                    $('#thumbnail-preview-img').attr('src', e.target.result);
+                    $('img.thumbnail-preview-img').attr('src', e.target.result);
                 }
                 reader.readAsDataURL(file);
             }
@@ -193,7 +185,7 @@ $(document).ready(function() {
         var formData = new FormData(document.getElementById('video-submission-form'));
         $.ajax({
             type: "POST",
-            url: "/submit",
+            url: evt.target.action,
             // data: $('#video-submission-form').serialize(),
             data: formData,
             cache: false,
@@ -211,7 +203,7 @@ $(document).ready(function() {
                     }
                     button.disabled = false;
                 } else {
-                    pop_ajax_message('Video submitted successfully!', 'success');
+                    pop_ajax_message(result.message, 'success');
                     setTimeout(function(){
                         window.location.replace('/account/video'); 
                     }, 3000);

@@ -1,4 +1,39 @@
 $(document).ready(function() {
+    $('div.delete-button').click(function(evt) {
+        if ($(evt.target).hasClass('delete')) {
+            var id = $(evt.target).attr('data-id');
+            $(evt.target).text('Deleting');
+            $.ajax({
+                type: "POST",
+                url: '/account/video/delete/dt'+id,
+                async: false,
+                success: function(result) {
+                    console.log(result);
+                    if (!result.error) {
+                        pop_ajax_message('Video deleted! Refreshing...', 'success');
+                        $('div.video-entry.dt'+id).remove();
+                    } else {
+                        pop_ajax_message(result.message, 'error');
+                    }
+                },
+                error: function (xhr, ajaxOptions, thrownError) {
+                    console.log(xhr.status);
+                    console.log(thrownError);
+                }
+            });
+        }
+        $('div.delete-confirm-container').removeClass('show');
+    });
+
+    $('div.submitted-video-container').on('click', 'div.video-delete', function(evt) {
+        if (evt.target.className != 'video-delete') return;
+
+        $('div.delete-confirm-container').addClass('show');
+        var id = $(evt.target).attr('data-id');
+        var title = $(evt.target).attr('data-title');
+        $('div.delete-button.delete').attr('data-id', id);
+        $('div.delete-video-name').text(title);
+    });
 
     var cur_page = 1, cur_order = 'created';
 
@@ -11,7 +46,7 @@ $(document).ready(function() {
     };
     update_page(query);
     
-    $('.video-pagination-line').on('click', 'div', function() {
+    $('div.video-pagination-line').on('click', 'div', function(evt) {
         var next_page = $(this).attr('data-page');
         query = {
             'page': next_page,
@@ -21,6 +56,8 @@ $(document).ready(function() {
     });
 
     function update_page(query) {
+        video_container.empty();
+        video_container.append('<div class="video-entry loading"></div>');
         get_video_list('/account/video', query, function(err, result) {
             if(err) console.log(err);
             else {
@@ -30,9 +67,9 @@ $(document).ready(function() {
                 cur_page = query.page;
                 // $('.order-option a.on').removeClass("on");
                 // $('.order-option a[prop="' + cur_order + '"]').addClass("on");
-                if(result.videos.length == 0)
+                if(result.videos.length == 0) {
                     video_container.append('<div class="video-entry none">No video found.</div>');
-                else {
+                } else {
                     for(var i = 0; i < result.videos.length; i++) {
                         var video_div = render_video_div(result.videos[i]);
                         video_container.append(video_div);
@@ -46,7 +83,7 @@ $(document).ready(function() {
 });
 
 render_video_div = function(video) {
-    var div = '<div class="video-entry">' + 
+    var div = '<div class="video-entry dt' + video.id_num + '">' + 
                 '<a class="video-img" href="' + video.url + '" target="_blank">' + 
                     '<img class="video-img" src="' + video.thumbnail_url + '">' +
                 '</a>' +
@@ -72,10 +109,10 @@ render_video_div = function(video) {
                         '<div class="video-statistic-entry">Comments: ' + video.comment_counter + '</div>' +
                     '</div>' +
                     '<div class="video-edit">' +
-                        '<a href="/account/video/edit/dt'+video.id_num+'" class="edit-entry">[Edit Video]</a>' +
+                        '<a href="/account/video/edit/dt' + video.id_num + '" class="edit-entry">[Edit Video]</a>' +
                         '<a class="edit-entry">[Manage Danmaku]</a>' +
                     '</div>' +
-                    '<div class="video-delete"></div>' +
+                    '<div class="video-delete" data-id="' + video.id_num + '" data-title="' + video.title + '"></div>' +
                 '</div>' +
             '</div>';
     return div;

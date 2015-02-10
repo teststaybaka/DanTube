@@ -5,6 +5,10 @@ body {
 	background-color: rgb(255,255,255);
 }
 
+textarea, input {
+    font-family:"Times New Roman",Georgia,Serif;
+}
+
 img {
 	background-color: white;
 }
@@ -491,7 +495,6 @@ a.page-num, div.page-num {
     text-align: center;
     border-radius: 4px;
     height: 16px;
-    min-width: 16px;
     cursor: pointer;
 }
 
@@ -503,6 +506,7 @@ a.page-num.active, div.page-num.active {
     font-weight: bold;
     background-color: rgb(85,178,255);
     color: white;
+    min-width: 16px;
 }
 
 a.page-num.hide, a.page-change.hide, div.page-num.hide, div.page-change.hide {
@@ -639,6 +643,16 @@ div.ajax-message {
     box-shadow: -2px 2px 4px rgb(200,200,200);
 }
 
+/*div.ajax-message.success {
+    border: 3px solid rgb(97,194,84);
+    background-color: rgb(227,255,223);
+}
+
+div.ajax-message.error {
+    border: 3px solid rgb(222,65,65);
+    background-color: rgb(255,240,240);
+}*/
+
 div.ajax-icon {
     width: 32px;
     height: 32px;
@@ -670,7 +684,7 @@ div.ajax-content {
     word-wrap: break-word;
     width: 220px;
     /*font-size: 14px;*/
-    color: rgb(100,100,100);
+    /*color: rgb(100,100,100);*/
     padding: 20px 20px 20px 0;
 }
 

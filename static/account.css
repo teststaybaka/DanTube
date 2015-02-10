@@ -173,10 +173,10 @@ div.inline-button.sub {
 
 #sub-search-input {
     outline: none;
-    padding: 5px;
+    padding: 3px;
     display: inline-block;
     border: 0;
-    font-size: 12px;
+    font-size: 14px;
     width: 140px;
 }
 
@@ -540,7 +540,7 @@ form.change label.explain {
 form.change label.check-label {
     font-size: 14px;
     width: 170px;
-    margin-top: 15px;
+    margin-top: 10px;
     cursor: pointer;
 }
 
@@ -619,7 +619,7 @@ form.change div.input-error.show {
     outline: none;
 }
 
-#thumbnail-preview {
+#thumbnail-preview, #thumbnail-previous-preview {
     background: rgb(240,240,240);
     width: 176px;
     height: 99px;
@@ -628,6 +628,21 @@ form.change div.input-error.show {
     cursor: pointer;
     position: relative;
     box-shadow: 0 0 1px rgb(100,100,100);
+    margin-right: 8px;
+}
+
+#thumbnail-previous-preview {
+    cursor: default;
+}
+
+#thumbnail-spacing {
+    width: 8px;
+    height: 8px;
+    background-image: url("/static/img/arrow.png");
+    display: inline-block;
+    vertical-align: top;
+    margin-top: 46px;
+    margin-right: 8px;
 }
 
 #thumbnail-hint {
@@ -640,7 +655,7 @@ form.change div.input-error.show {
     pointer-events: none;
 }
 
-#thumbnail-preview-img {
+img.thumbnail-preview-img {
     width: 100%;
     height: 100%;
     position: absolute;

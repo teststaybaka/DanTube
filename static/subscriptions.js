@@ -5,6 +5,7 @@ $(document).ready(function() {
         $.ajax({
             type: "POST",
             url: "/user/" + user_id + "/unsubscribe",
+            async: false,
             success: function(result) {
                 if(!result.error) {
                     pop_ajax_message('UPer unsubscribed!', 'success');

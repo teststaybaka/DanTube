@@ -67,7 +67,7 @@ $(document).ready(function() {
     } else if (urls[urls.length-1] === "nickname") {
         $("#sub-change-nickname").addClass("active");
         // $("#account-top-title").text("Change Nickname");
-    } else if (urls[urls.length-1] === "video") {
+    } else if (urls[urls.length-1] === "video" || urls[urls.length-3] === 'video') {
         $("#sub-videos").addClass("active");
         // $("#account-top-title").text("Your videos");
     } else if (urls[urls.length-1] === "submit") {

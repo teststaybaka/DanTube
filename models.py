@@ -287,6 +287,7 @@ class Video(ndb.Model):
   subcategory = ndb.StringProperty(required=True)
   video_type = ndb.StringProperty(required=True, choices=['self-made', 'republish'], default='republish')
   thumbnail = ndb.BlobKeyProperty()
+  deleted = ndb.BooleanProperty(required=True, default=False)
 
   video_list_belonged = ndb.KeyProperty(kind='PlayList')
   video_order = ndb.IntegerProperty()
@@ -460,9 +461,18 @@ class Video(ndb.Model):
       'likes': self.likes,
       'favors': self.favors,
       'last_liked': self.last_liked.strftime("%Y-%m-%d %H:%M:%S"),
-      'tags': self.tags
+      'tags': self.tags,
+      'type': self.video_type,
     }
     return basic_info
+
+  def get_full_info(self):
+    full_info = {
+      'raw_url': self.url,
+      'allow_tag_add': self.allow_tag_add,
+    }
+    full_info.update(self.get_basic_info())
+    return full_info
 
   def create_index(self, index_name, rank):
     index = search.Index(name=index_name)
@@ -532,7 +542,7 @@ class Video(ndb.Model):
     return cls.id_counter
 
   @classmethod
-  def Create(cls, raw_url, user, description, title, category, subcategory, video_type, tags):
+  def Create(cls, raw_url, user, description, title, category, subcategory, video_type, tags, allow_tag_add):
     res = cls.parse_url(raw_url)
     if res.get('error'):
       # return 'URL Error.'
@@ -556,7 +566,8 @@ class Video(ndb.Model):
             category = category,
             subcategory = subcategory,
             video_type = video_type,
-            tags = tags
+            tags = tags,
+            allow_tag_add = allow_tag_add
           )
           video.put()
         except Exception, e:

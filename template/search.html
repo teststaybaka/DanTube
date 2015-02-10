@@ -25,22 +25,23 @@
         {% endif %}
     {% endfor %}
 </div>
+{% if cur_category %}
 <div class="search-scope-line">
-    {% if cur_category %}
-        {% if not cur_subcategory %}
-            <a class="search-scope active">All</a>
-        {% else %}
-            <a class="search-scope" href="/search?keywords={{ keywords }}&order={{ order }}&category={{ cur_category }}&page=1">All</a>
-        {% endif %}
-        {% for val in subcategory[cur_category] %}
-            {% if val == cur_subcategory %}
-                <a class="search-scope active">{{val}}</a>
-            {% else %}
-                <a class="search-scope" href="/search?keywords={{ keywords }}&order={{ order }}&category={{ cur_category }}&subcategory={{ val }}&page=1">{{val}}</a>
-            {% endif %}
-        {% endfor %}
+    {% if not cur_subcategory %}
+        <a class="search-scope active">All</a>
+    {% else %}
+        <a class="search-scope" href="/search?keywords={{ keywords }}&order={{ order }}&category={{ cur_category }}&page=1">All</a>
     {% endif %}
+    {% for val in subcategory[cur_category] %}
+        {% if val == cur_subcategory %}
+            <a class="search-scope active">{{val}}</a>
+        {% else %}
+            <a class="search-scope" href="/search?keywords={{ keywords }}&order={{ order }}&category={{ cur_category }}&subcategory={{ val }}&page=1">{{val}}</a>
+        {% endif %}
+    {% endfor %}
 </div>
+{% endif %}
+
 <div class="search-scope-line container">
     <div class="search-result-num">Found {{ total_found }} videos.</div>
     <div id="view-method-block">
