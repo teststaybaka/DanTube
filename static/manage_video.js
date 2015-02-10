@@ -54,11 +54,13 @@ $(document).ready(function() {
             };
             update_page(query);
         } else {
-            var query = {
-                'page': 1,
-                'order': cur_order
-            };
-            update_page(query);
+            if(cur_keywords) {
+                var query = {
+                    'page': 1,
+                    'order': 'created'
+                };
+                update_page(query);
+            }
         }
     });
 
@@ -71,8 +73,10 @@ $(document).ready(function() {
                 cur_page = query.page;
                 if(query.order)
                     cur_order = query.order;
-                if(query.keywords)
+                if(query.keywords) {
                     cur_keywords = query.keywords;
+                    cur_order = 'created';
+                }
                 else {
                     cur_keywords = "";
                     $('#sub-search-input').val('');

@@ -3,6 +3,7 @@
 {{ super() }}
 <link rel="stylesheet" href="/static/message.css" type="text/css" />
 <script src="/static/message.js" language="JavaScript" type="text/javascript"></script>
+<script src="/static/message_compose.js" language="JavaScript" type="text/javascript"></script>
 {% endblock %}
 
 {% block topTitle %}
@@ -17,19 +18,19 @@
 {% endblock %}
 
 {% block detail %}
-<form class="message-block change" method="POST">
+<form id="new-topic-form" class="message-block change" method="POST">
     <div class="input-line">
         <label>To:</label>
-        <input type="text" placeholder="Who do you want to talk with?">
+        <input name="receiver" type="text" placeholder="Who do you want to talk with?">
     </div>
     <div class="input-line">
         <label>Subject:</label>
-        <input type="text" placeholder="Make it concise">
+        <input name="subject" type="text" placeholder="Make it concise">
     </div>
     <div class="input-line">
         <label>Content:</label>
         <div id="send-message-block">
-            <textarea id="send-message" placeholder="No longer than 1000 characters."></textarea>
+            <textarea name="content" id="send-message" placeholder="No longer than 1000 characters."></textarea>
             <div class="container">
                 <div class="emoticons-select">
                     <div class="emoticons-menu container">

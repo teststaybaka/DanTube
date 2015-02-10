@@ -14,50 +14,36 @@
 
 {% block detail %}
 <div id="sub-title-line" class="container">
-  <div id="sub-title">24 New Messages</div>
+  <div id="sub-title">{{ total_new_messages }} New Messages</div>
   <div class="inline-button sub" onclick="location.href='{{ uri_for('compose') }}'">Compose</div>
 </div>
-<div class="message-entry none">
-    No messages found.
-</div>
-<div class="message-entry unread">
-    <a href="" target="_blank" class="user-img">
-        <img src="">
-    </a>
-    <div class="message-info">
-        <div class="info-line">
-            <label>About</label>
-            <a class="message-title" href="">How's everthing going?How's everthing going?How's everth?</a>
-        </div>
-        <div class="info-line">
-            <label>From</label>
-            <a href="" target="_blank" class="user-name">Markiplier</a>
-        </div>
-        <div class="info-line">
-            <label>Last talked: 2013-03-12 09:23</label>
-        </div>
-        <div class="message-delete"></div>
+{% if threads_fetched == 0 %}
+    <div class="message-entry none">
+        No messages found.
     </div>
-</div>
-<div class="message-entry">
-    <a href="" target="_blank" class="user-img">
-        <img src="">
-    </a>
-    <div class="message-info">
-        <div class="info-line">
-            <label>About</label>
-            <a class="message-title" href="">How's everthing going?How's everthing going?How's everth?</a>
+{% else %}
+    {% for thread in threads %}
+    <div class="message-entry {% if thread.unread %}unread{% endif %}">
+        <a href="{{ thread.partner.space_url }}" target="_blank" class="user-img">
+            <img src="{{ thread.partner.avatar_url }}">
+        </a>
+        <div class="message-info">
+            <div class="info-line">
+                <label>About</label>
+                <a class="message-title" href="{{ thread.url }}">{{ thread.subject }}</a>
+            </div>
+            <div class="info-line">
+                <label>With</label>
+                <a href="{{ thread.partner.space_url }}" target="_blank" class="user-name">{{ thread.partner.nickname }}</a>
+            </div>
+            <div class="info-line">
+                <label>{{ thread.updated }} {% if thread.is_last_sender %}You{% else %}{{ thread.partner.nickname }}{% endif %} said: {{ thread.last_message }}</label>
+            </div>
+            <div class="message-delete"></div>
         </div>
-        <div class="info-line">
-            <label>From</label>
-            <a href="" target="_blank" class="user-name">Markiplier</a>
-        </div>
-        <div class="info-line">
-            <label>Last talked: 2013-03-12 09:23</label>
-        </div>
-        <div class="message-delete"></div>
     </div>
-</div>
+    {% endfor %}
+{% endif %}
 <div class="pagination-line">
   <div class="page-change"><</div>
   <div class="page-num">1</div>

@@ -170,12 +170,22 @@ class Notification(ndb.Model):
   content = ndb.TextProperty(required=True, indexed=False)
   title = ndb.StringProperty(required=True, indexed=False)
 
-
 class Message(ndb.Model):
+  sender = ndb.KeyProperty(kind='User', required=True, indexed=False)
+  content = ndb.TextProperty(required=True, indexed=False)
+  sent_time = ndb.DateTimeProperty(required=True, indexed=False)
+
+class MessageThread(ndb.Model):
+  # messages = ndb.LocalStructuredProperty(Message, repeated=True)
+  messages = ndb.KeyProperty(kind='Message', repeated=True, indexed=False)
+  subject = ndb.StringProperty(required=True, indexed=False)
   sender = ndb.KeyProperty(kind='User', required=True)
   receiver = ndb.KeyProperty(kind='User', required=True)
-  content = ndb.TextProperty(required=True, indexed=False)
-  title = ndb.StringProperty(required=True, indexed=False)
+  updated = ndb.DateTimeProperty(required=True)
+  last_message_sender = ndb.KeyProperty(kind='User', required=True, indexed=False)
+  last_message = ndb.StringProperty(required=True, indexed=False)
+  new_messages = ndb.IntegerProperty(required=True, default=1, indexed=False)
+
 
 Video_Category = ['Anime', 'Music', 'Dance', 'Game', 'Entertainment', 'Techs', 'Sports', 'Movie', 'TV Drama']
 Video_SubCategory = {'Anime': ['Continuing Anime', 'Finished Anime', 'MAD/AMV/GMV', 'MMD/3D', 'Original/Voice Acting', 'General']
@@ -350,7 +360,6 @@ class Video(ndb.Model):
   @classmethod
   def get_page_count(cls, category="", subcategory="", page_size = PAGE_SIZE):
     video_count = cls.get_video_count(category, subcategory)
-    logging.info(video_count)
     page_count = -(-video_count // page_size)
 
     return min(page_count, 100)

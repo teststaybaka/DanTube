@@ -3,31 +3,35 @@
 {{ super() }}
 <link rel="stylesheet" href="/static/message.css" type="text/css" />
 <script src="/static/message.js" language="JavaScript" type="text/javascript"></script>
+<script src="/static/message_detail.js" language="JavaScript" type="text/javascript"></script>
 {% endblock %}
 
 {% block detail %}
 <div id="sub-title-line" class="container">
-  <div id="sub-title">How's everthing goiow's everthing going?How's everthing going?How's everth?</div>
-  <div class="inline-button sub">Back</div>
+  <div id="sub-title">{{ subject }}</div>
+  <div class="inline-button sub" onclick="location.href='{{ uri_for('message') }}'">Back</div>
 </div>
 <div id="message-block">
     <div id="message-contain-body">
+        {% for message in messages %}
         <div class="message-detail-entry container">
-            <div class="message-date send">2013-10-23 23:90</div>
-            <a class="user-img send" href="" target="_blank"><img src=""></a>
-            <div class="message-content send">sdfsdfsdfsfd</div>
+            {% if message.is_sender_user %}
+                <div class="message-date receive">{{ message.sent_time }}</div>
+                <a class="user-img receive"><img src="{{ user.avatar_url }}"></a>
+                <div class="message-content receive">{{ message.content }}</div>
+            {% else %}
+                <div class="message-date send">{{ message.sent_time }}</div>
+                <a class="user-img send" href="{{ partner.space_url }}" target="_blank"><img src="{{ partner.avatar_url }}"></a>
+                <div class="message-content send">{{ message.content }}</div>
+            {% endif %}
         </div>
-        <div class="message-detail-entry container">
-            <div class="message-date receive">2013-10-23 23:90</div>
-            <a class="user-img receive" href="" target="_blank"><img src=""></a>
-            <div class="message-content receive">sdfsdf</div>
-        </div>
+        {% endfor %}
     </div>
 </div>
-<form class="reply-block change" method="POST">
-    <img id="self-img" src="">
+<form id="reply-form" class="reply-block change" method="POST">
+    <img id="self-img" src="{{ user.avatar_url }}">
     <div id="send-message-block">
-        <textarea id="reply-message" placeholder="No longer than 1000 characters."></textarea>
+        <textarea id="send-message" name="content" placeholder="No longer than 1000 characters."></textarea>
         <div class="container">
             <div class="emoticons-select">
                 <div class="emoticons-menu container">
