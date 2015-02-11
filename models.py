@@ -551,7 +551,7 @@ class Video(ndb.Model):
     return cls.id_counter
 
   @classmethod
-  def Create(cls, raw_url, user, description, title, category, subcategory, video_type, tags, allow_tag_add):
+  def Create(cls, raw_url, user, description, title, category, subcategory, video_type, tags, allow_tag_add, thumbnail):
     res = cls.parse_url(raw_url)
     if res.get('error'):
       # return 'URL Error.'
@@ -576,7 +576,8 @@ class Video(ndb.Model):
             subcategory = subcategory,
             video_type = video_type,
             tags = tags,
-            allow_tag_add = allow_tag_add
+            allow_tag_add = allow_tag_add,
+            thumbnail = thumbnail
           )
           video.put()
         except Exception, e:

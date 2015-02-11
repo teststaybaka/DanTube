@@ -104,26 +104,8 @@ class Submit(BaseHandler, blobstore_handlers.BlobstoreUploadHandler):
             }))
             return
 
-        try:
-            video = models.Video.Create(
-                raw_url = raw_url,
-                user = user,
-                description = description,
-                title = title,
-                category = category,
-                subcategory = subcategory,
-                video_type = video_type,
-                tags = tags,
-                allow_tag_add = allow_tag_add,
-            )
-        except Exception, e:
-            self.response.out.write(json.dumps({
-                'error': True,
-                'message': str(e)
-            }))
-            return
-
         thumbnail_field = self.request.POST.get('thumbnail')
+        thumbnail_key = None
         if thumbnail_field != '':
             try:
                 im = Image.open(thumbnail_field.file)
@@ -155,7 +137,12 @@ class Submit(BaseHandler, blobstore_handlers.BlobstoreUploadHandler):
                     rgb_im.paste(resized_im)
                     rgb_im.save(output, format='jpeg', quality=90)
             except Exception, e:
-                logging.info('image process failed')
+                # logging.info('image process failed')
+                self.response.out.write(json.dumps({
+                    'error': True,
+                    'message': 'Image process failed.'
+                }))
+                return
             else:
                 output.seek(0)
                 form = MultiPartForm()
@@ -163,7 +150,7 @@ class Submit(BaseHandler, blobstore_handlers.BlobstoreUploadHandler):
                 form.add_file('coverImage', 'cover.jpg', fileHandle=output)
 
                 # Build the request
-                upload_url = models.blobstore.create_upload_url(self.uri_for('cover_upload', video_id=video.key.id().replace('dt', '')) )
+                upload_url = models.blobstore.create_upload_url(self.uri_for('cover_upload'))
                 request = urllib2.Request(upload_url)
                 request.add_header('User-agent', 'PyMOTW (http://www.doughellmann.com/PyMOTW/)')
                 body = str(form)
@@ -171,14 +158,36 @@ class Submit(BaseHandler, blobstore_handlers.BlobstoreUploadHandler):
                 request.add_header('Content-length', len(body))
                 request.add_data(body)
                 # request.get_data()
+                request_res = urllib2.urlopen(request).read()
+                if request_res == 'error':
+                    self.response.out.write(json.dumps({
+                        'error': True,
+                        'message': 'Image upload error.'
+                    }))
+                    # logging.error('Image upload error.')
+                    return
+                else:
+                    thumbnail_key = models.blobstore.BlobKey(request_res)
 
-                if urllib2.urlopen(request).read() == 'error':
-                    # self.response.out.write(json.dumps({
-                    #     'error': True,
-                    #     'message': ''
-                    # }))
-                    logging.error('Image upload error.')
-                    # return
+        try:
+            video = models.Video.Create(
+                raw_url = raw_url,
+                user = user,
+                description = description,
+                title = title,
+                category = category,
+                subcategory = subcategory,
+                video_type = video_type,
+                tags = tags,
+                allow_tag_add = allow_tag_add,
+                thumbnail = thumbnail_key
+            )
+        except Exception, e:
+            self.response.out.write(json.dumps({
+                'error': True,
+                'message': str(e)
+            }))
+            return
 
         user.videos_submited += 1
         user.put()
@@ -187,7 +196,7 @@ class Submit(BaseHandler, blobstore_handlers.BlobstoreUploadHandler):
             'message': 'Video submitted successfully!'
         }))
 
-    def cover_upload(self, video_id):
+    def cover_upload(self):
         self.response.headers['Content-Type'] = 'text/plain'
         upload = self.get_uploads('coverImage')
         if upload == []:
@@ -208,13 +217,7 @@ class Submit(BaseHandler, blobstore_handlers.BlobstoreUploadHandler):
             self.response.out.write('error')
             return
 
-        video = models.Video.get_by_id('dt'+video_id)
-        if video.thumbnail != None:
-            images.delete_serving_url(video.thumbnail)
-            models.blobstore.BlobInfo(video.thumbnail).delete()
-        video.thumbnail = uploaded_image.key()
-        video.put()
-        self.response.out.write('success')
+        self.response.out.write(str(uploaded_image.key()))
 
 class EditVideo(BaseHandler):
     @login_required
@@ -342,42 +345,8 @@ class EditVideo(BaseHandler):
             }))
             return
 
-        try:
-            if video.url != raw_url:
-                video.url = raw_url
-                video.vid = url_res['vid']
-                video.source = url_res['source']
-
-            if video.description != description:
-                video.description = description
-
-            if video.title != title:
-                video.title = title
-
-            if video.category != category:
-                video.category = category
-
-            if video.subcategory != subcategory:
-                video.subcategory = subcategory
-
-            if video.video_type != video_type:
-                video.video_type = video_type
-
-            if video.tags != tags:
-                video.tags = tags
-
-            if video.allow_tag_add != allow_tag_add:
-                video.allow_tag_add = allow_tag_add
-
-            video.put()
-        except Exception, e:
-            self.response.out.write(json.dumps({
-                'error': True,
-                'message': str(e)
-            }))
-            return
-
         thumbnail_field = self.request.POST.get('thumbnail')
+        thumbnail_key = None
         if thumbnail_field != '':
             try:
                 im = Image.open(thumbnail_field.file)
@@ -395,25 +364,88 @@ class EditVideo(BaseHandler):
                     rgb_im.paste(resized_im)
                     rgb_im.save(output, format='jpeg', quality=90)
             except Exception, e:
-                logging.info('image process failed')
+                # logging.info('image process failed')
+                self.response.out.write(json.dumps({
+                    'error': True,
+                    'message': 'Image process failed.'
+                }))
+                return
             else:
                 output.seek(0)
                 form = MultiPartForm()
-                # form.add_field('raw_url', raw_url)
                 form.add_file('coverImage', 'cover.jpg', fileHandle=output)
 
                 # Build the request
-                upload_url = models.blobstore.create_upload_url(self.uri_for('cover_upload', video_id=video.key.id().replace('dt', '')) )
+                upload_url = models.blobstore.create_upload_url(self.uri_for('cover_upload'))
                 request = urllib2.Request(upload_url)
                 request.add_header('User-agent', 'PyMOTW (http://www.doughellmann.com/PyMOTW/)')
                 body = str(form)
                 request.add_header('Content-type', form.get_content_type())
                 request.add_header('Content-length', len(body))
                 request.add_data(body)
-                # request.get_data()
+                request_res = urllib2.urlopen(request).read()
+                if request_res == 'error':
+                    self.response.out.write(json.dumps({
+                        'error': True,
+                        'message': 'Image upload error.'
+                    }))
+                    return
+                else:
+                    thumbnail_key = models.blobstore.BlobKey(request_res)
 
-                if urllib2.urlopen(request).read() == 'error':
-                    logging.error('Image upload error.')
+        try:
+            changed = False
+            if video.url != raw_url:
+                video.url = raw_url
+                video.vid = url_res['vid']
+                video.source = url_res['source']
+
+            if video.description != description:
+                video.description = description
+                changed = True
+
+            if video.title != title:
+                video.title = title
+                changed = True
+
+            if video.category != category:
+                video.category = category
+                changed = True
+
+            if video.subcategory != subcategory:
+                video.subcategory = subcategory
+                changed = True
+
+            if video.video_type != video_type:
+                video.video_type = video_type
+                changed = True
+
+            if video.tags != tags:
+                video.tags = tags
+                changed = True
+
+            if video.allow_tag_add != allow_tag_add:
+                video.allow_tag_add = allow_tag_add
+
+            if thumbnail_key != None:
+                if video.thumbnail != None:
+                    images.delete_serving_url(video.thumbnail)
+                    models.blobstore.BlobInfo(video.thumbnail).delete()
+                video.thumbnail = thumbnail_key
+
+            video.put()
+        except Exception, e:
+            self.response.out.write(json.dumps({
+                'error': True,
+                'message': str(e)
+            }))
+            return
+        else:
+            if changed:
+                video.create_index('videos_by_created', models.time_to_seconds(video.created) )
+                video.create_index('videos_by_hits', video.hits )
+                video.create_index('videos_by_favors', video.favors )
+                video.create_index('videos_by_user' + str(video.uploader.id()), models.time_to_seconds(video.created) )
 
         self.response.out.write(json.dumps({
             'error': False,
@@ -434,7 +466,7 @@ class DeleteVideo(BaseHandler):
 
         video.deleted = True
         video.put()
-        
+
         self.response.out.write(json.dumps({
             'error': False
         }))

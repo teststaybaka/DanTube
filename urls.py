@@ -49,7 +49,7 @@ routes = [
     webapp2.Route(r'/user/<user_id:\d+>/subscribe', views.Subscribe, name='subscribe'),
     webapp2.Route(r'/user/<user_id:\d+>/unsubscribe', views.Unsubscribe, name='unsubscribe'),
     webapp2.Route(r'/submit', video.Submit, name="submit"),
-    webapp2.Route(r'/cover_upload/dt<video_id:\d+>', video.Submit, name="cover_upload", handler_method='cover_upload'),
+    webapp2.Route(r'/cover_upload', video.Submit, name="cover_upload", handler_method='cover_upload'),
     webapp2.Route(r'/account/video/edit/dt<video_id:\d+>', video.EditVideo, name="edit_video"),
     webapp2.Route(r'/cover_change/dt<video_id:\d+>', video.Submit, name="cover_change", handler_method='cover_change'),
     webapp2.Route(r'/account/video/delete/dt<video_id:\d+>', video.DeleteVideo, name="delete_video"),
