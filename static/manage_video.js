@@ -40,8 +40,8 @@ $(document).ready(function() {
         'hits': 'Most viewed',
         'favors': 'Moss favored'
     };
-    var video_container = $('.submitted-video-container');
-    var pagination_container = $('.video-pagination-line');
+    var video_container = $('div.submitted-video-container');
+    var pagination_container = $('div.video-pagination-line');
 
     var query = {
         'page': cur_page,
@@ -78,7 +78,7 @@ $(document).ready(function() {
         }
     })
 
-    $('#sub-search-button').click(function() {
+    function sub_search() {
         var next_keywords = $('#sub-search-input').val().trim();
         if(next_keywords) {
             var query = {
@@ -94,6 +94,14 @@ $(document).ready(function() {
                 };
                 update_page(query);
             }
+        }
+    }
+
+    $('#sub-search-button').click(sub_search);
+    $('#sub-search-input').keyup(function(evt) {
+        var code = evt.which;
+        if (code === 13) {
+            sub_search();
         }
     });
 
