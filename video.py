@@ -234,6 +234,13 @@ class EditVideo(BaseHandler):
         video = models.Video.get_by_id('dt'+video_id)
         user = self.user
 
+        if video is None:
+            self.response.out.write(json.dumps({
+                'error': True,
+                'message': 'Video not found.'
+            }))
+            return
+
         if video.uploader.id() != user.key.id():
             self.response.out.write(json.dumps({
                 'error': True,
@@ -457,6 +464,14 @@ class DeleteVideo(BaseHandler):
     def post(self, video_id):
         self.response.headers['Content-Type'] = 'application/json'
         video = models.Video.get_by_id('dt'+video_id)
+
+        if video is None:
+            self.response.out.write(json.dumps({
+                'error': True,
+                'message': 'Video not found.'
+            }))
+            return
+            
         if video.uploader.id() != self.user.key.id():
             self.response.out.write(json.dumps({
                 'error': True,

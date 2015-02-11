@@ -10,7 +10,7 @@ $(document).ready(function() {
                 success: function(result) {
                     console.log(result);
                     if (!result.error) {
-                        pop_ajax_message('Video deleted! Refreshing...', 'success');
+                        pop_ajax_message('Video deleted!', 'success');
                         $('div.video-entry.dt'+id).remove();
                     } else {
                         pop_ajax_message(result.message, 'error');
@@ -26,8 +26,6 @@ $(document).ready(function() {
     });
 
     $('div.submitted-video-container').on('click', 'div.video-delete', function(evt) {
-        if (evt.target.className != 'video-delete') return;
-
         $('div.delete-confirm-container').addClass('show');
         var id = $(evt.target).attr('data-id');
         var title = $(evt.target).attr('data-title');
@@ -69,7 +67,7 @@ $(document).ready(function() {
         }
     });
 
-    $('.option-entry').click(function() {
+    $('div.option-entry').click(function() {
         var next_order = $(this).attr('data-order');
         if(next_order != cur_order) {
             var query = {

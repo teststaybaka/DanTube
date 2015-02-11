@@ -475,39 +475,6 @@ class Favor(BaseHandler):
                 'message': 'video not found'
             }))
 
-class Unfavor(BaseHandler):
-    @login_required
-    def post(self, video_id):
-        self.response.headers['Content-Type'] = 'application/json'
-        user = self.user
-
-        video = models.Video.get_by_id('dt'+video_id)
-        if video is not None:
-            video_keys = [f.video for f in user.favorites]
-            try:
-                idx = video_keys.index(video.key)
-                user.favorites.pop(idx)
-                user.put()
-                self.response.out.write(json.dumps({
-                    'message': 'success'
-                }))
-                video.favors -= 1
-                video.put()
-                video.create_index('videos_by_favors', video.favors )
-                uploader = models.User.get_by_id(video.uploader.id())
-                uploader.videos_favored -= 1
-                uploader.put()
-            except ValueError:
-                self.response.out.write(json.dumps({
-                    'error': True,
-                    'message': 'video not favored',
-                }))
-        else:
-            self.response.out.write(json.dumps({
-                'error': True,
-                'message': 'video not found',
-            }))
-
 class Like(BaseHandler):
     @login_required
     def post(self, video_id):
