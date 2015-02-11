@@ -78,7 +78,7 @@ $(document).ready(function() {
         }
     })
 
-    function sub_search() {
+    $('#sub-search-block').submit(function() {
         var next_keywords = $('#sub-search-input').val().trim();
         if(next_keywords) {
             var query = {
@@ -95,14 +95,7 @@ $(document).ready(function() {
                 update_page(query);
             }
         }
-    }
-
-    $('#sub-search-button').click(sub_search);
-    $('#sub-search-input').keyup(function(evt) {
-        var code = evt.which;
-        if (code === 13) {
-            sub_search();
-        }
+        return false;
     });
 
     function update_page(query) {

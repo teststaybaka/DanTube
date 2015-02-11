@@ -16,10 +16,10 @@
 {% block detail %}
 <div id="sub-title-line" class="container">
     <div id="sub-title">{{ user.videos_submited }} Videos</div>
-    <div id="sub-search-block">
+    <form id="sub-search-block">
         <input id="sub-search-input" type="text" placeholder="Search Videos">
-        <div id="sub-search-button"></div>
-    </div>
+        <input type="submit" id="sub-search-button" value="">
+    </form>
     <div id="view-method">
         <div class="selected">Newest</div>
         <div class="option">

@@ -186,12 +186,14 @@ div.inline-button.sub {
     background-color: rgb(240,240,240);
     display: inline-block;
     vertical-align: middle;
+    border: 0;
     border-left: 1px solid rgb(200,200,200);
     background-image: url("/static/img/search-icon.png");
     background-repeat: no-repeat;
     background-position: 4px 4px;
     background-size: 16px 16px;
     cursor: pointer;
+    outline: none;
 }
 
 #sub-search-button:hover{
