@@ -496,6 +496,7 @@ a.page-num, div.page-num {
     border-radius: 4px;
     height: 16px;
     cursor: pointer;
+    min-width: 16px;
 }
 
 a.page-change:hover, a.page-num:hover, div.page-change:hover, div.page-num:hover {
@@ -506,7 +507,6 @@ a.page-num.active, div.page-num.active {
     font-weight: bold;
     background-color: rgb(85,178,255);
     color: white;
-    min-width: 16px;
 }
 
 a.page-num.hide, a.page-change.hide, div.page-num.hide, div.page-change.hide {
@@ -519,6 +519,13 @@ a.page-num.hide, a.page-change.hide, div.page-num.hide, div.page-change.hide {
     border: 1px solid rgb(220,220,220);
     background-color: white;
     position: relative;
+    cursor: default;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
 }
 
 #view-method div.selected:after {

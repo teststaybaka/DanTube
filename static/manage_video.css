@@ -262,3 +262,8 @@ div.delete-button.delete:hover {
     background-color: rgb(81,203,238);
     border-color: rgb(81,203,238);
 }
+
+div.delete-button.delete:active {
+    background-color: rgb(0,50,200);
+    border-color: rgb(0,50,200);
+}

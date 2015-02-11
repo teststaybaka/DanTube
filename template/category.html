@@ -1,17 +1,119 @@
 {% extends "template/base.html" %}
 {% block head %}
 {{ super() }}
+<link rel="stylesheet" href="/static/index.css" type="text/css" />
+<link rel="stylesheet" href="/static/category.css" type="text/css" />
 <script src="/static/videolist.js" language="JavaScript" type="text/javascript"></script>
 <script src="/static/category.js" language="JavaScript" type="text/javascript"></script>
 {% endblock %}
 
 {% block body %}
-<h2>{{ category_name }}</h2>
-{% for val in subcategory[category_name] %}
-  <div id="{{ val }}" class="subcategory">
-    <a href="{{ uri_for([category_name,val]|join('-')) }}"><h3>{{ val }}</h3></a>
-    <div class="video-list">
+<div class="ranking-and-topic container">
+    <div id="ranking-slides">
+        <div id="slide-container">
+            <a href="{{ video.url }}" target="_blank" class="slide">
+                <img src="{{ video.thumbnail_url }}">
+            </a>
+            <a href="{{ video.url }}" target="_blank" class="slide">
+                <img src="{{ video.thumbnail_url }}">
+            </a>
+            <a href="{{ video.url }}" target="_blank" class="slide">
+                <img src="{{ video.thumbnail_url }}">
+            </a>
+            <a href="{{ video.url }}" target="_blank" class="slide">
+                <img src="{{ video.thumbnail_url }}">
+            </a>
+        </div>
+        <div class="slide-bottom container">
+            <div class="slide-title">
+                <a href="" target="_blank" class="slide-title">sdfdf</a>
+            </div>
+            <div class="slide-title">
+                <a href="" target="_blank" class="slide-title">sfsdf</a>
+            </div>
+            <div class="slide-title">
+                <a href="" target="_blank" class="slide-title">dfsd</a>
+            </div>
+            <div class="slide-title active">
+                <a href="" target="_blank" class="slide-title">sdfsf</a>
+            </div>
+            <div class="slide-dot"></div>
+            <div class="slide-dot"></div>
+            <div class="slide-dot"></div>
+            <div class="slide-dot active"></div>
+        </div>
     </div>
-  </div>
+    <a class="next-top-videos" target="_blank" href="{{ video.url }}">
+        <div class="hover-cover">
+            <div class="cover-title">{{ video.title }}</div>
+            <div class="cover-uploader">Uper: {{ video.uploader.nickname }}</div>
+            <div class="cover-hits">Views: {{ video.hits }}</div>
+        </div>
+        <img src="{{ video.thumbnail_url }}">
+    </a>
+    <a class="next-top-videos" target="_blank" href="{{ video.url }}">
+        <div class="hover-cover">
+            <div class="cover-title">{{ video.title }}</div>
+            <div class="cover-uploader">Uper: {{ video.uploader.nickname }}</div>
+            <div class="cover-hits">Views: {{ video.hits }}</div>
+        </div>
+        <img src="{{ video.thumbnail_url }}">
+    </a>
+    <a class="next-top-videos" target="_blank" href="{{ video.url }}">
+        <div class="hover-cover">
+            <div class="cover-title">{{ video.title }}</div>
+            <div class="cover-uploader">Uper: {{ video.uploader.nickname }}</div>
+            <div class="cover-hits">Views: {{ video.hits }}</div>
+        </div>
+        <img src="{{ video.thumbnail_url }}">
+    </a>
+    <a class="next-top-videos" target="_blank" href="{{ video.url }}">
+        <div class="hover-cover">
+            <div class="cover-title">{{ video.title }}</div>
+            <div class="cover-uploader">Uper: {{ video.uploader.nickname }}</div>
+            <div class="cover-hits">Views: {{ video.hits }}</div>
+        </div>
+        <img src="{{ video.thumbnail_url }}">
+    </a>
+    <a class="next-top-videos" target="_blank" href="{{ video.url }}">
+        <div class="hover-cover">
+            <div class="cover-title">{{ video.title }}</div>
+            <div class="cover-uploader">Uper: {{ video.uploader.nickname }}</div>
+            <div class="cover-hits">Views: {{ video.hits }}</div>
+        </div>
+        <img src="{{ video.thumbnail_url }}">
+    </a>
+    <a class="next-top-videos" target="_blank" href="{{ video.url }}">
+        <div class="hover-cover">
+            <div class="cover-title">{{ video.title }}</div>
+            <div class="cover-uploader">Uper: {{ video.uploader.nickname }}</div>
+            <div class="cover-hits">Views: {{ video.hits }}</div>
+        </div>
+        <img src="{{ video.thumbnail_url }}">
+    </a>
+</div>
+{% for cat in subcategory[category_name] %}
+<div class="sub-category-block container category" data-category="{{ cat }}">
+    <div class="sub-category-dynamic-list">
+        <div class="category-title-line container">
+            <div class="category-title-head"></div>
+            <a class="category-title" href="{{ uri_for(category_name + '-' + cat) }}">{{ cat }}</a>
+            <a class="more-video" href="{{ uri_for(category_name + '-' + cat) }}">More</a>
+        </div>
+        <div class="video-preview-container container">
+        </div>
+        <div class="video-pagination-line">
+        </div>
+    </div>
+    <div class="sub-category-side-line">
+        <div class="side-title-line">
+            <div class="side-title">Ranking</div>
+        </div>
+        <div class="ranking-video-container">
+        </div>
+        <div class="video-pagination-line">
+        </div>
+    </div>
+</div>
 {% endfor %}
 {% endblock %}

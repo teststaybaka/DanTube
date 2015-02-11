@@ -161,11 +161,11 @@ div.message-date {
 }
 
 div.message-date.send {
-    text-align: left;
+    text-align: right;
 }
 
 div.message-date.receive {
-    text-align: right;
+    text-align: left;
 }
 
 a.user-img {
@@ -190,19 +190,19 @@ div.message-content {
 }
 
 div.message-content.send {
-    border: 1px solid rgb(97,194,84);
-}
-
-div.message-content.receive {
     border: 1px solid rgb(85,178,255);
 }
 
+div.message-content.receive {
+    border: 1px solid rgb(97,194,84);
+}
+
 a.user-img.send, div.message-content.send {
-    float: left;
+    float: right;
 }
 
 a.user-img.receive, div.message-content.receive {
-    float: right;
+    float: left;
 }
 
 div.message-content:before, div.message-content:after {
@@ -213,31 +213,31 @@ div.message-content:before, div.message-content:after {
 }
 
 div.message-content.send:after {
-    border-right-color: rgb(255, 255, 255);
-    border-width: 10px;
-    top: 10px;
-    right: 100%;
-}
-
-div.message-content.send:before {
-    border-right-color: rgb(97,194,84);
-    border-width: 11px;
-    top: 9px;
-    right: 100%;
-}
-
-div.message-content.receive:after {
     border-left-color: rgb(255, 255, 255);
     border-width: 10px;
     top: 10px;
     left: 100%;
 }
 
-div.message-content.receive:before {
-    border-left-color: rgb(85,178,255);
+div.message-content.send:before {
+    border-left-color: rgb(97,194,84);
     border-width: 11px;
     top: 9px;
     left: 100%;
+}
+
+div.message-content.receive:after {
+    border-right-color: rgb(255, 255, 255);
+    border-width: 10px;
+    top: 10px;
+    right: 100%;
+}
+
+div.message-content.receive:before {
+    border-right-color: rgb(85,178,255);
+    border-width: 11px;
+    top: 9px;
+    right: 100%;
 }
 
 form.message-block {

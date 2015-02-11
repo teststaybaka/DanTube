@@ -66,7 +66,7 @@ div.slide-bottom {
     box-sizing: border-box;
 }
 
-a.slide-title {
+div.slide-title {
     float: left;
     margin: 0 5px;
     overflow: hidden;
@@ -74,11 +74,18 @@ a.slide-title {
     white-space: nowrap;
     width: 350px;
     font-size: 14px;
-    color: white;
     display: none;
 }
 
-a.slide-title.active {
+a.slide-title {
+    color: white;
+}
+
+a.slide-title:hover {
+    text-shadow: 0 0 2px white;
+}
+
+div.slide-title.active {
     display: inline-block;
     -webkit-animation: opacity_show .4s; /* Chrome, Safari, Opera */
     animation: opacity_show .4s;
@@ -204,28 +211,29 @@ div.category-title-head {
     margin-right: 10px;
 }
 
-div.category-title {
+a.category-title {
     float: left;
     font-size: 18px;
     font-weight: bold;
     color: rgb(100,100,100);
-    cursor: pointer;
+    display: inline-block;
 }
 
-div.more-video {
+a.more-video {
     float: right;
     margin-right: 20px;
     font-size: 16px;
     margin-top: 3px;
     cursor: pointer;
     color: rgb(100,100,100);
+    display: inline-block;
 }
 
-div.more-video.fresh {
+a.more-video.fresh {
     margin-right: 40px;
 }
 
-div.category-title:hover, div.more-video:hover {
+a.category-title:hover, a.more-video:hover {
     color: rgb(0,140,255);
 }
 
@@ -254,7 +262,7 @@ a.video-preview {
     display: block;
 }
 
-a.video-preview.random {
+a.video-preview.random, a.video-preview.wide {
     margin-right: 28px;
 }
 

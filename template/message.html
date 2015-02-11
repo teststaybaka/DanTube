@@ -18,37 +18,37 @@
   <div class="inline-button sub" onclick="location.href='{{ uri_for('compose') }}'">Compose</div>
 </div>
 {% if threads_fetched == 0 %}
-    <div class="message-entry none">
-        No messages found.
-    </div>
+  <div class="message-entry none">
+      No messages found.
+  </div>
 {% else %}
-    {% for thread in threads %}
-    <div class="message-entry {% if thread.unread %}unread{% endif %}">
-        <a href="{{ thread.partner.space_url }}" target="_blank" class="user-img">
-            <img src="{{ thread.partner.avatar_url }}">
-        </a>
-        <div class="message-info">
-            <div class="info-line">
-                <label>About</label>
-                <a class="message-title" href="{{ thread.url }}">{{ thread.subject }}</a>
-            </div>
-            <div class="info-line">
-                <label>With</label>
-                <a href="{{ thread.partner.space_url }}" target="_blank" class="user-name">{{ thread.partner.nickname }}</a>
-            </div>
-            <div class="info-line">
-                <label>{{ thread.updated }} {% if thread.is_last_sender %}You{% else %}{{ thread.partner.nickname }}{% endif %} said: {{ thread.last_message }}</label>
-            </div>
-            <div class="message-delete"></div>
-        </div>
-    </div>
-    {% endfor %}
+  {% for thread in threads %}
+  <div class="message-entry {% if thread.unread %}unread{% endif %}">
+      <a href="{{ thread.partner.space_url }}" target="_blank" class="user-img">
+          <img src="{{ thread.partner.avatar_url }}">
+      </a>
+      <div class="message-info">
+          <div class="info-line">
+              <label>About</label>
+              <a class="message-title" href="{{ thread.url }}">{{ thread.subject }}</a>
+          </div>
+          <div class="info-line">
+              <label>With</label>
+              <a href="{{ thread.partner.space_url }}" target="_blank" class="user-name">{{ thread.partner.nickname }}</a>
+          </div>
+          <div class="info-line">
+              <label>{{ thread.updated }} {% if thread.is_last_sender %}You{% else %}{{ thread.partner.nickname }}{% endif %} said: {{ thread.last_message }}</label>
+          </div>
+          <div class="message-delete"></div>
+      </div>
+  </div>
+  {% endfor %}
+  <div class="pagination-line">
+    <div class="page-change"><</div>
+    <div class="page-num">1</div>
+    <div class="page-num active">2</div>
+    <div class="page-num">3</div>
+    <div class="page-change">></div>
+  </div>
 {% endif %}
-<div class="pagination-line">
-  <div class="page-change"><</div>
-  <div class="page-num">1</div>
-  <div class="page-num active">2</div>
-  <div class="page-num">3</div>
-  <div class="page-change">></div>
-</div>
 {% endblock %}

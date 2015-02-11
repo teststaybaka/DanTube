@@ -15,10 +15,10 @@
 {% block detail %}
 <div id="sub-title-line" class="container">
     <div id="sub-title">26 UPers</div>
-    <div id="sub-search-block">
+    <form id="sub-search-block">
         <input id="sub-search-input" type="text" placeholder="Search UPers">
-        <div id="sub-search-button"></div>
-    </div>
+        <input type="submit" id="sub-search-button" value="">
+    </form>
 </div>
 <div id="subs-user-list" class="container">
   {% if subscribed_users|count == 0 %}

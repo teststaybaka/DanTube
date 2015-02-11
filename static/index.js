@@ -3,8 +3,8 @@ function slideChange() {
     var index = (preIndex + 1)%5;
     $('div.slide-dot.active').removeClass('active');
     $('div.slide-dot:eq('+(4-index)+')').addClass('active');
-    $('a.slide-title.active').removeClass('active');
-    $('a.slide-title:eq('+(4-index)+')').addClass('active');
+    $('div.slide-title.active').removeClass('active');
+    $('div.slide-title:eq('+(4-index)+')').addClass('active');
     document.getElementById('slide-container').style.left = -index*document.getElementById('ranking-slides').offsetWidth+'px';
     window.slideTimeout = setTimeout(slideChange, 5000);
 }
@@ -104,8 +104,8 @@ $(document).ready(function() {
         $('div.slide-dot.active').removeClass('active');
         $(evt.target).addClass('active');
         var index = 4 - $('div.slide-dot').index(evt.target);
-        $('a.slide-title.active').removeClass('active');
-        $('a.slide-title:eq('+(4-index)+')').addClass('active');
+        $('div.slide-title.active').removeClass('active');
+        $('div.slide-title:eq('+(4-index)+')').addClass('active');
         document.getElementById('slide-container').style.left = -index*document.getElementById('ranking-slides').offsetWidth+'px';
     });
 });
