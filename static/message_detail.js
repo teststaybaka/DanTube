@@ -7,12 +7,12 @@ $(document).ready(function() {
             data: $('#reply-form').serialize(),
             success: function(result) {
                 if(result.error)
-                    console.log(result.message);
+                    pop_ajax_message(result.message, 'error');
                 else {
                     $('#send-message').val('');
                     $('#message-contain-body').append(
                         '<div class="message-detail-entry container">' + 
-                            '<div class="message-date receive">' + result.sent_time + '</div>' +
+                            '<div class="message-date receive">' + result.when + '</div>' +
                             '<a class="user-img receive"><img src="' + user_avatar_url + '"></a>' + 
                             '<div class="message-content receive">' + result.content + '</div>' +
                         '</div>');

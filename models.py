@@ -17,25 +17,25 @@ def time_to_seconds(time):
   return int((time - datetime(2000, 1, 1)).total_seconds())
 
 class History(ndb.Model):
-  video = ndb.KeyProperty(kind='Video', required=True)
-  last_viewed_time = ndb.DateTimeProperty(auto_now_add=True)
+  video = ndb.KeyProperty(kind='Video', required=True, indexed=False)
+  last_viewed_time = ndb.DateTimeProperty(auto_now_add=True, indexed=False)
   # last_viewed_timestamp
 
 class Favorite(ndb.Model):
-  video = ndb.KeyProperty(kind='Video', required=True)
-  favored_time = ndb.DateTimeProperty(auto_now=True)
+  video = ndb.KeyProperty(kind='Video', required=True, indexed=False)
+  favored_time = ndb.DateTimeProperty(auto_now=True, indexed=False)
 
 class User(webapp2_extras.appengine.auth.models.User):
-  verified = ndb.BooleanProperty(required=True)
+  verified = ndb.BooleanProperty(required=True, indexed=False)
   nickname = ndb.StringProperty(required=True)
-  intro = ndb.StringProperty(default="")
+  intro = ndb.StringProperty(default="", indexed=False)
   avatar = ndb.BlobKeyProperty()
-  default_avatar = ndb.IntegerProperty(default=1, choices=[1,2,3,4,5,6])
+  default_avatar = ndb.IntegerProperty(default=1, choices=[1,2,3,4,5,6], indexed=False)
   # favorites = ndb.KeyProperty(kind='Video', repeated=True)
   favorites = ndb.StructuredProperty(Favorite, repeated=True)
-  favorites_limit = ndb.IntegerProperty(default=100, required=True)
+  favorites_limit = ndb.IntegerProperty(default=100, required=True, indexed=False)
   # history = ndb.KeyProperty(kind='Video', repeated=True)
-  history = ndb.StructuredProperty(History, repeated=True)
+  history = ndb.StructuredProperty(History, repeated=True, indexed=False)
   subscriptions = ndb.KeyProperty(kind='User', repeated=True)
   bullets = ndb.IntegerProperty(required=True, default=0)
   videos_submited = ndb.IntegerProperty(required=True, default=0)
@@ -43,6 +43,8 @@ class User(webapp2_extras.appengine.auth.models.User):
   videos_favored = ndb.IntegerProperty(required=True, default=0)
   space_visited = ndb.IntegerProperty(required=True, default=0)
   subscribers_counter = ndb.IntegerProperty(required=True, default=0)
+  threads_counter = ndb.IntegerProperty(required=True, default=0, indexed=False)
+  new_messages = ndb.IntegerProperty(required=True, default=0, indexed=False)
 
   def set_password(self, raw_password):
     self.password = security.generate_password_hash(raw_password, length=12)
@@ -173,17 +175,16 @@ class Notification(ndb.Model):
 class Message(ndb.Model):
   sender = ndb.KeyProperty(kind='User', required=True, indexed=False)
   content = ndb.TextProperty(required=True, indexed=False)
-  sent_time = ndb.DateTimeProperty(required=True, indexed=False)
+  when = ndb.DateTimeProperty(required=True, indexed=False)
 
 class MessageThread(ndb.Model):
-  # messages = ndb.LocalStructuredProperty(Message, repeated=True)
-  messages = ndb.KeyProperty(kind='Message', repeated=True, indexed=False)
+  messages = ndb.LocalStructuredProperty(Message, repeated=True)
+  # messages = ndb.KeyProperty(kind='Message', repeated=True, indexed=False)
   subject = ndb.StringProperty(required=True, indexed=False)
-  sender = ndb.KeyProperty(kind='User', required=True)
-  receiver = ndb.KeyProperty(kind='User', required=True)
+  sender = ndb.KeyProperty(kind='User')
+  receiver = ndb.KeyProperty(kind='User')
+  delete_user = ndb.KeyProperty(kind='User', default=None, indexed=False)
   updated = ndb.DateTimeProperty(required=True)
-  last_message_sender = ndb.KeyProperty(kind='User', required=True, indexed=False)
-  last_message = ndb.StringProperty(required=True, indexed=False)
   new_messages = ndb.IntegerProperty(required=True, default=1, indexed=False)
 
 
@@ -291,8 +292,8 @@ class Video(ndb.Model):
   created = ndb.DateTimeProperty(auto_now_add=True)
   last_liked = ndb.DateTimeProperty(default=datetime.fromtimestamp(0))
   uploader = ndb.KeyProperty(kind='User', required=True)
-  description = ndb.StringProperty(required=True)
-  title = ndb.StringProperty(required=True)
+  description = ndb.StringProperty(required=True, indexed=False)
+  title = ndb.StringProperty(required=True, indexed=False)
   category = ndb.StringProperty(required=True, choices=Video_Category)
   subcategory = ndb.StringProperty(required=True)
   video_type = ndb.StringProperty(required=True, choices=['self-made', 'republish'], default='republish')

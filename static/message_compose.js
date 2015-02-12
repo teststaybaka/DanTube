@@ -6,9 +6,13 @@ $(document).ready(function() {
             data: $('#new-topic-form').serialize(),
             success: function(result) {
                 if(result.error)
-                    console.log(result.message);
-                else
-                    alert('success!')
+                    pop_ajax_message(result.message, 'error');
+                else {
+                    pop_ajax_message('Message sent!', 'success');
+                    setTimeout(function(){
+                        window.location.replace('/account/messages'); 
+                    }, 3000);
+                }
             },
             error: function (xhr, ajaxOptions, thrownError) {
                 console.log(xhr.status);
