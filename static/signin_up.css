@@ -167,16 +167,24 @@ div.input-error:after {
 /* Chrome, Safari, Opera */
 @-webkit-keyframes input_error_show {
     from {transform: translateX(40px);
+          -ms-transform: translateX(40px);
+          -webkit-transform: translateX(40px);
           opacity: 0;}
     to {transform: translateX(0);
+        -ms-transform: translateX(0);
+        -webkit-transform: translateX(0);
         opacity: 1;}
 }
 
 /* Standard syntax */
 @keyframes input_error_show {
     from {transform: translateX(40px);
+          -ms-transform: translateX(40px);
+          -webkit-transform: translateX(40px);
           opacity: 0;}
     to {transform: translateX(0);
+        -ms-transform: translateX(0);
+        -webkit-transform: translateX(0);
         opacity: 1;}
 }
 

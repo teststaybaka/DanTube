@@ -32,9 +32,10 @@
                 <div id="user-box">
                     <div id="user-box-nickname">{{ user.nickname }}</div>
                     <div id="user-message-container" class="container">
-                        <a href="{{ uri_for('mentioned') }}" id="user-at">@Me</a>
-                        <a href="{{ uri_for('notifications') }}" id="user-notification">Notifications</a>
-                        <a href="{{ uri_for('message') }}" id="user-message">Messages</a>
+                        <a href="{{ uri_for('mentioned') }}" id="user-at">@Me<div id="user-at-new-num">99+</div></a>
+
+                        <a href="{{ uri_for('notifications') }}" id="user-notification">Notifications<div id="user-notification-new-num">6</div></a>
+                        <a href="{{ uri_for('message') }}" id="user-message">Messages<div id="user-message-new-num">23</div></a>
                     </div>
                     <div id="user-box-bottom-line" class="container">
                         <a href="{{ uri_for('account') }}" id="user-config">

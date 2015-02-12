@@ -461,28 +461,36 @@ class EditVideo(BaseHandler):
 
 class DeleteVideo(BaseHandler):
     @login_required
-    def post(self, video_id):
+    def post(self):
         self.response.headers['Content-Type'] = 'application/json'
-        video = models.Video.get_by_id('dt'+video_id)
-
-        if video is None:
+        ids = self.request.POST.getall('ids[]')
+        if len(ids) == 0:
             self.response.out.write(json.dumps({
                 'error': True,
-                'message': 'Video not found.'
-            }))
-            return
-            
-        if video.uploader.id() != self.user.key.id():
-            self.response.out.write(json.dumps({
-                'error': True,
-                'message': 'You are not allowed to delete this video.'
+                'message': 'No video selected.'
             }))
             return
 
-        video.deleted = True
-        video.put()
+        deleted_ids = []
+        for i in range(0, len(ids)):
+            video_id = ids[i]
+            video = models.Video.get_by_id('dt'+video_id)
+            if video is None or video.uploader.id() != self.user.key.id():
+                continue
+
+            deleted_ids.append(video_id)
+            video.deleted = True
+            video.put()
+
+        if len(deleted_ids) == 0:
+            self.response.out.write(json.dumps({
+                'error': True,
+                'message': 'No video deleted.'
+            }))
+            return
 
         self.response.out.write(json.dumps({
-            'error': False
+            'error': False,
+            'message': deleted_ids,
         }))
 

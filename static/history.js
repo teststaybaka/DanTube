@@ -4,7 +4,7 @@ $(document).ready(function() {
     var total_videos, total_pages;
     var page_size = 10;
     var video_container = $('.history-video-container');
-    var pagination_container = $('.video-pagination-line');
+    var pagination_container = $('.pagination-line');
 
     get_video_list('/history', {'ajax': true}, function(err, result) {
         if(err) console.log(err);
@@ -34,7 +34,7 @@ $(document).ready(function() {
         pagination_container.append(pagination);
     }
 
-    $('.video-pagination-line').on('click', 'div', function() {
+    $('.pagination-line').on('click', 'div', function() {
         var next_page = $(this).attr('data-page');
         update_page(next_page);
     });

@@ -71,7 +71,7 @@ div.left, a.left {
 }
 
 div.navi, a.navi {
-	margin-top: 15px;
+	margin-top: 20px;
 	padding: 3px 5px;
 	margin-left: 10px;
 	cursor: pointer;
@@ -98,6 +98,10 @@ div.link:hover, a.link:hover {
   box-sizing: border-box;
 }
 
+#signup-nav-button {
+    margin-top: 15px;
+}
+
 #signin-nav-button:hover {
   box-shadow: 0 0 2px rgb(81,203,238);
   border: 1px solid rgb(81,203,238);
@@ -121,7 +125,7 @@ div.link:hover, a.link:hover {
 
 #portrait {
 	margin-left: 15px;
-	margin-top: 0;
+	margin-top: 5px;
 	margin-right: 15px;
 	height: 35px;
 }
@@ -149,7 +153,7 @@ div.link:hover, a.link:hover {
 	border: 1px solid rgb(200,200,200);
 	z-index: 1;
 	width: 220px;
-	top: 100%;
+	top: 109%;
 	box-shadow: 0px 4px 4px rgb(200,200,200);
 }
 
@@ -225,6 +229,18 @@ div.link:hover, a.link:hover {
 	margin-bottom: 10px;
 	cursor: pointer;
     display: inline-block;
+    position: relative;
+}
+
+#user-at-new-num, #user-notification-new-num, #user-message-new-num {
+    position: absolute;
+    top: -3px;
+    left: 98%;
+    font-size: 12px;
+    padding: 0 3px;
+    border-radius: 3px;
+    background-color: rgba(246,96,255,0.8);
+    color: white;
 }
 
 #user-at {
@@ -289,14 +305,22 @@ div.link:hover, a.link:hover {
 
 /* Chrome, Safari, Opera */
 @-webkit-keyframes config_hover {
-    from {transform: rotate(0);}
-    to {transform: rotate(360deg);}
+    from {-ms-transform: rotate(0); /* IE 9 */
+        -webkit-transform: rotate(0); /* Chrome, Safari, Opera */
+        transform: rotate(0); }
+    to {-ms-transform: rotate(360deg); /* IE 9 */
+        -webkit-transform: rotate(360deg); /* Chrome, Safari, Opera */
+        transform: rotate(360deg); }
 }
 
 /* Standard syntax */
 @keyframes config_hover {
-    from {transform: rotate(0);}
-    to {transform: rotate(360deg);}
+    from {-ms-transform: rotate(0); /* IE 9 */
+        -webkit-transform: rotate(0); /* Chrome, Safari, Opera */
+        transform: rotate(0); }
+    to {-ms-transform: rotate(360deg); /* IE 9 */
+        -webkit-transform: rotate(360deg); /* Chrome, Safari, Opera */
+        transform: rotate(360deg); }
 }
 
 #user-config:hover #user-config-icon {
@@ -422,18 +446,28 @@ a.sub-category {
 
 /* Chrome, Safari, Opera */
 @-webkit-keyframes subcat_right_move {
-    from {transform: translateX(0);}
-    to {transform: translateX(8px);}
+    from {-ms-transform: translateX(0); /* IE 9 */
+        -webkit-transform: translateX(0); /* Chrome, Safari, Opera */
+        transform: translateX(0);}
+    to {-ms-transform: translateX(8px); /* IE 9 */
+        -webkit-transform: translateX(8px); /* Chrome, Safari, Opera */
+        transform: translateX(8px);}
 }
 
 /* Standard syntax */
 @keyframes subcat_right_move {
-    from {transform: translateX(0);}
-    to {transform: translateX(8px);}
+    from {-ms-transform: translateX(0); /* IE 9 */
+        -webkit-transform: translateX(0); /* Chrome, Safari, Opera */
+        transform: translateX(0);}
+    to {-ms-transform: translateX(8px); /* IE 9 */
+        -webkit-transform: translateX(8px); /* Chrome, Safari, Opera */
+        transform: translateX(8px);}
 }
 
 a.sub-category:hover {
-	transform: translateX(8px);
+	-ms-transform: translateX(8px); /* IE 9 */
+    -webkit-transform: translateX(8px); /* Chrome, Safari, Opera */
+    transform: translateX(8px);
 	-webkit-animation: subcat_right_move .2s; /* Chrome, Safari, Opera */
     animation: subcat_right_move .2s;
 }
@@ -455,31 +489,10 @@ span.category-arrow {
     margin-left: auto;
     margin-right: auto;
 }
-/*
-.video-pagination-line div {
-    display: inline-block;
-    font-size: 14px;
-    text-align: center;
-    border-radius: 4px;
-    height: 16px;
-    min-width: 16px;
-    cursor: pointer;
-}
 
-.video-pagination-line {
-  text-align: center;
-  margin-bottom: 10px;
+div.pagination-line {
+    font-size: 0;
 }
-
-.video-pagination-line div:hover {
-  color: rgb(0,140,255);
-}
-
-.video-pagination-line .active {
-  font-weight: bold;
-  background-color: rgb(85,178,255);
-  color: white;
-}*/
 
 a.page-change, div.page-change {
     display: inline-block;
@@ -513,10 +526,9 @@ a.page-num.hide, a.page-change.hide, div.page-num.hide, div.page-change.hide {
     display: none;
 }
 
-#view-method div.selected {
+#view-method div.selected, #action-select div.selected {
     padding: 4px 22px 4px 8px;
-    margin-right: 25px;
-    border: 1px solid rgb(220,220,220);
+    border: 1px solid rgb(200,200,200);
     background-color: white;
     position: relative;
     cursor: default;
@@ -528,7 +540,7 @@ a.page-num.hide, a.page-change.hide, div.page-num.hide, div.page-change.hide {
     user-select: none;
 }
 
-#view-method div.selected:after {
+#view-method div.selected:after, #action-select div.selected:after {
     width: 0;
     height: 0;
     position: absolute;
@@ -539,26 +551,32 @@ a.page-num.hide, a.page-change.hide, div.page-num.hide, div.page-change.hide {
     margin-top: 6px;
 }
 
-#view-method div.option {
+#view-method div.option, #action-select div.option {
     position: absolute;
-    border: 1px solid rgb(220,220,220);
+    border: 1px solid rgb(200,200,200);
     margin-top: -1px;
     display: none;
     cursor: pointer;
-    width: 100px;
+    min-width: 100px;
     z-index: 1;
     background-color: white;
+    box-shadow: 0px 4px 4px rgb(230,230,230);
 }
 
-#view-method:hover div.option {
+#view-method:hover div.option, #action-select:hover div.option {
     display: block;
 }
 
-#view-method div.option-entry {
-    padding: 8px 8px;
+#view-method div.option-entry, #action-select div.option-entry {
+    padding: 6px 15px 6px 8px;
 }
 
-#view-method div.option-entry:hover {
+#action-select div.option-entry.delete {
+    font-weight: bold;
+    border-top: 1px solid rgb(200,200,200);
+}
+
+#view-method div.option-entry:hover, #action-select div.option-entry:hover {
     background-color: rgb(245,245,245);
 }
 
@@ -584,6 +602,23 @@ div.inline-button:hover {
 div.inline-button:active {
     background-color: rgb(81,203,238);
     color: rgb(255,255,255);
+}
+
+div.inline-button.special {
+    color: white;
+    background-color: rgb(0,140,255);
+    border-color: rgb(0,140,255);
+}
+
+div.inline-button.special:hover {
+    background-color: rgb(81,203,238);
+    border-color: rgb(81,203,238);
+}
+
+div.inline-button.special:active {
+    background-color: rgb(0,50,200);
+    border-color: rgb(0,50,200);
+    box-shadow: 0;
 }
 
 div.search-scope, a.search-scope {

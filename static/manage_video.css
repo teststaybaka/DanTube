@@ -33,7 +33,7 @@ img.video-img {
     box-shadow: 0 0 1px rgb(100,100,100);
 }
 
-div.video-info {
+div.video-info, div.list-info {
     display: inline-block;
     padding-left: 20px;
     vertical-align: top;
@@ -90,6 +90,16 @@ a.video-title:hover {
     color: rgb(0,140,255);
 }
 
+div.list-video-num {
+    margin-top: 20px;
+}
+
+div.list-video-num label {
+    font-size: 14px;
+    color: rgb(100,100,100);
+    vertical-align: middle;
+}
+
 div.video-statistic {
     margin-top: 2px;
     font-size: 14px;
@@ -123,6 +133,11 @@ div.video-edit {
     font-size: 14px;
 }
 
+div.list-edit {
+    margin-top: 20px;
+    font-size: 14px;
+}
+
 a.edit-entry {
     display: inline-block;
     margin-right: 10px;
@@ -138,21 +153,29 @@ a.edit-entry:active {
     color: rgb(0,50,200);
 }
 
-div.video-delete {
+div.video-select-checkbox {
     width: 16px;
     height: 16px;
     position: absolute;
     right: 0px;
     top: 50%;
-    background-image: url("/static/img/delete.png");
-    background-repeat: no-repeat;
     cursor: pointer;
-    background-size: contain;
     display: none;
+    border: 1px solid rgb(200,200,200);
+    background-color: white;
+    color: white;
+    margin: 0;
+    border-radius: 3px;
+    background-repeat: no-repeat;
 }
 
-div.video-entry:hover div.video-delete {
+div.video-entry:hover div.video-select-checkbox {
     display: inline-block;
+}
+
+div.video-select-checkbox.checked {
+    display: inline-block;
+    background-image: url("/static/img/checked.png");
 }
 
 div.video-delete:hover {
@@ -163,13 +186,17 @@ div.video-delete:active {
     background-image: url("/static/img/delete-active.png");
 }
 
-div.video-pagination-line {
+div.pagination-line {
     text-align: center;
     border-top: 1px solid rgb(220,220,220);
 }
 
-div.page-change, div.page-num {
+div.page-num {
     margin: 15px 0;
+}
+
+div.page-change {
+    margin: 15px 5px;
 }
 
 div.favored-time {
@@ -188,8 +215,8 @@ div.delete-confirm-container {
     background-color: rgba(0,0,0,0.3);
     top: 0;
     left: 0;
-    z-index: 1;
     display: none;
+    z-index: 1;
 }
 
 div.delete-confirm-container.show {
@@ -233,13 +260,14 @@ div.delete-confirm-message {
     font-weight: bold;
 }
 
-div.delete-video-name {
+div.delete-target-name {
     font-size: 16px;
-    margin: 15px;
+    margin: 8px 15px;
     word-wrap: break-word;
 }
 
 div.delete-buttons-line {
+    margin-top: 15px;
     border-top: 1px solid rgb(200,200,200);
 }
 
@@ -252,18 +280,83 @@ div.delete-button {
     text-align: center;
 }
 
-div.delete-button.delete {
-    background-color: rgb(0,140,255);
-    border-color: rgb(0,140,255);
-    color: white;
+#playlist-create-button-box {
+    position: relative;
+    display: inline-block;
+    float: right;
+    font-size: 14px;
+    margin-right: 20px;
 }
 
-div.delete-button.delete:hover {
-    background-color: rgb(81,203,238);
-    border-color: rgb(81,203,238);
+#playlist-create-button {
+    padding: 4px 8px;
+    border: 1px solid rgb(200,200,200);
+    text-align: center;
+    cursor: pointer;
 }
 
-div.delete-button.delete:active {
-    background-color: rgb(0,50,200);
-    border-color: rgb(0,50,200);
+#playlist-create-button:hover {
+    background-color: rgb(245,245,245);
+}
+
+#playlist-create-dropdown {
+    position: absolute;
+    border: 1px solid rgb(200,200,200);
+    left: 0;
+    top: 148%;
+    background-color: white;
+    text-align: left;
+    color: black;
+    z-index: 1;
+    box-shadow: 0px 4px 4px rgb(230,230,230);
+    display: none;
+}
+
+#playlist-create-dropdown.show {
+    display: block;
+}
+
+#playlist-create-dropdown:before, #playlist-create-dropdown:after {
+    bottom: 100%;
+    left: 18%;
+    border: solid transparent;
+    content: " ";
+    height: 0;
+    width: 0;
+    position: absolute;
+    pointer-events: none;
+}
+
+#playlist-create-dropdown:after {
+    border-bottom-color: rgb(255, 255, 255);
+    border-width: 10px;
+    margin-left: -10px;
+}
+
+#playlist-create-dropdown:before {
+    border-bottom-color: rgb(200, 200, 200);
+    border-width: 11px;
+    margin-left: -11px;
+}
+
+#playlist-title-label {
+    padding: 15px 20px 10px 10px;
+}
+
+#playlist-title-input {
+    margin: 0 10px;
+    padding: 3px;
+    width: 200px;
+    outline: none;
+    font-size: 14px;
+}
+
+#playlist-create-buttons-line {
+    padding: 15px 10px 10px 10px;
+}
+
+div.create-button {
+    margin: 0;
+    float: right;
+    margin-left: 10px;
 }

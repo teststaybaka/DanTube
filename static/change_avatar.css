@@ -119,16 +119,24 @@ form.change  div.input-error:after {
 
 @-webkit-keyframes bottom_to_top_show {
     from {opacity: 0;
+          -ms-transform: translateY(15px); /* IE 9 */
+          -webkit-transform: translateY(15px); /* Chrome, Safari, Opera */
           transform: translateY(15px);}
     to {opacity: 1;
+        -ms-transform: translateY(0); /* IE 9 */
+        -webkit-transform: translateY(0); /* Chrome, Safari, Opera */
         transform: translateY(0);}
 }
 
 /* Standard syntax */
 @keyframes bottom_to_top_show {
     from {opacity: 0;
+          -ms-transform: translateY(15px); /* IE 9 */
+          -webkit-transform: translateY(15px); /* Chrome, Safari, Opera */
           transform: translateY(15px);}
     to {opacity: 1;
+        -ms-transform: translateY(0); /* IE 9 */
+        -webkit-transform: translateY(0); /* Chrome, Safari, Opera */
         transform: translateY(0);}
 }
 

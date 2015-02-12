@@ -10,7 +10,12 @@ class Account(BaseHandler):
         user = self.user
         context = {}
         context['user'] = user.get_statistic_info()
-        self.render('account', context);
+        self.render('account', context)
+
+class ManagePlaylist(BaseHandler):
+    @login_required
+    def get(self):
+        self.render('manage_playlist')
 
 class ManageVideo(BaseHandler):
     @login_required
@@ -152,12 +157,24 @@ class Favorites(BaseHandler):
 
 class Unfavor(BaseHandler):
     @login_required
-    def post(self, video_id):
+    def post(self):
         self.response.headers['Content-Type'] = 'application/json'
         user = self.user
-        video = models.Video.get_by_id('dt'+video_id)
-        
-        if video is not None:
+        ids = self.request.POST.getall('ids[]')
+        if len(ids) == 0:
+            self.response.out.write(json.dumps({
+                'error': True,
+                'message': 'No video selected.'
+            }))
+            return
+
+        deleted_ids = []
+        for i in range(0, len(ids)):
+            video_id = ids[i]
+            video = models.Video.get_by_id('dt'+video_id)
+            if video is None:
+                continue
+
             video_keys = [f.video for f in user.favorites]
             try:
                 idx = video_keys.index(video.key)
@@ -172,19 +189,24 @@ class Unfavor(BaseHandler):
                 uploader.videos_favored -= 1
                 uploader.put()
 
-                self.response.out.write(json.dumps({
-                    'error': False
-                }))
+                deleted_ids.append(video_id)
             except ValueError:
-                self.response.out.write(json.dumps({
-                    'error': True,
-                    'message': 'video not favored',
-                }))
-        else:
+                continue
+                # self.response.out.write(json.dumps({
+                #     'error': True,
+                #     'message': 'video not favored',
+                # }))
+        if len(deleted_ids) == 0:
             self.response.out.write(json.dumps({
                 'error': True,
-                'message': 'video not found',
+                'message': 'No video removed.'
             }))
+            return
+
+        self.response.out.write(json.dumps({
+            'error': False, 
+            'message': deleted_ids
+        }))
 
 class Subscribed(BaseHandler):
     @login_required

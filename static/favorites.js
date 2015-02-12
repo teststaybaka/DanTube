@@ -1,17 +1,21 @@
 $(document).ready(function() {
     $('div.delete-button').click(function(evt) {
         if ($(evt.target).hasClass('delete')) {
-            var id = $(evt.target).attr('data-id');
+            var ids= $(evt.target).attr('data-id').split(';');
             $(evt.target).text('Removing');
             $.ajax({
                 type: "POST",
-                url: '/account/favorites/remove/dt'+id,
+                url: '/account/favorites/remove',
                 async: false,
+                data: {ids: ids},
                 success: function(result) {
                     console.log(result);
                     if (!result.error) {
-                        pop_ajax_message('Video removed!', 'success');
-                        $('div.video-entry.dt'+id).remove();
+                        pop_ajax_message('Videos removed!', 'success');
+                        ids = result.message;
+                        for (var i = 0; i < ids.length; i++) {
+                            $('div.video-entry.dt'+ids[i]).remove();
+                        }
                     } else {
                         pop_ajax_message(result.message, 'error');
                     }
@@ -25,12 +29,29 @@ $(document).ready(function() {
         $('div.delete-confirm-container').removeClass('show');
     });
 
-    $('div.favortite-video-container').on('click', 'div.video-delete', function(evt) {
-        $('div.delete-confirm-container').addClass('show');
-        var id = $(evt.target).attr('data-id');
-        var title = $(evt.target).attr('data-title');
-        $('div.delete-button.delete').attr('data-id', id);
-        $('div.delete-video-name').text(title);
+    $('#action-select div.option-entry.delete').click(function() {
+        var checked_boxes = $('div.video-select-checkbox.checked');
+        if (checked_boxes.length != 0) {
+            $('div.delete-confirm-container').addClass('show');
+            $('div.delete-target-name').remove();
+            var ids = $(checked_boxes[0]).attr('data-id');
+            var title = $(checked_boxes[0]).attr('data-title');
+            $('div.delete-buttons-line').before('<div class="delete-target-name">'+title+'</div>');
+            for (var i = 1; i < checked_boxes.length; i++) {
+                ids += ';'+ $(checked_boxes[i]).attr('data-id');
+                title = $(checked_boxes[i]).attr('data-title');
+                $('div.delete-buttons-line').before('<div class="delete-target-name">'+title+'</div>');
+            }
+            $('div.delete-button.delete').attr('data-id', ids);
+        }
+    });
+
+    $('div.favortite-video-container').on('click', 'div.video-select-checkbox', function(evt) {
+        if ($(evt.target).hasClass('checked')) {
+            $(evt.target).removeClass('checked');
+        } else {
+            $(evt.target).addClass('checked');
+        }
     });
 
     var videos = [];
@@ -38,7 +59,7 @@ $(document).ready(function() {
     var total_videos, total_pages;
     var page_size = 10;
     var video_container = $('div.favortite-video-container');
-    var pagination_container = $('div.video-pagination-line');
+    var pagination_container = $('div.pagination-line');
 
     video_container.empty();
     video_container.append('<div class="video-entry loading"></div>');
@@ -71,7 +92,7 @@ $(document).ready(function() {
         pagination_container.append(pagination);
     }
 
-    $('div.video-pagination-line').on('click', 'div', function() {
+    $('div.pagination-line').on('click', 'div', function() {
         var next_page = $(this).attr('data-page');
         update_page(next_page);
     });
@@ -101,7 +122,7 @@ render_video_div = function(video) {
                       '<label>Favored at: </label>' +
                         video.favored_time +
                     '</div>' +
-                    '<div class="video-delete" data-id="' + video.id_num + '" data-title="' + video.title + '"></div>' +
+                    '<div class="video-select-checkbox" data-id="' + video.id_num + '" data-title="' + video.title + '"></div>' +
                 '</div>' +
               '</div>';
     return div;

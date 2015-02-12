@@ -71,7 +71,7 @@ function pop_ajax_message(content, type) {
 
     var lasts = $('div.ajax-message:last-child');
     lasts.height(lasts[0].scrollHeight);
-    console.log(lasts[0].scrollHeight);
+    // console.log(lasts[0].scrollHeight);
 
     setTimeout(function() {
         lasts.height(0);

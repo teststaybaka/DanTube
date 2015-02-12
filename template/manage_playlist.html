@@ -1,0 +1,82 @@
+{% extends "template/account.html" %}
+{% block head %}
+{{ super() }}
+<link rel="stylesheet" href="/static/manage_video.css" type="text/css" />
+<script src="/static/manage_playlist.js" language="JavaScript" type="text/javascript"></script>
+{% endblock %}
+
+{% block topTitle %}
+<a class="top-title active" href="{{ uri_for('manage_playlist') }}">
+    <div class="top-title-dot"></div>
+    Playlists
+</a>
+{% endblock %}
+
+{% block detail %}
+<div id="sub-title-line" class="container">
+    <div id="sub-title">23 Playlists</div>
+    <form id="sub-search-block">
+        <input id="sub-search-input" type="text" placeholder="Search Playlists">
+        <input type="submit" id="sub-search-button" value="">
+    </form>
+    <div id="action-select">
+        <div class="selected">Actions</div>
+        <div class="option">
+            <div class="option-entry delete">Delete</div>
+        </div>
+    </div>
+    <div id="playlist-create-button-box">
+        <div id="playlist-create-button">New Playlist</div>
+        <div id="playlist-create-dropdown">
+            <div id="playlist-title-label">Playlist title:</div>
+            <input id="playlist-title-input" type="text" placeholder="No longer than 100 characters."/>
+            <div id="playlist-create-buttons-line" class="container">
+                <div class="inline-button special create-button create">Create</div>
+                <div class="inline-button create-button">Cancel</div>
+            </div>
+        </div>
+        <div id=""></div>
+    </div>
+</div>
+<div class="manage-playlists-container">
+    <div class="video-entry">
+        <a class="video-img" href="" target="_blank">
+            <img class="video-img" src="">
+        </a>
+        <div class="list-info">
+            <div class="video-title">
+                <a href="" class="video-title" target="_blank">dgsg</a>
+            </div>
+            <div class="list-video-num">
+                <label>Contains </label>
+                20
+                <label> Videos</label>
+            </div>
+            <div class="list-edit">
+                <a class="edit-entry">[Edit Playlist]</a>
+            </div>
+            <div class="video-select-checkbox" data-id="' + video.id_num + '" data-title="' + video.title + '"></div>
+        </div>
+    </div>
+</div>
+<div class="pagination-line">
+    <div class="page-num active">1</div>
+</div>
+{% endblock %}
+
+{% block popup_window %}
+<div class="delete-confirm-container">
+    <div class="delete-confirm-center">
+        <div class="delete-padding"></div>
+        <div class="delete-confirm-box">
+            <div class="ajax-icon warning"></div>
+            <div class="delete-confirm-message">Are you sure to delete the playlist(s):</div>
+            <div class="delete-target-name">sdf</div>
+            <div class="delete-buttons-line container">
+                <div class="inline-button special delete-button delete">Delete</div>
+                <div class="inline-button delete-button">Cancel</div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

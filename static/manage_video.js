@@ -1,17 +1,23 @@
 $(document).ready(function() {
     $('div.delete-button').click(function(evt) {
         if ($(evt.target).hasClass('delete')) {
-            var id = $(evt.target).attr('data-id');
+            var ids= $(evt.target).attr('data-id').split(';');
             $(evt.target).text('Deleting');
+            // console.log(jQuery.param( {ids: [1,2]} ));
+            // console.log(jQuery.param( {ids: ['ids', 'df']}, true ));
             $.ajax({
                 type: "POST",
-                url: '/account/video/delete/dt'+id,
+                url: '/account/video/delete',
                 async: false,
+                data: {ids: ids},
                 success: function(result) {
                     console.log(result);
                     if (!result.error) {
-                        pop_ajax_message('Video deleted!', 'success');
-                        $('div.video-entry.dt'+id).remove();
+                        pop_ajax_message('Videos deleted!', 'success');
+                        ids = result.message;
+                        for (var i = 0; i < ids.length; i++) {
+                            $('div.video-entry.dt'+ids[i]).remove();
+                        }
                     } else {
                         pop_ajax_message(result.message, 'error');
                     }
@@ -25,14 +31,31 @@ $(document).ready(function() {
         $('div.delete-confirm-container').removeClass('show');
     });
 
-    $('div.submitted-video-container').on('click', 'div.video-delete', function(evt) {
-        $('div.delete-confirm-container').addClass('show');
-        var id = $(evt.target).attr('data-id');
-        var title = $(evt.target).attr('data-title');
-        $('div.delete-button.delete').attr('data-id', id);
-        $('div.delete-video-name').text(title);
+    $('#action-select div.option-entry.delete').click(function() {
+        var checked_boxes = $('div.video-select-checkbox.checked');
+        if (checked_boxes.length != 0) {
+            $('div.delete-confirm-container').addClass('show');
+            $('div.delete-target-name').remove();
+            var ids = $(checked_boxes[0]).attr('data-id');
+            var title = $(checked_boxes[0]).attr('data-title');
+            $('div.delete-buttons-line').before('<div class="delete-target-name">'+title+'</div>');
+            for (var i = 1; i < checked_boxes.length; i++) {
+                ids += ';'+ $(checked_boxes[i]).attr('data-id');
+                title = $(checked_boxes[i]).attr('data-title');
+                $('div.delete-buttons-line').before('<div class="delete-target-name">'+title+'</div>');
+            }
+            $('div.delete-button.delete').attr('data-id', ids);
+        }
     });
 
+    $('div.submitted-video-container').on('click', 'div.video-select-checkbox', function(evt) {
+        if ($(evt.target).hasClass('checked')) {
+            $(evt.target).removeClass('checked');
+        } else {
+            $(evt.target).addClass('checked');
+        }
+    });
+    
     var cur_page = 1, cur_order = 'created';
     var cur_keywords = "";
     var order_labels = {
@@ -41,7 +64,7 @@ $(document).ready(function() {
         'favors': 'Moss favored'
     };
     var video_container = $('div.submitted-video-container');
-    var pagination_container = $('div.video-pagination-line');
+    var pagination_container = $('div.pagination-line');
 
     var query = {
         'page': cur_page,
@@ -49,7 +72,7 @@ $(document).ready(function() {
     };
     update_page(query);
     
-    $('div.video-pagination-line').on('click', 'div', function(evt) {
+    $('div.pagination-line').on('click', 'div', function(evt) {
         var next_page = $(this).attr('data-page');
         if(next_page != cur_page) {
             if(cur_keywords) {
@@ -67,7 +90,7 @@ $(document).ready(function() {
         }
     });
 
-    $('div.option-entry').click(function() {
+    $('#view-method div.option-entry').click(function() {
         var next_order = $(this).attr('data-order');
         if(next_order != cur_order) {
             var query = {
@@ -135,7 +158,7 @@ $(document).ready(function() {
     }
 });
 
-render_video_div = function(video) {
+function render_video_div(video) {
     var div = '<div class="video-entry dt' + video.id_num + '">' + 
                 '<a class="video-img" href="' + video.url + '" target="_blank">' + 
                     '<img class="video-img" src="' + video.thumbnail_url + '">' +
@@ -165,7 +188,7 @@ render_video_div = function(video) {
                         '<a href="/account/video/edit/dt' + video.id_num + '" class="edit-entry">[Edit Video]</a>' +
                         '<a class="edit-entry">[Manage Danmaku]</a>' +
                     '</div>' +
-                    '<div class="video-delete" data-id="' + video.id_num + '" data-title="' + video.title + '"></div>' +
+                    '<div class="video-select-checkbox" data-id="' + video.id_num + '" data-title="' + video.title + '"></div>' +
                 '</div>' +
             '</div>';
     return div;

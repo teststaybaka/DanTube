@@ -31,7 +31,7 @@ $(document).ready(function() {
     // var category = urlparts[1];
     // var subcategory = urlparts[2];
     // var video_container = $('.video-preview-container');
-    // var pagination_container = $('.video-pagination-line');
+    // var pagination_container = $('.pagination-line');
 
     // var hash = window.location.hash;
     // if(hash) {
@@ -70,7 +70,7 @@ $(document).ready(function() {
     // };
     // update_page(query);
     
-    // $('.video-pagination-line').on('click', 'div', function() {
+    // $('.pagination-line').on('click', 'div', function() {
     //     var next_page = $(this).attr('data-page');
     //     query = {
     //         'category': category,

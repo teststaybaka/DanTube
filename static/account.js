@@ -57,43 +57,32 @@ $(document).ready(function() {
     var urls = window.location.href.split('/');
     if (urls[urls.length-1] === "account") {
         $("#sub-overview").addClass("active");
-        // $("#account-top-title").text("Overview");
     } else if (urls[urls.length-1] === "password") {
         $("#sub-change-password").addClass("active");
-        // $("#account-top-title").text("Change Password");
     } else if (urls[urls.length-1] === "avatar") {
         $("#sub-change-avatar").addClass("active");
-        // $("#account-top-title").text("Change Avatar");
     } else if (urls[urls.length-1] === "nickname") {
         $("#sub-change-nickname").addClass("active");
-        // $("#account-top-title").text("Change Nickname");
     } else if (urls[urls.length-1] === "video" || urls[urls.length-3] === 'video') {
         $("#sub-videos").addClass("active");
-        // $("#account-top-title").text("Your videos");
+    } else if (urls[urls.length-1] === "playlists") {
+        $("#sub-playlists").addClass("active");
     } else if (urls[urls.length-1] === "submit") {
         $("#sub-submit").addClass("active");
-        // $("#account-top-title").text("Video Submission");
     } else if (urls[urls.length-1] === "subscriptions") {
         $("#subscriptions").addClass("active");
-        // $("#account-top-title").text("Subscriptions");
     } else if (urls[urls.length-1] === "subscribed") {
         $("#subscribed-users").addClass("active");
-        // $("#account-top-title").text("UPers Subscribed");
     } else if (urls[urls.length-1] === "favorites") {
         $("#favorites").addClass("active");
-        // $("#account-top-title").text("Favorite Videos");
     } else if (urls[urls.length-1] === "messages") {
         $("#messages").addClass("active");
-        // $("#account-top-title").text("Messages");
     } else if (urls[urls.length-1] === "compose") {
         $("#messages").addClass("active");
-        // $("#account-top-title").text("Compose New Message");
     } else if (urls[urls.length-1] === "mentioned") {
         $("#mentioned").addClass("active");
-        // $("#account-top-title").text("Who Mentioned Me");
     } else if (urls[urls.length-1] === "notifications") {
         $("#notifications").addClass("active");
-        // $("#account-top-title").text("System Notifications");
     }
 
     $('#resend-email-link').click(function(evt) {

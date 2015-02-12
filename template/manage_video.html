@@ -29,10 +29,17 @@
         </div>
     </div>
     <label id="view-method-label">Sorted by:</label>
+    <div id="action-select">
+        <div class="selected">Actions</div>
+        <div class="option">
+            <div class="option-entry">Add to</div>
+            <div class="option-entry delete">Delete</div>
+        </div>
+    </div>
 </div>
-<div class="submitted-video-container container">
+<div class="submitted-video-container">
 </div>
-<div class="video-pagination-line">
+<div class="pagination-line">
 </div>
 {% endblock %}
 
@@ -42,10 +49,10 @@
         <div class="delete-padding"></div>
         <div class="delete-confirm-box">
             <div class="ajax-icon warning"></div>
-            <div class="delete-confirm-message">Are you sure to delete the video:</div>
-            <div class="delete-video-name">sdf</div>
+            <div class="delete-confirm-message">Are you sure to delete the video(s):</div>
+            <div class="delete-target-name">sdf</div>
             <div class="delete-buttons-line container">
-                <div class="inline-button delete-button delete">Delete</div>
+                <div class="inline-button special delete-button delete">Delete</div>
                 <div class="inline-button delete-button">Cancel</div>
             </div>
         </div>
