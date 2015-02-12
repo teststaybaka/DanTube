@@ -4,41 +4,71 @@ class Message(BaseHandler):
     @login_required
     def get(self):
         user = self.user
-        threads = models.MessageThread.query(ndb.OR(models.MessageThread.sender==user.key,
-            models.MessageThread.receiver==user.key)).order(-models.MessageThread.updated).fetch()
-        context = {
-            'threads': [],
-            'threads_fetched': len(threads)
-        }
+        xrequest = self.request.headers.get('X-Requested-With')
+        if xrequest and xrequest == 'XMLHttpRequest':
 
-        total_new_messages = 0
-        for thread in threads:
-            thread_dict = {}
-            thread_dict['subject'] = thread.subject
-            thread_dict['last_message'] = thread.last_message
-            thread_dict['updated'] = thread.updated.strftime("%Y-%m-%d %H:%M")
-            thread_dict['url'] = '/account/messages/' + str(thread.key.id())
-            if user.key.id() == thread.sender.id():
-                partner = models.User.get_by_id(thread.receiver.id())
-            else:
-                partner = models.User.get_by_id(thread.sender.id())
-            thread_dict['partner'] = partner.get_public_info()
-            if user.key.id() == thread.last_message_sender.id():
-                thread_dict['is_last_sender'] = True
-                thread_dict['unread'] = False
-            else:
-                thread_dict['is_last_sender'] = False
-                if thread.new_messages > 0:
-                    thread_dict['new_messages'] = thread.new_messages
-                    total_new_messages += thread.new_messages
-                    thread_dict['unread'] = True
+            try:
+                page_size = int(self.request.get('page_size'))
+            except ValueError:
+                page_size = models.PAGE_SIZE
+
+            try:
+                page = int(self.request.get('page') )
+            except ValueError:
+                page = 1
+
+            total_pages = -(-user.threads_counter // page_size)
+            if page > total_pages:
+                page = total_pages
+            offset = (page - 1) * page_size
+
+            self.response.headers['Content-Type'] = 'application/json'
+            threads = models.MessageThread.query(ndb.OR(models.MessageThread.sender==user.key,
+            models.MessageThread.receiver==user.key)).order(-models.MessageThread.updated).fetch(offset=offset, limit=page_size)
+            result = {
+                'threads': [],
+                'threads_fetched': len(threads),
+                'total_pages': total_pages,
+                'page': page
+            }
+
+            for thread in threads:
+                thread_dict = {}
+                thread_dict['id'] = thread.key.id()
+                thread_dict['subject'] = thread.subject
+                thread_dict['last_message'] = thread.messages[-1].content
+                thread_dict['updated'] = thread.updated.strftime("%Y-%m-%d %H:%M")
+                thread_dict['url'] = '/account/messages/' + str(thread.key.id())
+                if thread.delete_user:
+                    partner = models.User.get_by_id(thread.delete_user.id()) # the other user deleted the message
                 else:
+                    if user.key.id() == thread.sender.id():
+                        partner = models.User.get_by_id(thread.receiver.id())
+                    else:
+                        partner = models.User.get_by_id(thread.sender.id())
+                thread_dict['partner'] = partner.get_public_info()
+
+                if user.key.id() == thread.messages[-1].sender.id():
+                    thread_dict['is_last_sender'] = True
                     thread_dict['unread'] = False
+                else:
+                    thread_dict['is_last_sender'] = False
+                    if thread.new_messages > 0:
+                        thread_dict['new_messages'] = thread.new_messages
+                        thread_dict['unread'] = True
+                    else:
+                        thread_dict['unread'] = False
 
-            context['threads'].append(thread_dict)
+                result['threads'].append(thread_dict)
 
-        context['total_new_messages'] = total_new_messages
-        self.render('message', context)
+            self.response.out.write(json.dumps(result))
+        else:
+            context = {}
+            context['user'] = {
+                'threads_counter': user.threads_counter,
+                'new_messages': user.new_messages
+            }
+            self.render('message', context)
 
 class Compose(BaseHandler):
     @login_required
@@ -91,80 +121,122 @@ class Compose(BaseHandler):
         message = models.Message(
             sender = user.key,
             content = content,
-            sent_time = datetime.now()
+            when = datetime.now()
         )
-        message_key = message.put()
+
         message_thread = models.MessageThread(
-            messages = [message_key],
+            messages = [message],
             subject = subject,
             sender = user.key,
             receiver = receiver.key,
-            last_message_sender = user.key,
-            last_message = content,
-            updated = message.sent_time
+            updated = message.when
         )
-        message_thread.put()
-
+        user.threads_counter += 1
+        receiver.threads_counter += 1
+        receiver.new_messages += 1
+        ndb.put_multi([message_thread, user, receiver])
+        
         self.response.out.write(json.dumps({
             'error': False,
             'message':'message sent!'
         }))
 
-class Detail(BaseHandler):
-    @login_required
-    def get(self, thread_id):
+def message_author_required(handler):
+  
+    def check_message_author(self, thread_id):
+        xrequest = self.request.headers.get('X-Requested-With')
         user = self.user
         thread = models.MessageThread.get_by_id(int(thread_id))
         if not thread:
-            self.render('notice', {'type':'error', 'notice':'page not found'});
+            error_msg = 'message does not exist.'
+            if xrequest and xrequest == 'XMLHttpRequest':
+                self.response.headers['Content-Type'] = 'application/json'
+                self.response.out.write(json.dumps({
+                    'error': True,
+                    'message': error_msg
+                }))
+            else:
+                self.render('notice', {'type':'error', 'notice':error_msg});
             return
-        if (thread.sender.id() != user.key.id()) and (thread.receiver.id() != user.key.id()):
-            self.render('notice', {'type':'error', 'notice':'page not found'})
+
+        if thread.sender:
+            if thread.sender.id() != user.key.id():
+                is_user_sender = False
+            else:
+                is_user_sender = True
+        else:
+            is_user_sender = False
+
+        if not(is_user_sender):
+            if thread.receiver:
+                if thread.receiver.id() != user.key.id():
+                    is_user_receiver = False
+                else:
+                    is_user_receiver = True
+            else:
+                is_user_receiver = False
+
+        if not(is_user_sender or is_user_receiver):
+            error_msg = 'message does not exist.'
+            if xrequest and xrequest == 'XMLHttpRequest':
+                self.response.headers['Content-Type'] = 'application/json'
+                self.response.out.write(json.dumps({
+                    'error': True,
+                    'message': error_msg
+                }))
+            else:
+                self.render('notice', {'type':'error', 'notice':error_msg});
             return
+
+        else:
+            self.is_user_sender = is_user_sender
+            self.thread = thread
+            return handler(self, thread_id)
+ 
+    return check_message_author
+
+class Detail(BaseHandler):
+    @message_author_required
+    @login_required
+    def get(self, thread_id):
+        user = self.user
+        thread = self.thread
 
         context = {}
         context['subject'] = thread.subject
-        if user.key.id() == thread.sender.id():
-            partner = models.User.get_by_id(thread.receiver.id())
+        if thread.delete_user:
+            partner = models.User.get_by_id(thread.delete_user.id()) # the other user deleted the message
         else:
-            partner = models.User.get_by_id(thread.sender.id())
+            if self.is_user_sender:
+                partner = models.User.get_by_id(thread.receiver.id())
+            else:
+                partner = models.User.get_by_id(thread.sender.id())
         context['partner'] = partner.get_public_info()
 
         context['messages'] = []
-        messages = ndb.get_multi(thread.messages)
-        for msg in messages:
+        for msg in thread.messages:
             message = {}
             if msg.sender.id() == user.key.id():
                 message['is_sender_user'] = True
             else:
                 message['is_sender_user'] = False
             message['content'] = msg.content
-            message['sent_time'] = msg.sent_time.strftime("%Y-%m-%d %H:%M")
+            message['when'] = msg.when.strftime("%Y-%m-%d %H:%M")
             context['messages'].append(message)
 
         self.render('message_detail', context)
 
-        if thread.last_message_sender.id() != user.key.id():
+        if thread.messages[-1].sender.id() != user.key.id():
+            user.new_messages -= thread.new_messages
             thread.new_messages = 0
-            thread.put()
+            ndb.put_multi([thread, user])
 
+    @message_author_required
     @login_required
     def post(self, thread_id):
         self.response.headers['Content-Type'] = 'application/json'
         user = self.user
-        thread = models.MessageThread.get_by_id(int(thread_id))
-        if not thread:
-            self.response.out.write(json.dumps({
-                'error': True,
-                'message': 'message does not exist.'
-            }))
-            return
-        if (thread.sender.id() != user.key.id()) and (thread.receiver.id() != user.key.id()):
-            self.response.out.write(json.dumps({
-                'error': True,
-                'message': 'you are not allowed to view.'
-            }))
-            return
+        thread = self.thread
 
         content = self.request.get('content')
         if not content.strip():
@@ -174,24 +246,70 @@ class Detail(BaseHandler):
             }))
             return
 
+        if thread.messages[-1].sender.id() != user.key.id():
+            user.new_messages -= thread.new_messages
+            thread.new_messages = 0
+            user.put()
+
         message = models.Message(
             sender = user.key,
             content = content,
-            sent_time = datetime.now()
+            when = datetime.now(),
         )
-        message_key = message.put()
-        thread.messages.append(message_key)
-        thread.last_message_sender = user.key
-        thread.last_message = content
+        thread.messages.append(message)
         thread.new_messages += 1
-        thread.updated = message.sent_time
-        thread.put()
+        thread.updated = message.when
+        if thread.delete_user:
+            partner = thread.delete_user.get()
+            partner.threads_counter += 1
+            partner.new_messages += thread.new_messages
+            if thread.sender:
+                thread.receiver = thread.delete_user
+            else:
+                thread.sender = thread.delete_user
+            thread.delete_user = None
+        else:
+            if self.is_user_sender:
+                partner = thread.receiver.get()
+            else:
+                partner = thread.sender.get()
+            partner.new_messages += 1
+        ndb.put_multi([thread, partner])
 
         self.response.out.write(json.dumps({
             'error': False,
             'message': 'message sent.',
-            'sent_time': message.sent_time.strftime("%Y-%m-%d %H:%M"),
+            'when': message.when.strftime("%Y-%m-%d %H:%M"),
             'content': message.content
+        }))
+
+class DeleteMessage(BaseHandler):
+    @message_author_required
+    @login_required
+    def post(self, thread_id):
+        self.response.headers['Content-Type'] = 'application/json'
+        user = self.user
+        thread = self.thread
+
+        user.threads_counter -= 1
+        if thread.messages[-1].sender.id() != user.key.id(): # user has unread new messages when deleting
+            user.new_messages -= thread.new_messages
+        user.put()
+
+        if thread.delete_user: # The other user has already deleted the message
+            thread.key.delete()
+        else:
+            thread.delete_user = user.key
+            if self.is_user_sender:
+                thread.sender = None
+            else:
+                thread.receiver = None
+            thread.put()
+
+
+        self.response.out.write(json.dumps({
+            'error': False,
+            'message': 'success'
         }))
 
 class Mentioned(BaseHandler):

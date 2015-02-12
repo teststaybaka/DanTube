@@ -16,11 +16,11 @@
         {% for message in messages %}
         <div class="message-detail-entry container">
             {% if message.is_sender_user %}
-                <div class="message-date receive">{{ message.sent_time }}</div>
+                <div class="message-date receive">{{ message.when }}</div>
                 <a class="user-img receive"><img src="{{ user.avatar_url }}"></a>
                 <div class="message-content receive">{{ message.content }}</div>
             {% else %}
-                <div class="message-date send">{{ message.sent_time }}</div>
+                <div class="message-date send">{{ message.when }}</div>
                 <a class="user-img send" href="{{ partner.space_url }}" target="_blank"><img src="{{ partner.avatar_url }}"></a>
                 <div class="message-content send">{{ message.content }}</div>
             {% endif %}
