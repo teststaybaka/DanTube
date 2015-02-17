@@ -9,18 +9,20 @@
 <div id="account-left-bar">
     <div id="profile-area">
         <div id="profile-img-space">
-            <img id="profile-img" src="{{ user.avatar_url }}" onclick="location.href='{{ uri_for('account') }}'">
+            <a href="{{ uri_for('account') }}">
+                <img id="profile-img" src="{{ user.avatar_url }}">
+            </a>
         </div>
         <div id="profile-nickname">{{ user.nickname }}</div>
-        <div id="profile-signature">{% if user.info %}{{ user.intro }}{% endif %}</div>
+        <div id="profile-signature">{% if user.intro %}{{ user.intro }}{% else %}Say something to others.{% endif %}</div>
     </div>
     <div id="bottom-area">
         <a class="main-option" href="{{ uri_for('account') }}">Account</a>
         <div class="sub-menu">
             <a class="sub-option" id="sub-overview" href="{{ uri_for('account') }}">Overview</a>
+            <a class="sub-option" id="sub-change-info" href="{{ uri_for('change_info') }}">Change Info</a>
             <a class="sub-option" id="sub-change-password" href="{{ uri_for('change_password') }}">Change Password</a>
             <a class="sub-option" id="sub-change-avatar" href="{{ uri_for('change_avatar') }}">Change Avatar</a>
-            <a class="sub-option" id="sub-change-nickname" href="{{ uri_for('change_nickname') }}">Change Nickname</a>
         </div>
         <a class="main-option" href="{{ uri_for('manage_video') }}">Video Manager</a>
         <div class="sub-menu">
@@ -59,8 +61,9 @@
     <div>
         <div class="container">
             <div id="account-profile-img">
+                <a id="account-change-avatar" href="{{ uri_for('change_avatar') }}">Change Avatar</a>
                 <img id="account-profile-img-content" src="{{ user.avatar_url }}">
-                <a id="account-change-avatar" href="{{ uri_for('change_avatar') }}">Change avatar</a>
+                <!-- <a id="account-change-avatar" href="{{ uri_for('change_avatar') }}">Change avatar</a> -->
             </div>
             <div id="account-detail">
                 <div class="detail-entry" id="account-email">{{ user.email }}
@@ -73,10 +76,14 @@
                 <div class="detail-entry" id="account-joint-time">Joined at {{ user.created }}.</div>
                 <div class="detail-entry" id="account-space-divide">--------------</div>
                 <div class="detail-entry" id="account-nickname">{{ user.nickname }}
-                    <a id="account-change-nickname" href="{{ uri_for('change_nickname') }}">Change nickname</a>
+                    <!-- <a id="account-change-nickname" href="{{ uri_for('change_info') }}">Change nickname</a> -->
                 </div>
-                <div class="detail-entry">Password
+                <!-- <div class="detail-entry">Password
                     <a id="account-change-password" href="{{ uri_for('change_password') }}">Change password</a>
+                </div> -->
+                <div class="detail-entry" id="account-intro">
+                    {% if user.intro %}{{ user.intro }}{% else %}Say something to others.{% endif %}
+                    <!-- <a id="profile-intro-change" href="{{ uri_for('change_info') }}">Change Intro</a> -->
                 </div>
             </div>
             <div id="mine-statistic">

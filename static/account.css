@@ -41,7 +41,7 @@
 
 #profile-signature {
     padding: 10px 25px;
-    color: rgb(100,100,100);
+    color: rgb(150,150,150);
     word-wrap: break-word;
 }
 
@@ -132,6 +132,7 @@ a.top-title.active div.top-title-dot {
 
 #sub-title-line {
     padding: 13px 25px;
+    position: relative;
 }
 
 #sub-title {
@@ -145,7 +146,7 @@ a.top-title.active div.top-title-dot {
     color: rgb(100,100,100);
 }
 
-div.inline-button.sub {
+div.inline-button.sub, input.inline-button.sub {
     float: right;
     margin-top: 0;
     margin-right: 10px;
@@ -157,11 +158,11 @@ div.inline-button.sub {
     position: relative;
 }
 
-div.inline-button.sub:hover {
+div.inline-button.sub:hover, input.inline-button.sub:hover {
     color: rgb(0,140,255);
 }
 
-div.inline-button.sub:active {
+div.inline-button.sub:active, input.inline-button.sub:active {
     color: white;
 }
 
@@ -191,7 +192,6 @@ div.inline-button.sub:active {
 }
 
 #sub-search-input {
-    outline: none;
     padding: 3px;
     display: inline-block;
     border: 0;
@@ -212,7 +212,6 @@ div.inline-button.sub:active {
     background-position: 4px 4px;
     background-size: 16px 16px;
     cursor: pointer;
-    outline: none;
 }
 
 #sub-search-button:hover{
@@ -239,21 +238,23 @@ div.inline-button.sub:active {
 }
 
 #account-change-avatar {
-    margin-left: auto;
-    margin-right: auto;
-    color: rgb(0,140,255);
-    display: block;
-    cursor: pointer;
-    margin-top: 5px;
-    font-size: 15px;
+    display: none;
+    position: absolute;
+    width: 128px;
+    height: 128px;
+    border-radius: 128px;
+    background-color: rgba(0,0,0,0.5);
+    font-size: 14px;
+    color: white;
+    text-align: center;
+    padding-top: 60px;
+    -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
+    -moz-box-sizing: border-box;    /* Firefox, other Gecko */
+    box-sizing: border-box;
 }
 
-#account-change-avatar:hover {
-    color: rgb(255,177,108);
-}
-
-#account-change-avatar:active {
-    color: rgb(0,50,200);
+#account-profile-img:hover #account-change-avatar {
+    display: inline-block;
 }
 
 #account-detail {
@@ -270,11 +271,8 @@ div.detail-entry {
 }
 
 #account-email {
-    color: rgb(100,100,100);
     font-size: 18px;
     font-weight: bold;
-    word-wrap: break-word;
-    max-width: 100%;
 }
 
 #verified-icon {
@@ -298,18 +296,16 @@ div.detail-entry {
 }
 
 #account-nickname {
-    color: rgb(100,100,100);
     font-size: 18px;
     font-weight: bold;
     padding-top: 0;
-    -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
-    -moz-box-sizing: border-box;    /* Firefox, other Gecko */
-    box-sizing: border-box;
-    word-wrap: break-word;
-    max-width: 100%;
 }
 
-#account-change-password, #account-change-nickname, #resend-email-link {
+#account-intro {
+    color: rgb(150,150,150);
+}
+
+#account-change-password, #account-change-nickname, #resend-email-link, #profile-intro-change {
     display: inline-block;
     color: rgb(0,140,255);
     font-weight: normal;
@@ -318,11 +314,11 @@ div.detail-entry {
     margin-left: 7px;
 }
 
-#account-change-password:hover, #account-change-nickname:hover, #resend-email-link:hover {
+#account-change-password:hover, #account-change-nickname:hover, #resend-email-link:hover, #profile-intro-change:hover {
     color: rgb(255,177,108);
 }
 
-#account-change-password:active, #account-change-nickname:active, #resend-email-link:active {
+#account-change-password:active, #account-change-nickname:active, #resend-email-link:active, #profile-intro-change:active {
     color: rgb(0,50,200);
 }
 
@@ -476,7 +472,7 @@ div.statistic-entry span {
     background-image: url("/static/img/statistic_foot.png");
 }
 
-#change-password-form, #change-nickname-form, #video-submission-form {
+#change-password-form, #change-info-form, #video-submission-form {
     padding: 35px 25px 20px 25px;
 }
 
@@ -521,7 +517,6 @@ form.change label {
 
 form.change input[type=password], form.change input[type=text], form.change select, form.change textarea {
     padding: 5px;
-    outline: none;
     font-size: 14px;
     width: 300px;
     border: 1px solid rgb(200,200,200);
@@ -587,7 +582,6 @@ form.change div.option-button {
     border-radius: 5px;
     cursor: pointer;
     font-family:"Times New Roman",Georgia,Serif;
-    outline: none;
     font-weight: normal;
     color: rgb(100,100,100);
     display: inline-block;
@@ -645,7 +639,6 @@ form.change div.input-error.show {
     font-size: 0;
     filter: alpha(opacity=0);
     z-index: 1;
-    outline: none;
 }
 
 #thumbnail-preview, #thumbnail-previous-preview {
@@ -704,7 +697,6 @@ input.save_change-button {
     background-color: rgb(255,255,255);
     cursor: pointer;
     font-family:"Times New Roman",Georgia,Serif;
-    outline: none;
     color: rgb(100,100,100);
     font-weight: bold;
 }

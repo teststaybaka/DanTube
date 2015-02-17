@@ -53,6 +53,20 @@ function confirm_password_check(confirm_pw) {
     }
 }
 
+function self_intro_check(ori_intro) {
+    var intro = $('#self-intro-change').val().trim();
+    if (intro.length > 500) {
+        $('#self-intro-error').addClass('show');
+        $('#self-intro-error').text('Your intro can\'t exceed 500 characters.');
+        $("#self-intro-change").addClass('error');
+        return false;
+    } else {
+        $('#self-intro-error').removeClass('show');
+        $("#self-intro-change").removeClass('error');
+        return true;
+    }
+}
+
 $(document).ready(function() {
     var urls = window.location.href.split('/');
     if (urls[urls.length-1] === "account") {
@@ -61,8 +75,8 @@ $(document).ready(function() {
         $("#sub-change-password").addClass("active");
     } else if (urls[urls.length-1] === "avatar") {
         $("#sub-change-avatar").addClass("active");
-    } else if (urls[urls.length-1] === "nickname") {
-        $("#sub-change-nickname").addClass("active");
+    } else if (urls[urls.length-1] === "info") {
+        $("#sub-change-info").addClass("active");
     } else if (urls[urls.length-1] === "video" || urls[urls.length-3] === 'video') {
         $("#sub-videos").addClass("active");
     } else if (urls[urls.length-1] === "playlists") {
@@ -139,6 +153,8 @@ $(document).ready(function() {
     });
 
     $('#change-password-form').submit(function(evt) {
+        $('#change-applying').addClass('show');
+
         var button = document.querySelector('input.save_change-button');
         button.disabled = true;
 
@@ -157,6 +173,7 @@ $(document).ready(function() {
             error = true;
         }
         if (error) {
+            $('#change-applying').removeClass('show');
             button.disabled = false;
             return false;
         }
@@ -176,16 +193,23 @@ $(document).ready(function() {
                     pop_ajax_message(result.message, 'error');
                     button.disabled = false;
                 }
+                $('#change-applying').removeClass('show');
             },
             error: function (xhr, ajaxOptions, thrownError) {
                 console.log(xhr.status);
                 console.log(thrownError);
                 button.disabled = false;
+                $('#change-applying').removeClass('show');
             }
         });
         return false;
     });
     
+    var cur_intro = $('#self-intro-change').val();
+    $('#self-intro-change').focusout(function(evt) {
+        self_intro_check(cur_intro);
+    });
+
     var cur_nickname = $('#nickname-change').val();
     $('#nickname-change').focusout(function(evt) {
         var nickname = evt.target.value.trim();
@@ -225,7 +249,9 @@ $(document).ready(function() {
         }
     });
 
-    $('#change-nickname-form').submit(function(evt) {
+    $('#change-info-form').submit(function(evt) {
+        $('#change-applying').addClass('show');
+
         var button = document.querySelector('input.save_change-button');
         button.disabled = true;
 
@@ -243,27 +269,28 @@ $(document).ready(function() {
             $('#change-nickname-error').text('Nickname can\'t exceed 30 characters long.');
             $('#nickname-change').addClass('error');
             error = true;
-        } else if (nickname == cur_nickname) {
+        } else {
             $('#change-nickname-error').removeClass('show');
             $('#nickname-change').removeClass('error');
+        }
 
-            pop_ajax_message('Already applied!', 'info');
+        if (!self_intro_check(cur_intro)) {
             error = true;
         }
 
         if (error) {
+            $('#change-applying').removeClass('show');
             button.disabled = false;
             return false;
         }
 
         $.ajax({
             type: "POST",
-            url: "/account/nickname",
-            data: {nickname: nickname},
+            url: "/account/info",
+            data: $('#change-info-form').serialize(),
             success: function(result) {
                 console.log(result);
                 if(!result.error) {
-                    cur_nickname = nickname;
                     pop_ajax_message('Change applied successfully!', 'success');
                     setTimeout(function(){
                         window.location.replace('/account'); 
@@ -272,11 +299,13 @@ $(document).ready(function() {
                     pop_ajax_message(result.message, 'error');
                     button.disabled = false;
                 }
+                $('#change-applying').removeClass('show');
             },
             error: function (xhr, ajaxOptions, thrownError) {
                 console.log(xhr.status);
                 console.log(thrownError);
                 button.disabled = false;
+                $('#change-applying').removeClass('show');
             }
         });
         return false;

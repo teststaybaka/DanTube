@@ -15,7 +15,8 @@ class Account(BaseHandler):
 class ManagePlaylist(BaseHandler):
     @login_required
     def get(self):
-        self.render('manage_playlist')
+        # self.render('manage_playlist')
+        self.render('edit_playlist')
 
 class ManageVideo(BaseHandler):
     @login_required
@@ -360,35 +361,38 @@ class ChangePassword(BaseHandler):
 
         self.response.out.write(json.dumps({'error':False}))
 
-class ChangeNickname(BaseHandler):
+class ChangeInfo(BaseHandler):
     @login_required
     def get(self):
-        self.render('change_nickname')
+        self.render('change_info')
 
     @login_required
     def post(self):
         self.response.headers['Content-Type'] = 'application/json'
 
         user = self.user
-        nickname = self.request.get('nickname')
-        if nickname != self.user.nickname:
+        nickname = self.request.get('nickname').strip()
+        intro = self.request.get('intro').strip()
+
+        if nickname == user.nickname and intro == user.intro:
+            self.response.out.write(json.dumps({'error':True,'message': 'Already applied.'}))
+            return
+
+        if nickname != user.nickname:
             nickname = self.user_model.validate_nickname(nickname)
             if not nickname:
                 self.response.out.write(json.dumps({'error':True,'message': 'Invalid nickname.'}))
                 return
-        else:
-            self.response.out.write(json.dumps({'error':True,'message': 'Already applied.'}))
+            else:
+                user.nickname = nickname
+
+        if len(intro) > 500:
+            self.response.out.write(json.dumps({'error':True,'message': 'Intro can\'t exceed 500 characters.'}))
             return
+        elif intro != user.intro:
+            user.intro = intro
 
-        try:
-            user.nickname = nickname
-            user.put()
-        except Exception, e:
-            logging.info(e)
-            logging.info(type(e))
-            self.response.out.write(json.dumps({'error':True,'message': e}))
-            return 
-
+        user.put()
         self.response.out.write(json.dumps({'error':False}))
 
 class ChangeAvatar(BaseHandler):

@@ -58,7 +58,6 @@ label.check-label {
 
 input.inputtext, input.inputpassword {
   padding: 5px;
-  outline: none;
   font-size: 14px;
   width: 300px;
   border: 1px solid rgb(200,200,200);
@@ -84,7 +83,6 @@ input.signin_up-button {
   background-color: rgb(255,255,255);
   cursor: pointer;
   font-family: "Times New Roman",Georgia,Serif;
-  outline: none;
   color: rgb(100,100,100);
   font-weight: bold;
   width: 90px;
@@ -114,7 +112,6 @@ a.signin_up-link {
   color: rgb(0,140,255);
   font-size: 15px;
   font-weight: bold;
-  outline: none;
 }
 
 a.signin_up-link:hover {

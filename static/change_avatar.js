@@ -113,7 +113,7 @@ $(document).ready(function() {
                     $('input.save_change-button').after('<div id="save-change-message" class="success show">Change applied successfully!</div>');
                     setTimeout(function(){
                         window.location.replace('/account'); 
-                    }, 1500);
+                    }, 3000);
                 } else {
                     $('input.save_change-button').after('<div id="save-change-message" class="fail show">'+result.message+'</div>');
                     button.disabled = false;

@@ -1,0 +1,68 @@
+{% extends "template/account.html" %}
+{% block head %}
+{{ super() }}
+<link rel="stylesheet" href="/static/manage_video.css" type="text/css" />
+<script src="/static/edit_playlist.js" language="JavaScript" type="text/javascript"></script>
+{% endblock %}
+
+{% block topTitle %}
+<a class="top-title active" href="{{ uri_for('manage_playlist') }}">
+    <div class="top-title-dot"></div>
+    Playlists
+</a>
+{% endblock %}
+
+{% block detail %}
+<div id="sub-title-line" class="container">
+    <form id="playlist-title-change-form">
+        <input id="playlist-title-change" type="text" placeholder="No longer than 100 characters."/>
+        <div id="playlist-change-buttons-line">
+            <div class="inline-button create-button">Cancel</div>
+            <input type="submit" class="inline-button special create-button create" value="Done">
+        </div>
+    </form>
+    <div id="sub-title" class="playlist"><a class="sub-title-link">Mad Father | Part 7 | NOPE NOPE NOPEMad Father | Part 7 | NOPE NOPE NOPEMad Father | Part 7 | NOPE NOPE NOPE</a><div class="edit-title-button"></div></div>
+    <div id="action-select">
+        <div class="selected">Actions</div>
+        <div class="option">
+            <div class="option-entry delete">Delete</div>
+        </div>
+    </div>
+    <div class="sub-title-action-button">Add videos</div>
+</div>
+<div class="edit-playlists-container">
+    <div class="video-entry">
+        <div class="list-No">1</div>
+        <a class="video-img playlist" href="" target="_blank">
+            <img class="list-video-img" src="">
+        </a>
+        <div class="video-info playlist">
+            <div class="video-title">
+                <a class="list-video-title" href="" target="_blank">Mad Father | Part 7 | NOPE NOPE NOPE</a>
+            </div>
+            <div class="list-video-time">2013-01-13 23:10</div>
+            <div class="video-select-checkbox"></div>
+        </div>
+    </div>
+</div>
+<div class="pagination-line">
+    <div class="page-num active">1</div>
+</div>
+{% endblock %}
+
+{% block popup_window %}
+<div class="delete-confirm-container">
+    <div class="delete-confirm-center">
+        <div class="delete-padding"></div>
+        <div class="delete-confirm-box">
+            <div class="ajax-icon warning"></div>
+            <div class="delete-confirm-message">Are you sure to delete the playlist(s):</div>
+            <div class="delete-target-name">sdf</div>
+            <div class="delete-buttons-line container">
+                <div class="inline-button special delete-button delete">Delete</div>
+                <div class="inline-button delete-button">Cancel</div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

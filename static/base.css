@@ -7,6 +7,7 @@ body {
 
 textarea, input {
     font-family:"Times New Roman",Georgia,Serif;
+    outline: none;
 }
 
 img {
@@ -369,7 +370,6 @@ a.category-name {
 }
 
 #search-input {
-	outline: none;
 	margin: 0;
 	border: 0;
 	border-left: 1px solid rgb(200,200,200);
@@ -388,7 +388,6 @@ a.category-name {
 }
 
 #search-button {
-	outline: none;
 	border-width: 0;
 	margin: 0;
 	display: inline-block;
@@ -580,7 +579,7 @@ a.page-num.hide, a.page-change.hide, div.page-num.hide, div.page-change.hide {
     background-color: rgb(245,245,245);
 }
 
-div.inline-button {
+div.inline-button, input.inline-button {
     border: 1px solid rgb(200,200,200);
     padding: 4px 8px;
     font-size: 14px;
@@ -593,29 +592,29 @@ div.inline-button {
     font-weight: bold;
 }
 
-div.inline-button:hover {
+div.inline-button:hover, input.inline-button:hover {
     box-shadow: 0 0 2px rgb(81,203,238);
     border: 1px solid rgb(81,203,238);
     color: rgb(0,140,255);
 }
 
-div.inline-button:active {
+div.inline-button:active, input.inline-button:active {
     background-color: rgb(81,203,238);
     color: rgb(255,255,255);
 }
 
-div.inline-button.special {
+div.inline-button.special, input.inline-button.special {
     color: white;
     background-color: rgb(0,140,255);
     border-color: rgb(0,140,255);
 }
 
-div.inline-button.special:hover {
+div.inline-button.special:hover, input.inline-button.special:hover {
     background-color: rgb(81,203,238);
     border-color: rgb(81,203,238);
 }
 
-div.inline-button.special:active {
+div.inline-button.special:active, input.inline-button.special:active {
     background-color: rgb(0,50,200);
     border-color: rgb(0,50,200);
     box-shadow: 0;

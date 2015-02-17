@@ -26,7 +26,7 @@ routes = [
     webapp2.Route(r'/password/reset/<user_id:\d+>-<pwdreset_token:.+>', login.ForgotPasswordReset, name="forgot_password_reset"),
 
     webapp2.Route(r'/account', account.Account, name="account"),
-    webapp2.Route(r'/account/nickname', account.ChangeNickname, name="change_nickname"),
+    webapp2.Route(r'/account/info', account.ChangeInfo, name="change_info"),
     webapp2.Route(r'/account/avatar', account.ChangeAvatar, name="change_avatar"),
     webapp2.Route(r'/account/avatar/upload/<user_id:\d+>', account.AvatarUpload, name="avatar_upload"),
     webapp2.Route(r'/account/password', account.ChangePassword, name="change_password"),

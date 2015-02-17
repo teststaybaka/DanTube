@@ -416,7 +416,6 @@ div.danmaku:active {
 #danmaku-input {
 	float: left;
 	display: inline-block;
-	outline: none;
 	height: 100%;
 	margin: 0;
 	padding: 0;
@@ -437,7 +436,6 @@ div.danmaku:active {
 	background-color: rgb(126, 206, 244);
 	width: 50px;
 	color: white;
-	outline: none;
 	text-align: center;
 }
 

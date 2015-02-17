@@ -285,7 +285,7 @@ div.delete-button {
     display: inline-block;
     float: right;
     font-size: 14px;
-    margin-right: 20px;
+    /*margin-right: 20px;*/
 }
 
 #playlist-create-button {
@@ -345,18 +345,145 @@ div.delete-button {
 
 #playlist-title-input {
     margin: 0 10px;
-    padding: 3px;
-    width: 200px;
-    outline: none;
+    padding: 4px;
+    width: 225px;
     font-size: 14px;
+    border: 1px solid rgb(200,200,200);
+}
+
+#playlist-title-input:focus {
+    box-shadow: 0 0 2px rgb(81,203,238);
+    border: 1px solid rgb(81,203,238);
 }
 
 #playlist-create-buttons-line {
     padding: 15px 10px 10px 10px;
+    text-align: right;
+    font-size: 0;
 }
 
-div.create-button {
+div.create-button, input.create-button {
     margin: 0;
-    float: right;
     margin-left: 10px;
+}
+
+#sub-title.playlist {
+    max-width: 498px;
+    position: absolute;
+}
+
+#sub-title.playlist.hide {
+    display: none;
+}
+
+#playlist-title-change-form {
+    display: none;
+    float: left;
+}
+
+#playlist-title-change-form.show {
+    display: inline-block;
+}
+
+#playlist-title-change {
+    font-size: 14px;
+    padding: 4px;
+    width: 490px;
+    border: 1px solid rgb(200,200,200);
+}
+
+#playlist-title-change:focus {
+    box-shadow: 0 0 2px rgb(81,203,238);
+    border: 1px solid rgb(81,203,238);
+}
+
+#playlist-change-buttons-line {
+    font-size: 0;
+    text-align: right;
+    padding: 15px 0 0 0;
+}
+
+a.sub-title-link {
+    color: rgb(100,100,100);
+    cursor: pointer;
+    max-width: 474px;
+    display: inline-block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    vertical-align: text-bottom;
+}
+
+a.sub-title-link:hover {
+    color: rgb(0,140,255);
+}
+
+div.edit-title-button {
+    margin-left: 5px;
+    height: 20px;
+    width: 20px;
+    background-repeat: no-repeat;
+    background-image: url("/static/img/edit_medium.png");
+    cursor: pointer;
+    display: inline-block;
+    vertical-align: text-bottom;
+}
+
+div.edit-title-button:hover {
+    background-image: url("/static/img/edit_medium-hover.png");
+}
+
+div.sub-title-action-button {
+    border: 1px solid rgb(200,200,200);
+    font-size: 14px;
+    padding: 4px 8px 4px 8px;
+    float: right;
+    cursor: pointer;
+    margin-left: 20px;
+}
+
+div.sub-title-action-button:hover {
+    background-color: rgb(245,245,245);
+}
+
+#action-select {
+    margin-left: 20px;
+}
+
+div.list-No {
+    display: inline-block;
+    vertical-align: middle;
+    color: rgb(100,100,100);
+    margin-right: 10px;
+}
+
+a.video-img.playlist {
+    vertical-align: middle;
+}
+
+img.list-video-img {
+    width: 96px;
+    height: 54px;
+    box-shadow: 0 0 1px rgb(100,100,100);
+}
+
+div.video-info.playlist {
+    width: 540px;
+}
+
+a.list-video-title {
+    color: rgb(100,100,100);
+    max-width: 100%;
+    word-wrap: break-word;
+    font-size: 16px;
+}
+
+a.list-video-title:hover {
+    color: rgb(0,140,255);
+}
+
+div.list-video-time {
+    font-size: 14px;
+    color: rgb(150,150,150);
+    margin-top: 10px;
 }

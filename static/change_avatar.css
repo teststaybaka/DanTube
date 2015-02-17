@@ -64,7 +64,6 @@
   font-size: 0;
   cursor: pointer;
   z-index: 1;
-  outline: none;
 }
 
 #file-input-line input[type=text] {
@@ -88,8 +87,6 @@ div.select-button {
     background-color: rgb(255,255,255);
     cursor: pointer;
     font-family:"Times New Roman",Georgia,Serif;
-    outline: none;
-    font-weight: normal;
     color: rgb(100,100,100);
     font-weight: bold;
 }

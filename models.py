@@ -28,7 +28,7 @@ class Favorite(ndb.Model):
 class User(webapp2_extras.appengine.auth.models.User):
   verified = ndb.BooleanProperty(required=True, indexed=False)
   nickname = ndb.StringProperty(required=True)
-  intro = ndb.StringProperty(default="", indexed=False)
+  intro = ndb.StringProperty(default="", required=True, indexed=False)
   avatar = ndb.BlobKeyProperty()
   default_avatar = ndb.IntegerProperty(default=1, choices=[1,2,3,4,5,6], indexed=False)
   # favorites = ndb.KeyProperty(kind='Video', repeated=True)
@@ -292,7 +292,7 @@ class Video(ndb.Model):
   created = ndb.DateTimeProperty(auto_now_add=True)
   last_liked = ndb.DateTimeProperty(default=datetime.fromtimestamp(0))
   uploader = ndb.KeyProperty(kind='User', required=True)
-  description = ndb.StringProperty(required=True, indexed=False)
+  description = ndb.TextProperty(required=True, indexed=False)
   title = ndb.StringProperty(required=True, indexed=False)
   category = ndb.StringProperty(required=True, choices=Video_Category)
   subcategory = ndb.StringProperty(required=True)
@@ -450,8 +450,8 @@ class Video(ndb.Model):
       thumbnail_url = 'http://img.youtube.com/vi/' + self.vid + '/mqdefault.jpg'
       thumbnail_url_hq = 'http://img.youtube.com/vi/' + self.vid + '/maxresdefault.jpg'
     else:
-      thumbnail_url = images.get_serving_url(self.thumbnail)
-      thumbnail_url_hq = thumbnail_url
+      thumbnail_url = images.get_serving_url(self.thumbnail, size=240)
+      thumbnail_url_hq = images.get_serving_url(self.thumbnail)
 
     basic_info = {
       'title': self.title,
