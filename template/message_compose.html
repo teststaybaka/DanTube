@@ -20,15 +20,15 @@
 {% block detail %}
 <form id="new-topic-form" class="message-block change" method="POST">
     <div class="input-line">
-        <label>To:</label>
+        <label class="message-label">To:</label>
         <input name="receiver" type="text" placeholder="Who do you want to talk with?">
     </div>
     <div class="input-line">
-        <label>Subject:</label>
+        <label class="message-label">Subject:</label>
         <input name="subject" type="text" placeholder="Make it concise">
     </div>
     <div class="input-line">
-        <label>Content:</label>
+        <label class="message-label">Content:</label>
         <div id="send-message-block">
             <textarea name="content" id="send-message" placeholder="No longer than 1000 characters."></textarea>
             <div class="container">

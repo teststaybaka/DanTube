@@ -5,6 +5,7 @@
     width: 240px;
     float: left;
     box-shadow: -2px 2px 4px rgb(200,200,200);
+    padding-bottom: 10px;
 }
 
 #profile-img-space {
@@ -146,7 +147,7 @@ a.top-title.active div.top-title-dot {
     color: rgb(100,100,100);
 }
 
-div.inline-button.sub, input.inline-button.sub {
+.inline-button.sub {
     float: right;
     margin-top: 0;
     margin-right: 10px;
@@ -158,11 +159,11 @@ div.inline-button.sub, input.inline-button.sub {
     position: relative;
 }
 
-div.inline-button.sub:hover, input.inline-button.sub:hover {
+.inline-button.sub:hover {
     color: rgb(0,140,255);
 }
 
-div.inline-button.sub:active, input.inline-button.sub:active {
+.inline-button.sub:active {
     color: white;
 }
 
@@ -192,7 +193,7 @@ div.inline-button.sub:active, input.inline-button.sub:active {
 }
 
 #sub-search-input {
-    padding: 3px;
+    padding: 4px;
     display: inline-block;
     border: 0;
     font-size: 14px;
@@ -305,7 +306,7 @@ div.detail-entry {
     color: rgb(150,150,150);
 }
 
-#account-change-password, #account-change-nickname, #resend-email-link, #profile-intro-change {
+#resend-email-link {
     display: inline-block;
     color: rgb(0,140,255);
     font-weight: normal;
@@ -314,11 +315,11 @@ div.detail-entry {
     margin-left: 7px;
 }
 
-#account-change-password:hover, #account-change-nickname:hover, #resend-email-link:hover, #profile-intro-change:hover {
+#resend-email-link:hover {
     color: rgb(255,177,108);
 }
 
-#account-change-password:active, #account-change-nickname:active, #resend-email-link:active, #profile-intro-change:active {
+#resend-email-link:active {
     color: rgb(0,50,200);
 }
 
@@ -472,7 +473,7 @@ div.statistic-entry span {
     background-image: url("/static/img/statistic_foot.png");
 }
 
-#change-password-form, #change-info-form, #video-submission-form {
+#change-password-form, #change-info-form, #video-submission-form, #change-space-form {
     padding: 35px 25px 20px 25px;
 }
 
@@ -507,7 +508,7 @@ form.change div.input-line.show {
     display: block;
 }
 
-form.change label {
+form.change label.form-label {
     color: rgb(100,100,100);
     /*font-weight: bold;*/
     width: 135px;
@@ -561,10 +562,13 @@ form.change label.explain {
     display: inline-block;
 }
 
+div.check-label-line {
+    margin-top: 10px;
+}
+
 form.change label.check-label {
     font-size: 14px;
     width: 170px;
-    margin-top: 10px;
     cursor: pointer;
 }
 
@@ -690,6 +694,7 @@ img.thumbnail-preview-img {
 input.save_change-button {
     margin-top: 15px;
     margin-bottom: 15px;
+    margin-right: 10px;
     font-size: 15px;
     padding: 7px 10px;
     border: 1px solid rgb(200,200,200);
@@ -725,7 +730,6 @@ input.save_change-button:disabled {
     background-image: url('/static/img/ajax-loader.gif');
     display: none;
     vertical-align: middle;
-    margin-left: 10px;
 }
 
 #change-applying.show {
@@ -811,4 +815,17 @@ div.delete-button.delete:hover {
 div.delete-button.delete:active {
     background-color: rgb(0,50,200);
     border-color: rgb(0,50,200);
+}
+
+#space-css-file {
+    width: 312px;
+    height: 28px;
+    opacity: 0;
+    position: absolute;
+    cursor: pointer;
+    padding: 0;
+    margin: 0;
+    font-size: 0;
+    filter: alpha(opacity=0);
+    z-index: 1;
 }

@@ -31,6 +31,8 @@ class User(webapp2_extras.appengine.auth.models.User):
   intro = ndb.StringProperty(default="", required=True, indexed=False)
   avatar = ndb.BlobKeyProperty()
   default_avatar = ndb.IntegerProperty(default=1, choices=[1,2,3,4,5,6], indexed=False)
+  spacename = ndb.StringProperty(indexed=False)
+  css_file = ndb.BlobKeyProperty()
   # favorites = ndb.KeyProperty(kind='Video', repeated=True)
   favorites = ndb.StructuredProperty(Favorite, repeated=True)
   favorites_limit = ndb.IntegerProperty(default=100, required=True, indexed=False)
@@ -56,10 +58,17 @@ class User(webapp2_extras.appengine.auth.models.User):
     public_info['nickname'] = self.nickname
     public_info['intro'] = self.intro
     public_info['created'] = self.created.strftime("%Y-%m-%d %H:%M")
+    public_info['spacename'] = self.spacename
+    if self.css_file:
+      public_info['space_css'] = str(self.css_file)
+    else:
+      public_info['space_css'] = ''
+
     if self.avatar:
       avatar_url = images.get_serving_url(self.avatar)
     else:
       avatar_url = '/static/emoticons_img/default_avatar' + str(self.default_avatar) + '.png'
+      
     public_info['avatar_url'] = avatar_url
     public_info['space_url'] = '/user/' + str(self.key.id())
     

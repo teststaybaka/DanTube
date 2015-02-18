@@ -80,8 +80,6 @@ $(document).ready(function() {
                     reader.readAsDataURL(file);
                 }
             }
-        } else {
-            $('#file-error').removeClass('show');
         }
     }
 

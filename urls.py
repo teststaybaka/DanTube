@@ -37,7 +37,11 @@ routes = [
     webapp2.Route(r'/account/subscriptions', account.Subscriptions, name="subscriptions"),
     webapp2.Route(r'/subscriptions', account.Subscriptions, name="subscriptions_quick", handler_method='quick'),
     webapp2.Route(r'/account/subscribed', account.Subscribed, name="subscribed_users"),
-    webapp2.Route(r'/history', account.History, name="history"),    
+    webapp2.Route(r'/account/space', account.SpaceSetting, name="space_setting"),
+    webapp2.Route(r'/account/css_upload', account.SpaceSetting, name="css_upload", handler_method='css_upload'),
+    webapp2.Route(r'/account/space_reset', account.SpaceSetting, name="space_setting_reset", handler_method='reset'),
+    webapp2.Route(r'/user/css/<resource:.+>', account.SpaceCSS, name="space_css"),
+    webapp2.Route(r'/history', account.History, name="history"),
     webapp2.Route(r'/verify', account.SendVerification, name='send_verification'),
     webapp2.Route(r'/verify/<user_id:\d+>-<signup_token:.+>', account.Verification, name='verification'),
     

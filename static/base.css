@@ -19,6 +19,18 @@ a {
 	color: black;
 }
 
+a.blue-link {
+    color: rgb(0,140,255);
+}
+
+a.blue-link:hover {
+    color: rgb(255,177,108);
+}
+
+a.blue-link:active {
+    color: rgb(0,50,200);
+}
+
 div.container:after {
     clear: both;
     display: table;
@@ -579,7 +591,7 @@ a.page-num.hide, a.page-change.hide, div.page-num.hide, div.page-change.hide {
     background-color: rgb(245,245,245);
 }
 
-div.inline-button, input.inline-button {
+.inline-button {
     border: 1px solid rgb(200,200,200);
     padding: 4px 8px;
     font-size: 14px;
@@ -592,13 +604,13 @@ div.inline-button, input.inline-button {
     font-weight: bold;
 }
 
-div.inline-button:hover, input.inline-button:hover {
+.inline-button:hover {
     box-shadow: 0 0 2px rgb(81,203,238);
     border: 1px solid rgb(81,203,238);
     color: rgb(0,140,255);
 }
 
-div.inline-button:active, input.inline-button:active {
+.inline-button:active {
     background-color: rgb(81,203,238);
     color: rgb(255,255,255);
 }

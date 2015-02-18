@@ -108,8 +108,6 @@ function thumbnail_change() {
                 reader.readAsDataURL(file);
             }
         }
-    } else {
-        $('#thumbnail-error').removeClass('show');
     }
 }
 

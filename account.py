@@ -511,3 +511,118 @@ class AvatarUpload(BaseHandler, blobstore_handlers.BlobstoreUploadHandler):
         user.put()
         self.response.out.write('success')
         # self.response.out.write(json.dumps({'error':False}))
+
+class SpaceSetting(BaseHandler, blobstore_handlers.BlobstoreUploadHandler):
+    @login_required
+    def get(self):
+        self.render('space_setting')
+
+    @login_required
+    def post(self):
+        user = self.user
+        self.response.headers['Content-Type'] = 'application/json'
+
+        space_name = self.request.get('space-name').strip()
+        file_field = self.request.POST.get('css-file')
+        
+        if file_field == '' and space_name == user.spacename:
+            self.response.out.write(json.dumps({
+                'error': True,
+                'message': 'Already applied.'
+            }))
+            return
+
+        if space_name == '':
+            self.response.out.write(json.dumps({
+                'error': True,
+                'message': 'Please enter a name.'
+            }))
+            return
+        elif len(space_name) > 30:
+            self.response.out.write(json.dumps({
+                'error': True,
+                'message': 'No longer than 30 characters.'
+            }))
+            return
+        elif space_name != user.spacename:
+            user.spacename = space_name
+
+        file_key = None
+        if file_field != '':
+            form = MultiPartForm()
+            # form.add_field('raw_url', raw_url)
+            form.add_file('user_style', 'user_style.css', fileHandle=file_field.file)
+
+            # Build the request
+            upload_url = models.blobstore.create_upload_url(self.uri_for('css_upload'))
+            # logging.info(upload_url)
+            request = urllib2.Request(upload_url)
+            request.add_header('User-agent', 'PyMOTW (http://www.doughellmann.com/PyMOTW/)')
+            body = str(form)
+            request.add_header('Content-type', form.get_content_type())
+            request.add_header('Content-length', len(body))
+            request.add_data(body)
+            # request.get_data()
+
+            request_res = urllib2.urlopen(request).read()
+            if request_res == 'error':
+                self.response.out.write(json.dumps({
+                    'error': True,
+                    'message': 'CSS upload error.'
+                }))
+                return
+            else:
+                 file_key = models.blobstore.BlobKey(request_res)
+
+        if file_key != None:
+            if user.css_file != None:
+                models.blobstore.BlobInfo(user.css_file).delete()
+            user.css_file = file_key
+
+        user.put()
+        self.response.out.write(json.dumps({
+            'error': False,
+        }))
+
+    def css_upload(self):
+        self.response.headers['Content-Type'] = 'text/plain'
+        upload = self.get_uploads('user_style')
+        if upload == []:
+            self.response.out.write('error')
+            return
+
+        uploaded_file = upload[0]
+        types = uploaded_file.content_type.split('/')
+        if types[1] != 'css':
+            uploaded_file.delete()
+            self.response.out.write('error')
+            return
+        
+        if uploaded_file.size > 1*1024*1024:
+            uploaded_file.delete()
+            self.response.out.write('error')
+            return
+
+        self.response.out.write(str(uploaded_file.key()))
+
+    @login_required
+    def reset(self):
+        user = self.user
+        self.response.headers['Content-Type'] = 'application/json'
+
+        if user.css_file != None:
+            models.blobstore.BlobInfo(user.css_file).delete()
+            user.css_file = None
+
+        user.spacename = ''
+        user.put()
+        self.response.out.write(json.dumps({
+            'error': False,
+        }))
+
+class SpaceCSS(blobstore_handlers.BlobstoreDownloadHandler):
+    def get(self, resource):
+        resource = str(urllib.unquote(resource))
+        blob_info = models.blobstore.BlobInfo.get(resource)
+        self.send_blob(blob_info)
+        

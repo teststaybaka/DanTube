@@ -1,4 +1,9 @@
 {% extends "template/base.html" %}
+
+{% block page_title %}
+{{ host.nickname }}'s Space 
+{% endblock %}
+
 {% block head %}
 {{ super() }}
 <script type="text/javascript">

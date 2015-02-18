@@ -45,7 +45,10 @@
             <a class="sub-option" id="mentioned" href="{{ uri_for('mentioned') }}">@Me</a>
             <a class="sub-option" id="notifications" href="{{ uri_for('notifications') }}">Notifications</a>
         </div>
-        <a class="main-option" href="{{ user.space_url }}">Personal Space</a>
+        <a class="main-option" href="{{ uri_for('space_setting') }}">Personal Space</a>
+        <div class="sub-menu">
+            <a class="sub-option" id="space-setting" href="{{ uri_for('space_setting') }}">Space Settings</a>
+        </div>
     </div>
 </div>
 <div id="account-right-section">
@@ -63,27 +66,21 @@
             <div id="account-profile-img">
                 <a id="account-change-avatar" href="{{ uri_for('change_avatar') }}">Change Avatar</a>
                 <img id="account-profile-img-content" src="{{ user.avatar_url }}">
-                <!-- <a id="account-change-avatar" href="{{ uri_for('change_avatar') }}">Change avatar</a> -->
             </div>
             <div id="account-detail">
                 <div class="detail-entry" id="account-email">{{ user.email }}
                     {% if user.verified %}
                     <div id="verified-icon"></div>
                     {% else %}
-                    <div id="resend-email-link">Resend email</div>
+                    <div class="blue-link" id="resend-email-link">Resend email</div>
                     {% endif %}
                 </div>
                 <div class="detail-entry" id="account-joint-time">Joined at {{ user.created }}.</div>
                 <div class="detail-entry" id="account-space-divide">--------------</div>
                 <div class="detail-entry" id="account-nickname">{{ user.nickname }}
-                    <!-- <a id="account-change-nickname" href="{{ uri_for('change_info') }}">Change nickname</a> -->
                 </div>
-                <!-- <div class="detail-entry">Password
-                    <a id="account-change-password" href="{{ uri_for('change_password') }}">Change password</a>
-                </div> -->
                 <div class="detail-entry" id="account-intro">
                     {% if user.intro %}{{ user.intro }}{% else %}Say something to others.{% endif %}
-                    <!-- <a id="profile-intro-change" href="{{ uri_for('change_info') }}">Change Intro</a> -->
                 </div>
             </div>
             <div id="mine-statistic">

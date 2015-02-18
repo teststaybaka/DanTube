@@ -1,0 +1,38 @@
+{% extends "template/account.html" %}
+{% block head %}
+{{ super() }}
+<script src="/static/space_setting.js" language="JavaScript" type="text/javascript"></script>
+<!-- {% if user.space_css %}<link rel="stylesheet" href="{{ uri_for('space_css', resource=user.space_css) }}" type="text/css" />{% endif %} -->
+{% endblock %}
+
+{% block topTitle %}
+<a class="top-title active" href="{{ uri_for('space_setting') }}">
+    <div class="top-title-dot"></div>
+    Settings
+</a>
+{% endblock %}
+
+{% block detail %}
+<form id="change-space-form" method="post" class="change" enctype="multipart/form-data" action="{{ uri_for('space_setting') }}">
+  <div class="input-line">
+    <label class="form-label">Your space url: </label>
+    <a class="blue-link" href="{{ user.space_url }}" id="user-space-url">{{ user.space_url }}</a>
+  </div>
+  <div class="input-line">
+    <label for="space-name-change" class="form-label">Space name:</label>
+    <input type="text" id="space-name-change" value="{% if user.spacename %}{{ user.spacename }}{% else %}{{ user.nickname }}'s Space{% endif %}" tabindex="1" name="space-name">
+    <div class="input-error" id="change-space-name-error">Please enter your nickname.</div>
+  </div>
+  <div class="input-line">
+    <label for="space-css-change" class="form-label">Customize CSS:</label>
+    <input type="file" id="space-css-file" name="css-file">
+    <input type="text" id="space-css-change" tabindex="1" placeholder="{% if user.css_url %}User customized{% else %}Click to select a file.{% endif %}">
+    <div class="input-error" id="change-space-css-error">Please enter your nickname.</div>
+  </div>
+  <div>
+      <input class="save_change-button" type="submit" value=" Update "/>
+      <input class="save_change-button" type="button" value=" Reset " id="space-reset" />
+      <div id="change-applying"></div>
+  </div>
+</form>
+{% endblock %}

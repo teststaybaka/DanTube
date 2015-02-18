@@ -97,6 +97,8 @@ $(document).ready(function() {
         $("#mentioned").addClass("active");
     } else if (urls[urls.length-1] === "notifications") {
         $("#notifications").addClass("active");
+    } else if (urls[urls.length-1] === "space") {
+        $("#space-setting").addClass("active");
     }
 
     $('#resend-email-link').click(function(evt) {

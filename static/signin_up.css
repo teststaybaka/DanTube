@@ -108,18 +108,8 @@ input.signin_up-button:disabled {
 
 a.signin_up-link {
   margin: 0 20px;
-  text-decoration: none;
-  color: rgb(0,140,255);
   font-size: 15px;
   font-weight: bold;
-}
-
-a.signin_up-link:hover {
-  color: rgb(255,177,108);
-}
-
-a.signin_up-link:active {
-  color: rgb(0,50,200);
 }
 
 span.other-option {

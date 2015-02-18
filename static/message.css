@@ -353,8 +353,12 @@ div.send-button:hover {
     background-color: rgb(81,203,238);
 }
 
-form.change label {
-    width: 58px;
+form.change label.message-label {
+    width: 65px;
+    color: rgb(100,100,100);
+    /*font-weight: bold;*/
+    display: inline-block;
+    margin-right: 15px;
 }
 
 div.notification-type {
