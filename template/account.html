@@ -79,9 +79,7 @@
                 <div class="detail-entry" id="account-space-divide">--------------</div>
                 <div class="detail-entry" id="account-nickname">{{ user.nickname }}
                 </div>
-                <div class="detail-entry" id="account-intro">
-                    {% if user.intro %}{{ user.intro }}{% else %}Say something to others.{% endif %}
-                </div>
+                <div class="detail-entry" id="account-intro">{% if user.intro %}{{ user.intro }}{% else %}Say something to others.{% endif %}</div>
             </div>
             <div id="mine-statistic">
                 <div><span id="personal-bullets">{{ user.bullets }}<div>The bullets you have.</div></span></div>

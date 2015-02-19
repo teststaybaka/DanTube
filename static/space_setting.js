@@ -25,9 +25,9 @@ function css_file_check() {
             $('#change-space-css-error').text('Invalid file.')
             $('#space-css-change').addClass('error');
             $('#space-css-file').val('');
-        } else if (file.size > 50*1024*1024) {
+        } else if (file.size > 1*1024*1024) {
             $('#change-space-css-error').addClass('show');
-            $('#change-space-css-error').text('No larger than 50MB.');
+            $('#change-space-css-error').text('No larger than 1MB.');
             $('#space-css-change').addClass('error');
             $('#space-css-file').val('');
         } else {

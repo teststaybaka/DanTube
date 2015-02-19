@@ -2,11 +2,11 @@
 <html>
     <head>
         <title>{% block page_title %}Danmaku for Youtube!{% endblock %}</title>
-    {% block head %}
+        {% block head %}
         <script src="/static/jquery.min.js" language="JavaScript" type="text/javascript" ></script>
         <link href="/static/base.css" rel="stylesheet" type="text/css">
         <script src="/static/base.js" language="JavaScript" type="text/javascript"></script>
-    {% endblock %}
+        {% endblock %}
     </head>
     <body>
     <noscript>
@@ -77,7 +77,7 @@
             </div> -->
             <form id="search-form" method="get" action="{{ uri_for('search') }}">
                 <input type="text" name="keywords" id="search-input" value="{{ keywords }}">
-                <button id="search-button"></button>
+                <input type="submit" id="search-button" value="">
             </form>
         </div>
     </div>
@@ -89,9 +89,6 @@
         {% endblock %}
         </div>
     </div>
-
-    {% block footscript %}
-    {% endblock %}
 
     {% block popup_window %}
     {% endblock %}

@@ -117,7 +117,7 @@ div.video-time {
 }
 
 a.video-title, a.uploader {
-    /*font-size: 14px;*/
+    font-size: 14px;
     /*color: rgb(100,100,100);*/
     /*font-weight: bold;*/
     margin-top: 4px;

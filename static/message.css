@@ -277,63 +277,6 @@ form.reply-block {
     width: 500px;
 }
 
-div.emoticons-select {
-    margin-top: 15px;
-    display: inline-block;
-    float: left;
-    color: rgb(100,100,100);
-    font-size: 14px;
-    position: relative;
-}
-
-div.emoticons-label {
-    cursor: pointer;
-    border-radius: 5px;
-    border: 1px solid rgb(200,200,200);
-    padding: 4px 8px;
-    position: relative;
-    z-index: 1;
-    background-color: white;
-}
-
-div.emoticons-menu {
-    position: absolute;
-    bottom: 24px;
-    left: 0;
-    width: 470px;
-    display: none;
-    background-color: white;
-    border: 1px solid rgb(200,200,200);
-    padding: 10px;
-    border-radius: 5px;
-    border-bottom-left-radius: 0;
-}
-
-div.emoticons-select.show div.emoticons-menu {
-    display: inline-block;
-}
-
-div.emoticons-select.show div.emoticons-label {
-    border-top: 1px solid rgb(255,255,255);
-    border-top-right-radius: 0;
-    border-top-left-radius: 0;
-}
-
-div.emoticons-option {
-    float: left;
-    padding: 5px;
-    font-size: 12px;
-    height: 16px;
-    border-radius: 3px;
-    margin-right: 5px;
-    cursor: pointer;
-}
-
-div.emoticons-option:hover {
-    color: rgb(0,140,255);
-    background-color: rgb(240,240,240);
-}
-
 div.send-button {
     float: right;
     margin-right: 0;

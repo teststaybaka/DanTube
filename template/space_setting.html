@@ -2,7 +2,6 @@
 {% block head %}
 {{ super() }}
 <script src="/static/space_setting.js" language="JavaScript" type="text/javascript"></script>
-<!-- {% if user.space_css %}<link rel="stylesheet" href="{{ uri_for('space_css', resource=user.space_css) }}" type="text/css" />{% endif %} -->
 {% endblock %}
 
 {% block topTitle %}
@@ -26,7 +25,7 @@
   <div class="input-line">
     <label for="space-css-change" class="form-label">Customize CSS:</label>
     <input type="file" id="space-css-file" name="css-file">
-    <input type="text" id="space-css-change" tabindex="1" placeholder="{% if user.css_url %}User customized{% else %}Click to select a file.{% endif %}">
+    <input type="text" id="space-css-change" tabindex="1" placeholder="{% if user.space_css %}User customized{% else %}Click to select a file.{% endif %}">
     <div class="input-error" id="change-space-css-error">Please enter your nickname.</div>
   </div>
   <div>

@@ -44,6 +44,7 @@
     padding: 10px 25px;
     color: rgb(150,150,150);
     word-wrap: break-word;
+    white-space: pre-wrap;
 }
 
 a.main-option {
@@ -304,6 +305,7 @@ div.detail-entry {
 
 #account-intro {
     color: rgb(150,150,150);
+    white-space: pre-wrap;
 }
 
 #resend-email-link {

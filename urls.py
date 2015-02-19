@@ -1,6 +1,6 @@
 import webapp2
 
-import views, admin, login, account, video, message
+import views, admin, login, account, video, message, user
 import models
 
 secret_key = 'efrghtrrouhsmvnmxdiosjkgjfds68_=' \
@@ -52,9 +52,12 @@ routes = [
     webapp2.Route(r'/account/mentioned', message.Mentioned, name='mentioned'),
     webapp2.Route(r'/account/notifications', message.Notifications, name='notifications'),
 
-    webapp2.Route(r'/user/<user_id:\d+>', views.Space, name='space'),
-    webapp2.Route(r'/user/<user_id:\d+>/subscribe', views.Subscribe, name='subscribe'),
-    webapp2.Route(r'/user/<user_id:\d+>/unsubscribe', views.Unsubscribe, name='unsubscribe'),
+    webapp2.Route(r'/user/<user_id:\d+>', user.Space, name='space'),
+    webapp2.Route(r'/user/playlist/<user_id:\d+>', user.SpacePlaylist, name='space_playlist'),
+    webapp2.Route(r'/user/board/<user_id:\d+>', user.SpaceBoard, name='space_board'),
+    webapp2.Route(r'/user/<user_id:\d+>/subscribe', user.Subscribe, name='subscribe'),
+    webapp2.Route(r'/user/<user_id:\d+>/unsubscribe', user.Unsubscribe, name='unsubscribe'),
+
     webapp2.Route(r'/submit', video.Submit, name="submit"),
     webapp2.Route(r'/cover_upload', video.Submit, name="cover_upload", handler_method='cover_upload'),
     webapp2.Route(r'/account/video/edit/dt<video_id:\d+>', video.EditVideo, name="edit_video"),
