@@ -78,18 +78,21 @@ var video_subcategories = {};
             <div class="table-label url">Video URL</div>
         </div>
         <div class="video-part-line">
-            <div class="video-part-error">Title too long.</div>
-            <input type="text" class="title-input" placeholder="Optional" name="sub-title[]">
-            <div class="video-part-error">Title too long.</div>
-            <textarea class="intro-input" placeholder="Optional" name="sub-intro[]"></textarea>
-            <select class="source-select">
-                <option>YouTube</option>
-            </select>
-            <div class="video-part-error">Title too long.</div>
-            <input type="text" class="url-input" name="video-url[]" placeholder="e,g., youtube.com/watch?v=8NNTvx5eoXE">
-            <div class="video-part-delete" title="Remove"></div>
+            <div class="video-part-drag-wrapper" ondragstart="return false;" ondrop="return false;" onselectstart="return false;">
+                <div class="video-part-error">Title too long.</div>
+                <input type="text" class="title-input" placeholder="Optional" name="sub-title[]">
+                <div class="video-part-error">Title too long.</div>
+                <textarea class="intro-input" placeholder="Optional" name="sub-intro[]"></textarea>
+                <select class="source-select">
+                    <option>YouTube</option>
+                </select>
+                <div class="video-part-error">Title too long.</div>
+                <input type="text" class="url-input" name="video-url[]" placeholder="e,g., youtube.com/watch?v=8NNTvx5eoXE">
+                <div class="video-part-delete" title="Remove"></div>
+            </div>
         </div>
-        <div class="add-more-link">
+        <div id="add-more-link">
+            <label class="order-hint">*Drag to order</label>
             <a class="blue-link add-more">Add more</a>
             <div class="input-error add-more" id="video-tags-error">Please.</div>
         </div>

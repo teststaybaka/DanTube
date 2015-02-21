@@ -136,7 +136,7 @@ render_pagination = function(cur_page, total_pages) {
         max_page = Math.min(max_page + remain_page, total_pages);
         min_page = Math.max(min_page - remain_page, 1);
     }
-    console.log(page_range+' '+max_page+' '+remain_page+' '+min_page)
+    // console.log(page_range+' '+max_page+' '+remain_page+' '+min_page)
     
     var pagination = "";
     if(cur_page > 1) {

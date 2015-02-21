@@ -510,6 +510,7 @@ form.change div.input-line {
 #video-part-content {
     margin-top: 10px;
     margin-bottom: 10px;
+    font-size: 0;
 }
 
 #table-label-line {
@@ -546,9 +547,23 @@ div.table-label.url {
 
 div.video-part-line {
     border-bottom: 1px solid rgb(200,200,200);
+}
+
+div.video-part-drag-wrapper {
+    cursor: move;
     padding: 10px 5px;
     font-size: 0;
     position: relative;
+    white-space: nowrap;
+}
+
+div.video-part-line.stealth div.video-part-drag-wrapper {
+    opacity: 0;
+}
+
+div.video-part-drag-wrapper.float {
+    position: fixed;
+    pointer-events: none;
 }
 
 div.video-part-delete {
@@ -634,8 +649,15 @@ form.change input.url-input {
     width: 210px;
 }
 
-div.add-more-link {
+#add-more-link {
     position: relative;
+}
+
+label.order-hint {
+    font-size: 13px;
+    color: rgb(150,150,150);
+    margin-right: 5px;
+    margin-left: 5px;
 }
 
 a.add-more {

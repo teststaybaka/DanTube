@@ -1,14 +1,16 @@
 video_part_line_html = '<div class="video-part-line">\
-            <div class="video-part-error">Title too long.</div>\
-            <input type="text" class="title-input" placeholder="Optional" name="sub-title[]">\
-            <div class="video-part-error">Title too long.</div>\
-            <textarea class="intro-input" placeholder="Optional" name="sub-intro[]"></textarea>\
-            <select class="source-select">\
-                <option>YouTube</option>\
-            </select>\
-            <div class="video-part-error">Title too long.</div>\
-            <input type="text" class="url-input" name="video-url[]" placeholder="e,g., youtube.com/watch?v=8NNTvx5eoXE">\
-            <div class="video-part-delete"></div>\
+            <div class="video-part-drag-wrapper" ondragstart="return false;" ondrop="return false;" onselectstart="return false;">\
+                <div class="video-part-error">Title too long.</div>\
+                <input type="text" class="title-input" placeholder="Optional" name="sub-title[]">\
+                <div class="video-part-error">Title too long.</div>\
+                <textarea class="intro-input" placeholder="Optional" name="sub-intro[]"></textarea>\
+                <select class="source-select">\
+                    <option>YouTube</option>\
+                </select>\
+                <div class="video-part-error">Title too long.</div>\
+                <input type="text" class="url-input" name="video-url[]" placeholder="e,g., youtube.com/watch?v=8NNTvx5eoXE">\
+                <div class="video-part-delete" title="Remove"></div>\
+            </div>\
         </div>'
 
 function title_check() {
@@ -164,6 +166,87 @@ $(document).ready(function() {
         }
     });
 
+    // $('#video-part-content').on('dragstart')
+
+    $('#video-part-content').mousedown(function(evt) {
+        if ($(evt.target).hasClass('video-part-drag-wrapper') && $('div.table-label-line.stealth').length == 0) {
+            var label_height = document.getElementById('table-label-line').offsetHeight;
+            var link_height = document.getElementById('add-more-link').offsetHeight;
+            var video_line_container = document.getElementById('video-part-content');
+            var block_height = evt.target.offsetHeight + 1;
+
+            // var targetIndex = $('div.video-part-drag-wrapper').index($(evt.target));
+            var float_block = $(evt.target).clone().addClass('float');
+            var textarea_content = $(evt.target).children('textarea').val();
+            float_block.children('textarea').val(textarea_content);
+            // console.log(textarea_content);
+            var rect = evt.target.getBoundingClientRect();
+            var offset_X = rect.left - evt.clientX;
+            var offset_Y = rect.top - evt.clientY;
+
+            $(evt.target).parent().addClass('stealth');
+            $('#video-part-content').append(float_block);
+            
+            float_block[0].style.left = evt.clientX + offset_X + 'px';
+            float_block[0].style.top = evt.clientY + offset_Y + 'px';
+
+            document.onmousemove = function(evt) {
+                float_block[0].style.left = evt.clientX + offset_X + 'px';
+                float_block[0].style.top = evt.clientY + offset_Y + 'px';
+
+                rect = video_line_container.getBoundingClientRect();
+                if (evt.clientX < rect.left || evt.clientX > rect.left + video_line_container.offsetWidth) {
+                    return;
+                }
+
+                var top_Y = rect.top + label_height;
+                var y = Math.min(evt.clientY, rect.top + video_line_container.offsetHeight - 1 - link_height);
+                var index = Math.floor((y - top_Y)/block_height);
+                var total = $('div.video-part-line').length;
+                // console.log(y+' '+top_Y+' '+index)
+                for (var i = 0; i < index; i++) {
+                    var cur_line = $('div.video-part-line:eq('+i+')');
+                    var next_line = $('div.video-part-line:eq('+(i+1)+')');
+                    if (cur_line.hasClass('stealth') && i+1 < total) {
+                        cur_line.empty();
+                        cur_line.append(next_line.children().clone());
+                        textarea_content = next_line.children().children('textarea').val();
+                        cur_line.children().children('textarea').val(textarea_content);
+                        next_line.addClass('stealth');
+                        cur_line.removeClass('stealth');
+                    }
+                }
+                for (var i = total - 1; i > index; i--) {
+                    var cur_line = $('div.video-part-line:eq('+i+')');
+                    var next_line = $('div.video-part-line:eq('+(i-1)+')');
+                    if (cur_line.hasClass('stealth') && i-1 >= 0) {
+                        cur_line.empty();
+                        cur_line.append(next_line.children().clone());
+                        textarea_content = next_line.children().children('textarea').val();
+                        cur_line.children().children('textarea').val(textarea_content);
+                        next_line.addClass('stealth');
+                        cur_line.removeClass('stealth');
+                    }
+                }
+            }
+            document.onmouseup = function(evt) {
+                var final_line = $('div.video-part-line.stealth');
+                var back_block = float_block.clone().removeClass('float');
+                textarea_content = float_block.children('textarea').val();
+                back_block.children('textarea').val(textarea_content);
+                back_block[0].style.left = 0;
+                back_block[0].style.top = 0;
+                float_block.remove();
+                final_line.empty();
+                final_line.append(back_block);
+                final_line.removeClass('stealth');
+
+                document.onmousemove = null;
+                document.onmouseup = null;
+            }
+        }
+    });
+
     $('div.option-button.type').click(function(evt) {
         $('div.option-button.type').removeClass('select');
         $(evt.target).addClass('select');
@@ -180,11 +263,11 @@ $(document).ready(function() {
     document.getElementById('thumbnail-input').addEventListener("change", thumbnail_change);
 
     $('a.add-more').click(function(evt) {
-        $('div.add-more-link').before(video_part_line_html);
+        $('#add-more-link').before(video_part_line_html);
         $('div.input-error.add-more').removeClass('show');
     });
     $('form').on('click', 'div.video-part-delete', function(evt) {
-        $(evt.target).parent().remove();
+        $(evt.target).parent().parent().remove();
     });
 
     $('form').on('focusout', 'input.title-input', function(evt) {
