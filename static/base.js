@@ -98,11 +98,47 @@ $(document).ready(function() {
     });
 });
 
+function get_video_list(url, query, callback) {
+    $.ajax({
+        type: "GET",
+        url: url,
+        data: query,
+        success: function(result) {
+            if (callback && typeof(callback) === "function") {
+                if(result.error)
+                    callback(result, []);
+                else
+                    callback(null, result);
+            }
+            else
+                return result;
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            console.log(xhr.status);
+            console.log(thrownError);
+            var err = {'error': true, 'message': thrownError};
+            if (callback && typeof(callback) === "function")
+                callback(err, []);
+            else
+                return err;
+        }
+    });
+}
+
 render_pagination = function(cur_page, total_pages) {
-    var pagination = "";
-    var min_page = Math.max(cur_page-2, 1);
-    var max_page = Math.min(min_page + 4, total_pages);
+    var page_range = 10;
+    cur_page = parseInt(cur_page);
+    var max_page = Math.min(cur_page + 4, total_pages);
+    var min_page = Math.max(cur_page - 5, 1);
+    var remain_page = page_range - (max_page - cur_page) - (cur_page - min_page) - 1;
+
+    if (remain_page > 0) {
+        max_page = Math.min(max_page + remain_page, total_pages);
+        min_page = Math.max(min_page - remain_page, 1);
+    }
+    console.log(page_range+' '+max_page+' '+remain_page+' '+min_page)
     
+    var pagination = "";
     if(cur_page > 1) {
         pagination += '<div class="page-change" data-page="' + 1 + '"><<</div>';
         pagination += '<div class="page-change" data-page="' + (cur_page - 1) + '"><</div>';

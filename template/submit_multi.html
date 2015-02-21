@@ -1,0 +1,103 @@
+{% extends "template/account.html" %}
+{% block head %}
+{{ super() }}
+<script type="text/javascript">
+var video_subcategories = {};
+{% for key in category %}
+  video_subcategories['{{ key }}'] = [{% for val in subcategory[key] %}'{{ val }}', {% endfor %}];
+{% endfor %}
+</script>
+<script src="/static/submit.js" language="JavaScript" type="text/javascript"></script>
+{% endblock %}
+
+{% block topTitle %}
+<a class="top-title active" href="{{ uri_for('submit') }}">
+    <div class="top-title-dot"></div>
+    Submit
+</a>
+{% endblock %}
+
+{% block detail %}
+<form class="change" id="video-submission-form" method="post" enctype="multipart/form-data" action="{{ uri_for('submit_post') }}">
+    <div class="input-line">
+        <label for="video-total-title" class="form-label">Title:</label>
+        <input type="text" id="video-total-title" name="total-title" tabindex="1" placeholder="A title for all the parts.">
+        <div class="input-error" id="video-title-error">Please.</div>
+    </div>
+    <div class="input-line">
+        <label class="form-label">Thumbnail:</label>
+        <label class="explain">(Optional. Animated image not supported)</label>
+        <div id="thumbnail-preview">
+            <input type="file" name="thumbnail" id="thumbnail-input">
+            <div id="thumbnail-hint">Click to select.<br>Image will be resized to 512 x 288 (16:9).</div>
+        </div>
+        <div class="input-error" id="thumbnail-error">Please.</div>
+    </div>
+    <div class="input-line">
+        <label class="form-label">Category:</label>
+        <select name="category"  id="select-category">
+        {% for key in category %}
+            <option value="{{ key }}">{{ key }}</option>
+        {% endfor %}
+        </select>
+        <select name="subcategory" id="select-subcategory">
+        {% for val in subcategory[category[0]] %}
+            <option value="{{ val }}">{{ val }}</option>
+        {% endfor %}
+        </select>
+    </div>
+    <div class="input-line">
+        <label for="video-description" class="form-label">Introduction:</label>
+        <textarea class="normal" id="video-description" name="description" tabindex="1" placeholder="No longer than 2000 characters."></textarea>
+        <div class="input-error" id="video-description-error">Please.</div>
+    </div>
+    <div class="input-line">
+        <label class="form-label">Type:</label>
+        <div class="option-button type select" id="self-made-option">Self-made</div>
+        <div class="option-button type" id="republish-option">Republish</div>
+        <input type="text" name="video-type-option" value="self-made" class="hidden" id="video-type-option">
+    </div>
+    <div class="input-line">
+        <label for="video-tags" class="form-label">Tags:</label>
+        <input type="text"  id="video-tags" name="tags" tabindex="1" placeholder="e.g., flying pig, the binding of isaac, sonic">
+        <div class="input-error" id="video-tags-error">Please.</div>
+        <div class="check-label-line">
+            <label class="form-label"></label>
+            <label for="allow-add" class="check-label">
+                <input type="checkbox" class="checkbox" id="allow-add" name="allow-add" tabindex="1" checked>
+                <span class="checklabel">Allow others to add tags.</span>
+            </label>
+        </div>
+    </div>
+
+    <div id="video-part-content">
+        <div id="table-label-line">
+            <div class="table-label title">Sub-title</div>
+            <div class="table-label intro">Sub-intro</div>
+            <div class="table-label source">Video Source</div>
+            <div class="table-label url">Video URL</div>
+        </div>
+        <div class="video-part-line">
+            <div class="video-part-error">Title too long.</div>
+            <input type="text" class="title-input" placeholder="Optional" name="sub-title[]">
+            <div class="video-part-error">Title too long.</div>
+            <textarea class="intro-input" placeholder="Optional" name="sub-intro[]"></textarea>
+            <select class="source-select">
+                <option>YouTube</option>
+            </select>
+            <div class="video-part-error">Title too long.</div>
+            <input type="text" class="url-input" name="video-url[]" placeholder="e,g., youtube.com/watch?v=8NNTvx5eoXE">
+            <div class="video-part-delete" title="Remove"></div>
+        </div>
+        <div class="add-more-link">
+            <a class="blue-link add-more">Add more</a>
+            <div class="input-error add-more" id="video-tags-error">Please.</div>
+        </div>
+    </div>
+
+    <div>
+        <input class="save_change-button" type="submit" value="Submit Video" />
+        <div id="change-applying"></div>
+    </div>
+</form>
+{% endblock %}

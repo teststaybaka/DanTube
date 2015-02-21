@@ -115,8 +115,8 @@ render_video_div = function(video) {
                     '<div class="video-statistic favored">' +
                         '<div class="video-statistic-entry">Views: ' + video.hits + '</div>' +
                         '<div class="video-statistic-entry">Favors: ' + video.favors + '</div>' +
-                        '<div class="video-statistic-entry">Damaku: ' + video.danmaku_counter + '</div>' +
                         '<div class="video-statistic-entry">Comments: ' + video.comment_counter + '</div>' +
+                        '<div class="video-statistic-entry">Bullets: ' + video.bullets + '</div>' +
                     '</div>' +
                     '<div class="favored-time">' +
                       '<label>Favored at: </label>' +

@@ -25,7 +25,6 @@ from google.appengine.ext import ndb
 import models
 import json
 import re
-import random
 
 class SilentUndefined(Undefined):
     '''
@@ -203,39 +202,73 @@ class Home(BaseHandler):
             context['top_ten_videos'].append(video_info)
         self.render('index', context)
 
-class Video(BaseHandler):
+class Category(BaseHandler):
     def get(self):
+        category = self.request.route.name
+        context = {}
+        context['category_name'] = category
+        context['top_ten_videos'] = []
+        videos, total_page = models.Video.get_page(category=category, order=models.Video.hits, page=1, page_size=10)
+        for video in videos:
+            uploader = models.User.get_by_id(video.uploader.id())
+            video_info = video.get_basic_info()
+            video_info['uploader'] = uploader.get_public_info()
+            context['top_ten_videos'].append(video_info)
+        self.render('category', context)
+
+class Subcategory(BaseHandler):
+    def get(self):
+        [category, subcategory] = self.request.route.name.split('-')
+        context = {}
+        context['category_name'] = category
+        context['subcategory_name'] = subcategory
+        context['top_ten_videos'] = []
+        videos, total_page = models.Video.get_page(category=category, subcategory=subcategory, order=models.Video.hits, page=1, page_size=10)
+        for video in videos:
+            uploader = models.User.get_by_id(video.uploader.id())
+            video_info = video.get_basic_info()
+            video_info['uploader'] = uploader.get_public_info()
+            context['top_ten_videos'].append(video_info)
+        self.render('subcategory', context)
+
+class Video(BaseHandler):
+    def post(self):
         # models.Video.fetch_page()
         self.response.headers['Content-Type'] = 'application/json'
         category = self.request.get('category')
         subcategory = self.request.get('subcategory')
 
-        try:
-            if category:
-                for cat_name, url_name in dict((k,v[0]) for k,v in models.URL_NAME_DICT.items()).iteritems():
-                    if url_name == category:
-                        category = cat_name
-                        break
-                if subcategory:
-                    for subcat_name, url_name in models.URL_NAME_DICT[category][1].iteritems():
-                        if url_name == subcategory:
-                            subcategory = subcat_name
-                            break
-                else:
-                    subcategory = ""
-            else:
-                category = ""
-        except (KeyError, BadValueError) as e:
+        if (not (category in models.Video_Category)) or \
+            ((category in models.Video_Category) and (subcategory) and not (subcategory in models.Video_SubCategory[category]) ):
             self.response.out.write(json.dumps({
                 'error': True,
                 'message': 'Invalid category/subcategory'
             }))
             return
+        # try:
+        #     if category:
+        #         for cat_name, url_name in dict((k,v[0]) for k,v in models.URL_NAME_DICT.items()).iteritems():
+        #             if url_name == category:
+        #                 category = cat_name
+        #                 break
+        #         if subcategory:
+        #             for subcat_name, url_name in models.URL_NAME_DICT[category][1].iteritems():
+        #                 if url_name == subcategory:
+        #                     subcategory = subcat_name
+        #                     break
+        #         else:
+        #             subcategory = ""
+        #     else:
+        #         category = ""
+        # except (KeyError, BadValueError) as e:
+        #     self.response.out.write(json.dumps({
+        #         'error': True,
+        #         'message': 'Invalid category/subcategory'
+        #     }))
+        #     return
 
         order_str = self.request.get('order')
-        if not order_str:
-            order = models.Video.hits
-        elif order_str == 'hits':
+        if order_str == 'hits':
             order = models.Video.hits
         elif order_str == 'created':
             order = models.Video.created
@@ -249,25 +282,26 @@ class Video(BaseHandler):
             return
 
         page = self.request.get('page')
-        if not page:
-            page = 1
-        else:
-            try:
-                page = int(self.request.get('page'))
-            except ValueError:
-                self.response.out.write(json.dumps({
-                    'error': True,
-                    'message': 'Invalid page'
-                }))
-                return
+        try:
+            page = int(self.request.get('page'))
+        except ValueError:
+            self.response.out.write(json.dumps({
+                'error': True,
+                'message': 'Invalid page'
+            }))
+            return
 
         try:
             page_size = int(self.request.get('page_size'))
         except ValueError:
-            page_size = models.PAGE_SIZE
+            self.response.out.write(json.dumps({
+                'error': True,
+                'message': 'Invalid page size'
+            }))
+            return
 
         # videos, more = models.Video.fetch_page(category, subcategory, order, page)
-        videos, total_pages = models.Video.get_page(category, subcategory, order, page, page_size)
+        videos, total_pages = models.Video.get_page(category=category, subcategory=subcategory, order=order, page=page, page_size=page_size)
 
         # try:
         #     videos, more = models.Video.fetch_page(category, subcategory, order, page)
@@ -279,14 +313,15 @@ class Video(BaseHandler):
         #     }))
         #     return
 
-        try:
-            limit = int(self.request.get('limit'))
-        except ValueError:
-            limit = len(videos)
+        # try:
+        #     limit = int(self.request.get('limit'))
+        # except ValueError:
+        #     limit = len(videos)
 
         result = {}
         result['videos'] = []
-        for video in videos[0:limit]:
+        for i in range(0, len(videos)): # videos[0:limit]:
+            video = videos[i]
             uploader = models.User.get_by_id(video.uploader.id())
             video_info = video.get_basic_info()
             video_info['uploader'] = uploader.get_public_info()
@@ -294,115 +329,6 @@ class Video(BaseHandler):
         result['total_pages'] = total_pages
 
         self.response.out.write(json.dumps(result))
-
-    @login_required
-    def post(self):
-        self.response.headers['Content-Type'] = 'application/json'
-        user = self.user
-
-        raw_url = self.request.get('video-url')
-        if not raw_url:
-            self.response.out.write(json.dumps({
-                'error': True,
-                'message': 'video url must not be empty!'
-            }))
-            return
-
-        category = self.request.get('category')
-        if not category:
-            self.response.out.write(json.dumps({
-                'error': True,
-                'message': 'category must not be empty!'
-            }))
-            return
-
-        subcategory = self.request.get('subcategory')
-        if not subcategory:
-            self.response.out.write(json.dumps({
-                'error': True,
-                'message': 'subcategory must not be empty!'
-            }))
-            return
-
-        title = self.request.get('title')
-        if not title:
-            self.response.out.write(json.dumps({
-                'error': True,
-                'message': 'title must not be empty!'
-            }))
-            return
-
-        description = self.request.get('description')
-        if not description:
-            self.response.out.write(json.dumps({
-                'error': True,
-                'message': 'description must not be empty!'
-            }))
-            return
-
-        # res = models.Video.parse_url(raw_url)
-        # logging.info(res)
-        try:
-            video = models.Video.Create(
-                raw_url = raw_url,
-                user = user,
-                description = description,
-                title = title,
-                category = category,
-                subcategory = subcategory
-            )
-        except Exception, e:
-            self.response.out.write(json.dumps({
-                'error': True,
-                'message': str(e)
-            }))
-            return
-
-        self.response.out.write(json.dumps({
-            'url': '/video/'+ video.key.id()
-        }))
-        user.videos_submited += 1
-        user.put()
-
-class RandomVideos(BaseHandler):
-    def get(self):
-        self.response.headers['Content-Type'] = 'application/json'
-        try:
-            size = int(self.request.get('size'))
-        except ValueError:
-            size = 5
-
-        size = min(100, models.Video.get_video_count(), size)
-
-        try:
-            result = {}
-            result['videos'] = []
-            max_id = models.Video.get_max_id()
-            random_ids = random.sample(xrange(1,models.Video.get_max_id()+1), min(size * 2, max_id))
-            fetched = 0
-            for video_id in random_ids:
-                video = models.Video.get_by_id('dt'+str(video_id))
-                if video is not None:
-                    uploader = models.User.get_by_id(video.uploader.id())
-                    video_info = video.get_basic_info()
-                    video_info['uploader'] = uploader.get_public_info()
-                    result['videos'].append(video_info)
-                    fetched += 1
-                    if fetched == size:
-                        result['size'] = size
-                        self.response.out.write(json.dumps(result))
-                        return
-
-            result['size'] = fetched
-            self.response.out.write(json.dumps(result))
-            
-        except Exception, e:
-            logging.info('error occurred fetching random videos')
-            self.response.out.write(json.dumps({
-                'error': True,
-                'message': str(e)
-            }))
-            
 
 class Watch(BaseHandler):
     def get(self, video_id):
@@ -550,23 +476,6 @@ class Danmaku(BaseHandler):
 class Player(BaseHandler):
     def get(self):
         self.render('video')
-
-class Category(BaseHandler):
-    def get(self):
-        category = self.request.route.name
-        context = {}
-        context['category_name'] = category
-        self.render('category', context)
-
-class Subcategory(BaseHandler):
-    def get(self):
-        [category, subcategory] = self.request.route.name.split('-')
-        context = {}
-        context['category_name'] = category
-        context['subcategory_name'] = subcategory
-        context['video_count'] = models.Video.get_video_count(category, subcategory)
-        context['page_count'] = models.Video.get_page_count(category, subcategory)
-        self.render('subcategory', context)
 
 class Search(BaseHandler):
     def get(self):

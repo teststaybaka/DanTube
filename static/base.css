@@ -5,7 +5,7 @@ body {
 	background-color: rgb(255,255,255);
 }
 
-textarea, input {
+textarea, input, select, option {
     font-family:"Times New Roman",Georgia,Serif;
     outline: none;
 }
@@ -350,12 +350,12 @@ div.link:hover, a.link:hover {
 	color: rgb(100,100,100);
 }
 
-div.category {
+div.navi-category {
 	display: inline-block;
 	position: relative;
 }
 
-a.category-name {
+a.navi-category-name {
 	display: inline-block;
 	padding: 10px 11px;
 	text-align: center;
@@ -424,7 +424,7 @@ a.category-name {
 	background-color: rgb(0,135,255);
 }
 
-div.dragdown-menu {
+div.navi-dragdown-menu {
 	display: none;
 	position: absolute;
 	text-align: left;
@@ -438,16 +438,16 @@ div.dragdown-menu {
 	z-index: 1;
 }
 
-div.category:hover a.category-name{
+div.navi-category:hover a.navi-category-name {
 	background-color: rgb(255,255,255);
 	text-shadow:0 0 2px rgb(150,150,150);
 }
 
-div.category:hover div.dragdown-menu {
+div.navi-category:hover div.navi-dragdown-menu {
 	display: inline-block;
 }
 
-a.sub-category {
+a.navi-subcategory {
 	padding: 8px 11px;
 	padding-right: 20px;
 	cursor: pointer;
@@ -475,7 +475,7 @@ a.sub-category {
         transform: translateX(8px);}
 }
 
-a.sub-category:hover {
+a.navi-subcategory:hover {
 	-ms-transform: translateX(8px); /* IE 9 */
     -webkit-transform: translateX(8px); /* Chrome, Safari, Opera */
     transform: translateX(8px);

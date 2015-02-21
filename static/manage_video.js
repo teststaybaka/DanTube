@@ -3,8 +3,6 @@ $(document).ready(function() {
         if ($(evt.target).hasClass('delete')) {
             var ids= $(evt.target).attr('data-id').split(';');
             $(evt.target).text('Deleting');
-            // console.log(jQuery.param( {ids: [1,2]} ));
-            // console.log(jQuery.param( {ids: ['ids', 'df']}, true ));
             $.ajax({
                 type: "POST",
                 url: '/account/video/delete',

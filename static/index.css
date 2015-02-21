@@ -9,10 +9,23 @@
     to {opacity: 1;}
 }
 
+@-webkit-keyframes delay_opacity_show {
+    0% {opacity: 0;}
+    50% {opacity: 0;}
+    100% {opacity: 1;}
+}
+
+/* Standard syntax */
+@keyframes delay_opacity_show {
+    0% {opacity: 0;}
+    50% {opacity: 0;}
+    100% {opacity: 1;}
+}
+
 div.ranking-and-topic {
     margin-top: 40px;
     padding-bottom: 40px;
-    border-bottom: 1px solid rgb(240,240,240);
+    border-bottom: 1px solid rgb(220,220,220);
 }
 
 div.site-ranking-block {
@@ -68,7 +81,7 @@ div.slide-bottom {
 
 div.slide-title {
     float: left;
-    margin: 0 5px;
+    padding: 0 5px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -144,7 +157,7 @@ div.hover-cover {
     height: 100%;
     color: white;
     background-color: rgba(0,0,0,0.5);
-    padding: 10px;
+    padding: 15px;
     -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
     -moz-box-sizing: border-box;    /* Firefox, other Gecko */
     box-sizing: border-box;
@@ -159,9 +172,9 @@ a.next-top-videos:hover div.hover-cover {
 
 div.cover-title {
     word-wrap: break-word;
-    height: 80px;
+    height: 64px;
     overflow: hidden;
-    margin-bottom: 2px;
+    margin-bottom: 5px;
 }
 
 div.cover-uploader {
@@ -180,6 +193,10 @@ div.sub-category-dynamic-list {
     -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
     -moz-box-sizing: border-box;    /* Firefox, other Gecko */
     box-sizing: border-box;
+}
+
+div.sub-category-dynamic-list.wide {
+    width: 100%;
 }
 
 div.sub-category-side-line {
@@ -237,7 +254,7 @@ a.category-title:hover, a.more-video:hover {
     color: rgb(0,140,255);
 }
 
-div.category-title.random {
+a.category-title.no-link {
     cursor: default;
     color: rgb(100,100,100);   
 }
@@ -248,8 +265,12 @@ div.side-title {
     color: rgb(100,100,100);
 }
 
-div.video-preview-container {
+div.video-preview-container, div.ranking-video-container {
     height: 468px;
+}
+
+div.single-preview-line {
+    height: 156px;
 }
 
 a.video-preview {
@@ -262,7 +283,7 @@ a.video-preview {
     display: block;
 }
 
-a.video-preview.random, a.video-preview.wide {
+a.video-preview.wide {
     margin-right: 28px;
 }
 
@@ -324,7 +345,7 @@ a.video-preview:hover div.video-preview-title {
     animation: preview_expand .4s;
 }
 
-div.video-preview-hits, div.video-preview-danmaku-num {
+div.video-preview-hits, div.video-preview-comment-num {
     width: 80px;
     overflow: hidden;
     display: inline-block;
@@ -336,10 +357,10 @@ div.video-preview-hits, div.video-preview-danmaku-num {
     background-position: 0 2px;
 }
 
-div.video-preview-danmaku-num {
+div.video-preview-comment-num {
     width: 50px;
     background-position: 0 3px;
-    background-image: url("/static/img/danmaku-preview.png");
+    background-image: url("/static/img/comment-preview.png");
 }
 
 div.video-preview-popup {
@@ -355,8 +376,8 @@ div.video-preview-popup {
 
 a.video-preview:hover div.video-preview-popup {
     display: inline-block;
-    -webkit-animation: opacity_show .4s; /* Chrome, Safari, Opera */
-    animation: opacity_show .4s;
+    -webkit-animation: delay_opacity_show .6s; /* Chrome, Safari, Opera */
+    animation: delay_opacity_show .6s;
 }
 
 div.popup-title {
@@ -389,9 +410,9 @@ div.popup-statistic-entry.favorites {
     background-image: url("/static/img/favorites-preview.png");
 }
 
-div.popup-statistic-entry.danmaku {
+div.popup-statistic-entry.comment {
     background-position: 0 10px;
-    background-image: url("/static/img/danmaku-preview.png");
+    background-image: url("/static/img/comment-preview.png");
 }
 
 div.popup-statistic-entry.bullets {
@@ -420,6 +441,7 @@ div.popup-descript {
     height: 100%;
     overflow: hidden;
     word-wrap: break-word;
+    white-space: pre-wrap;
     font-size: 13px;
     color: rgb(50,50,50);
     width: 248px;
@@ -450,15 +472,18 @@ div.popup-upload-time {
 div.pagination-line {
     text-align: center;
     margin-bottom: 10px;
+    height: 16px;
 }
 
-div.ranking-video-container {
-    height: 468px;
+div.video-preview-container.loading, div.single-preview-line.loading, div.ranking-video-container.loading {
+    background-image: url("/static/img/ajax-loader.gif");
+    background-repeat: no-repeat;
+    background-position: 50% 50%;
 }
 
 a.ranking-video-entry {
     font-size: 14px;
-    margin-bottom: 11px;
+    margin-bottom: 14px;
     position: relative;
     cursor: pointer;
     display: block;
@@ -508,15 +533,23 @@ div.top-video-title {
 div.top-video-hits {
     display: inline-block;
     color: rgb(150,150,150);
-    width: 130px;
+    width: 120px;
+    padding-left: 12px;
     vertical-align: text-bottom;
+    background-image: url("/static/img/play-icon-preview.png");
+    background-repeat: no-repeat;
+    background-position: 0 2px;
 }
 
-div.top-video-danmaku-num {
+div.top-video-comment-num {
     display: inline-block;
     color: rgb(150,150,150);
     vertical-align: text-bottom;
     margin-left: 10px;
+    padding-left: 12px;
+    background-position: 0 3px;
+    background-repeat: no-repeat;
+    background-image: url("/static/img/comment-preview.png");
 }
 
 div.ranking-No {
@@ -543,8 +576,8 @@ div.ranking-video-title {
 
 a.ranking-video-entry:hover div.video-preview-popup{
     display: inline-block;
-    -webkit-animation: opacity_show .4s; /* Chrome, Safari, Opera */
-    animation: opacity_show .4s;
+    -webkit-animation: delay_opacity_show .6s; /* Chrome, Safari, Opera */
+    animation: delay_opacity_show .6s;
     right: 0;
 }
 
@@ -552,7 +585,51 @@ a.ranking-video-entry:hover div.ranking-video-title, a.ranking-video-entry:hover
     color: rgb(0,140,255);
 }
 
-div.annoucement-body {
-    height: 138px;
-    margin-bottom: 18px;
+div.ranking-and-topic.subpage {
+    padding-bottom: 20px;
+}
+
+#ranking-slides.subpage {
+    width: 400px;
+    height: 225px;
+    margin-right: 24px;
+    margin-bottom: 27px;
+}
+
+#slide-container.subpage {
+    width: 400%;
+}
+
+a.slide.subpage {
+    width: 25%;
+}
+
+div.slide-title.subpage {
+    width: 290px;
+}
+
+a.next-top-videos.subpage {
+    width: 176px;
+    height: 99px;
+    margin-right: 24px;
+    margin-bottom: 27px;
+}
+
+div.hover-cover.subpage {
+    padding: 10px;
+}
+
+div.cover-title.subpage {
+    height: 48px;
+    margin-bottom: 0px;
+}
+
+span.category-middle {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    margin: 6px 10px;
+    background-repeat: no-repeat;
+    background-image: url("/static/img/arrow.png");
+    float: left;
 }

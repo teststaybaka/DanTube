@@ -2,40 +2,31 @@
 {% block head %}
 {{ super() }}
 <link rel="stylesheet" href="/static/index.css" type="text/css" />
-<link href="/static/category.css" rel="stylesheet" type="text/css">
-<script src="/static/videolist.js" language="JavaScript" type="text/javascript"></script>
-<script src="/static/subcategory.js" language="JavaScript" type="text/javascript"></script>
+<script src="/static/index.js" language="JavaScript" type="text/javascript"></script>
 {% endblock %}
 
 {% block body %}
-<div class="ranking-and-topic container">
-    <div id="ranking-slides">
-        <div id="slide-container">
-            <a href="{{ video.url }}" target="_blank" class="slide">
-                <img src="{{ video.thumbnail_url }}">
+<div class="ranking-and-topic subpage container">
+    <div id="ranking-slides" class="subpage">
+        <div id="slide-container" class="subpage">
+            {% for video in top_ten_videos[:4]%}
+            <a href="{{ video.url }}" target="_blank" class="slide subpage">
+                <img src="{{ video.thumbnail_url_hq }}">
             </a>
-            <a href="{{ video.url }}" target="_blank" class="slide">
-                <img src="{{ video.thumbnail_url }}">
-            </a>
-            <a href="{{ video.url }}" target="_blank" class="slide">
-                <img src="{{ video.thumbnail_url }}">
-            </a>
-            <a href="{{ video.url }}" target="_blank" class="slide">
-                <img src="{{ video.thumbnail_url }}">
-            </a>
+            {% endfor %}
         </div>
         <div class="slide-bottom container">
-            <div class="slide-title">
-                <a href="" target="_blank" class="slide-title">sdfdf</a>
+            <div class="slide-title subpage">
+                <a href="{{ top_ten_videos[3].url }}" target="_blank" class="slide-title">{{ top_ten_videos[3].title }}</a>
             </div>
-            <div class="slide-title">
-                <a href="" target="_blank" class="slide-title">sfsdf</a>
+            <div class="slide-title subpage">
+                <a href="{{ top_ten_videos[2].url }}" target="_blank" class="slide-title">{{ top_ten_videos[2].title }}</a>
             </div>
-            <div class="slide-title">
-                <a href="" target="_blank" class="slide-title">dfsd</a>
+            <div class="slide-title subpage">
+                <a href="{{ top_ten_videos[1].url }}" target="_blank" class="slide-title">{{ top_ten_videos[1].title }}</a>
             </div>
-            <div class="slide-title active">
-                <a href="" target="_blank" class="slide-title">sdfsf</a>
+            <div class="slide-title subpage active">
+                <a href="{{ top_ten_videos[0].url }}" target="_blank" class="slide-title">{{ top_ten_videos[0].title }}</a>
             </div>
             <div class="slide-dot"></div>
             <div class="slide-dot"></div>
@@ -43,395 +34,43 @@
             <div class="slide-dot active"></div>
         </div>
     </div>
-    <a class="next-top-videos" target="_blank" href="{{ video.url }}">
-        <div class="hover-cover">
-            <div class="cover-title">{{ video.title }}</div>
+    {% for video in top_ten_videos[4:] %}
+    <a class="next-top-videos subpage" target="_blank" href="{{ video.url }}">
+        <div class="hover-cover subpage">
+            <div class="cover-title subpage">{{ video.title }}</div>
             <div class="cover-uploader">Uper: {{ video.uploader.nickname }}</div>
             <div class="cover-hits">Views: {{ video.hits }}</div>
         </div>
         <img src="{{ video.thumbnail_url }}">
     </a>
-    <a class="next-top-videos" target="_blank" href="{{ video.url }}">
-        <div class="hover-cover">
-            <div class="cover-title">{{ video.title }}</div>
-            <div class="cover-uploader">Uper: {{ video.uploader.nickname }}</div>
-            <div class="cover-hits">Views: {{ video.hits }}</div>
-        </div>
-        <img src="{{ video.thumbnail_url }}">
-    </a>
-    <a class="next-top-videos" target="_blank" href="{{ video.url }}">
-        <div class="hover-cover">
-            <div class="cover-title">{{ video.title }}</div>
-            <div class="cover-uploader">Uper: {{ video.uploader.nickname }}</div>
-            <div class="cover-hits">Views: {{ video.hits }}</div>
-        </div>
-        <img src="{{ video.thumbnail_url }}">
-    </a>
-    <a class="next-top-videos" target="_blank" href="{{ video.url }}">
-        <div class="hover-cover">
-            <div class="cover-title">{{ video.title }}</div>
-            <div class="cover-uploader">Uper: {{ video.uploader.nickname }}</div>
-            <div class="cover-hits">Views: {{ video.hits }}</div>
-        </div>
-        <img src="{{ video.thumbnail_url }}">
-    </a>
-    <a class="next-top-videos" target="_blank" href="{{ video.url }}">
-        <div class="hover-cover">
-            <div class="cover-title">{{ video.title }}</div>
-            <div class="cover-uploader">Uper: {{ video.uploader.nickname }}</div>
-            <div class="cover-hits">Views: {{ video.hits }}</div>
-        </div>
-        <img src="{{ video.thumbnail_url }}">
-    </a>
-    <a class="next-top-videos" target="_blank" href="{{ video.url }}">
-        <div class="hover-cover">
-            <div class="cover-title">{{ video.title }}</div>
-            <div class="cover-uploader">Uper: {{ video.uploader.nickname }}</div>
-            <div class="cover-hits">Views: {{ video.hits }}</div>
-        </div>
-        <img src="{{ video.thumbnail_url }}">
-    </a>
+    {% endfor %}
 </div>
 
-<div class="sub-category-block">
-    <div class="category-title-line container">
-        <div class="category-title-head"></div>
-        <a class="category-title">{{ category_name }}<span class="category-middle"></span>{{ subcategory_name }}</a>
-    </div>
-    <div class="video-preview-container container">
-        <a class="video-preview wide">
-            <div class="video-preview-thumbnail">
-                <img src="">
-                <!-- <div class="preview-time">23:20</div> -->
-            </div>
-            <div class="video-preview-statistic">
-                <div class="video-preview-title">WHY!? WHY DID YOU HAVE TO DO THAT!? | Exoptable Money (Prequel to Presentable Liberty)</div>
-                <div class="video-preview-hits">121,121,121</div>
-                <div class="video-preview-danmaku-num">232,323</div>
-            </div>
-            <div class="video-preview-popup">
-                <div class="popup-title">WHY!? WHY DID YOU HAVE TO DO THAT!? | Exoptable Money (Prequel to Presentable Liberty)</div>
-                <div class="popup-statistic-line">
-                    <div class="popup-statistic-entry views">12323</div>
-                    <div class="popup-statistic-entry favorites">12323</div>
-                    <div class="popup-statistic-entry danmaku">12323</div>
-                    <div class="popup-statistic-entry bullets">12323</div>
-                </div>
-                <div class="popup-intro">
-                    <div class="popup-thumbnail">
-                        <img src="">
-                    </div>
-                    <div class="popup-descript">
-                        WHY!? WHY DID YOU HAVE TO DO THAT!? | Exoptable Money (Prequel to Presentable Liberty)Wdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
-                    </div>
-                </div>
-                <div class="popup-upload-info">
-                    <div class="popup-uploader">UPer: OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO</div>
-                    <div class="popup-upload-time">2015-01-18 19:20</div>
-                </div>
-            </div>
-        </a>
-        <a class="video-preview wide">
-            <div class="video-preview-thumbnail">
-                <img src="">
-                <!-- <div class="preview-time">23:20</div> -->
-            </div>
-            <div class="video-preview-statistic">
-                <div class="video-preview-title">WHY!? WHY DID YOU HAVE TO DO THAT!? | Exoptable Money (Prequel to Presentable Liberty)</div>
-                <div class="video-preview-hits">121,121,121</div>
-                <div class="video-preview-danmaku-num">232,323</div>
-            </div>
-            <div class="video-preview-popup">
-                <div class="popup-title">WHY!? WHY DID YOU HAVE TO DO THAT!? | Exoptable Money (Prequel to Presentable Liberty)</div>
-                <div class="popup-statistic-line">
-                    <div class="popup-statistic-entry views">12323</div>
-                    <div class="popup-statistic-entry favorites">12323</div>
-                    <div class="popup-statistic-entry danmaku">12323</div>
-                    <div class="popup-statistic-entry bullets">12323</div>
-                </div>
-                <div class="popup-intro">
-                    <div class="popup-thumbnail">
-                        <img src="">
-                    </div>
-                    <div class="popup-descript">
-                        WHY!? WHY DID YOU HAVE TO DO THAT!? | Exoptable Money (Prequel to Presentable Liberty)Wdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
-                    </div>
-                </div>
-                <div class="popup-upload-info">
-                    <div class="popup-uploader">UPer: OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO</div>
-                    <div class="popup-upload-time">2015-01-18 19:20</div>
-                </div>
-            </div>
-        </a>
-        <a class="video-preview wide">
-            <div class="video-preview-thumbnail">
-                <img src="">
-                <!-- <div class="preview-time">23:20</div> -->
-            </div>
-            <div class="video-preview-statistic">
-                <div class="video-preview-title">WHY!? WHY DID YOU HAVE TO DO THAT!? | Exoptable Money (Prequel to Presentable Liberty)</div>
-                <div class="video-preview-hits">121,121,121</div>
-                <div class="video-preview-danmaku-num">232,323</div>
-            </div>
-            <div class="video-preview-popup">
-                <div class="popup-title">WHY!? WHY DID YOU HAVE TO DO THAT!? | Exoptable Money (Prequel to Presentable Liberty)</div>
-                <div class="popup-statistic-line">
-                    <div class="popup-statistic-entry views">12323</div>
-                    <div class="popup-statistic-entry favorites">12323</div>
-                    <div class="popup-statistic-entry danmaku">12323</div>
-                    <div class="popup-statistic-entry bullets">12323</div>
-                </div>
-                <div class="popup-intro">
-                    <div class="popup-thumbnail">
-                        <img src="">
-                    </div>
-                    <div class="popup-descript">
-                        WHY!? WHY DID YOU HAVE TO DO THAT!? | Exoptable Money (Prequel to Presentable Liberty)Wdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
-                    </div>
-                </div>
-                <div class="popup-upload-info">
-                    <div class="popup-uploader">UPer: OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO</div>
-                    <div class="popup-upload-time">2015-01-18 19:20</div>
-                </div>
-            </div>
-        </a>
-        <a class="video-preview wide">
-            <div class="video-preview-thumbnail">
-                <img src="">
-                <!-- <div class="preview-time">23:20</div> -->
-            </div>
-            <div class="video-preview-statistic">
-                <div class="video-preview-title">WHY!? WHY DID YOU HAVE TO DO THAT!? | Exoptable Money (Prequel to Presentable Liberty)</div>
-                <div class="video-preview-hits">121,121,121</div>
-                <div class="video-preview-danmaku-num">232,323</div>
-            </div>
-            <div class="video-preview-popup">
-                <div class="popup-title">WHY!? WHY DID YOU HAVE TO DO THAT!? | Exoptable Money (Prequel to Presentable Liberty)</div>
-                <div class="popup-statistic-line">
-                    <div class="popup-statistic-entry views">12323</div>
-                    <div class="popup-statistic-entry favorites">12323</div>
-                    <div class="popup-statistic-entry danmaku">12323</div>
-                    <div class="popup-statistic-entry bullets">12323</div>
-                </div>
-                <div class="popup-intro">
-                    <div class="popup-thumbnail">
-                        <img src="">
-                    </div>
-                    <div class="popup-descript">
-                        WHY!? WHY DID YOU HAVE TO DO THAT!? | Exoptable Money (Prequel to Presentable Liberty)Wdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
-                    </div>
-                </div>
-                <div class="popup-upload-info">
-                    <div class="popup-uploader">UPer: OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO</div>
-                    <div class="popup-upload-time">2015-01-18 19:20</div>
-                </div>
-            </div>
-        </a>
-        <a class="video-preview wide">
-            <div class="video-preview-thumbnail">
-                <img src="">
-                <!-- <div class="preview-time">23:20</div> -->
-            </div>
-            <div class="video-preview-statistic">
-                <div class="video-preview-title">WHY!? WHY DID YOU HAVE TO DO THAT!? | Exoptable Money (Prequel to Presentable Liberty)</div>
-                <div class="video-preview-hits">121,121,121</div>
-                <div class="video-preview-danmaku-num">232,323</div>
-            </div>
-            <div class="video-preview-popup">
-                <div class="popup-title">WHY!? WHY DID YOU HAVE TO DO THAT!? | Exoptable Money (Prequel to Presentable Liberty)</div>
-                <div class="popup-statistic-line">
-                    <div class="popup-statistic-entry views">12323</div>
-                    <div class="popup-statistic-entry favorites">12323</div>
-                    <div class="popup-statistic-entry danmaku">12323</div>
-                    <div class="popup-statistic-entry bullets">12323</div>
-                </div>
-                <div class="popup-intro">
-                    <div class="popup-thumbnail">
-                        <img src="">
-                    </div>
-                    <div class="popup-descript">
-                        WHY!? WHY DID YOU HAVE TO DO THAT!? | Exoptable Money (Prequel to Presentable Liberty)Wdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
-                    </div>
-                </div>
-                <div class="popup-upload-info">
-                    <div class="popup-uploader">UPer: OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO</div>
-                    <div class="popup-upload-time">2015-01-18 19:20</div>
-                </div>
-            </div>
-        </a>
-    </div>
-    <div class="pagination-line">
+<div class="sub-category-block wide category container" data-category="{{ category_name }}" data-subcategory="{{ subcategory_name }}">
+    <div class="sub-category-dynamic-list wide">
+        <div class="category-title-line container">
+            <div class="category-title-head"></div>
+            <a class="category-title" href="{{ uri_for(category_name) }}">{{ category_name }}</a>
+            <span class="category-middle"></span>
+            <a class="category-title" href="{{ uri_for(category_name + '-' + subcategory_name) }}">{{ subcategory_name }}</a>
+        </div>
+        <div class="video-preview-container container">
+        </div>
+        <div class="pagination-line">
+        </div>
     </div>
 </div>
 
-<div class="sub-category-block">
-    <div class="category-title-line container">
-        <div class="category-title-head"></div>
-        <a class="category-title">Newest Uploaded</a>
-    </div>
-    <div class="video-preview-container container">
-        <a class="video-preview wide">
-            <div class="video-preview-thumbnail">
-                <img src="">
-                <!-- <div class="preview-time">23:20</div> -->
-            </div>
-            <div class="video-preview-statistic">
-                <div class="video-preview-title">WHY!? WHY DID YOU HAVE TO DO THAT!? | Exoptable Money (Prequel to Presentable Liberty)</div>
-                <div class="video-preview-hits">121,121,121</div>
-                <div class="video-preview-danmaku-num">232,323</div>
-            </div>
-            <div class="video-preview-popup">
-                <div class="popup-title">WHY!? WHY DID YOU HAVE TO DO THAT!? | Exoptable Money (Prequel to Presentable Liberty)</div>
-                <div class="popup-statistic-line">
-                    <div class="popup-statistic-entry views">12323</div>
-                    <div class="popup-statistic-entry favorites">12323</div>
-                    <div class="popup-statistic-entry danmaku">12323</div>
-                    <div class="popup-statistic-entry bullets">12323</div>
-                </div>
-                <div class="popup-intro">
-                    <div class="popup-thumbnail">
-                        <img src="">
-                    </div>
-                    <div class="popup-descript">
-                        WHY!? WHY DID YOU HAVE TO DO THAT!? | Exoptable Money (Prequel to Presentable Liberty)Wdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
-                    </div>
-                </div>
-                <div class="popup-upload-info">
-                    <div class="popup-uploader">UPer: OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO</div>
-                    <div class="popup-upload-time">2015-01-18 19:20</div>
-                </div>
-            </div>
-        </a>
-        <a class="video-preview wide">
-            <div class="video-preview-thumbnail">
-                <img src="">
-                <!-- <div class="preview-time">23:20</div> -->
-            </div>
-            <div class="video-preview-statistic">
-                <div class="video-preview-title">WHY!? WHY DID YOU HAVE TO DO THAT!? | Exoptable Money (Prequel to Presentable Liberty)</div>
-                <div class="video-preview-hits">121,121,121</div>
-                <div class="video-preview-danmaku-num">232,323</div>
-            </div>
-            <div class="video-preview-popup">
-                <div class="popup-title">WHY!? WHY DID YOU HAVE TO DO THAT!? | Exoptable Money (Prequel to Presentable Liberty)</div>
-                <div class="popup-statistic-line">
-                    <div class="popup-statistic-entry views">12323</div>
-                    <div class="popup-statistic-entry favorites">12323</div>
-                    <div class="popup-statistic-entry danmaku">12323</div>
-                    <div class="popup-statistic-entry bullets">12323</div>
-                </div>
-                <div class="popup-intro">
-                    <div class="popup-thumbnail">
-                        <img src="">
-                    </div>
-                    <div class="popup-descript">
-                        WHY!? WHY DID YOU HAVE TO DO THAT!? | Exoptable Money (Prequel to Presentable Liberty)Wdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
-                    </div>
-                </div>
-                <div class="popup-upload-info">
-                    <div class="popup-uploader">UPer: OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO</div>
-                    <div class="popup-upload-time">2015-01-18 19:20</div>
-                </div>
-            </div>
-        </a>
-        <a class="video-preview wide">
-            <div class="video-preview-thumbnail">
-                <img src="">
-                <!-- <div class="preview-time">23:20</div> -->
-            </div>
-            <div class="video-preview-statistic">
-                <div class="video-preview-title">WHY!? WHY DID YOU HAVE TO DO THAT!? | Exoptable Money (Prequel to Presentable Liberty)</div>
-                <div class="video-preview-hits">121,121,121</div>
-                <div class="video-preview-danmaku-num">232,323</div>
-            </div>
-            <div class="video-preview-popup">
-                <div class="popup-title">WHY!? WHY DID YOU HAVE TO DO THAT!? | Exoptable Money (Prequel to Presentable Liberty)</div>
-                <div class="popup-statistic-line">
-                    <div class="popup-statistic-entry views">12323</div>
-                    <div class="popup-statistic-entry favorites">12323</div>
-                    <div class="popup-statistic-entry danmaku">12323</div>
-                    <div class="popup-statistic-entry bullets">12323</div>
-                </div>
-                <div class="popup-intro">
-                    <div class="popup-thumbnail">
-                        <img src="">
-                    </div>
-                    <div class="popup-descript">
-                        WHY!? WHY DID YOU HAVE TO DO THAT!? | Exoptable Money (Prequel to Presentable Liberty)Wdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
-                    </div>
-                </div>
-                <div class="popup-upload-info">
-                    <div class="popup-uploader">UPer: OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO</div>
-                    <div class="popup-upload-time">2015-01-18 19:20</div>
-                </div>
-            </div>
-        </a>
-        <a class="video-preview wide">
-            <div class="video-preview-thumbnail">
-                <img src="">
-                <!-- <div class="preview-time">23:20</div> -->
-            </div>
-            <div class="video-preview-statistic">
-                <div class="video-preview-title">WHY!? WHY DID YOU HAVE TO DO THAT!? | Exoptable Money (Prequel to Presentable Liberty)</div>
-                <div class="video-preview-hits">121,121,121</div>
-                <div class="video-preview-danmaku-num">232,323</div>
-            </div>
-            <div class="video-preview-popup">
-                <div class="popup-title">WHY!? WHY DID YOU HAVE TO DO THAT!? | Exoptable Money (Prequel to Presentable Liberty)</div>
-                <div class="popup-statistic-line">
-                    <div class="popup-statistic-entry views">12323</div>
-                    <div class="popup-statistic-entry favorites">12323</div>
-                    <div class="popup-statistic-entry danmaku">12323</div>
-                    <div class="popup-statistic-entry bullets">12323</div>
-                </div>
-                <div class="popup-intro">
-                    <div class="popup-thumbnail">
-                        <img src="">
-                    </div>
-                    <div class="popup-descript">
-                        WHY!? WHY DID YOU HAVE TO DO THAT!? | Exoptable Money (Prequel to Presentable Liberty)Wdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
-                    </div>
-                </div>
-                <div class="popup-upload-info">
-                    <div class="popup-uploader">UPer: OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO</div>
-                    <div class="popup-upload-time">2015-01-18 19:20</div>
-                </div>
-            </div>
-        </a>
-        <a class="video-preview wide">
-            <div class="video-preview-thumbnail">
-                <img src="">
-                <!-- <div class="preview-time">23:20</div> -->
-            </div>
-            <div class="video-preview-statistic">
-                <div class="video-preview-title">WHY!? WHY DID YOU HAVE TO DO THAT!? | Exoptable Money (Prequel to Presentable Liberty)</div>
-                <div class="video-preview-hits">121,121,121</div>
-                <div class="video-preview-danmaku-num">232,323</div>
-            </div>
-            <div class="video-preview-popup">
-                <div class="popup-title">WHY!? WHY DID YOU HAVE TO DO THAT!? | Exoptable Money (Prequel to Presentable Liberty)</div>
-                <div class="popup-statistic-line">
-                    <div class="popup-statistic-entry views">12323</div>
-                    <div class="popup-statistic-entry favorites">12323</div>
-                    <div class="popup-statistic-entry danmaku">12323</div>
-                    <div class="popup-statistic-entry bullets">12323</div>
-                </div>
-                <div class="popup-intro">
-                    <div class="popup-thumbnail">
-                        <img src="">
-                    </div>
-                    <div class="popup-descript">
-                        WHY!? WHY DID YOU HAVE TO DO THAT!? | Exoptable Money (Prequel to Presentable Liberty)Wdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
-                    </div>
-                </div>
-                <div class="popup-upload-info">
-                    <div class="popup-uploader">UPer: OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO</div>
-                    <div class="popup-upload-time">2015-01-18 19:20</div>
-                </div>
-            </div>
-        </a>
-    </div>
-    <div class="pagination-line">
+<div class="sub-category-block wide newest category container" data-category="{{ category_name }}" data-subcategory="{{ subcategory_name }}">
+    <div class="sub-category-dynamic-list wide">
+        <div class="category-title-line container">
+            <div class="category-title-head"></div>
+            <a class="category-title">Newest Uploaded</a>
+        </div>
+        <div class="video-preview-container container">
+        </div>
+        <div class="pagination-line">
+        </div>
     </div>
 </div>
 {% endblock %}

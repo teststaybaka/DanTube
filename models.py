@@ -12,6 +12,7 @@ import urlparse
 import time
 import re
 import logging
+import math
 
 def time_to_seconds(time):
   return int((time - datetime(2000, 1, 1)).total_seconds())
@@ -28,7 +29,7 @@ class Favorite(ndb.Model):
 class User(webapp2_extras.appengine.auth.models.User):
   verified = ndb.BooleanProperty(required=True, indexed=False)
   nickname = ndb.StringProperty(required=True)
-  intro = ndb.StringProperty(default="", required=True, indexed=False)
+  intro = ndb.TextProperty(default="", required=True, indexed=False)
   avatar = ndb.BlobKeyProperty()
   default_avatar = ndb.IntegerProperty(default=1, choices=[1,2,3,4,5,6], indexed=False)
   spacename = ndb.StringProperty(indexed=False)
@@ -274,7 +275,6 @@ URL_NAME_DICT = {
   }],
 };
 
-PAGE_SIZE = 12
 MAX_QUERY_RESULT = 1000
 
 class PlayList(ndb.Model):
@@ -294,10 +294,43 @@ class PlayList(ndb.Model):
     playList.put()
     return playList
 
-class Video(ndb.Model):
-  url = ndb.StringProperty(indexed=False)
+
+class VideoClip(ndb.Model):
+  subintro = ndb.TextProperty(default='', required=True, indexed=False)
+  raw_url = ndb.StringProperty(indexed=False)
   vid = ndb.StringProperty(required=True, indexed=False)
   source = ndb.StringProperty(required=True, choices=['youtube'])
+
+  @staticmethod
+  def parse_url(raw_url):
+    if not urlparse.urlparse(raw_url).scheme:
+      raw_url = "http://" + raw_url
+    url_parts = raw_url.split('//')[-1].split('/')
+    source = url_parts[0].split('.')[-2]
+    if source == 'youtube':
+      vid = url_parts[-1].split('=')[-1]
+      url = 'http://www.youtube.com/embed/' + vid
+    else:
+      url = raw_url
+    return {'url': url, 'vid': vid, 'source': source}
+
+  @staticmethod
+  def Create(subintro, raw_url):
+    res = VideoClip.parse_url(raw_url)
+    clip = VideoClip(
+      subintro=subintro, 
+      raw_url=raw_url,
+      vid = res['vid'],
+      source=res['source']
+    )
+    clip.put()
+    return clip
+
+class Video(ndb.Model):
+  video_clips = ndb.KeyProperty(kind='VideoClip', repeated=True)
+  video_clip_titles = ndb.StringProperty(repeated=True)
+  default_thumbnail = ndb.StringProperty()
+
   created = ndb.DateTimeProperty(auto_now_add=True)
   last_liked = ndb.DateTimeProperty(default=datetime.fromtimestamp(0))
   uploader = ndb.KeyProperty(kind='User', required=True)
@@ -311,7 +344,7 @@ class Video(ndb.Model):
 
   video_list_belonged = ndb.KeyProperty(kind='PlayList')
   video_order = ndb.IntegerProperty()
-  danmaku_counter = ndb.IntegerProperty(required=True, default=0)
+  # danmaku_counter = ndb.IntegerProperty(required=True, default=0)
   comment_counter = ndb.IntegerProperty(required=True, default=0)
   allow_tag_add = ndb.BooleanProperty(required=True, default=True)
   tags = ndb.StringProperty(repeated=True)
@@ -323,13 +356,13 @@ class Video(ndb.Model):
   bullets = ndb.IntegerProperty(required=True, default=0)
   be_collected = ndb.IntegerProperty(required=True, default=0)
 
-  _cls_var = 0
-  _page_size = 3
-  _page_cursors = {}
-  _video_counts = {}
+  # cls_var = 0
+  # page_size = 3
+  # page_cursors = {}
+  video_counts = {}
 
   @classmethod
-  def _get_query(cls, category="", subcategory=""):
+  def get_query(cls, category="", subcategory=""):
     if category:
       if subcategory:
         query = cls.query(cls.category==category, cls.subcategory==subcategory)
@@ -340,52 +373,53 @@ class Video(ndb.Model):
     return query
 
   @classmethod
-  def _inc_video_count(cls, category="", subcategory=""):
-    count_key = category + ';' + subcategory
-    try:
-      cls._video_counts[count_key] += 1
-    except KeyError:
-      cls._video_counts[count_key] = cls._get_query(category, subcategory).count()
-      cls._video_counts[count_key] += 1
-
-  @classmethod
-  def _dec_video_count(cls, category="", subcategory=""):
-    count_key = category + ';' + subcategory
-    try:
-      cls._video_counts[count_key] -= 1
-    except KeyError:
-      cls._video_counts[count_key] = cls._get_query(category, subcategory).count()
-      cls._video_counts[count_key] -= 1
-
-  @classmethod
   def get_video_count(cls, category="", subcategory=""):
     count_key = category + ';' + subcategory
     try:
-      video_count = cls._video_counts[count_key]
+      video_count = cls.video_counts[count_key]
     except KeyError:
-      cls._video_counts[count_key] = cls._get_query(category, subcategory).count()
-      video_count = cls._video_counts[count_key]
+      cls.video_counts[count_key] = cls.get_query(category, subcategory).count()
+      video_count = cls.video_counts[count_key]
 
     return video_count
 
   @classmethod
-  def get_page_count(cls, category="", subcategory="", page_size = PAGE_SIZE):
+  def inc_video_count(cls, category="", subcategory=""):
+    count_key = category + ';' + subcategory
+    try:
+      cls.video_counts[count_key] += 1
+    except KeyError:
+      cls.video_counts[count_key] = cls.get_query(category, subcategory).count()
+      cls.video_counts[count_key] += 1
+
+  @classmethod
+  def dec_video_count(cls, category="", subcategory=""):
+    count_key = category + ';' + subcategory
+    try:
+      cls.video_counts[count_key] -= 1
+    except KeyError:
+      cls.video_counts[count_key] = cls.get_query(category, subcategory).count()
+      cls.video_counts[count_key] -= 1
+
+  @classmethod
+  def get_page_count(cls, page_size, category="", subcategory=""):
     video_count = cls.get_video_count(category, subcategory)
-    page_count = -(-video_count // page_size)
+    # page_count = -(-video_count // page_size)
+    page_count = math.ceil(video_count/float(page_size))
 
     return min(page_count, 100)
 
   @classmethod
-  def get_page(cls, category="", subcategory="", order="", page=1, page_size = PAGE_SIZE):
-    page_count = cls.get_page_count(category, subcategory, page_size)
+  def get_page(cls, page_size, page, category="", subcategory="", order=""):
+    page_count = cls.get_page_count(category=category, subcategory=subcategory, page_size=page_size)
     if page > page_count:
       return [], page_count
     offset = (page - 1) * page_size
-    videos = cls._get_query(category, subcategory).order(-order).fetch(limit=page_size, offset=offset)
+    videos = cls.get_query(category, subcategory).order(-order).fetch(limit=page_size, offset=offset)
     return videos, page_count
 
   @classmethod
-  def fetch_page(cls, category="", subcategory="", order="", page=1):
+  def fetch_page(cls, page, category="", subcategory="", order=""):
     page_count = cls.get_page_count(category, subcategory)
     if page > page_count:
       return [], False
@@ -456,15 +490,14 @@ class Video(ndb.Model):
 
   def get_basic_info(self):
     if self.thumbnail is None:
-      thumbnail_url = 'http://img.youtube.com/vi/' + self.vid + '/mqdefault.jpg'
-      thumbnail_url_hq = 'http://img.youtube.com/vi/' + self.vid + '/maxresdefault.jpg'
+      thumbnail_url = 'http://img.youtube.com/vi/' + self.default_thumbnail + '/mqdefault.jpg'
+      thumbnail_url_hq = 'http://img.youtube.com/vi/' + self.default_thumbnail + '/maxresdefault.jpg'
     else:
       thumbnail_url = images.get_serving_url(self.thumbnail, size=240)
       thumbnail_url_hq = images.get_serving_url(self.thumbnail)
 
     basic_info = {
       'title': self.title,
-      'vid': self.vid,
       'url': '/video/'+ str(self.key.id()),
       'id_num': self.key.id().replace('dt', ''),
       'thumbnail_url': thumbnail_url,
@@ -474,7 +507,6 @@ class Video(ndb.Model):
       'category': self.category,
       'subcategory': self.subcategory,
       'hits': self.hits,
-      'danmaku_counter': self.danmaku_counter,
       'bullets': self.bullets,
       'comment_counter': self.comment_counter,
       'likes': self.likes,
@@ -514,25 +546,6 @@ class Video(ndb.Model):
   def get_by_id(cls, id):
     return super(Video, cls).get_by_id(id, parent=ndb.Key('EntityType', 'Video'))
 
-  @staticmethod
-  def parse_url(raw_url):
-    if not urlparse.urlparse(raw_url).scheme:
-      raw_url = "http://" + raw_url
-
-    try:
-      req = urllib2.urlopen(raw_url)
-    except:
-      return {'error': 'invalid url'}
-    else:
-      url_parts = raw_url.split('//')[-1].split('/')
-      source = url_parts[0].split('.')[-2]
-      if source == 'youtube':
-        vid = url_parts[-1].split('=')[-1]
-        url = 'http://www.youtube.com/embed/' + vid
-      else:
-        url = raw_url
-      return {'url': url, 'vid': vid, 'source': source}
-
   @classmethod
   def get_max_id(cls):
     try:
@@ -554,56 +567,44 @@ class Video(ndb.Model):
       latest_video = cls.query(ancestor=ndb.Key('EntityType', 'Video')).order(-cls.created).get()
       if latest_video is not None:
         max_id = int(latest_video.key.id()[2:])
-        logging.info(max_id)
+        # logging.info(max_id)
         cls.id_counter = max_id + 1
       else:
         cls.id_counter = 1
     return cls.id_counter
 
   @classmethod
-  def Create(cls, raw_url, user, description, title, category, subcategory, video_type, tags, allow_tag_add, thumbnail):
-    res = cls.parse_url(raw_url)
-    if res.get('error'):
-      # return 'URL Error.'
-      raise Exception(res['error'])
+  def Create(cls, user, description, title, category, subcategory, video_type, tags, allow_tag_add, thumbnail):
+    try:
+      id = 'dt'+str(cls.getID())
+      logging.info(id)
+      video = Video(
+        # id = 'dt'+str(cls.getID()),
+        key = ndb.Key('Video', id, parent=ndb.Key('EntityType', 'Video')),
+        uploader = user.key,
+        description = description,
+        title = title, 
+        category = category,
+        subcategory = subcategory,
+        video_type = video_type,
+        tags = tags,
+        allow_tag_add = allow_tag_add,
+        thumbnail = thumbnail
+      )
+      video.put()
+    except Exception, e:
+      logging.info(e)
+      # cls._dec_video_count(category)
+      # cls._dec_video_count(category, subcategory)
+      raise Exception('Failed to submit the video. Please try again.')
     else:
-      if (category in Video_Category) and (subcategory in Video_SubCategory[category]):
-        cls._inc_video_count(category)
-        cls._inc_video_count(category, subcategory)  
-        try:
-          id = 'dt'+str(cls.getID())
-          logging.info(id)
-          video = Video(
-            # id = 'dt'+str(cls.getID()),
-            key = ndb.Key('Video', id, parent=ndb.Key('EntityType', 'Video')),
-            url = raw_url,
-            vid = res['vid'],
-            source = res['source'],
-            uploader = user.key,
-            description = description,
-            title = title, 
-            category = category,
-            subcategory = subcategory,
-            video_type = video_type,
-            tags = tags,
-            allow_tag_add = allow_tag_add,
-            thumbnail = thumbnail
-          )
-          video.put()
-        except Exception, e:
-          logging.info(e)
-          cls._dec_video_count(category)
-          cls._dec_video_count(category, subcategory)
-          raise Exception('Failed to submit video. Please try again.')
-        else:
-          video.create_index('videos_by_created', time_to_seconds(video.created) )
-          video.create_index('videos_by_hits', video.hits )
-          video.create_index('videos_by_favors', video.favors )
-          video.create_index('videos_by_user' + str(video.uploader.id()), time_to_seconds(video.created) )
-          return video
-      else:
-        # return 'Category mismatch.'
-        raise Exception('Category mismatch')
+      cls.inc_video_count(category)
+      cls.inc_video_count(category, subcategory)
+      video.create_index('videos_by_created', time_to_seconds(video.created) )
+      video.create_index('videos_by_hits', video.hits )
+      video.create_index('videos_by_favors', video.favors )
+      video.create_index('videos_by_user' + str(video.uploader.id()), time_to_seconds(video.created) )
+      return video
 
 class Danmaku(ndb.Model):
   video = ndb.KeyProperty(kind='Video', required=True)

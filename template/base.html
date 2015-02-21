@@ -60,11 +60,11 @@
         <div id="navigation-bar" class="container">
             <a id="home-link" href="{{ uri_for('home') }}">Home</a>
             {% for key in category %}
-            <div class="category">
-                <a class="category-name" href="{{ uri_for(key) }}">{{ key }}</a>
-                <div class="dragdown-menu">
+            <div class="navi-category">
+                <a class="navi-category-name" href="{{ uri_for(key) }}">{{ key }}</a>
+                <div class="navi-dragdown-menu">
                     {% for val in subcategory[key] %}
-                    <a class="sub-category" href="{{ uri_for([key,val]|join('-')) }}">
+                    <a class="navi-subcategory" href="{{ uri_for([key,val]|join('-')) }}">
                         <span class="category-arrow"></span>
                         <span>{{ val }}</span>
                     </a>

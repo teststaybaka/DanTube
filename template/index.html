@@ -2,7 +2,6 @@
 {% block head %}
 {{ super() }}
 <link rel="stylesheet" href="/static/index.css" type="text/css" />
-<script src="/static/videolist.js" language="JavaScript" type="text/javascript"></script>
 <script src="/static/index.js" language="JavaScript" type="text/javascript"></script>
 {% endblock %}
 
@@ -53,16 +52,17 @@
     </div>
 </div>
 
-<div class="sub-category-block container random">
+<div class="sub-category-block random">
     <div class="category-title-line container">
         <div class="category-title-head"></div>
-        <a class="category-title">What to Watch</a>
+        <a class="category-title no-link">What to Watch</a>
         <a class="more-video fresh">Refresh</a>
     </div>
+    <div class="single-preview-line container"></div>
 </div>
 
 {% for cat in category %}
-<div class="sub-category-block container category" data-category="{{ cat }}">
+<div class="sub-category-block category container" data-category="{{ cat }}" data-subcategory="">
     <div class="sub-category-dynamic-list">
         <div class="category-title-line container">
             <div class="category-title-head"></div>

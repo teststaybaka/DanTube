@@ -45,8 +45,8 @@
       <a href="{{ uri_for(video.category) }}">{{ video.category }}</a> > 
       <a href="{{ uri_for([video.category, video.subcategory]|join('-')) }}">{{ video.subcategory }}</a>
       <i>Hits: {{ video.hits }}</i>
-      <i>Danmakus: {{ video.danmaku_counter }}</i>
       <i>Likes: {{ video.likes }}</i>
+      <i>Bullets: {{ video.bullet }}</i>
       <i>Favors: {{ video.favors }}</i>
     </div>
     <div id="add-to-favorite">Add to favorites</div>

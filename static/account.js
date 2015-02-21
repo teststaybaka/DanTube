@@ -83,6 +83,8 @@ $(document).ready(function() {
         $("#sub-playlists").addClass("active");
     } else if (urls[urls.length-1] === "submit") {
         $("#sub-submit").addClass("active");
+    } else if (urls[urls.length-1] === "submit_multi") {
+        $("#sub-submit").addClass("active");
     } else if (urls[urls.length-1] === "subscriptions") {
         $("#subscriptions").addClass("active");
     } else if (urls[urls.length-1] === "subscribed") {

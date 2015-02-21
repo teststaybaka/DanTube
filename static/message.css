@@ -273,7 +273,6 @@ form.reply-block {
 #send-message {
     resize: none;
     height: 100px;
-    min-height: 100px;
     width: 500px;
 }
 
