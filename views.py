@@ -99,9 +99,24 @@ class BaseHandler(webapp2.RequestHandler):
         template = env.get_template(path)
         self.response.write(template.render(context))
     
-    def notify(self, notice, status=200):
+    def notify(self, notice, status=200, type='error'):
         self.response.set_status(status)
-        self.render('notice', {'notice': notice})
+        self.render('notice', {'notice': notice, 'type': type})
+
+    def get_page_range(self, cur_page, total_pages, page_range=10):
+        cur_page = int(cur_page)
+        total_pages = int(total_pages)
+        max_page = min(cur_page + 4, total_pages)
+        min_page = max(cur_page - 5, 1)
+        remain_page = page_range - (max_page - cur_page) - (cur_page - min_page) - 1
+        if remain_page > 0:
+            max_page = min(max_page + remain_page, total_pages);
+            min_page = max(min_page - remain_page, 1);
+        return {
+            'total_pages': total_pages,
+            'cur_page': cur_page,
+            'pages': range(min_page, max_page+1)
+        }
 
 def login_required(handler):
   """

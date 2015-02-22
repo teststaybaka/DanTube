@@ -68,7 +68,8 @@ function self_intro_check(ori_intro) {
 }
 
 $(document).ready(function() {
-    var urls = window.location.href.split('/');
+    var urls = window.location.href.split('?');
+    urls = urls[0].split('/')
     if (urls[urls.length-1] === "account") {
         $("#sub-overview").addClass("active");
     } else if (urls[urls.length-1] === "password") {

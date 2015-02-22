@@ -14,18 +14,7 @@
 
 {% block detail %}
 <div id="sub-title-line" class="container">
-  <div id="sub-title">{{ user.favorites_counter }}/{{ user.favorites_limit }} Videos</div>
-<!--   <div id="sub-search-block">
-      <input id="sub-search-input" type="text" placeholder="Search Videos">
-      <div id="sub-search-button"></div>
-  </div>
-  <div id="view-method">
-      <div class="selected">Latest</div>
-      <div class="option">
-          <div class="option-entry">Most viewed</div>
-          <div class="option-entry">Most favored</div>
-      </div>
-  </div> -->
+  <div id="sub-title">{{ favorites_counter }}/{{ favorites_limit }} Videos</div>
   <div id="action-select">
       <div class="selected">Actions</div>
       <div class="option">
@@ -34,9 +23,56 @@
   </div>
 </div>
 <div class="favortite-video-container">
+  {% if total_pages == 0 %}
+  <div class="video-entry none">
+    No videos found.
+  </div>
+  {% endif %}
+  {% for video in videos %}
+  <div class="video-entry dt{{ video.id_num }}">
+    <a class="video-img" href="{{ video.url }}" target="_blank">
+        <img class="video-img" src="{{ video.thumbnail_url }}">
+    </a>
+    <div class="video-info">
+        <div>
+            <div class="video-category">{{ video.category }}</div>
+            <div class="video-category-arrow"></div>
+            <div class="video-category">{{ video.subcategory }}</div>
+            <div class="video-time">{{ video.created }}</div>
+        </div>
+        <div>
+            <a href="{{ video.url }}" class="video-title favored" target="_blank">{{ video.title }}</a>
+        </div>
+        <div class="video-statistic favored">
+            <div class="video-statistic-entry">Views: <label class="statistic-entry-number">{{ video.hits }}</label></div>
+            <div class="video-statistic-entry">Favors: <label class="statistic-entry-number">{{ video.favors }}</label></div>
+            <div class="video-statistic-entry">Comments: <label class="statistic-entry-number">{{ video.comment_counter }}</label></div>
+            <div class="video-statistic-entry">Bullets: <label class="statistic-entry-number">{{ video.bullets }}</label></div>
+        </div>
+        <div class="favored-time">
+            <label>Favored at: </label>
+            video.favored_time
+        </div>
+        <div class="video-select-checkbox" data-id="{{ video.id_num }}" data-title="{{ video.title }}"></div>
+    </div>
+  </div>
+  {% endfor %}
 </div>
+{% if total_pages != 0 %}
 <div class="pagination-line">
+  {% if cur_page > 1 %}
+    <a class="page-change" href="{{ uri_for('favorites') }}?page=1"><<</a>
+    <a class="page-change" href="{{ uri_for('favorites') }}?page={{ cur_page - 1 }}"><</a>
+  {% endif %}
+  {% for p in pages %}
+    <a class="page-num {% if p == cur_page %}active{% endif %}" href="{{ uri_for('favorites') }}?page={{ p }}">{{ p }}</a>
+  {% endfor %}
+  {% if cur_page < total_pages %}
+    <a class="page-change" href="{{ uri_for('favorites') }}?page={{ cur_page + 1 }}">></a>
+    <a class="page-change" href="{{ uri_for('favorites') }}?page={{ total_pages }}">>></a>
+  {% endif %}
 </div>
+{% endif %}
 {% endblock %}
 
 {% block popup_window %}

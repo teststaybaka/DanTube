@@ -18,44 +18,55 @@ class ManagePlaylist(BaseHandler):
     def get(self):
         # self.render('manage_playlist')
         self.render('edit_playlist')
-        
+
+class History(BaseHandler):
+    @login_required
+    def get(self):
+        user = self.user
+        page_size = 10
+        try:
+            page = int(self.request.get('page'))
+        except ValueError:
+            page = 1
+
+        context = {}
+        context['videos'] = []
+        requested_history = []
+
+        base = len(user.history) - 1 - (page - 1)*page_size;
+        for i in range(0, page_size):
+            if base - i < 0:
+                break
+            requested_history.append(user.history[base - i])
+
+        videos = ndb.get_multi([f.video for f in requested_history])
+        for i in range(0, len(requested_history)):
+            video = videos[i]
+            video_info = video.get_basic_info()
+            uploader = models.User.get_by_id(video.uploader.id())
+            video_info['uploader'] = uploader.get_public_info()
+            video_info['last_viewed_time'] = requested_history[i].last_viewed_time.strftime("%Y-%m-%d %H:%M")
+            context['videos'].append(video_info)
+
+        context.update(self.get_page_range(page, math.ceil(len(user.history)/float(page_size))) )
+        self.render('history', context)
+
 class Favorites(BaseHandler):
     @login_required
     def get(self):
         user = self.user
-        context = {}
-        context['user'] = {
-            'favorites_counter': len(user.favorites),
-            'favorites_limit': user.favorites_limit
-        }
-        self.render('favorites', context)
-
-    @login_required
-    def post(self):
-        user = self.user
-        self.response.headers['Content-Type'] = 'application/json'
+        page_size = 10
         try:
             page = int(self.request.get('page'))
         except ValueError:
-            self.response.out.write(json.dumps({
-                'error': True,
-                'message': 'Invalid page'
-            }))
-            return
+            page = 1
 
-        try:
-            page_size = int(self.request.get('page_size'))
-        except ValueError:
-            self.response.out.write(json.dumps({
-                'error': True,
-                'message': 'Invalid page size'
-            }))
-            return
+        context = {}
+        context['favorites_counter'] = len(user.favorites)
+        context['favorites_limit'] = user.favorites_limit
+        context['videos'] = []
 
-        result = {'error': False}
-        result['videos'] = []
         requested_favorites = []
-
         base = len(user.favorites) - 1 - (page - 1)*page_size;
         for i in range(0, page_size):
             if base - i < 0:
@@ -67,11 +78,10 @@ class Favorites(BaseHandler):
             video = videos[i]
             video_info = video.get_basic_info()
             video_info['favored_time'] = requested_favorites[i].favored_time.strftime("%Y-%m-%d %H:%M")
-            result['videos'].append(video_info)
-            
-        result['total_pages'] = math.ceil(len(user.favorites)/float(page_size))
-        result['total_found'] = len(user.favorites)
-        self.response.out.write(json.dumps(result))
+            context['videos'].append(video_info)
+
+        context.update(self.get_page_range(page, math.ceil(len(user.favorites)/float(page_size))) )
+        self.render('favorites', context)
 
 class Favor(BaseHandler):
     @login_required
@@ -190,29 +200,6 @@ class Subscriptions(BaseHandler):
         for user in subscribed_users:
             context['subscribed_users'].append(user.get_public_info())
         self.render('subscriptions_quick', context)
-
-class History(BaseHandler):
-    @login_required
-    def get(self):
-        user = self.user
-        xrequest = self.request.headers.get('X-Requested-With')
-        if xrequest and xrequest == 'XMLHttpRequest':
-            self.response.headers['Content-Type'] = 'application/json'
-            result = {}
-            result['videos'] = []
-            history = user.history
-            l = len(history)
-            videos = ndb.get_multi([h.video for h in history])
-            for idx, video in enumerate(reversed(videos)):
-                video_info = video.get_basic_info()
-                uploader = models.User.get_by_id(video.uploader.id())
-                video_info['uploader'] = uploader.get_public_info()
-                video_info.update({'last_viewed_time': history[l-1-idx].last_viewed_time.strftime("%Y-%m-%d %H:%M")})
-                result['videos'].append(video_info)
-            self.response.out.write(json.dumps(result))
-
-        else:
-            self.render('history')
 
 class Verification(BaseHandler):
     def get(self, *args, **kwargs):

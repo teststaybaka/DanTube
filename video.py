@@ -248,7 +248,7 @@ class VideoUpload(BaseHandler):
 
         try:
             self.video_clips = []
-            for i in range(0, len(self.subtitles)):
+            for i in range(0, len(self.raw_urls)):
                 video_clip = models.VideoClip.Create(subintro=self.subintros[i], raw_url=self.raw_urls[i])
                 self.video_clips.append(video_clip.key)
         except Exception, e: # TODO: a regular thread is required to remove unused clip
@@ -274,6 +274,8 @@ class VideoUpload(BaseHandler):
                 video_clips = self.video_clips,
             )
         except Exception, e:
+            for i in range(0, len(self.video_clips)):
+                self.video_clips[i].delete
             self.response.out.write(json.dumps({
                 'error': True,
                 'message': str(e),
@@ -438,33 +440,20 @@ class ManageVideo(BaseHandler):
     @login_required
     def get(self):
         user = self.user
-        context = {'user': {'videos_submited': user.videos_submited}}
-        self.render('manage_video', context)
-        
-    @login_required
-    def post(self):
-        user = self.user
-        self.response.headers['Content-Type'] = 'application/json'
+        page_size = 10
         try:
             page = int(self.request.get('page'))
         except ValueError:
-            self.response.out.write(json.dumps({
-                'error': True,
-                'message': 'Invalid page'
-            }))
-            return
+            page = 1
 
-        try:
-            page_size = int(self.request.get('page_size'))
-        except ValueError:
-            self.response.out.write(json.dumps({
-                'error': True,
-                'message': 'Invalid page size'
-            }))
-            return
+        context = {}
+        context['videos'] = []
 
         keywords = self.request.get('keywords').strip().lower()
+        order = self.request.get('order')
         if keywords:
+            context['order'] = 'created'
+            context['keywords'] = keywords
             query_string = 'content: ' + keywords
             page =  min(page, math.ceil(models.MAX_QUERY_RESULT/float(page_size)) )
             offset = (page - 1)*page_size
@@ -480,26 +469,12 @@ class ManageVideo(BaseHandler):
                 for video_doc in result.results:
                     video_keys.append(ndb.Key(urlsafe=video_doc.doc_id))
                 videos = ndb.get_multi(video_keys)
-
-                result = {'error': False}
-                result['videos'] = []
-
-                for i in range(0, len(videos)):
-                    video = videos[i]
-                    video_info = video.get_basic_info()
-                    result['videos'].append(video_info)
-
-                result['total_pages'] = total_pages
-                result['total_found'] = total_found
-                self.response.out.write(json.dumps(result))
             except search.Error:
-                logging.info("search failed")
-                self.response.out.write(json.dumps({
-                    'error': True,
-                    'message': 'Failed to search.'
-                }))
+                self.notify('Search error.')
+                return
         else:
-            order = self.request.get('order')
+            context['order'] = order
+            context['keywords'] = ''
             if order == 'hits': # most viewed
                 order = models.Video.hits
             elif order == 'created': # newest uplooad
@@ -507,28 +482,24 @@ class ManageVideo(BaseHandler):
             elif order == 'favors': # most favors
                 order = models.Video.favors
             else:
-                self.response.out.write(json.dumps({
-                    'error': True,
-                    'message': 'Invalid order'
-                }))
-                return
+                context['order'] = 'created'
+                order = models.Video.created
             
-            video_count = user.videos_submited
-            total_pages = math.ceil(video_count/float(page_size))
-
-            result = {'error': False}
-            result['videos'] = []
-            if video_count != 0 and page <= total_pages:
+            total_found = user.videos_submited
+            total_pages = math.ceil(total_found/float(page_size))
+            videos = []
+            if total_found != 0 and page <= total_pages:
                 offset = (page - 1) * page_size
                 videos = models.Video.query(models.Video.uploader==self.user.key).order(-order).fetch(offset=offset, limit=page_size)
-                for i in range(0, len(videos)):
-                    video = videos[i]
-                    video_info = video.get_basic_info()
-                    result['videos'].append(video_info)
+        
+        for i in range(0, len(videos)):
+            video = videos[i]
+            video_info = video.get_basic_info()
+            context['videos'].append(video_info)
 
-            result['total_pages'] = total_pages
-            result['total_found'] = video_count
-            self.response.out.write(json.dumps(result))
+        context['total_found'] = total_found
+        context.update(self.get_page_range(page, total_pages) )
+        self.render('manage_video', context)
 
 class RandomVideos(BaseHandler):
     #Assuming that there are always more videos than requeseted

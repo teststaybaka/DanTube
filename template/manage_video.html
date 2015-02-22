@@ -14,17 +14,17 @@
 
 {% block detail %}
 <div id="sub-title-line" class="container">
-    <div id="sub-title">{{ user.videos_submited }} Videos</div>
-    <form id="sub-search-block">
-        <input id="sub-search-input" type="text" placeholder="Search Videos">
+    <div id="sub-title"><label class="statistic-entry-number">{{ total_found }}</label> Videos</div>
+    <form id="sub-search-block" method="get" action="{{ uri_for('manage_video') }}">
+        <input id="sub-search-input" type="text" name="keywords" placeholder="Search Videos">
         <input type="submit" id="sub-search-button" value="">
     </form>
     <div id="view-method">
-        <div class="selected">Newest</div>
+        <div class="selected">{% if order == "created" %}Newest{% elif order == "hits" %}Most viewed{% elif order == "favors" %}Most favored{% endif %}</div>
         <div class="option">
-            <div class="option-entry">Newest</div>
-            <div class="option-entry">Most viewed</div>
-            <div class="option-entry">Most favored</div>
+            <a class="option-entry" href="{{ uri_for('manage_video') }}?order=created">Newest</a>
+            <a class="option-entry" href="{{ uri_for('manage_video') }}?order=hits">Most viewed</a>
+            <a class="option-entry" href="{{ uri_for('manage_video') }}?order=favors">Most favored</a>
         </div>
     </div>
     <label id="view-method-label">Sorted by:</label>
@@ -37,9 +37,60 @@
     </div>
 </div>
 <div class="submitted-video-container">
+    {% if total_pages == 0 %}
+    <div class="video-entry none">
+        No videos found.
+    </div>
+    {% endif %}
+    {% for video in videos %}
+    <div class="video-entry dt{{ video.id_num }}">
+        <a class="video-img" href="{{ video.url }}" target="_blank">
+            <img class="video-img" src="{{ video.thumbnail_url }}">
+        </a>
+        <div class="video-info">
+            <div>
+                <div class="video-category">{{ video.category }}</div>
+                <div class="video-category-arrow"></div>
+                <div class="video-category">{{ video.subcategory }}</div>
+                <div class="video-time">{{ video.created }}</div>
+            </div>
+            <div class="video-title">
+                <a href="{{ video.url }}" class="video-title" target="_blank">{{ video.title }}</a>
+            </div>
+            <div class="video-playlist">
+                <label>Prime list: </label>
+                <label class="list-title">Not listed</label>
+            </div>
+            <div class="video-statistic">
+                <div class="video-statistic-entry">Views: <label class="statistic-entry-number">{{ video.hits }}</label></div>
+                <div class="video-statistic-entry">Favors: <label class="statistic-entry-number">{{ video.favors }}</label></div>
+                <div class="video-statistic-entry">Comments: <label class="statistic-entry-number">{{ video.comment_counter }}</label></div>
+                <div class="video-statistic-entry">Bullets: <label class="statistic-entry-number">{{ video.bullets }}</label></div>
+            </div>
+            <div class="video-edit">
+                <a href="{{ uri_for('edit_video', video_id=video.id_num) }}" class="edit-entry">[Edit Video]</a>
+                <a class="edit-entry">[Manage Danmaku]</a>
+            </div>
+            <div class="video-select-checkbox" data-id="{{ video.id_num }}" data-title="{{ video.title }}"></div>
+        </div>
+    </div>
+    {% endfor %}
 </div>
+{% if total_pages != 0 %}
 <div class="pagination-line">
+  {% if cur_page > 1 %}
+    <a class="page-change" href="{{ uri_for('manage_video') }}?keywords={{ keywords }}&order={{ order }}&page=1"><<</a>
+    <a class="page-change" href="{{ uri_for('manage_video') }}?keywords={{ keywords }}&order={{ order }}&page={{ cur_page - 1 }}"><</a>
+  {% endif %}
+  {% for p in pages %}
+    <a class="page-num {% if p == cur_page %}active{% endif %}" href="{{ uri_for('manage_video') }}?keywords={{ keywords }}&order={{ order }}&page={{ p }}">{{ p }}</a>
+  {% endfor %}
+  {% if cur_page < total_pages %}
+    <a class="page-change" href="{{ uri_for('manage_video') }}?keywords={{ keywords }}&order={{ order }}&page={{ cur_page + 1 }}">></a>
+    <a class="page-change" href="{{ uri_for('manage_video') }}?keywords={{ keywords }}&order={{ order }}&page={{ total_pages }}">>></a>
+  {% endif %}
 </div>
+{% endif %}
 {% endblock %}
 
 {% block popup_window %}

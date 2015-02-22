@@ -96,6 +96,9 @@ $(document).ready(function() {
             }, 100);
         }, 100);
     });
+    $('label.statistic-entry-number').each(function() {
+        $(this).text(numberWithCommas($(this).text()) )
+    })
 });
 
 function get_video_list(url, query, callback) {

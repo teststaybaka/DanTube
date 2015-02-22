@@ -578,8 +578,9 @@ a.page-num.hide, a.page-change.hide, div.page-num.hide, div.page-change.hide {
     display: block;
 }
 
-#view-method div.option-entry, #action-select div.option-entry {
+#view-method div.option-entry, #view-method a.option-entry, #action-select div.option-entry {
     padding: 6px 15px 6px 8px;
+    display: block;
 }
 
 #action-select div.option-entry.delete {
@@ -587,7 +588,7 @@ a.page-num.hide, a.page-change.hide, div.page-num.hide, div.page-change.hide {
     border-top: 1px solid rgb(200,200,200);
 }
 
-#view-method div.option-entry:hover, #action-select div.option-entry:hover {
+#view-method div.option-entry:hover, #view-method a.option-entry:hover, #action-select div.option-entry:hover {
     background-color: rgb(245,245,245);
 }
 

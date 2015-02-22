@@ -2,8 +2,6 @@
 {% block head %}
 {{ super() }}
 <link rel="stylesheet" href="/static/history.css" type="text/css" />
-<script src="/static/videolist.js" language="JavaScript" type="text/javascript"></script>
-<script src="/static/history.js" language="JavaScript" type="text/javascript"></script>
 {% endblock %}
 
 {% block body %}
@@ -12,35 +10,48 @@
     <div class="quick-title">Watch History</div>
 </div>
 <div class="history-video-container container">
-<!-- {% if videos|count == 0 %}
-<div class="no-history">
-  No watch history found.
+  {% if total_pages == 0 %}
+  <div class="no-history">
+    No watch history found.
+  </div>
+  {% endif %}
+  {% for video in videos %}
+  <div class="video-entry">
+    <a class="video-img" href="{{ video.url }}" target="_blank">
+      <img src="{{ video.thumbnail_url }}">
+    </a>
+    <div class="video-info">
+      <div class="video-title">
+        <a href="{{ video.url }}" class="video-title" target="_blank">{{ video.title }}</a>
+      </div>
+      <div class="uper-line">
+        <label>by</label>
+        <a href="{{ video.uploader.space_url }}" target="_blank">{{ video.uploader.nickname }}</a>
+      </div>
+      <div class="video-statistic">
+        <div class="video-statistic-entry">Views: <label class="statistic-entry-number">{{ video.hits }}</label></div>
+        <div class="video-statistic-entry">Favors: <label class="statistic-entry-number">{{ video.favors }}</label></div>
+        <div class="video-statistic-entry">Comments: <label class="statistic-entry-number">{{ video.comment_counter }}</label></div>
+        <div class="video-statistic-entry">Bullets: <label class="statistic-entry-number">{{ video.bullets }}</label></div>
+      </div>
+      <div class="last-viewed">Last watched: {{ video.last_viewed_time }}</div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% if total_pages != 0 %}
+<div class="pagination-line">
+  {% if cur_page > 1 %}
+    <a class="page-change" href="{{ uri_for('history') }}?page=1"><<</a>
+    <a class="page-change" href="{{ uri_for('history') }}?page={{ cur_page - 1 }}"><</a>
+  {% endif %}
+  {% for p in pages %}
+    <a class="page-num {% if p == cur_page %}active{% endif %}" href="{{ uri_for('history') }}?page={{ p }}">{{ p }}</a>
+  {% endfor %}
+  {% if cur_page < total_pages %}
+    <a class="page-change" href="{{ uri_for('history') }}?page={{ cur_page + 1 }}">></a>
+    <a class="page-change" href="{{ uri_for('history') }}?page={{ total_pages }}">>></a>
+  {% endif %}
 </div>
 {% endif %}
-{% for video in videos %}
-<div class="video-entry">
-  <a class="video-img" href="{{ video.url }}" target="_blank">
-    <img src="{{ video.thumbnail_url }}">
-  </a>
-  <div class="video-info">
-    <div class="video-title">
-      <a href="{{ video.url }}" class="video-title" target="_blank">{{ video.title }}</a>
-    </div>
-    <div class="uper-line">
-      <label>by</label>
-      <a href="" target="_blank">Markiplier</a>
-    </div>
-    <div class="video-statistic">
-      <div class="video-statistic-entry">Views: {{ video.hits }}</div>
-      <div class="video-statistic-entry">Favors: {{ video.favors }}</div>
-      <div class="video-statistic-entry">Damaku: {{ video.danmaku_counter }}</div>
-      <div class="video-statistic-entry">Comments: {{ video.comment_counter }}</div>
-    </div>
-    <div class="last-viewed">Last watched: {{ video.last_viewed_time }}</div>
-  </div>
-</div>
-{% endfor %} -->
-</div>
-<div class="pagination-line">
-</div>
 {% endblock %}

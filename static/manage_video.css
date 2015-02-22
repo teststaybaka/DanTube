@@ -189,11 +189,11 @@ div.pagination-line {
     border-top: 1px solid rgb(220,220,220);
 }
 
-div.page-num {
+div.page-num, a.page-num {
     margin: 15px 0;
 }
 
-div.page-change {
+div.page-change, a.page-change {
     margin: 15px 5px;
 }
 
