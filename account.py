@@ -2,6 +2,7 @@ from views import *
 from google.appengine.api import images
 from google.appengine.ext import ndb
 import time
+import math
 from PIL import Image
 
 class Account(BaseHandler):
@@ -22,27 +23,96 @@ class Favorites(BaseHandler):
     @login_required
     def get(self):
         user = self.user
-        xrequest = self.request.headers.get('X-Requested-With')
-        if xrequest and xrequest == 'XMLHttpRequest':
-            self.response.headers['Content-Type'] = 'application/json'
-            result = {}
-            result['videos'] = []
-            favorite = user.favorites
-            l = len(favorite)
-            videos = ndb.get_multi([f.video for f in favorite])
-            for idx, video in enumerate(reversed(videos)):
-                video_info = video.get_basic_info()
-                video_info.update({'favored_time': favorite[l-1-idx].favored_time.strftime("%Y-%m-%d %H:%M")})
-                result['videos'].append(video_info)
-            self.response.out.write(json.dumps(result))
+        context = {}
+        context['user'] = {
+            'favorites_counter': len(user.favorites),
+            'favorites_limit': user.favorites_limit
+        }
+        self.render('favorites', context)
 
+    @login_required
+    def post(self):
+        user = self.user
+        self.response.headers['Content-Type'] = 'application/json'
+        try:
+            page = int(self.request.get('page'))
+        except ValueError:
+            self.response.out.write(json.dumps({
+                'error': True,
+                'message': 'Invalid page'
+            }))
+            return
+
+        try:
+            page_size = int(self.request.get('page_size'))
+        except ValueError:
+            self.response.out.write(json.dumps({
+                'error': True,
+                'message': 'Invalid page size'
+            }))
+            return
+
+        result = {'error': False}
+        result['videos'] = []
+        requested_favorites = []
+
+        base = len(user.favorites) - 1 - (page - 1)*page_size;
+        for i in range(0, page_size):
+            if base - i >= 0:
+                requested_favorites.append(user.favorites[base - i])
+
+        videos = ndb.get_multi([f.video for f in requested_favorites])
+        for i in range(0, len(requested_favorites)):
+            video = videos[i]
+            video_info = video.get_basic_info()
+            video_info['favored_time'] = requested_favorites[i].favored_time.strftime("%Y-%m-%d %H:%M")
+            result['videos'].append(video_info)
+        result['total_pages'] = math.ceil(len(user.favorites)/float(page_size))
+
+        self.response.out.write(json.dumps(result))
+
+class Favor(BaseHandler):
+    @login_required
+    def post(self, video_id):
+        self.response.headers['Content-Type'] = 'application/json'
+        user = self.user
+
+        video = models.Video.get_by_id('dt'+video_id)
+        if video is not None:
+            if video.key not in [f.video for f in user.favorites]:
+                if len(user.favorites) >= user.favorites_limit:
+                    self.response.out.write(json.dumps({
+                        'error': True,
+                        'message': 'You have reached favorites limit.'
+                    }))
+                    return
+
+                new_favorite = models.Favorite(video=video.key)
+                user.favorites.append(new_favorite)
+                user.put()
+
+                video.favors += 1
+                video.put()
+
+                video.create_index('videos_by_favors', video.favors)
+                uploader = models.User.get_by_id(video.uploader.id())
+                uploader.videos_favored += 1
+                uploader.put()
+
+                self.response.out.write(json.dumps({
+                    'error': False,
+                    'message': 'success'
+                }))
+            else:
+                self.response.out.write(json.dumps({
+                    'error': True,
+                    'message': 'video already favored'
+                }))
         else:
-            context = {}
-            context['user'] = {
-                'favorites_counter': len(user.favorites),
-                'favorites_limit': user.favorites_limit
-            }
-            self.render('favorites', context)
+            self.response.out.write(json.dumps({
+                'error': True,
+                'message': 'video not found'
+            }))
 
 class Unfavor(BaseHandler):
     @login_required

@@ -1,3 +1,39 @@
+function update_page(query, video_container, pagination_container) {
+    video_container.empty();
+    pagination_container.empty();
+    video_container.append('<div class="video-entry loading"></div>');
+
+    $.ajax({
+        type: 'POST',
+        url: window.location,
+        data: query,
+        success: function(result) {
+            video_container.empty();
+            if (!result.error) {
+                if(result.videos.length == 0) {
+                    video_container.append('<div class="video-entry none">No video found.</div>');
+                } else {
+                    for(var i = 0; i < result.videos.length; i++) {
+                        var video_div = render_video_div(result.videos[i]);
+                        video_container.append(video_div);
+                    }
+
+                    var pagination = render_pagination(query.page, result.total_pages);
+                    pagination_container.append(pagination);
+                }
+            } else {
+                console.log(result);
+            }
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            console.log(xhr.status);
+            console.log(thrownError);
+            video_container.empty();
+            video_container.append('<div class="video-entry none">Load failed.</div>');
+        }
+    });
+}
+
 $(document).ready(function() {
     $('div.delete-button').click(function(evt) {
         if ($(evt.target).hasClass('delete')) {
@@ -54,76 +90,43 @@ $(document).ready(function() {
         }
     });
 
-    var videos = [];
-    var cur_page = 1;
-    var total_videos, total_pages;
-    var page_size = 10;
-    var video_container = $('div.favortite-video-container');
-    var pagination_container = $('div.pagination-line');
-
-    video_container.empty();
-    video_container.append('<div class="video-entry loading"></div>');
-    get_video_list('/account/favorites', {'ajax': true}, function(err, result) {
-        if(err) console.log(err);
-        else {
-            videos = result.videos;
-            total_videos = videos.length;
-            total_pages = Math.ceil(total_videos / page_size);
-            
-            update_page(1);
-        }
-    });
-
-    function update_page(page) {
-        video_container.empty();
-        pagination_container.empty();
-        if (total_videos == 0) {
-            video_container.append('<div class="video-entry none">No video found.</div>');
-            return;
-        }
-        if (page < 1 || page > total_pages) return;
-        
-        var offset = page_size * (page - 1);
-        for(var i = offset; i < Math.min(offset + page_size, total_videos); i++) {
-            var video_div = render_video_div(videos[i]);
-            video_container.append(video_div);
-        }
-        var pagination = render_pagination(page, total_pages);
-        pagination_container.append(pagination);
-    }
-
     $('div.pagination-line').on('click', 'div', function() {
-        var next_page = $(this).attr('data-page');
-        update_page(next_page);
+        var pagination_container = $(this).parent();
+        var video_container = pagination_container.prev();
+        var page = $(this).attr('data-page');
+        var query = {'page': page, 'page_size': 10};
+        update_page(query, video_container, pagination_container);
     });
+    update_page({'page': 1, 'page_size': 10}, $('div.favortite-video-container'), $('div.pagination-line'));
 });
 
-render_video_div = function(video) {
-    var div = '<div class="video-entry dt' + video.id_num + '">' + 
-                '<a class="video-img" href="' + video.url + '" target="_blank">' +
-                    '<img class="video-img" src="' + video.thumbnail_url + '">' +
-                '</a>' +
-                '<div class="video-info">' +
-                    '<div>' +
-                        '<div class="video-category">' + video.category + '</div>' +
-                        '<div class="video-category-arrow"></div>' +
-                        '<div class="video-category">' + video.subcategory + '</div>' +
-                    '</div>' +
-                    '<div>' +
-                        '<a href="' + video.url + '" class="video-title favored" target="_blank">' + video.title + '</a>' +
-                    '</div>' +
-                    '<div class="video-statistic favored">' +
-                        '<div class="video-statistic-entry">Views: ' + video.hits + '</div>' +
-                        '<div class="video-statistic-entry">Favors: ' + video.favors + '</div>' +
-                        '<div class="video-statistic-entry">Comments: ' + video.comment_counter + '</div>' +
-                        '<div class="video-statistic-entry">Bullets: ' + video.bullets + '</div>' +
-                    '</div>' +
-                    '<div class="favored-time">' +
-                      '<label>Favored at: </label>' +
+function render_video_div(video) {
+    var div = '<div class="video-entry dt' + video.id_num + '">\
+                <a class="video-img" href="' + video.url + '" target="_blank">\
+                    <img class="video-img" src="' + video.thumbnail_url + '">\
+                </a>\
+                <div class="video-info">\
+                    <div>\
+                        <div class="video-category">' + video.category + '</div>\
+                        <div class="video-category-arrow"></div>\
+                        <div class="video-category">' + video.subcategory + '</div>\
+                        <div class="video-time">' + video.created + '</div>\
+                    </div>\
+                    <div>\
+                        <a href="' + video.url + '" class="video-title favored" target="_blank">' + video.title + '</a>\
+                    </div>\
+                    <div class="video-statistic favored">\
+                        <div class="video-statistic-entry">Views: ' + numberWithCommas(video.hits) + '</div>\
+                        <div class="video-statistic-entry">Favors: ' + numberWithCommas(video.favors) + '</div>\
+                        <div class="video-statistic-entry">Comments: ' + numberWithCommas(video.comment_counter) + '</div>\
+                        <div class="video-statistic-entry">Bullets: ' + numberWithCommas(video.bullets) + '</div>\
+                    </div>\
+                    <div class="favored-time">\
+                        <label>Favored at: </label>' +
                         video.favored_time +
-                    '</div>' +
-                    '<div class="video-select-checkbox" data-id="' + video.id_num + '" data-title="' + video.title + '"></div>' +
-                '</div>' +
-              '</div>';
+                    '</div>\
+                    <div class="video-select-checkbox" data-id="' + video.id_num + '" data-title="' + video.title + '"></div>\
+                </div>\
+              </div>';
     return div;
 }

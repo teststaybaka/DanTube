@@ -166,8 +166,6 @@ $(document).ready(function() {
         }
     });
 
-    // $('#video-part-content').on('dragstart')
-
     $('#video-part-content').mousedown(function(evt) {
         if ($(evt.target).hasClass('video-part-drag-wrapper') && $('div.table-label-line.stealth').length == 0) {
             var label_height = document.getElementById('table-label-line').offsetHeight;

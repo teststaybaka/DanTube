@@ -714,7 +714,7 @@ $(document).ready(function() {
         e.preventDefault();
         $.ajax({
             type: "POST",
-            url: url + "/favor",
+            url: '/account/favor/dt'+video_id,
             success: function(result) {
                 if(!result.error) {
                     alert('success!');

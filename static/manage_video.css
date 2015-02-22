@@ -19,7 +19,7 @@ div.video-entry.loading {
     padding: 100px 50px;
     background-image: url("/static/img/ajax-loader.gif");
     background-repeat: no-repeat;
-    background-position: 370px 95px;
+    background-position: 50% 50%;
 }
 
 a.video-img {
@@ -70,7 +70,7 @@ div.video-title {
 }
 
 a.video-title {
-    /*font-size: 14px;*/
+    font-size: 14px;
     /*color: rgb(100,100,100);*/
     /*font-weight: bold;*/
     margin-top: 3px;
@@ -78,8 +78,6 @@ a.video-title {
     text-overflow: ellipsis;
     white-space: nowrap;
     display: inline-block;
-    max-width: 100%;
-    font-size: 16px;
 }
 
 a.video-title.favored {

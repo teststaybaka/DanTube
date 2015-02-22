@@ -22,13 +22,14 @@ function slideChange() {
 
 function update_random_videos() {
     $('div.single-preview-line').empty();
-    $('div.single-preview-line').addClass('loading');
+    $('div.single-preview-line').append('<div class="preview-status loading"></div>');
 
     $.ajax({
         type: 'POST',
         url: '/video/random',
         data: {'size': 5},
         success: function(result) {
+            $('div.single-preview-line').empty();
             if(result.error) {
                 console.log(result.message);
             } else {
@@ -37,13 +38,12 @@ function update_random_videos() {
                     $('div.single-preview-line').append(video_div);
                 }
             }
-            $('div.single-preview-line').removeClass('loading');
         },
         error: function (xhr, ajaxOptions, thrownError) {
             console.log(xhr.status);
             console.log(thrownError);
-            $('div.single-preview-line').removeClass('loading');
-            $('div.single-preview-line').append('<p>Load failed</p>')
+            $('div.single-preview-line').empty();
+            $('div.single-preview-line').append('<div class="preview-status">Load failed.</div>')
         }
     });
 }
@@ -51,16 +51,17 @@ function update_random_videos() {
 function update_page(query, video_container, pagination_container, video_div_type) {
     video_container.empty();
     pagination_container.empty();
-    video_container.addClass('loading');
+    video_container.append('<div class="preview-status loading"></div>');
 
     $.ajax({
         type: 'POST',
         url: '/video',
         data: query,
         success: function(result) {
+            video_container.empty();
             if (!result.error) {
                 if(result.videos.length == 0) {
-                    video_container.append('<p>No video</p>');
+                    video_container.append('<div class="preview-status">No video.</div>');
                 } else {
                     for(var i = 0; i < result.videos.length; i++) {
                         var video_div;
@@ -81,13 +82,12 @@ function update_page(query, video_container, pagination_container, video_div_typ
             } else {
                 console.log(result);
             }
-            video_container.removeClass('loading');
         },
         error: function (xhr, ajaxOptions, thrownError) {
             console.log(xhr.status);
             console.log(thrownError);
-            video_container.removeClass('loading');
-            video_container.append('<p>Load failed.</p>');
+            video_container.empty();
+            video_container.append('<div class="preview-status">Load failed.</div>');
         }
     });
 }
@@ -186,16 +186,16 @@ function render_preview_video_div(video) {
                 </div>\
                 <div class="video-preview-statistic">\
                     <div class="video-preview-title">' + video.title + '</div>\
-                    <div class="video-preview-hits">' + video.hits + '</div>\
-                    <div class="video-preview-comment-num">' + video.comment_counter + '</div>\
+                    <div class="video-preview-hits">' + numberWithCommas(video.hits) + '</div>\
+                    <div class="video-preview-comment-num">' + numberWithCommas(video.comment_counter) + '</div>\
                 </div>\
                 <div class="video-preview-popup">\
                     <div class="popup-title">' + video.title + '</div>\
                     <div class="popup-statistic-line">\
-                        <div class="popup-statistic-entry views">' + video.hits + '</div>\
-                        <div class="popup-statistic-entry favorites">' + video.favors + '</div>\
-                        <div class="popup-statistic-entry comment">' + video.comment_counter + '</div>\
-                        <div class="popup-statistic-entry bullets">' + video.bullets + '</div>\
+                        <div class="popup-statistic-entry views">' + numberWithCommas(video.hits) + '</div>\
+                        <div class="popup-statistic-entry favorites">' + numberWithCommas(video.favors) + '</div>\
+                        <div class="popup-statistic-entry comment">' + numberWithCommas(video.comment_counter) + '</div>\
+                        <div class="popup-statistic-entry bullets">' + numberWithCommas(video.bullets) + '</div>\
                     </div>\
                     <div class="popup-intro">\
                         <div class="popup-thumbnail">\
@@ -222,8 +222,8 @@ function render_ranking_video_div(video, rank) {
                 <div class="top-No">' + (rank+1) + '</div>\
                 <div class="top-video-title">' + video.title + '</div>\
             </div>\
-            <div class="top-video-hits">' + video.hits + '</div>\
-            <div class="top-video-comment-num">' + video.comment_counter + '</div>';
+            <div class="top-video-hits">' + numberWithCommas(video.hits) + '</div>\
+            <div class="top-video-comment-num">' + numberWithCommas(video.comment_counter) + '</div>';
     } else {
         div = '<a class="ranking-video-entry" target="_blank" href="' + video.url + '">\
                 <div class="ranking-No">' + (rank+1) + '</div>\
@@ -233,10 +233,10 @@ function render_ranking_video_div(video, rank) {
     div += '<div class="video-preview-popup">\
                 <div class="popup-title">' + video.title + '</div>\
                 <div class="popup-statistic-line">\
-                    <div class="popup-statistic-entry views">' + video.hits + '</div>\
-                    <div class="popup-statistic-entry favorites">' + video.favors + '</div>\
-                    <div class="popup-statistic-entry comment">' + video.comment_counter + '</div>\
-                    <div class="popup-statistic-entry bullets">' + video.bullets + '</div>\
+                    <div class="popup-statistic-entry views">' + numberWithCommas(video.hits) + '</div>\
+                    <div class="popup-statistic-entry favorites">' + numberWithCommas(video.favors) + '</div>\
+                    <div class="popup-statistic-entry comment">' + numberWithCommas(video.comment_counter) + '</div>\
+                    <div class="popup-statistic-entry bullets">' + numberWithCommas(video.bullets) + '</div>\
                 </div>\
                 <div class="popup-intro">\
                     <div class="popup-thumbnail">\

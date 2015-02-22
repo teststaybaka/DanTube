@@ -1,3 +1,71 @@
+function update_page(query, video_container, pagination_container) {
+    video_container.empty();
+    pagination_container.empty();
+    video_container.append('<div class="video-entry loading"></div>');
+
+    $.ajax({
+        type: 'POST',
+        url: '/account/video',
+        data: query,
+        success: function(result) {
+            video_container.empty();
+            if (!result.error) {
+                if(result.videos.length == 0) {
+                    video_container.append('<div class="video-entry none">No video found.</div>');
+                } else {
+                    for(var i = 0; i < result.videos.length; i++) {
+                        var video_div = render_video_div(result.videos[i]);
+                        video_container.append(video_div);
+                    }
+
+                    var pagination = render_pagination(query.page, result.total_pages);
+                    pagination_container.append(pagination);
+                }
+            } else {
+                console.log(result);
+            }
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            console.log(xhr.status);
+            console.log(thrownError);
+            video_container.empty();
+            video_container.append('<div class="video-entry none">Load failed.</div>');
+        }
+    });
+
+    get_video_list('/account/video', query, function(err, result) {
+        if(err) console.log(err);
+        else {
+            video_container.empty();
+            pagination_container.empty();
+            cur_page = query.page;
+            if(query.order)
+                cur_order = query.order;
+            if(query.keywords) {
+                cur_keywords = query.keywords;
+                cur_order = 'created';
+            }
+            else {
+                cur_keywords = "";
+                $('#sub-search-input').val('');
+            }
+            $('#view-method .selected').html(order_labels[cur_order]);
+            // $('.order-option a.on').removeClass("on");
+            // $('.order-option a[prop="' + cur_order + '"]').addClass("on");
+            if(result.videos.length == 0) {
+                video_container.append('<div class="video-entry none">No video found.</div>');
+            } else {
+                for(var i = 0; i < result.videos.length; i++) {
+                    var video_div = render_video_div(result.videos[i]);
+                    video_container.append(video_div);
+                }
+                var pagination = render_pagination(query.page, result.total_pages);
+                pagination_container.append(pagination);
+            }
+        }
+    });
+}
+
 $(document).ready(function() {
     $('div.delete-button').click(function(evt) {
         if ($(evt.target).hasClass('delete')) {
@@ -53,6 +121,7 @@ $(document).ready(function() {
             $(evt.target).addClass('checked');
         }
     });
+    
     
     var cur_page = 1, cur_order = 'created';
     var cur_keywords = "";
@@ -118,76 +187,39 @@ $(document).ready(function() {
         }
         return false;
     });
-
-    function update_page(query) {
-        video_container.empty();
-        video_container.append('<div class="video-entry loading"></div>');
-        get_video_list('/account/video', query, function(err, result) {
-            if(err) console.log(err);
-            else {
-                video_container.empty();
-                pagination_container.empty();
-                cur_page = query.page;
-                if(query.order)
-                    cur_order = query.order;
-                if(query.keywords) {
-                    cur_keywords = query.keywords;
-                    cur_order = 'created';
-                }
-                else {
-                    cur_keywords = "";
-                    $('#sub-search-input').val('');
-                }
-                $('#view-method .selected').html(order_labels[cur_order]);
-                // $('.order-option a.on').removeClass("on");
-                // $('.order-option a[prop="' + cur_order + '"]').addClass("on");
-                if(result.videos.length == 0) {
-                    video_container.append('<div class="video-entry none">No video found.</div>');
-                } else {
-                    for(var i = 0; i < result.videos.length; i++) {
-                        var video_div = render_video_div(result.videos[i]);
-                        video_container.append(video_div);
-                    }
-                    var pagination = render_pagination(query.page, result.total_pages);
-                    pagination_container.append(pagination);
-                }
-            }
-        });
-    }
 });
 
 function render_video_div(video) {
-    var div = '<div class="video-entry dt' + video.id_num + '">' + 
-                '<a class="video-img" href="' + video.url + '" target="_blank">' + 
-                    '<img class="video-img" src="' + video.thumbnail_url + '">' +
-                '</a>' +
-                '<div class="video-info">' +
-                    '<div>' +
-                        '<div class="video-category">' + video.category + '</div>' +
-                        '<div class="video-category-arrow"></div>' +
-                        '<div class="video-category">' + video.subcategory + '</div>' +
-                        '<div class="video-time">' + video.created + '</div>' +
-                    '</div>' +
-                    '<div class="video-title">' +
-                        '<a href="' + video.url + '" class="video-title" target="_blank">' + video.title + '</a>' +
-                    '</div>' +
-                    '<div class="video-playlist">' +
-                        '<label>Playlist: </label>' +
-                        '<label class="list-title">Not listed</label>' +
-                        '<a class="edit-entry">[Add to Playlist]</a>' +
-                    '</div>' +
-                    '<div class="video-statistic">' +
-                        '<div class="video-statistic-entry">Views: ' + video.hits + '</div>' +
-                        '<div class="video-statistic-entry">Favors: ' + video.favors + '</div>' +
-                        '<div class="video-statistic-entry">Damaku: ' + video.danmaku_counter + '</div>' +
-                        '<div class="video-statistic-entry">Comments: ' + video.comment_counter + '</div>' +
-                    '</div>' +
-                    '<div class="video-edit">' +
-                        '<a href="/account/video/edit/dt' + video.id_num + '" class="edit-entry">[Edit Video]</a>' +
-                        '<a class="edit-entry">[Manage Danmaku]</a>' +
-                    '</div>' +
-                    '<div class="video-select-checkbox" data-id="' + video.id_num + '" data-title="' + video.title + '"></div>' +
-                '</div>' +
-            '</div>';
+    var div = '<div class="video-entry dt' + video.id_num + '">\
+                <a class="video-img" href="' + video.url + '" target="_blank">\
+                    <img class="video-img" src="' + video.thumbnail_url + '">\
+                </a>\
+                <div class="video-info">\
+                    <div>\
+                        <div class="video-category">' + video.category + '</div>\
+                        <div class="video-category-arrow"></div>\
+                        <div class="video-category">' + video.subcategory + '</div>\
+                        <div class="video-time">' + video.created + '</div>\
+                    </div>\
+                    <div class="video-title">\
+                        <a href="' + video.url + '" class="video-title" target="_blank">' + video.title + '</a>\
+                    </div>\
+                    <div class="video-playlist">\
+                        <label>Prime list: </label>\
+                        <label class="list-title">Not listed</label>\
+                    </div>\
+                    <div class="video-statistic">\
+                        <div class="video-statistic-entry">Views: ' + numberWithCommas(video.hits) + '</div>\
+                        <div class="video-statistic-entry">Favors: ' + numberWithCommas(video.favors) + '</div>\
+                        <div class="video-statistic-entry">Damaku: ' + numberWithCommas(video.danmaku_counter) + '</div>\
+                        <div class="video-statistic-entry">Comments: ' + numberWithCommas(video.comment_counter) + '</div>\
+                    </div>\
+                    <div class="video-edit">\
+                        <a href="/account/video/edit/dt' + video.id_num + '" class="edit-entry">[Edit Video]</a>\
+                        <a class="edit-entry">[Manage Danmaku]</a>\
+                    </div>\
+                    <div class="video-select-checkbox" data-id="' + video.id_num + '" data-title="' + video.title + '"></div>\
+                </div>\
+            </div>';
     return div;
 }

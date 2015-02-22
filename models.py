@@ -35,11 +35,11 @@ class User(webapp2_extras.appengine.auth.models.User):
   spacename = ndb.StringProperty(indexed=False)
   css_file = ndb.BlobKeyProperty()
   # favorites = ndb.KeyProperty(kind='Video', repeated=True)
-  favorites = ndb.StructuredProperty(Favorite, repeated=True)
+  favorites = ndb.StructuredProperty(Favorite, repeated=True, indexed=False)
   favorites_limit = ndb.IntegerProperty(default=100, required=True, indexed=False)
   # history = ndb.KeyProperty(kind='Video', repeated=True)
   history = ndb.StructuredProperty(History, repeated=True, indexed=False)
-  subscriptions = ndb.KeyProperty(kind='User', repeated=True)
+  subscriptions = ndb.KeyProperty(kind='User', repeated=True, indexed=False)
   bullets = ndb.IntegerProperty(required=True, default=0)
   videos_submited = ndb.IntegerProperty(required=True, default=0)
   videos_watched = ndb.IntegerProperty(required=True, default=0)
@@ -327,9 +327,9 @@ class VideoClip(ndb.Model):
     return clip
 
 class Video(ndb.Model):
-  video_clips = ndb.KeyProperty(kind='VideoClip', repeated=True)
-  video_clip_titles = ndb.StringProperty(repeated=True)
-  default_thumbnail = ndb.StringProperty()
+  video_clips = ndb.KeyProperty(kind='VideoClip', repeated=True, indexed=False)
+  video_clip_titles = ndb.StringProperty(repeated=True, indexed=False)
+  default_thumbnail = ndb.StringProperty(indexed=False)
 
   created = ndb.DateTimeProperty(auto_now_add=True)
   last_liked = ndb.DateTimeProperty(default=datetime.fromtimestamp(0))

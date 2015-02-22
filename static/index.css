@@ -475,7 +475,14 @@ div.pagination-line {
     height: 16px;
 }
 
-div.video-preview-container.loading, div.single-preview-line.loading, div.ranking-video-container.loading {
+div.preview-status {
+    width: 100%;
+    height: 100%;
+    font-size: 18px;
+    color: rgb(100,100,100);
+}
+
+div.preview-status.loading {
     background-image: url("/static/img/ajax-loader.gif");
     background-repeat: no-repeat;
     background-position: 50% 50%;

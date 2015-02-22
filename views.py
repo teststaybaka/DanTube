@@ -1,7 +1,6 @@
 import jinja2
 import logging
 import os
-import sys
 import traceback
 import webapp2
 import cStringIO
@@ -281,7 +280,6 @@ class Video(BaseHandler):
             }))
             return
 
-        page = self.request.get('page')
         try:
             page = int(self.request.get('page'))
         except ValueError:
@@ -318,7 +316,7 @@ class Video(BaseHandler):
         # except ValueError:
         #     limit = len(videos)
 
-        result = {}
+        result = {'error': False}
         result['videos'] = []
         for i in range(0, len(videos)): # videos[0:limit]:
             video = videos[i]
@@ -361,45 +359,6 @@ class Watch(BaseHandler):
                 user.put()
         else:
             self.notify('video not found.', 404)
-
-class Favor(BaseHandler):
-    @login_required
-    def post(self, video_id):
-        self.response.headers['Content-Type'] = 'application/json'
-        user = self.user
-
-        video = models.Video.get_by_id('dt'+video_id)
-        if video is not None:
-            if video.key not in [f.video for f in user.favorites]:
-                if len(user.favorites) >= user.favorites_limit:
-                    self.response.out.write(json.dumps({
-                        'error': True,
-                        'message': 'You have reached favorites limit.'
-                    }))
-                    return
-
-                new_favorite = models.Favorite(video=video.key)
-                user.favorites.append(new_favorite)
-                user.put()
-                self.response.out.write(json.dumps({
-                    'message': 'success'
-                }))
-                video.favors += 1
-                video.put()
-                video.create_index('videos_by_favors', video.favors )
-                uploader = models.User.get_by_id(video.uploader.id())
-                uploader.videos_favored += 1
-                uploader.put()
-            else:
-                self.response.out.write(json.dumps({
-                    'error': True,
-                    'message': 'video already favored'
-                }))
-        else:
-            self.response.out.write(json.dumps({
-                'error': True,
-                'message': 'video not found'
-            }))
 
 class Like(BaseHandler):
     @login_required
