@@ -529,7 +529,7 @@ class Video(ndb.Model):
     index = search.Index(name=index_name)
     searchable = " ".join(self.tags + [self.title, self.description]);
     doc = search.Document(
-      doc_id=self.key.urlsafe(), 
+      doc_id = self.key.urlsafe(),
       fields = [
         search.TextField(name='content', value=searchable),
         search.AtomField(name='category', value=self.category),

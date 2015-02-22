@@ -58,8 +58,9 @@ class Favorites(BaseHandler):
 
         base = len(user.favorites) - 1 - (page - 1)*page_size;
         for i in range(0, page_size):
-            if base - i >= 0:
-                requested_favorites.append(user.favorites[base - i])
+            if base - i < 0:
+                break
+            requested_favorites.append(user.favorites[base - i])
 
         videos = ndb.get_multi([f.video for f in requested_favorites])
         for i in range(0, len(requested_favorites)):

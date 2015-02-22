@@ -3,6 +3,7 @@ from PIL import Image
 from google.appengine.api import images
 import urlparse
 import random
+import math
 
 class CoverUpload(BaseHandler, blobstore_handlers.BlobstoreUploadHandler):
     def post(self):
@@ -262,6 +263,9 @@ class VideoUpload(BaseHandler):
                 video.default_thumbnail = video.video_clips[0].get().vid
             video.put()
         except Exception, e:
+            for i in range(0, len(video.video_clips)):
+                video.video_clips.delete()
+            video.key.delete()
             self.response.out.write(json.dumps({
                 'error': True,
                 'message': str(e),
@@ -405,103 +409,87 @@ class ManageVideo(BaseHandler):
         try:
             page = int(self.request.get('page'))
         except ValueError:
-            page = 1
+            self.response.out.write(json.dumps({
+                'error': True,
+                'message': 'Invalid page'
+            }))
+            return
 
         try:
             page_size = int(self.request.get('page_size'))
         except ValueError:
-            page_size = models.PAGE_SIZE
-
-        keywords_raw = self.request.get('keywords')
-        if keywords_raw:
-            keywords = keywords_raw.strip().lower()
-            if keywords:
-                query_string = 'content: ' + keywords
-                page =  min(page, -(-models.MAX_QUERY_RESULT // page_size))
-                offset = (page - 1) * page_size
-                options = search.QueryOptions(offset=offset, limit=page_size)
-                query = search.Query(query_string=query_string, options=options)
-                index = search.Index(name='videos_by_user' + str(user.key.id()))
-                try:
-                    result = index.search(query)                
-                    total_found = result.number_found
-                    total_videos = min(total_found, 1000)
-                    total_pages = -(-total_videos // page_size)
-                    
-                    fetched_videos = len(result.results)
-                    if total_videos > 0 and fetched_videos == 0:
-                        # fetch last page
-                        page = total_pages
-                        offset = (page - 1) * page_size
-                        options = search.QueryOptions(offset=offset, limit=page_size)
-                        query = search.Query(query_string=query_string, options=options)
-                        result = index.search(query)
-
-                    video_keys = []
-                    for video_doc in result.results:
-                        video_keys.append(ndb.Key(urlsafe=video_doc.doc_id))
-                    videos = ndb.get_multi(video_keys)
-
-                    result = {
-                        'keywords': keywords_raw,
-                        'videos': [],
-                        'order': 'created',
-                        'total_found': total_found,
-                        'total_videos': total_videos,
-                        'total_pages': total_pages,
-                        'page': page
-                    }
-
-                    for video in videos:
-                        video_info = video.get_basic_info()
-                        result['videos'].append(video_info)
-
-                    self.response.out.write(json.dumps(result))
-                    return
-
-                except search.Error:
-                    logging.info("search failed")
-                    self.response.out.write(json.dumps({
-                        'error': True,
-                        'message': 'Failed to search.'
-                    }))
-                    return
-
-        order_str = self.request.get('order')
-        if not order_str:
-            order = models.Video.created
-        elif order_str == 'hits':
-            order = models.Video.hits
-        elif order_str == 'created':
-            order = models.Video.created
-        elif order_str == 'favors':
-            order = models.Video.favors
-        else:
             self.response.out.write(json.dumps({
                 'error': True,
-                'message': 'Invalid order'
-            }))
-            return
-        
-        video_count = user.videos_submited
-        total_pages = -(-video_count // page_size)
-        if total_pages == 0:
-            self.response.out.write(json.dumps({
-                'videos': [],
-                'total_pages': 0
+                'message': 'Invalid page size'
             }))
             return
 
-        if page > total_pages:
-            page = total_pages
+        keywords = self.request.get('keywords').strip().lower()
+        if keywords:
+            query_string = 'content: ' + keywords
+            page =  min(page, math.ceil(models.MAX_QUERY_RESULT/float(page_size)) )
+            offset = (page - 1)*page_size
+            options = search.QueryOptions(offset=offset, limit=page_size)
+            query = search.Query(query_string=query_string, options=options)
+            index = search.Index(name='videos_by_user' + str(user.key.id()))
+            try:
+                result = index.search(query)                
+                total_found = min(result.number_found, models.MAX_QUERY_RESULT)
+                total_pages = math.ceil(total_found/float(page_size))
 
-        offset = (page - 1) * page_size
-        videos = models.Video.query(models.Video.uploader==self.user.key).order(-order).fetch(limit=page_size, offset=offset)
-        result = {'videos': []}
-        for video in videos:
-            result['videos'].append(video.get_basic_info())
-        result['total_pages'] = total_pages
-        self.response.out.write(json.dumps(result))
+                video_keys = []
+                for video_doc in result.results:
+                    video_keys.append(ndb.Key(urlsafe=video_doc.doc_id))
+                videos = ndb.get_multi(video_keys)
+
+                result = {'error': False}
+                result['videos'] = []
+
+                for i in range(0, len(videos)):
+                    video = videos[i]
+                    video_info = video.get_basic_info()
+                    result['videos'].append(video_info)
+
+                result['total_pages'] = total_pages
+                result['total_found'] = total_found
+                self.response.out.write(json.dumps(result))
+            except search.Error:
+                logging.info("search failed")
+                self.response.out.write(json.dumps({
+                    'error': True,
+                    'message': 'Failed to search.'
+                }))
+        else:
+            order = self.request.get('order')
+            if order == 'hits': # most viewed
+                order = models.Video.hits
+            elif order == 'created': # newest uplooad
+                order = models.Video.created
+            elif order == 'favors': # most favors
+                order = models.Video.favors
+            else:
+                self.response.out.write(json.dumps({
+                    'error': True,
+                    'message': 'Invalid order'
+                }))
+                return
+            
+            video_count = user.videos_submited
+            total_pages = math.ceil(video_count/float(page_size))
+            
+            result = {'error': False}
+            result['videos'] = []
+            if video_count != 0 and page <= total_pages:
+                offset = (page - 1) * page_size
+                videos = models.Video.query(models.Video.uploader==self.user.key).order(-order).fetch(offset=offset, limit=page_size)
+                for i in range(0, len(videos)):
+                    video = videos[i]
+                    video_info = video.get_basic_info()
+                    result['videos'].append(video_info)
+
+            result['total_pages'] = total_pages
+            result['total_found'] = video_count
+            self.response.out.write(json.dumps(result))
 
 class RandomVideos(BaseHandler):
     #Assuming that there are always more videos than requeseted
@@ -543,4 +531,3 @@ class RandomVideos(BaseHandler):
                 'error': True,
                 'message': str(e)
             }))
-            

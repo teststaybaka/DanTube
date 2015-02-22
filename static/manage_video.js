@@ -1,15 +1,25 @@
-function update_page(query, video_container, pagination_container) {
+function update_page(page) {
+    var query = {
+        'page': page, 
+        'page_size': 10, 
+        'keywords': $('#sub-search-input').val().trim(), 
+        'order': $('#view-method div.selected').attr('data-order')
+    };
+    video_container = $('div.submitted-video-container');
+    pagination_container = $('div.pagination-line');
+
     video_container.empty();
     pagination_container.empty();
     video_container.append('<div class="video-entry loading"></div>');
 
     $.ajax({
         type: 'POST',
-        url: '/account/video',
+        url: window.location,
         data: query,
         success: function(result) {
             video_container.empty();
             if (!result.error) {
+                $('#sub-title').text(result.total_found + ' Videos');
                 if(result.videos.length == 0) {
                     video_container.append('<div class="video-entry none">No video found.</div>');
                 } else {
@@ -32,39 +42,13 @@ function update_page(query, video_container, pagination_container) {
             video_container.append('<div class="video-entry none">Load failed.</div>');
         }
     });
-
-    get_video_list('/account/video', query, function(err, result) {
-        if(err) console.log(err);
-        else {
-            video_container.empty();
-            pagination_container.empty();
-            cur_page = query.page;
-            if(query.order)
-                cur_order = query.order;
-            if(query.keywords) {
-                cur_keywords = query.keywords;
-                cur_order = 'created';
-            }
-            else {
-                cur_keywords = "";
-                $('#sub-search-input').val('');
-            }
-            $('#view-method .selected').html(order_labels[cur_order]);
-            // $('.order-option a.on').removeClass("on");
-            // $('.order-option a[prop="' + cur_order + '"]').addClass("on");
-            if(result.videos.length == 0) {
-                video_container.append('<div class="video-entry none">No video found.</div>');
-            } else {
-                for(var i = 0; i < result.videos.length; i++) {
-                    var video_div = render_video_div(result.videos[i]);
-                    video_container.append(video_div);
-                }
-                var pagination = render_pagination(query.page, result.total_pages);
-                pagination_container.append(pagination);
-            }
-        }
-    });
 }
+
+var order_labels = {
+    'created': 'Newest',
+    'hits': 'Most viewed',
+    'favors': 'Moss favored'
+};
 
 $(document).ready(function() {
     $('div.delete-button').click(function(evt) {
@@ -121,72 +105,28 @@ $(document).ready(function() {
             $(evt.target).addClass('checked');
         }
     });
-    
-    
-    var cur_page = 1, cur_order = 'created';
-    var cur_keywords = "";
-    var order_labels = {
-        'created': 'Newest',
-        'hits': 'Most viewed',
-        'favors': 'Moss favored'
-    };
-    var video_container = $('div.submitted-video-container');
-    var pagination_container = $('div.pagination-line');
 
-    var query = {
-        'page': cur_page,
-        'order': cur_order
-    };
-    update_page(query);
-    
-    $('div.pagination-line').on('click', 'div', function(evt) {
-        var next_page = $(this).attr('data-page');
-        if(next_page != cur_page) {
-            if(cur_keywords) {
-                query = {
-                    'page': next_page,
-                    'keywords': cur_keywords
-                }
-            } else {
-                query = {
-                    'page': next_page,
-                    'order': cur_order
-                };
-            }
-            update_page(query);
-        }
-    });
-
-    $('#view-method div.option-entry').click(function() {
-        var next_order = $(this).attr('data-order');
-        if(next_order != cur_order) {
-            var query = {
-                'page': 1,
-                'order': next_order
-            };
-            update_page(query);
-        }
+    $('#view-method div.option-entry').click(function(evt) {
+        $('#sub-search-input').val('');
+        var selected = $('#view-method div.selected');
+        selected.attr('data-order', $(evt.target).attr('data-order'));
+        selected.text(order_labels[selected.attr('data-order')])
+        update_page(1);
     })
 
     $('#sub-search-block').submit(function() {
-        var next_keywords = $('#sub-search-input').val().trim();
-        if(next_keywords) {
-            var query = {
-                'page': 1,
-                'keywords': next_keywords
-            };
-            update_page(query);
-        } else {
-            if(cur_keywords) {
-                var query = {
-                    'page': 1,
-                    'order': 'created'
-                };
-                update_page(query);
-            }
-        }
+        var selected = $('#view-method div.selected');
+        selected.attr('data-order', 'created');
+        selected.text(order_labels[selected.attr('data-order')])
+        update_page(1);
         return false;
     });
+
+    $('div.pagination-line').on('click', 'div', function() {
+        var page = $(this).attr('data-page');
+        update_page(page);
+    });
+    update_page(1);
 });
 
 function render_video_div(video) {
@@ -211,8 +151,8 @@ function render_video_div(video) {
                     <div class="video-statistic">\
                         <div class="video-statistic-entry">Views: ' + numberWithCommas(video.hits) + '</div>\
                         <div class="video-statistic-entry">Favors: ' + numberWithCommas(video.favors) + '</div>\
-                        <div class="video-statistic-entry">Damaku: ' + numberWithCommas(video.danmaku_counter) + '</div>\
                         <div class="video-statistic-entry">Comments: ' + numberWithCommas(video.comment_counter) + '</div>\
+                        <div class="video-statistic-entry">Bullets: ' + numberWithCommas(video.bullets) + '</div>\
                     </div>\
                     <div class="video-edit">\
                         <a href="/account/video/edit/dt' + video.id_num + '" class="edit-entry">[Edit Video]</a>\

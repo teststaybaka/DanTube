@@ -11,7 +11,7 @@ video_part_line_html = '<div class="video-part-line">\
                 <input type="text" class="url-input" name="video-url[]" placeholder="e,g., youtube.com/watch?v=8NNTvx5eoXE">\
                 <div class="video-part-delete" title="Remove"></div>\
             </div>\
-        </div>'
+        </div>';
 
 function title_check() {
     var title = $('#video-total-title').val().trim();
