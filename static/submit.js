@@ -10,6 +10,7 @@ video_part_line_html = '<div class="video-part-line">\
                 <div class="video-part-error">Title too long.</div>\
                 <input type="text" class="url-input" name="video-url[]" placeholder="e,g., youtube.com/watch?v=8NNTvx5eoXE">\
                 <div class="video-part-delete" title="Remove"></div>\
+                <input class="hidden" type="text" name="index[]" value="-1">\
             </div>\
         </div>';
 

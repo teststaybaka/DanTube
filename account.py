@@ -68,8 +68,9 @@ class Favorites(BaseHandler):
             video_info = video.get_basic_info()
             video_info['favored_time'] = requested_favorites[i].favored_time.strftime("%Y-%m-%d %H:%M")
             result['videos'].append(video_info)
+            
         result['total_pages'] = math.ceil(len(user.favorites)/float(page_size))
-
+        result['total_found'] = len(user.favorites)
         self.response.out.write(json.dumps(result))
 
 class Favor(BaseHandler):

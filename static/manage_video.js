@@ -1,9 +1,15 @@
+var order_labels = {
+    'Newest': 'created',
+    'Most viewed': 'hits',
+    'Most favored': 'favors',
+};
+
 function update_page(page) {
     var query = {
         'page': page, 
         'page_size': 10, 
         'keywords': $('#sub-search-input').val().trim(), 
-        'order': $('#view-method div.selected').attr('data-order')
+        'order': order_labels[$('#view-method div.selected').text()]
     };
     video_container = $('div.submitted-video-container');
     pagination_container = $('div.pagination-line');
@@ -43,12 +49,6 @@ function update_page(page) {
         }
     });
 }
-
-var order_labels = {
-    'created': 'Newest',
-    'hits': 'Most viewed',
-    'favors': 'Moss favored'
-};
 
 $(document).ready(function() {
     $('div.delete-button').click(function(evt) {
@@ -109,15 +109,13 @@ $(document).ready(function() {
     $('#view-method div.option-entry').click(function(evt) {
         $('#sub-search-input').val('');
         var selected = $('#view-method div.selected');
-        selected.attr('data-order', $(evt.target).attr('data-order'));
-        selected.text(order_labels[selected.attr('data-order')])
+        selected.text($(evt.target).text())
         update_page(1);
     })
 
     $('#sub-search-block').submit(function() {
         var selected = $('#view-method div.selected');
-        selected.attr('data-order', 'created');
-        selected.text(order_labels[selected.attr('data-order')])
+        selected.text('Newest');
         update_page(1);
         return false;
     });

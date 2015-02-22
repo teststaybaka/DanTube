@@ -326,6 +326,12 @@ class VideoClip(ndb.Model):
     clip.put()
     return clip
 
+  def set_url(self, raw_url):
+    res = VideoClip.parse_url(raw_url)
+    self.raw_url = raw_url
+    self.vid = res['vid']
+    self.source = res['source']
+
 class Video(ndb.Model):
   video_clips = ndb.KeyProperty(kind='VideoClip', repeated=True, indexed=False)
   video_clip_titles = ndb.StringProperty(repeated=True, indexed=False)
@@ -519,9 +525,18 @@ class Video(ndb.Model):
 
   def get_full_info(self):
     full_info = {
-      'raw_url': self.url,
+      'clips': [],
       'allow_tag_add': self.allow_tag_add,
     }
+    clips = ndb.get_multi(self.video_clips)
+    for i in range(0, len(self.video_clips)):
+      full_info['clips'].append({
+        'subtitle': self.video_clip_titles[i],
+        'subintro': clips[i].subintro,
+        'raw_url': clips[i].raw_url,
+        'source': clips[i].source,
+        'index': i,
+      })
     full_info.update(self.get_basic_info())
     return full_info
 
@@ -529,7 +544,7 @@ class Video(ndb.Model):
     index = search.Index(name=index_name)
     searchable = " ".join(self.tags + [self.title, self.description]);
     doc = search.Document(
-      doc_id = self.key.urlsafe(),
+      doc_id = self.key.urlsafe(), 
       fields = [
         search.TextField(name='content', value=searchable),
         search.AtomField(name='category', value=self.category),
@@ -574,7 +589,7 @@ class Video(ndb.Model):
     return cls.id_counter
 
   @classmethod
-  def Create(cls, user, description, title, category, subcategory, video_type, tags, allow_tag_add, thumbnail):
+  def Create(cls, user, description, title, category, subcategory, video_type, tags, allow_tag_add, thumbnail, subtitles, video_clips):
     try:
       id = 'dt'+str(cls.getID())
       logging.info(id)
@@ -589,7 +604,10 @@ class Video(ndb.Model):
         video_type = video_type,
         tags = tags,
         allow_tag_add = allow_tag_add,
-        thumbnail = thumbnail
+        thumbnail = thumbnail,
+        default_thumbnail = video_clips[0].get().vid,
+        video_clip_titles = subtitles,
+        video_clips = video_clips,
       )
       video.put()
     except Exception, e:

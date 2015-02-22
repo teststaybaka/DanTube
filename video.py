@@ -35,7 +35,7 @@ class VideoUpload(BaseHandler):
         self.render('submit_multi')
 
     @login_required
-    def edit(self):
+    def edit(self, video_id):
         video = models.Video.get_by_id('dt'+video_id)
         if video.uploader.id() == self.user.key.id():
             self.render('edit_video', {'video':video.get_full_info()})
@@ -125,12 +125,12 @@ class VideoUpload(BaseHandler):
             if not raw_url:
                 return {
                     'error': True,
-                    'message': 'Video url must not be empty!',
+                    'message': 'invalid url',
                     'index': i,
                 }
             else:
                 if not urlparse.urlparse(raw_url).scheme:
-                    raw_url = "http://" + raw_url
+                    raw_url = "https://" + raw_url
                 try:
                     req = urllib2.urlopen(raw_url)
                 except Exception, e:
@@ -156,6 +156,16 @@ class VideoUpload(BaseHandler):
                 return {
                     'error': True,
                     'message': 'Sub intro too long!',
+                }
+
+        self.indices = self.request.POST.getall('index[]')
+        for i in range(0, len(self.indices)):
+            try:
+                index = int(self.indices[i])
+            except Exception, e:
+                return {
+                    'error': True,
+                    'message': 'Index error.',
                 }
 
         return {'error': False}
@@ -234,6 +244,20 @@ class VideoUpload(BaseHandler):
                     'error': True,
                     'message': str(e),
                 }))
+                return
+
+        try:
+            self.video_clips = []
+            for i in range(0, len(self.subtitles)):
+                video_clip = models.VideoClip.Create(subintro=self.subintros[i], raw_url=self.raw_urls[i])
+                self.video_clips.append(video_clip.key)
+        except Exception, e: # TODO: a regular thread is required to remove unused clip
+            self.response.out.write(json.dumps({
+                'error': True,
+                'message': str(e),
+                'index': i,
+            }))
+            return
 
         try:
             video = models.Video.Create(
@@ -245,31 +269,14 @@ class VideoUpload(BaseHandler):
                 video_type = self.video_type,
                 tags = self.tags,
                 allow_tag_add = self.allow_tag_add,
-                thumbnail = self.thumbnail_key
+                thumbnail = self.thumbnail_key,
+                subtitles = self.subtitles,
+                video_clips = self.video_clips,
             )
         except Exception, e:
             self.response.out.write(json.dumps({
                 'error': True,
                 'message': str(e),
-            }))
-            return
-
-        try:
-            for i in range(0, len(self.subtitles)):
-                video_clip = models.VideoClip.Create(subintro=self.subintros[i], raw_url=self.raw_urls[i])
-                video.video_clips.append(video_clip.key)
-                video.video_clip_titles.append(self.subtitles[i])
-            if self.thumbnail_key is None:
-                video.default_thumbnail = video.video_clips[0].get().vid
-            video.put()
-        except Exception, e:
-            for i in range(0, len(video.video_clips)):
-                video.video_clips.delete()
-            video.key.delete()
-            self.response.out.write(json.dumps({
-                'error': True,
-                'message': str(e),
-                'index': i,
             }))
             return
 
@@ -286,6 +293,13 @@ class VideoUpload(BaseHandler):
         video = models.Video.get_by_id('dt'+video_id)
         user = self.user
 
+        if video.uploader.id() != user.key.id():
+            self.response.out.write(json.dumps({
+                'error': True,
+                'message': 'You are not allowed to edit this video.',
+            }))
+            return
+
         res = self.field_check()
         if res['error']:
             self.response.out.write(json.dumps(res))
@@ -301,6 +315,7 @@ class VideoUpload(BaseHandler):
                     'error': True,
                     'message': str(e),
                 }))
+                return
 
         try:
             changed = False
@@ -322,7 +337,6 @@ class VideoUpload(BaseHandler):
 
             if video.video_type != self.video_type:
                 video.video_type = self.video_type
-                changed = True
 
             if video.tags != self.tags:
                 video.tags = self.tags
@@ -337,10 +351,35 @@ class VideoUpload(BaseHandler):
                     models.blobstore.BlobInfo(video.thumbnail).delete()
                 video.thumbnail = self.thumbnail_key
 
-            for i in range(0, len(self.subtitles)):
-                video_clip = models.VideoClip.Create(subtitle=self.subtitles[i], subintro=self.subintros[i], raw_url=self.raw_urls[i])
-                video.video_clips.append(video_clip.key)
+            if video.video_clip_titles != self.subtitles:
+                video.video_clip_titles = self.subtitles
 
+            new_clips = []
+            ori_clips = ndb.get_multi(video.video_clips)
+            used_clips = {}
+            for i in range(0, len(self.indices)):
+                index = int(self.indices[i])
+                if index != -1:
+                    clip = ori_clips[index]
+                    if clip.subintro != self.subintros[i]:
+                        clip.subintro = self.subintros[i]
+                    if clip.raw_url != self.raw_urls[i]:
+                        clip.set_url(self.raw_urls[i])
+                    clip.put()
+                    new_clips.append(clip.key)
+                    used_clips[index] = 1
+                else:
+                    clip = models.VideoClip.Create(subintro=self.subintros[i], raw_url=self.raw_urls[i])
+                    new_clips.append(clip.key)
+
+            if video.video_clips != new_clips:
+                # logging.info('not the same')
+                for i in range(0, len(ori_clips)):
+                    if not used_clips.get(i):
+                        ori_clips[i].key.delete()
+                video.video_clips = new_clips
+
+            # logging.info('put')
             video.put()
         except Exception, e:
             self.response.out.write(json.dumps({
@@ -476,7 +515,7 @@ class ManageVideo(BaseHandler):
             
             video_count = user.videos_submited
             total_pages = math.ceil(video_count/float(page_size))
-            
+
             result = {'error': False}
             result['videos'] = []
             if video_count != 0 and page <= total_pages:

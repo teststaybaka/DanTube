@@ -10,6 +10,7 @@ function update_page(query, video_container, pagination_container) {
         success: function(result) {
             video_container.empty();
             if (!result.error) {
+                $('#sub-title').text(result.total_found + ' Videos');
                 if(result.videos.length == 0) {
                     video_container.append('<div class="video-entry none">No video found.</div>');
                 } else {

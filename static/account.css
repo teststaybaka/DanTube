@@ -558,7 +558,7 @@ div.video-part-drag-wrapper {
 }
 
 div.video-part-line.stealth div.video-part-drag-wrapper {
-    opacity: 0;
+    visibility: hidden;
 }
 
 div.video-part-drag-wrapper.float {
@@ -688,10 +688,16 @@ form.change textarea.normal {
 
 form.change textarea.intro-input {
     vertical-align: top;
-    resize: vertical;
+    resize: none;
     height: 16px;
     width: 180px;
     margin-right: 12px;
+    -webkit-transition: height .15s; /* For Safari 3.1 to 6.0 */
+    transition: height .15s;
+}
+
+form.change textarea.intro-input:focus {
+    height: 48px;
 }
 
 form.change input.hidden {
