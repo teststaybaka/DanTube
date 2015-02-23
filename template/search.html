@@ -38,9 +38,9 @@
             <div class="selected">Most favored</div>
             {% endif %}
             <div class="option">
-                <a class="option-entry" href="{{ uri_for('manage_video') }}?order=created">Newest</a>
-                <a class="option-entry" href="{{ uri_for('manage_video') }}?order=hits">Most viewed</a>
-                <a class="option-entry" href="{{ uri_for('manage_video') }}?order=favors">Most favored</a>
+                <a class="option-entry" href="{{ uri_for('search') }}?order=created&category={{ cur_category }}&subcategory={{ cur_subcategory }}&keywords={{ keywords }}">Newest</a>
+                <a class="option-entry" href="{{ uri_for('search') }}?order=hits&category={{ cur_category }}&subcategory={{ cur_subcategory }}&keywords={{ keywords }}">Most viewed</a>
+                <a class="option-entry" href="{{ uri_for('search') }}?order=favors&category={{ cur_category }}&subcategory={{ cur_subcategory }}&keywords={{ keywords }}">Most favored</a>
             </div>
         </div>
     </div>

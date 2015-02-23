@@ -518,13 +518,8 @@ class Search(BaseHandler):
                 video_keys.append(ndb.Key(urlsafe=video_doc.doc_id))
             videos = ndb.get_multi(video_keys)
 
-            logging.info(len(video_keys))
-            logging.info(len(videos))
             for i in range(0, len(videos)):
                 video = videos[i]
-                logging.info('index:'+str(i))
-                logging.info('key:'+str(video_keys[i]))
-                logging.info(video_keys[i].get())
                 video_info = video.get_basic_info()
                 uploader = models.User.get_by_id(video.uploader.id())
                 video_info['uploader'] = uploader.get_public_info()
