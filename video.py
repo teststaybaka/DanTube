@@ -3,7 +3,6 @@ from PIL import Image
 from google.appengine.api import images
 import urlparse
 import random
-import math
 
 class CoverUpload(BaseHandler, blobstore_handlers.BlobstoreUploadHandler):
     def post(self):

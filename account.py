@@ -2,7 +2,6 @@ from views import *
 from google.appengine.api import images
 from google.appengine.ext import ndb
 import time
-import math
 from PIL import Image
 
 class Account(BaseHandler):

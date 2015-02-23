@@ -96,7 +96,7 @@ $(document).ready(function() {
             }, 100);
         }, 100);
     });
-    $('label.statistic-entry-number').each(function() {
+    $('label.commas_number').each(function() {
         $(this).text(numberWithCommas($(this).text()) )
     })
 });

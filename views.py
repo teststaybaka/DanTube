@@ -24,6 +24,7 @@ from google.appengine.ext import ndb
 import models
 import json
 import re
+import math
 
 class SilentUndefined(Undefined):
     '''
@@ -463,103 +464,79 @@ class Search(BaseHandler):
         try:
             page_size = int(self.request.get('page_size'))
         except ValueError:
-            page_size = models.PAGE_SIZE
+            page_size = 10
 
         try:
             page = int(self.request.get('page') )
         except ValueError:
             page = 1
 
-        page =  min(page, -(-models.MAX_QUERY_RESULT // page_size))
-
-        offset = (page - 1) * page_size
-
-        keywords_raw = self.request.get('keywords')
-        if not keywords_raw:
-            keywords = ''
+        context = {}
+        keywords = self.request.get('keywords').strip().lower()
+        if not keywords:
             query_string = ''
         else:
-            keywords = keywords_raw.strip().lower()
-            if keywords:
-                query_string = 'content: ' + keywords
-            else:
-                query_string = ''
-
-        context = {}
+            query_string = 'content: ' + keywords
+        context['keywords'] = keywords
+        
         category = self.request.get('category')
-        if category:
-            if category in models.Video_Category:
-                context['cur_category'] = category
-                if not keywords:
-                    query_string += 'category: \"' + category + '\"'
-                else:
-                    query_string += ' AND category: \"' + category + '\"'
-                subcategory = self.request.get('subcategory')
-                if subcategory:
-                    if subcategory in models.Video_SubCategory[category]:
-                        context['cur_subcategory'] = subcategory
-                        query_string += ' AND subcategory: \"' + subcategory + '\"'
-                                   
-        options = search.QueryOptions(offset=offset, limit=page_size)
-        query = search.Query(query_string=query_string, options=options)
+        if category in models.Video_Category:
+            context['cur_category'] = category
+            if query_string:
+                query_string += ' AND '
+            query_string += 'category: \"' + category + '\"'
 
+            subcategory = self.request.get('subcategory')
+            if subcategory in models.Video_SubCategory[category]:
+                context['cur_subcategory'] = subcategory
+                query_string += ' AND subcategory: \"' + subcategory + '\"'
+                                   
         order = self.request.get('order')
-        if not order:
-            index = search.Index(name='videos_by_hits')
-        elif order == 'hits':
+        if order == 'hits':
             index = search.Index(name='videos_by_hits')
         elif order == 'created':
             index = search.Index(name='videos_by_created')
         elif order == 'favors':
             index = search.Index(name='videos_by_favors')
         else:
+            order = 'hits'
             index = search.Index(name='videos_by_hits')
-        
+        context['order'] = order
+
+        page =  min(page, math.ceil(models.MAX_QUERY_RESULT/float(page_size)) )
+        offset = (page - 1) * page_size
+        options = search.QueryOptions(offset=offset, limit=page_size)
+        query = search.Query(query_string=query_string, options=options)
+        context['videos'] = []
         try:
-            result = index.search(query)                
-            total_found = result.number_found
-            total_videos = min(total_found, 1000)
-            total_pages = -(-total_videos // page_size)
-            
-            fetched_videos = len(result.results)
-            if total_videos > 0 and fetched_videos == 0:
-                # fetch last page
-                page = total_pages
-                offset = (page - 1) * page_size
-                options = search.QueryOptions(offset=offset, limit=page_size)
-                query = search.Query(query_string=query_string, options=options)
-                result = index.search(query)
+            result = index.search(query)
+            total_found = min(result.number_found, models.MAX_QUERY_RESULT)
+            total_pages = math.ceil(total_found/float(page_size))
 
             video_keys = []
             for video_doc in result.results:
                 video_keys.append(ndb.Key(urlsafe=video_doc.doc_id))
             videos = ndb.get_multi(video_keys)
 
-            min_page = max(page-2, 1);
-            max_page = min(min_page + 4, total_pages);
-            context.update({
-                'keywords': keywords_raw,
-                'order': order,
-                'videos': [], 
-                'total_found': total_found,
-                'total_videos': total_videos,
-                'total_pages': total_pages,
-                'cur_page': page,
-                'page_range': range(min_page, max_page+1)
-            })
-
-            for video in videos:
+            logging.info(len(video_keys))
+            logging.info(len(videos))
+            for i in range(0, len(videos)):
+                video = videos[i]
+                logging.info('index:'+str(i))
+                logging.info('key:'+str(video_keys[i]))
+                logging.info(video_keys[i].get())
                 video_info = video.get_basic_info()
                 uploader = models.User.get_by_id(video.uploader.id())
                 video_info['uploader'] = uploader.get_public_info()
                 context['videos'].append(video_info)
 
+            context['total_found'] = total_found
+            context.update(self.get_page_range(page, total_pages) )
             # logging.info(videos)
             self.render('search', context)
-
         except search.Error:
             logging.info("search failed")
-            self.render('search', {'error': 'search failed due to internal error.'})
+            self.notify('Gloabal search error.');
 
         # total_pages = -(-total_videos // page_size)
 
