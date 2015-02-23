@@ -453,7 +453,7 @@ class ManageVideo(BaseHandler):
         order = self.request.get('order')
         if keywords:
             context['order'] = 'created'
-            context['keywords'] = keywords
+            context['video_keywords'] = keywords
             query_string = 'content: ' + keywords
             page =  min(page, math.ceil(models.MAX_QUERY_RESULT/float(page_size)) )
             offset = (page - 1)*page_size
@@ -474,7 +474,7 @@ class ManageVideo(BaseHandler):
                 return
         else:
             context['order'] = order
-            context['keywords'] = ''
+            context['video_keywords'] = ''
             if order == 'hits': # most viewed
                 order = models.Video.hits
             elif order == 'created': # newest uplooad
@@ -492,7 +492,9 @@ class ManageVideo(BaseHandler):
                 offset = (page - 1) * page_size
                 videos = models.Video.query(models.Video.uploader==self.user.key).order(-order).fetch(offset=offset, limit=page_size)
         
+        # logging.info(videos)
         for i in range(0, len(videos)):
+            # logging.info(videos[i])
             video = videos[i]
             video_info = video.get_basic_info()
             context['videos'].append(video_info)
