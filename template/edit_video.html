@@ -85,7 +85,7 @@ var video_subcategories = {};
         </div>
         {% for clip in video.clips %}
         <div class="video-part-line">
-            <div class="video-part-drag-wrapper" ondragstart="return false;" ondrop="return false;" onselectstart="return false;">
+            <div class="video-part-drag-wrapper" ondragstart="return false;" ondrop="return false;">
                 <div class="video-part-error">Title too long.</div>
                 <input type="text" class="title-input" placeholder="Optional" name="sub-title[]" value="{{ clip.subtitle }}">
                 <div class="video-part-error">Title too long.</div>

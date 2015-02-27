@@ -25,12 +25,34 @@ div.video-entry.loading {
 a.video-img {
     display: inline-block;
     font-size: 0;
+    position: relative;
 }
 
 img.video-img {
     width: 176px;
     height: 99px;
     box-shadow: 0 0 1px rgb(100,100,100);
+}
+
+div.video-num-box {
+    text-align: center;
+    position: absolute;
+    right: 0;
+    top: 0;
+    height: 100%;
+    width: 40%;
+    font-size: 14px;
+    padding-top: 23px;
+    font-weight: bold;
+    color: rgb(240,240,240);
+    background-color: rgba(0,0,0,0.5);
+    -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
+    -moz-box-sizing: border-box;    /* Firefox, other Gecko */
+    box-sizing: border-box;
+}
+
+div.video-num {
+    padding: 3px;
 }
 
 div.video-info, div.list-info {
@@ -78,6 +100,7 @@ a.video-title {
     text-overflow: ellipsis;
     white-space: nowrap;
     display: inline-block;
+    max-width: 100%;
 }
 
 a.video-title.favored {
@@ -88,14 +111,14 @@ a.video-title:hover {
     color: rgb(0,140,255);
 }
 
-div.list-video-num {
-    margin-top: 20px;
-}
-
-div.list-video-num label {
+div.list-intro {
     font-size: 14px;
-    color: rgb(100,100,100);
-    vertical-align: middle;
+    color: rgb(150,150,150);
+    margin-top: 5px;
+    word-wrap: break-word;
+    white-space: pre-wrap;
+    overflow: hidden;
+    height: 48px;
 }
 
 div.video-statistic {
@@ -132,7 +155,7 @@ div.video-edit {
 }
 
 div.list-edit {
-    margin-top: 20px;
+    margin-top: 5px;
     font-size: 14px;
 }
 
@@ -155,7 +178,7 @@ div.video-select-checkbox {
     width: 16px;
     height: 16px;
     position: absolute;
-    right: 0px;
+    right: -16px;
     top: 50%;
     cursor: pointer;
     display: none;
@@ -189,7 +212,7 @@ div.pagination-line {
     border-top: 1px solid rgb(220,220,220);
 }
 
-div.page-num, a.page-num {
+a.page-num {
     margin: 15px 0;
 }
 
@@ -206,95 +229,12 @@ div.favored-time label {
     color: rgb(150,150,150);
 }
 
-div.delete-confirm-container {
-    width: 100%;
-    height: 100%;
-    position: fixed;
-    background-color: rgba(0,0,0,0.3);
-    top: 0;
-    left: 0;
-    display: none;
-    z-index: 1;
-}
-
-div.delete-confirm-container.show {
-    display: block;
-}
-
-div.delete-confirm-center {
-    width: 400px;
-    height: 100%;
-    margin: auto;
-    font-size: 0;
-}
-
-div.delete-padding {
-    height: 100%;
-    width: 0;
-    display: inline-block;
-    vertical-align: middle;
-}
-
-div.delete-confirm-box {
-    background-color: rgb(255,255,255);
-    width: 100%;
-    /*height: 200px;*/
-    vertical-align: middle;
-    display: inline-block;
-    padding: 25px;
-    border: 1px solid rgb(200,200,200);
-    -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
-    -moz-box-sizing: border-box;    /* Firefox, other Gecko */
-    box-sizing: border-box;
-}
-
-div.delete-confirm-message {
-    width: 290px;
-    vertical-align: middle;
-    font-size: 18px;
-    display: inline-block;
-    word-wrap: break-word;
-    color: rgb(100,100,100);
-    font-weight: bold;
-}
-
-div.delete-target-name {
-    font-size: 16px;
-    margin: 8px 15px;
-    word-wrap: break-word;
-}
-
-div.delete-buttons-line {
-    margin-top: 15px;
-    border-top: 1px solid rgb(200,200,200);
-}
-
-div.delete-button {
-    float: right;
-    margin-right: 0;
-    margin-top: 15px;
-    margin-left: 15px;
-    min-width: 40px;
-    text-align: center;
-}
-
 #playlist-create-button-box {
     position: relative;
     display: inline-block;
     float: right;
     font-size: 14px;
     /*margin-right: 20px;*/
-}
-
-#playlist-create-button {
-    padding: 4px 8px;
-    border: 1px solid rgb(200,200,200);
-    text-align: center;
-    cursor: pointer;
-}
-
-#playlist-create-button:hover {
-    background-color: rgb(245,245,245);
 }
 
 #playlist-create-dropdown {
@@ -341,17 +281,22 @@ div.delete-button {
     padding: 15px 20px 10px 10px;
 }
 
-#playlist-title-input {
+#playlist-title-input, #playlist-intro-input {
     margin: 0 10px;
     padding: 4px;
-    width: 225px;
+    width: 300px;
     font-size: 14px;
     border: 1px solid rgb(200,200,200);
+    box-shadow: inset 0px 1px 3px rgb(220,220,220);
+    resize: vertical;
 }
 
-#playlist-title-input:focus {
-    box-shadow: 0 0 2px rgb(81,203,238);
+#playlist-title-input:focus, #playlist-intro-input:focus {
     border: 1px solid rgb(81,203,238);
+}
+
+#playlist-title-input.error, #playlist-intro-input.error {
+    border: 1px solid rgb(232,0,0);
 }
 
 #playlist-create-buttons-line {
@@ -388,11 +333,34 @@ div.create-button, input.create-button {
     padding: 4px;
     width: 490px;
     border: 1px solid rgb(200,200,200);
+    box-shadow: inset 0px 1px 3px rgb(220,220,220);
 }
 
 #playlist-title-change:focus {
-    box-shadow: 0 0 2px rgb(81,203,238);
     border: 1px solid rgb(81,203,238);
+}
+
+#playlist-title-change.error {
+    border: 1px solid rgb(232,0,0);
+}
+
+#playlist-intro-change {
+    margin-top: 10px;
+    display: block;
+    box-shadow: inset 0px 1px 3px rgb(220,220,220);
+    font-size: 14px;
+    width: 490px;
+    padding: 4px;
+    min-height: 60px;
+    resize: vertical;
+}
+
+#playlist-intro-change:focus {
+    border: 1px solid rgb(81,203,238);
+}
+
+#playlist-intro-change.error {
+    border: 1px solid rgb(232,0,0);
 }
 
 #playlist-change-buttons-line {
@@ -402,7 +370,6 @@ div.create-button, input.create-button {
 }
 
 a.sub-title-link {
-    color: rgb(100,100,100);
     cursor: pointer;
     max-width: 474px;
     display: inline-block;
@@ -410,6 +377,7 @@ a.sub-title-link {
     text-overflow: ellipsis;
     white-space: nowrap;
     vertical-align: text-bottom;
+    font-size: 14px;
 }
 
 a.sub-title-link:hover {
@@ -429,19 +397,6 @@ div.edit-title-button {
 
 div.edit-title-button:hover {
     background-image: url("/static/img/edit_medium-hover.png");
-}
-
-div.sub-title-action-button {
-    border: 1px solid rgb(200,200,200);
-    font-size: 14px;
-    padding: 4px 8px 4px 8px;
-    float: right;
-    cursor: pointer;
-    margin-left: 20px;
-}
-
-div.sub-title-action-button:hover {
-    background-color: rgb(245,245,245);
 }
 
 #action-select {
@@ -469,11 +424,8 @@ div.video-info.playlist {
     width: 540px;
 }
 
-a.list-video-title {
-    color: rgb(100,100,100);
-    max-width: 100%;
-    word-wrap: break-word;
-    font-size: 16px;
+a.video-title.list {
+    margin-top: 0;
 }
 
 a.list-video-title:hover {
@@ -483,5 +435,75 @@ a.list-video-title:hover {
 div.list-video-time {
     font-size: 14px;
     color: rgb(150,150,150);
+    margin-top: 5px;
+}
+
+div.popup-window-box.add-search {
+    height: 80%;
+    position: relative;
+}
+
+div.popup-window-center.wide {
+    width: 770px;
+}
+
+div.add-search-title {
+    font-size: 20px;
+    font-weight: bold;
+    color: rgb(100,100,100);
+    display: inline-block;
+    float: left;
+}
+
+div.add-search-title-line {
+    padding-bottom: 15px;
+}
+
+div.popup-video-container {
+    border-top: 1px solid rgb(200,200,200);
+    overflow: auto;
+    height: calc(100% + 25px - 41px - 60px);
+    height: -moz-calc(100% + 25px - 41px - 60px); /* Firefox */
+    height: -webkit-calc(100% + 25px - 41px - 60px); /* Chrome, Safari */
+}
+
+div.video-entry.popup {
+    padding: 10px;
+    border: 0;
+    cursor: pointer;
+    position: relative;
+}
+
+div.video-entry.popup.selected {
+    box-shadow: inset 0 0 8px rgb(180,180,180);
+}
+
+div.video-entry.popup.belonged:after {
+    content: "";
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    background-color: rgba(0,0,0,0.05);
+}
+
+div.video-entry.popup.belonged div.video-title.popup {
+    color: rgb(150,150,150);
+}
+
+img.popup-video-img {
+    width: 96px;
+    height: 54px;
+    box-shadow: 0 0 1px rgb(100,100,100);
+}
+
+div.video-title.popup {
+    font-size: 14px;
+    word-wrap: break-word;
+}
+
+div.add-button, input.add-button {
+    float: right;
     margin-top: 10px;
 }

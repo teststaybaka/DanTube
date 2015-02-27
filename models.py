@@ -30,10 +30,10 @@ class User(webapp2_extras.appengine.auth.models.User):
   verified = ndb.BooleanProperty(required=True, indexed=False)
   nickname = ndb.StringProperty(required=True)
   intro = ndb.TextProperty(default="", required=True, indexed=False)
-  avatar = ndb.BlobKeyProperty()
+  avatar = ndb.BlobKeyProperty(indexed=False)
   default_avatar = ndb.IntegerProperty(default=1, choices=[1,2,3,4,5,6], indexed=False)
   spacename = ndb.StringProperty(indexed=False)
-  css_file = ndb.BlobKeyProperty()
+  css_file = ndb.BlobKeyProperty(indexed=False)
   # favorites = ndb.KeyProperty(kind='Video', repeated=True)
   favorites = ndb.StructuredProperty(Favorite, repeated=True, indexed=False)
   favorites_limit = ndb.IntegerProperty(default=100, required=True, indexed=False)
@@ -41,11 +41,12 @@ class User(webapp2_extras.appengine.auth.models.User):
   history = ndb.StructuredProperty(History, repeated=True, indexed=False)
   subscriptions = ndb.KeyProperty(kind='User', repeated=True, indexed=False)
   bullets = ndb.IntegerProperty(required=True, default=0)
-  videos_submited = ndb.IntegerProperty(required=True, default=0)
-  videos_watched = ndb.IntegerProperty(required=True, default=0)
-  videos_favored = ndb.IntegerProperty(required=True, default=0)
-  space_visited = ndb.IntegerProperty(required=True, default=0)
-  subscribers_counter = ndb.IntegerProperty(required=True, default=0)
+  videos_submited = ndb.IntegerProperty(required=True, default=0, indexed=False)
+  playlists_created = ndb.IntegerProperty(required=True, default=0, indexed=False)
+  videos_watched = ndb.IntegerProperty(required=True, default=0, indexed=False)
+  videos_favored = ndb.IntegerProperty(required=True, default=0, indexed=False)
+  space_visited = ndb.IntegerProperty(required=True, default=0, indexed=False)
+  subscribers_counter = ndb.IntegerProperty(required=True, default=0, indexed=False)
   threads_counter = ndb.IntegerProperty(required=True, default=0, indexed=False)
   new_messages = ndb.IntegerProperty(required=True, default=0, indexed=False)
 
@@ -276,23 +277,82 @@ URL_NAME_DICT = {
 };
 
 MAX_QUERY_RESULT = 1000
+DEFAULT_PAGE_SIZE = 10
 
 class PlayList(ndb.Model):
-  user_belonged = ndb.KeyProperty(kind='User', required=True)
+  creator = ndb.KeyProperty(kind='User', required=True)
   title = ndb.StringProperty(required=True)
-  video_counter = ndb.IntegerProperty(required=True)
-  created = ndb.DateTimeProperty(auto_now_add=True)
+  created = ndb.DateTimeProperty(auto_now_add=True, indexed=False)
+  modified = ndb.DateTimeProperty(auto_now_add=True)
+  videos = ndb.KeyProperty(kind='Video', repeated=True, indexed=False)
+  intro = ndb.TextProperty(required=True, default='', indexed=False)
 
-  def getVideoOrder(self):
-    self.video_counter += 1
-    self.put()
-    return self.video_counter
+  def get_basic_info(self):
+    basic_info = {
+      'videos_num': len(self.videos),
+      'title': self.title, 
+      'intro': self.intro,
+      'id': self.key.id(),
+    }
+    if len(self.videos) != 0:
+      video_info = self.videos[0].get().get_basic_info()
+      basic_info['thumbnail_url'] = video_info['thumbnail_url']
+      basic_info['thumbnail_url_hq'] = video_info['thumbnail_url_hq']
+    return basic_info
 
-  @classmethod
-  def Create_new_list(cls, user, title):
-    playList = PlayList(user_belonged = user, title = title, video_counter = 0)
-    playList.put()
-    return playList
+  def change_info(self, title, intro):
+    changed = False
+    if self.title != title:
+      self.title = title
+
+    if selt.intro != intro:
+      self.intro = intro
+
+    if changed:
+      self.put()
+      self.create_index('playlists_by_modified', time_to_seconds(self.modified) )
+      self.create_index('playlists_by_user' + str(self.creator.id()), time_to_seconds(self.modified) )
+
+  def delete_index(self, index_name):
+    index = search.Index(name=index_name)
+    index.delete(self.key.urlsafe())
+
+  def Delete(self):
+    videos = ndb.get_multi(self.videos)
+    for j in range(0, len(videos)):
+        video[i].playlist_belonged = None
+    ndb.put_multi(videos)
+
+    self.delete_index('playlists_by_modified')
+    self.delete_index('playlists_by_user' + str(self.creator.id()))
+    self.key.delete()
+
+  def create_index(self, index_name, rank):
+    index = search.Index(name=index_name)
+    searchable = " ".join([self.title, self.intro]);
+    doc = search.Document(
+      doc_id = self.key.urlsafe(), 
+      fields = [
+        search.TextField(name='content', value=searchable),
+      ],
+      rank = rank
+    )
+    try:
+      add_result = index.put(doc)
+    except search.Error:
+      logging.info('failed to create %s index for playlist %s' % (index_name, self.key.id()))
+
+  @staticmethod
+  def Create(user, title, intro):
+    new_list = PlayList(creator=user.key, title=title, intro=intro)
+    new_list.put()
+
+    user.playlists_created += 1
+    user.put()
+
+    new_list.create_index('playlists_by_modified', time_to_seconds(new_list.modified) )
+    new_list.create_index('playlists_by_user' + str(new_list.creator.id()), time_to_seconds(new_list.modified) )
+    return new_list
 
 
 class VideoClip(ndb.Model):
@@ -333,10 +393,6 @@ class VideoClip(ndb.Model):
     self.source = res['source']
 
 class Video(ndb.Model):
-  video_clips = ndb.KeyProperty(kind='VideoClip', repeated=True, indexed=False)
-  video_clip_titles = ndb.StringProperty(repeated=True, indexed=False)
-  default_thumbnail = ndb.StringProperty(indexed=False)
-
   created = ndb.DateTimeProperty(auto_now_add=True)
   last_liked = ndb.DateTimeProperty(default=datetime.fromtimestamp(0))
   uploader = ndb.KeyProperty(kind='User', required=True)
@@ -348,8 +404,11 @@ class Video(ndb.Model):
   thumbnail = ndb.BlobKeyProperty()
   deleted = ndb.BooleanProperty(required=True, default=False)
 
-  video_list_belonged = ndb.KeyProperty(kind='PlayList')
-  video_order = ndb.IntegerProperty()
+  video_clips = ndb.KeyProperty(kind='VideoClip', repeated=True, indexed=False)
+  video_clip_titles = ndb.StringProperty(repeated=True, indexed=False)
+  default_thumbnail = ndb.StringProperty(indexed=False)
+
+  playlist_belonged = ndb.KeyProperty(kind='PlayList')
   # danmaku_counter = ndb.IntegerProperty(required=True, default=0)
   comment_counter = ndb.IntegerProperty(required=True, default=0)
   allow_tag_add = ndb.BooleanProperty(required=True, default=True)
@@ -540,6 +599,10 @@ class Video(ndb.Model):
     full_info.update(self.get_basic_info())
     return full_info
 
+  def delete_index(self, index_name):
+    index = search.Index(name=index_name)
+    index.delete(self.key.urlsafe())
+
   def create_index(self, index_name, rank):
     index = search.Index(name=index_name)
     searchable = " ".join(self.tags + [self.title, self.description]);
@@ -623,6 +686,19 @@ class Video(ndb.Model):
       video.create_index('videos_by_favors', video.favors )
       video.create_index('videos_by_user' + str(video.uploader.id()), time_to_seconds(video.created) )
       return video
+
+  def Delete(self):
+    if self.playlist_belonged != None:
+      belonged = video.playlist_belonged.get()
+      belonged.videos.index(video.key)
+      belonged.videos.pop(idx)
+      belonged.put()
+
+    self.delete_index('videos_by_created')
+    self.delete_index('videos_by_hits')
+    self.delete_index('videos_by_favors')
+    self.delete_index('videos_by_user' + str(self.uploader.id()))
+    self.key.delete()
 
 class Danmaku(ndb.Model):
   video = ndb.KeyProperty(kind='Video', required=True)

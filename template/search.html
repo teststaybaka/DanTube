@@ -26,7 +26,7 @@
 {% endif %}
 
 <div class="search-scope-line container">
-    <div class="search-result-num">Found <label class="commas_number">{{ total_found }}</label> videos.</div>
+    <div class="search-result-num">Found <span class="commas_number">{{ total_found }}</span> videos.</div>
     <div id="view-method-block">
         <label id="view-method-label">Sorted by:</label>
         <div id="view-method">
@@ -69,12 +69,14 @@
                 <div class="video-category">Continuing Anime</div>
                 <div class="video-time">{{ video.created }}</div>
             </div>
-            <a href="{{ video.url }}" class="video-title">{{ video.title }}</a>
+            <div class="video-title">
+                <a href="{{ video.url }}" class="video-title">{{ video.title }}</a>
+            </div>
             <div class="video-statistic">
-                <div class="video-statistic-entry">Views: <label class="commas_number">{{ video.hits }}</label></div>
-                <div class="video-statistic-entry">Favors: <label class="commas_number">{{ video.favors }}</label></div>
-                <div class="video-statistic-entry">Comments: <label class="commas_number">{{ video.comment_counter }}</label></div>
-                <div class="video-statistic-entry">Bullets: <label class="commas_number">{{ video.bullets }}</label></div>
+                <div class="video-statistic-entry">Views: <span class="commas_number">{{ video.hits }}</span></div>
+                <div class="video-statistic-entry">Favors: <span class="commas_number">{{ video.favors }}</span></div>
+                <div class="video-statistic-entry">Comments: <span class="commas_number">{{ video.comment_counter }}</span></div>
+                <div class="video-statistic-entry">Bullets: <span class="commas_number">{{ video.bullets }}</span></div>
             </div>
             <div class="video-description">
                 {{ video.description }}

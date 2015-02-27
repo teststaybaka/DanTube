@@ -156,7 +156,7 @@ def message_author_required(handler):
                     'message': error_msg
                 }))
             else:
-                self.render('notice', {'type':'error', 'notice':error_msg});
+                self.notify(error_msg);
             return
 
         if thread.sender:
@@ -185,7 +185,7 @@ def message_author_required(handler):
                     'message': error_msg
                 }))
             else:
-                self.render('notice', {'type':'error', 'notice':error_msg});
+                self.notify(error_msg);
             return
 
         else:

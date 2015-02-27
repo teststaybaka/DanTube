@@ -6,61 +6,106 @@
 {% endblock %}
 
 {% block topTitle %}
-<a class="top-title active" href="{{ uri_for('manage_playlist') }}">
+<a class="top-title" href="{{ uri_for('manage_playlist') }}">
     <div class="top-title-dot"></div>
     Playlists
+</a>
+<a class="top-title active" href="{{ uri_for('edit_playlist', playlist_id=playlist.id) }}">
+    <div class="top-title-dot"></div>
+    Edit
 </a>
 {% endblock %}
 
 {% block detail %}
 <div id="sub-title-line" class="container">
-    <form id="playlist-title-change-form">
-        <input id="playlist-title-change" type="text" placeholder="No longer than 100 characters."/>
+    <form id="playlist-title-change-form" action="{{ uri_for('edit_playlist_info', playlist_id=playlist.id) }}" method="POST">
+        <input id="playlist-title-change" type="text" name="title" placeholder="No longer than 100 characters." value="{{ playlist.title }}" />
+        <textarea id="playlist-intro-change" type="text" name="intro" placeholder="Brief introduction to your playlist.">{{ playlist.intro }}</textarea>
         <div id="playlist-change-buttons-line">
             <div class="inline-button create-button">Cancel</div>
-            <input type="submit" class="inline-button special create-button create" value="Done">
+            <input type="submit" class="inline-button special create-button done" value="Done">
         </div>
     </form>
-    <div id="sub-title" class="playlist"><a class="sub-title-link">Mad Father | Part 7 | NOPE NOPE NOPEMad Father | Part 7 | NOPE NOPE NOPEMad Father | Part 7 | NOPE NOPE NOPE</a><div class="edit-title-button"></div></div>
+    <div id="sub-title" class="playlist"><a class="sub-title-link">{{ playlist.title }}</a><div class="edit-title-button"></div></div>
     <div id="action-select">
         <div class="selected">Actions</div>
         <div class="option">
-            <div class="option-entry delete">Delete</div>
+            <div class="option-entry delete">Remove</div>
         </div>
     </div>
-    <div class="sub-title-action-button">Add videos</div>
+    <div class="inline-button sub" id="add-videos-button">Add videos</div>
 </div>
 <div class="edit-playlists-container">
-    <div class="video-entry">
-        <div class="list-No">1</div>
-        <a class="video-img playlist" href="" target="_blank">
-            <img class="list-video-img" src="">
+    {% if total_pages == 0 %}
+    <div class="video-entry none">
+        Empty list.
+    </div>
+    {% endif %}
+    {% for video in videos %}
+    <div class="video-entry dt{{ video.id_num }}">
+        <div class="list-No">{{ video.index }}</div>
+        <a class="video-img playlist" href="{{ video.url }}" target="_blank">
+            <img class="list-video-img" src="{{ video.thumbnail_url }}">
         </a>
         <div class="video-info playlist">
             <div class="video-title">
-                <a class="list-video-title" href="" target="_blank">Mad Father | Part 7 | NOPE NOPE NOPE</a>
+                <a class="video-title list" href="{{ video.url }}" target="_blank">{{ video.title }}</a>
             </div>
-            <div class="list-video-time">2013-01-13 23:10</div>
-            <div class="video-select-checkbox"></div>
+            <div class="list-video-time">{{ video.created }}</div>
+            <div class="video-select-checkbox" data-id="{{ video.id_num }}" data-title="{{ video.title }}"></div>
         </div>
     </div>
+    {% endfor %}
 </div>
+{% if total_pages != 0 %}
 <div class="pagination-line">
-    <div class="page-num active">1</div>
+  {% if cur_page > 1 %}
+    <a class="page-change" href="{{ uri_for('edit_playlist', playlist_id=playlist.id) }}?page=1"><<</a>
+    <a class="page-change" href="{{ uri_for('edit_playlist', playlist_id=playlist.id) }}?page={{ cur_page - 1 }}"><</a>
+  {% endif %}
+  {% for p in pages %}
+    <a class="page-num {% if p == cur_page %}active{% endif %}" href="{{ uri_for('edit_playlist', playlist_id=playlist.id) }}?page={{ p }}">{{ p }}</a>
+  {% endfor %}
+  {% if cur_page < total_pages %}
+    <a class="page-change" href="{{ uri_for('edit_playlist', playlist_id=playlist.id) }}?page={{ cur_page + 1 }}">></a>
+    <a class="page-change" href="{{ uri_for('edit_playlist', playlist_id=playlist.id) }}?page={{ total_pages }}">>></a>
+  {% endif %}
 </div>
+{% endif %}
 {% endblock %}
 
 {% block popup_window %}
-<div class="delete-confirm-container">
-    <div class="delete-confirm-center">
-        <div class="delete-padding"></div>
-        <div class="delete-confirm-box">
+<div class="popup-window-container remove">
+    <div class="popup-window-center">
+        <div class="popup-window-padding"></div>
+        <div class="popup-window-box">
             <div class="ajax-icon warning"></div>
-            <div class="delete-confirm-message">Are you sure to delete the playlist(s):</div>
+            <div class="delete-confirm-message">Are you sure to remove those video(s) from the list?</div>
             <div class="delete-target-name">sdf</div>
             <div class="delete-buttons-line container">
-                <div class="inline-button special delete-button delete">Delete</div>
+                <input class="inline-button special delete-button" type="button" value="Remove">
                 <div class="inline-button delete-button">Cancel</div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="popup-window-container add-to">
+    <div class="popup-window-center wide">
+        <div class="popup-window-padding"></div>
+        <div class="popup-window-box add-search">
+            <div class="add-search-title-line container">
+                <div class="add-search-title">Select videos to add</div>
+                <form id="search-video-form" class="sub-search-block none-float" method="POST" action="{{ uri_for('search_video_to_list') }}">
+                    <input class="sub-search-input" type="text" name="keywords" placeholder="Id, url or keywords" value="">
+                    <input type="submit" class="sub-search-button" value="">
+                </form>
+            </div>
+            <div class="popup-video-container">
+                <div class="video-entry none">Here, you can search with an id.</div>
+            </div>
+            <div class="pagination-line popup">
+                <input class="inline-button special add-button" type="button" value="Confirm">
+                <div class="inline-button add-button">Cancel</div>
             </div>
         </div>
     </div>

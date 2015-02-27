@@ -39,7 +39,7 @@ class VideoUpload(BaseHandler):
         if video.uploader.id() == self.user.key.id():
             self.render('edit_video', {'video':video.get_full_info()})
         else:
-            self.render('notice', {'type':'error', 'notice':'You are not allowed to edit this video.'})
+            self.notify('You are not allowed to edit this video.')
 
     def field_check(self):
         self.title = self.request.get('total-title').strip()
@@ -251,6 +251,8 @@ class VideoUpload(BaseHandler):
                 video_clip = models.VideoClip.Create(subintro=self.subintros[i], raw_url=self.raw_urls[i])
                 self.video_clips.append(video_clip.key)
         except Exception, e: # TODO: a regular thread is required to remove unused clip
+            for i in range(0, len(self.video_clips)):
+                self.video_clips[i].delete()
             self.response.out.write(json.dumps({
                 'error': True,
                 'message': str(e),
@@ -274,7 +276,7 @@ class VideoUpload(BaseHandler):
             )
         except Exception, e:
             for i in range(0, len(self.video_clips)):
-                self.video_clips[i].delete
+                self.video_clips[i].delete()
             self.response.out.write(json.dumps({
                 'error': True,
                 'message': str(e),
@@ -419,9 +421,8 @@ class DeleteVideo(BaseHandler):
             if video is None or video.uploader.id() != self.user.key.id():
                 continue
 
+            video.Delete()
             deleted_ids.append(video_id)
-            video.deleted = True
-            video.put()
 
         if len(deleted_ids) == 0:
             self.response.out.write(json.dumps({
@@ -429,6 +430,8 @@ class DeleteVideo(BaseHandler):
                 'message': 'No video deleted.'
             }))
             return
+        self.user.videos_submited -= len(deleted_ids)
+        self.user.put()
 
         self.response.out.write(json.dumps({
             'error': False,
@@ -439,7 +442,7 @@ class ManageVideo(BaseHandler):
     @login_required
     def get(self):
         user = self.user
-        page_size = 10
+        page_size = models.DEFAULT_PAGE_SIZE
         try:
             page = int(self.request.get('page'))
         except ValueError:
@@ -525,15 +528,15 @@ class RandomVideos(BaseHandler):
             for i in range(0, size):
                 while True:
                     random_id = random.randint(1, max_id)
-                    if not fetched.get(random_id):
-                        video = models.Video.get_by_id('dt'+str(random_id))
-                        if (video is not None) and (not video.deleted):
-                            uploader = video.uploader.get()
-                            video_info = video.get_basic_info()
-                            video_info['uploader'] = uploader.get_public_info()
-                            result['videos'].append(video_info)
-                            fetched[random_id] = 1;
-                            break
+                    # if not fetched.get(random_id):
+                    video = models.Video.get_by_id('dt'+str(random_id))
+                    if (video is not None) and (not video.deleted):
+                        uploader = video.uploader.get()
+                        video_info = video.get_basic_info()
+                        video_info['uploader'] = uploader.get_public_info()
+                        result['videos'].append(video_info)
+                        fetched[random_id] = 1;
+                        break
 
             self.response.out.write(json.dumps(result))
         except Exception, e:

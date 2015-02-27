@@ -124,8 +124,8 @@ a.video-title, a.uploader {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    display: block;
-    width: 100%;
+    display: inline-block;
+    max-width: 100%;
 }
 
 a.video-title:hover, a.uploader:hover {

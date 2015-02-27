@@ -1,6 +1,6 @@
 import webapp2
 
-import views, admin, login, account, video, message, user
+import views, admin, login, account, video, message, user, playlist
 import models
 
 secret_key = 'efrghtrrouhsmvnmxdiosjkgjfds68_=' \
@@ -30,7 +30,6 @@ routes = [
     webapp2.Route(r'/account/avatar', account.ChangeAvatar, name="change_avatar"),
     webapp2.Route(r'/account/avatar/upload/<user_id:\d+>', account.AvatarUpload, name="avatar_upload"),
     webapp2.Route(r'/account/password', account.ChangePassword, name="change_password"),
-    webapp2.Route(r'/account/playlists', account.ManagePlaylist, name="manage_playlist"),
     webapp2.Route(r'/account/favorites', account.Favorites, name="favorites"),
     webapp2.Route(r'/account/favor/dt<video_id:\d+>', account.Favor, name="favor"),
     webapp2.Route(r'/account/favorites/remove', account.Unfavor, name="unfavor"),
@@ -65,6 +64,15 @@ routes = [
     webapp2.Route(r'/account/video/edit/dt<video_id:\d+>', video.VideoUpload, name="edit_video", handler_method="edit"),
     webapp2.Route(r'/account/video/edit_post/dt<video_id:\d+>', video.VideoUpload, name="edit_video_post", handler_method="edit_post"),
     webapp2.Route(r'/account/video/delete', video.DeleteVideo, name="delete_video"),
+
+    webapp2.Route(r'/account/playlists', playlist.ManagePlaylist, name="manage_playlist"),
+    webapp2.Route(r'/account/playlists/create', playlist.PlaylistInfo, name="create_playlist", handler_method="create"),
+    webapp2.Route(r'/account/playlists/edit/<playlist_id:\d+>', playlist.EditPlaylist, name="edit_playlist"),
+    webapp2.Route(r'/account/playlists/edit/info/<playlist_id:\d+>', playlist.PlaylistInfo, name="edit_playlist_info", handler_method="edit"),
+    webapp2.Route(r'/account/playlists/delete', playlist.DeletePlaylist, name="delete_playlist"),
+    webapp2.Route(r'/account/playlists/search_video', playlist.SearchVideo, name="search_video_to_list"),
+    webapp2.Route(r'/account/playlists/edit/add/<playlist_id:\d+>', playlist.AddVideo, name="add_video_to_list"),
+    webapp2.Route(r'/account/playlists/edit/remove/<playlist_id:\d+>', playlist.RemoveVideo, name="remove_video_from_list"),
 
     webapp2.Route(r'/video', views.Video, name="video"),
     webapp2.Route(r'/video/random', video.RandomVideos, name="random_videos"),

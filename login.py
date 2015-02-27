@@ -199,7 +199,7 @@ class ForgotPasswordReset(BaseHandler):
         if not res['error']:
             self.render('forgot_password_reset');
         else:
-            self.render('notice', {'type':'error', 'notice':res['message']});
+            self.notify(res['message']);
 
 
     def post(self, *args, **kwargs):

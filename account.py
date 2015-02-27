@@ -1,6 +1,5 @@
 from views import *
 from google.appengine.api import images
-from google.appengine.ext import ndb
 import time
 from PIL import Image
 
@@ -12,17 +11,11 @@ class Account(BaseHandler):
         context['user'] = user.get_statistic_info()
         self.render('account', context)
 
-class ManagePlaylist(BaseHandler):
-    @login_required
-    def get(self):
-        # self.render('manage_playlist')
-        self.render('edit_playlist')
-
 class History(BaseHandler):
     @login_required
     def get(self):
         user = self.user
-        page_size = 10
+        page_size = models.DEFAULT_PAGE_SIZE
         try:
             page = int(self.request.get('page'))
         except ValueError:
@@ -54,7 +47,7 @@ class Favorites(BaseHandler):
     @login_required
     def get(self):
         user = self.user
-        page_size = 10
+        page_size = models.DEFAULT_PAGE_SIZE
         try:
             page = int(self.request.get('page'))
         except ValueError:
@@ -149,7 +142,6 @@ class Unfavor(BaseHandler):
             try:
                 idx = video_keys.index(video.key)
                 user.favorites.pop(idx)
-                user.put()
                 
                 video.favors -= 1
                 video.put()
@@ -166,12 +158,14 @@ class Unfavor(BaseHandler):
                 #     'error': True,
                 #     'message': 'video not favored',
                 # }))
+        
         if len(deleted_ids) == 0:
             self.response.out.write(json.dumps({
                 'error': True,
                 'message': 'No video removed.'
             }))
             return
+        user.put()
 
         self.response.out.write(json.dumps({
             'error': False, 
@@ -215,13 +209,13 @@ class Verification(BaseHandler):
 
         if not user:
             logging.info('Could not find any user with id "%s" and token "%s"', user_id, signup_token)
-            self.render('notice', {'type':'error', 'notice':"Url not found."})
+            self.notify("Url not found.")
             return
         
         time_passed = time.mktime(datetime.now().timetuple()) - ts
         if time_passed > 24 * 60 * 60: # 24 hours
             self.user_model.delete_signup_token(user_id, signup_token)
-            self.render('notice', {'type':'error', 'notice':"Url has expired. Please make a new request."})
+            self.notify("Url has expired. Please make a new request.")
             return
 
         # current_user = self.user
@@ -571,4 +565,3 @@ class SpaceCSS(blobstore_handlers.BlobstoreDownloadHandler):
         resource = str(urllib.unquote(resource))
         blob_info = models.blobstore.BlobInfo.get(resource)
         self.send_blob(blob_info)
-        

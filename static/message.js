@@ -51,11 +51,11 @@ $(document).ready(function() {
                 }
             });
         }
-        $('div.delete-confirm-container').removeClass('show');
+        $('div.popup-window-container').removeClass('show');
     });
 
     $('div.message-container').on('click', 'div.message-delete', function(evt) {
-        $('div.delete-confirm-container').addClass('show');
+        $('div.popup-window-container').addClass('show');
         var id = $(evt.target).attr('data-id');
         var subject = $(evt.target).attr('data-subject');
         $('div.delete-button.delete').attr('data-id', id);

@@ -151,21 +151,12 @@ a.top-title.active div.top-title-dot {
 .inline-button.sub {
     float: right;
     margin-top: 0;
-    margin-right: 10px;
-    cursor: pointer;
+    margin-right: 0;
     min-width: 40px;
     text-align: center;
     font-weight: normal;
-    color: black;
     position: relative;
-}
-
-.inline-button.sub:hover {
-    color: rgb(0,140,255);
-}
-
-.inline-button.sub:active {
-    color: white;
+    border-radius: 0;
 }
 
 #action-select {
@@ -186,22 +177,23 @@ a.top-title.active div.top-title-dot {
     font-size: 14px;
 }
 
-#sub-search-block {
+form.sub-search-block {
     float: right;
     display: inline-table;
     border: 1px solid rgb(200,200,200);
     margin-left: 25px;
 }
 
-#sub-search-input {
+input.sub-search-input {
     padding: 4px;
     display: inline-block;
     border: 0;
     font-size: 14px;
     width: 140px;
+    vertical-align: middle;
 }
 
-#sub-search-button {
+input.sub-search-button {
     width: 24px;
     height: 24px;
     background-color: rgb(240,240,240);
@@ -216,11 +208,11 @@ a.top-title.active div.top-title-dot {
     cursor: pointer;
 }
 
-#sub-search-button:hover{
+input.sub-search-button:hover{
     background-image: url("/static/img/search-icon-hover.png");
 }
 
-#sub-search-button:active {
+input.sub-search-button:active {
     background-image: url("/static/img/search-icon-active.png");
     background-color: rgb(0,135,255);
 }
@@ -764,6 +756,7 @@ form.change div.input-error {
     padding: 5px 10px;
     border-radius: 3px;
     white-space: nowrap;
+    font-size: 16px;
 }
 
 form.change div.input-error:after {
@@ -918,7 +911,7 @@ input.save_change-button:disabled {
     display: inline-block;
 }
 
-div.delete-confirm-container {
+div.popup-window-container {
     width: 100%;
     height: 100%;
     position: fixed;
@@ -929,25 +922,25 @@ div.delete-confirm-container {
     display: none;
 }
 
-div.delete-confirm-container.show {
+div.popup-window-container.show {
     display: block;
 }
 
-div.delete-confirm-center {
+div.popup-window-center {
     width: 400px;
     height: 100%;
     margin: auto;
     font-size: 0;
 }
 
-div.delete-padding {
+div.popup-window-padding {
     height: 100%;
     width: 0;
     display: inline-block;
     vertical-align: middle;
 }
 
-div.delete-confirm-box {
+div.popup-window-box {
     background-color: rgb(255,255,255);
     width: 100%;
     /*height: 200px;*/
@@ -970,33 +963,23 @@ div.delete-confirm-message {
     font-weight: bold;
 }
 
+div.delete-target-name {
+    font-size: 16px;
+    margin: 8px 15px;
+    word-wrap: break-word;
+}
+
 div.delete-buttons-line {
     border-top: 1px solid rgb(200,200,200);
 }
 
-div.delete-button {
+div.delete-button, input.delete-button {
     float: right;
     margin-right: 0;
     margin-top: 15px;
     margin-left: 15px;
     min-width: 40px;
     text-align: center;
-}
-
-div.delete-button.delete {
-    background-color: rgb(0,140,255);
-    border-color: rgb(0,140,255);
-    color: white;
-}
-
-div.delete-button.delete:hover {
-    background-color: rgb(81,203,238);
-    border-color: rgb(81,203,238);
-}
-
-div.delete-button.delete:active {
-    background-color: rgb(0,50,200);
-    border-color: rgb(0,50,200);
 }
 
 #space-css-file {

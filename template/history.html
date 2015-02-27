@@ -29,10 +29,10 @@
         <a href="{{ video.uploader.space_url }}" target="_blank">{{ video.uploader.nickname }}</a>
       </div>
       <div class="video-statistic">
-        <div class="video-statistic-entry">Views: <label class="commas_number">{{ video.hits }}</label></div>
-        <div class="video-statistic-entry">Favors: <label class="commas_number">{{ video.favors }}</label></div>
-        <div class="video-statistic-entry">Comments: <label class="commas_number">{{ video.comment_counter }}</label></div>
-        <div class="video-statistic-entry">Bullets: <label class="commas_number">{{ video.bullets }}</label></div>
+        <div class="video-statistic-entry">Views: <span class="commas_number">{{ video.hits }}</span></div>
+        <div class="video-statistic-entry">Favors: <span class="commas_number">{{ video.favors }}</span></div>
+        <div class="video-statistic-entry">Comments: <span class="commas_number">{{ video.comment_counter }}</span></div>
+        <div class="video-statistic-entry">Bullets: <span class="commas_number">{{ video.bullets }}</span></div>
       </div>
       <div class="last-viewed">Last watched: {{ video.last_viewed_time }}</div>
     </div>

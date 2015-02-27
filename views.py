@@ -107,16 +107,25 @@ class BaseHandler(webapp2.RequestHandler):
     def get_page_range(self, cur_page, total_pages, page_range=10):
         cur_page = int(cur_page)
         total_pages = int(total_pages)
-        max_page = min(cur_page + 4, total_pages)
-        min_page = max(cur_page - 5, 1)
-        remain_page = page_range - (max_page - cur_page) - (cur_page - min_page) - 1
-        if remain_page > 0:
-            max_page = min(max_page + remain_page, total_pages);
-            min_page = max(min_page - remain_page, 1);
+        res_pages = []
+        if cur_page > total_pages:
+            min_page = max(total_pages - page_range + 1, 1)
+            res_pages = range(min_page, total_pages+1)
+        elif cur_page < 1:
+            max_page = max(page_range, total_pages)
+            res_pages = range(1, max_page+1)
+        else:
+            max_page = min(cur_page + 4, total_pages)
+            min_page = max(cur_page - 5, 1)
+            remain_page = page_range -(max_page - cur_page) - (cur_page - min_page) - 1
+            if remain_page > 0:
+                max_page = min(max_page + remain_page, total_pages);
+                min_page = max(min_page - remain_page, 1);
+            res_pages = range(min_page, max_page+1)
         return {
             'total_pages': total_pages,
             'cur_page': cur_page,
-            'pages': range(min_page, max_page+1)
+            'pages': res_pages,
         }
 
 def login_required(handler):
@@ -460,12 +469,8 @@ class Search(BaseHandler):
         #     video.create_index('videos_by_hits', video.hits)
         #     video.create_index('videos_by_favors', video.favors)
         #     video.create_index('videos_by_user' + str(video.uploader.id()), models.time_to_seconds(video.created) )
-
-        try:
-            page_size = int(self.request.get('page_size'))
-        except ValueError:
-            page_size = 10
-
+            
+        page_size = models.DEFAULT_PAGE_SIZE
         try:
             page = int(self.request.get('page') )
         except ValueError:

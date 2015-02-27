@@ -14,10 +14,10 @@
 
 {% block detail %}
 <div id="sub-title-line" class="container">
-    <div id="sub-title">23 Playlists</div>
-    <form id="sub-search-block">
-        <input id="sub-search-input" type="text" placeholder="Search Playlists">
-        <input type="submit" id="sub-search-button" value="">
+    <div id="sub-title"><span class="commas_number">{{ total_found }}</span> Playlists</div>
+    <form class="sub-search-block" method="get" action="{{ uri_for('manage_playlist') }}">
+        <input class="sub-search-input" type="text" name="keywords" placeholder="Search Playlists" value="{{ list_keywords }}">
+        <input type="submit" class="sub-search-button" value="">
     </form>
     <div id="action-select">
         <div class="selected">Actions</div>
@@ -25,11 +25,13 @@
             <div class="option-entry delete">Delete</div>
         </div>
     </div>
-    <form id="playlist-create-button-box">
-        <div id="playlist-create-button">New Playlist</div>
+    <form id="playlist-create-button-box" action="{{ uri_for('create_playlist') }}" method="POST">
+        <div id="playlist-create-button" class="inline-button sub">New Playlist</div>
         <div id="playlist-create-dropdown">
             <div id="playlist-title-label">Playlist title:</div>
-            <input id="playlist-title-input" type="text" placeholder="No longer than 100 characters."/>
+            <input id="playlist-title-input" type="text" name="title" placeholder="No longer than 100 characters."/>
+            <div id="playlist-title-label">Playlist intro:</div>
+            <textarea id="playlist-intro-input" type="text" name="intro" placeholder="Brief introduction to your playlist."></textarea>
             <div id="playlist-create-buttons-line">
                 <div class="inline-button create-button">Cancel</div>
                 <input type="submit" class="inline-button special create-button create" value="Create">
@@ -38,41 +40,60 @@
     </form>
 </div>
 <div class="manage-playlists-container">
-    <div class="video-entry">
+    {% if total_pages == 0 %}
+    <div class="video-entry none">
+        No playlists found.
+    </div>
+    {% endif %}
+    {% for playlist in playlists %}
+    <div class="video-entry {{ playlist.id }}">
         <a class="video-img" href="" target="_blank">
-            <img class="video-img" src="">
+            <img class="video-img" src="{% if playlist.thumbnail_url %}{{ playlist.thumbnail_url }}{% else %}/static/img/empty_list.png{% endif %}">
+            <div class="video-num-box">
+                <div class="video-num">{{ playlist.videos_num }}</div>
+                <div class="video-num">Videos</div>
+            </div>
         </a>
         <div class="list-info">
             <div class="video-title">
-                <a href="" class="video-title" target="_blank">dgsg</a>
+                <a href="" class="video-title" target="_blank">{{ playlist.title }}</a>
             </div>
-            <div class="list-video-num">
-                <label>Contains </label>
-                20
-                <label> Videos</label>
-            </div>
+            <div class="list-intro">{{ playlist.intro }}</div>
             <div class="list-edit">
-                <a class="edit-entry">[Edit Playlist]</a>
+                <a class="edit-entry" href="{{ uri_for('edit_playlist', playlist_id=playlist.id) }}">[Edit Playlist]</a>
             </div>
-            <div class="video-select-checkbox" data-id="' + video.id_num + '" data-title="' + video.title + '"></div>
+            <div class="video-select-checkbox" data-id="{{ playlist.id }}" data-title="{{ playlist.title }}"></div>
         </div>
     </div>
+    {% endfor %}
 </div>
+{% if total_pages != 0 %}
 <div class="pagination-line">
-    <div class="page-num active">1</div>
+  {% if cur_page > 1 %}
+    <a class="page-change" href="{{ uri_for('manage_playlist') }}?keywords={{ list_keywords }}&page=1"><<</a>
+    <a class="page-change" href="{{ uri_for('manage_playlist') }}?keywords={{ list_keywords }}&page={{ cur_page - 1 }}"><</a>
+  {% endif %}
+  {% for p in pages %}
+    <a class="page-num {% if p == cur_page %}active{% endif %}" href="{{ uri_for('manage_playlist') }}?keywords={{ list_keywords }}&page={{ p }}">{{ p }}</a>
+  {% endfor %}
+  {% if cur_page < total_pages %}
+    <a class="page-change" href="{{ uri_for('manage_playlist') }}?keywords={{ list_keywords }}&page={{ cur_page + 1 }}">></a>
+    <a class="page-change" href="{{ uri_for('manage_playlist') }}?keywords={{ list_keywords }}&page={{ total_pages }}">>></a>
+  {% endif %}
 </div>
+{% endif %}
 {% endblock %}
 
 {% block popup_window %}
-<div class="delete-confirm-container">
-    <div class="delete-confirm-center">
-        <div class="delete-padding"></div>
-        <div class="delete-confirm-box">
+<div class="popup-window-container">
+    <div class="popup-window-center">
+        <div class="popup-window-padding"></div>
+        <div class="popup-window-box">
             <div class="ajax-icon warning"></div>
             <div class="delete-confirm-message">Are you sure to delete the playlist(s):</div>
             <div class="delete-target-name">sdf</div>
             <div class="delete-buttons-line container">
-                <div class="inline-button special delete-button delete">Delete</div>
+                <input class="inline-button special delete-button" value="Delete" type="button">
                 <div class="inline-button delete-button">Cancel</div>
             </div>
         </div>

@@ -1,38 +1,42 @@
 $(document).ready(function() {
-    $('div.delete-button').click(function(evt) {
-        if ($(evt.target).hasClass('delete')) {
-            var ids= $(evt.target).attr('data-id').split(';');
-            $(evt.target).text('Removing');
-            $.ajax({
-                type: "POST",
-                url: '/account/favorites/remove',
-                async: false,
-                data: {ids: ids},
-                success: function(result) {
-                    console.log(result);
-                    if (!result.error) {
-                        pop_ajax_message('Videos removed!', 'success');
-                        ids = result.message;
-                        for (var i = 0; i < ids.length; i++) {
-                            $('div.video-entry.dt'+ids[i]).remove();
-                        }
-                    } else {
-                        pop_ajax_message(result.message, 'error');
+    $('input.delete-button').click(function(evt) {
+        var ids= $(evt.target).attr('data-id').split(';');
+        pop_ajax_message('Removing videos...', 'info');
+        $(evt.target).prop('disabled', true);
+        $.ajax({
+            type: "POST",
+            url: '/account/favorites/remove',
+            data: {ids: ids},
+            success: function(result) {
+                console.log(result);
+                if (!result.error) {
+                    pop_ajax_message('Videos removed!', 'success');
+                    ids = result.message;
+                    for (var i = 0; i < ids.length; i++) {
+                        $('div.video-entry.dt'+ids[i]).remove();
                     }
-                },
-                error: function (xhr, ajaxOptions, thrownError) {
-                    console.log(xhr.status);
-                    console.log(thrownError);
+                } else {
+                    pop_ajax_message(result.message, 'error');
                 }
-            });
-        }
-        $('div.delete-confirm-container').removeClass('show');
+                $(evt.target).prop('disabled', false);
+            },
+            error: function (xhr, ajaxOptions, thrownError) {
+                console.log(xhr.status);
+                console.log(thrownError);
+                $(evt.target).prop('disabled', false);
+            }
+        });
+        $('div.popup-window-container').removeClass('show');
+    });
+
+    $('div.delete-button').click(function(evt) {
+        $('div.popup-window-container').removeClass('show');
     });
 
     $('#action-select div.option-entry.delete').click(function() {
         var checked_boxes = $('div.video-select-checkbox.checked');
         if (checked_boxes.length != 0) {
-            $('div.delete-confirm-container').addClass('show');
+            $('div.popup-window-container').addClass('show');
             $('div.delete-target-name').remove();
             var ids = $(checked_boxes[0]).attr('data-id');
             var title = $(checked_boxes[0]).attr('data-title');
@@ -42,7 +46,7 @@ $(document).ready(function() {
                 title = $(checked_boxes[i]).attr('data-title');
                 $('div.delete-buttons-line').before('<div class="delete-target-name">'+title+'</div>');
             }
-            $('div.delete-button.delete').attr('data-id', ids);
+            $('input.delete-button').attr('data-id', ids);
         }
     });
 

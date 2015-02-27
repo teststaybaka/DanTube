@@ -96,7 +96,7 @@ $(document).ready(function() {
             }, 100);
         }, 100);
     });
-    $('label.commas_number').each(function() {
+    $('span.commas_number').each(function() {
         $(this).text(numberWithCommas($(this).text()) )
     })
 });
@@ -143,19 +143,19 @@ render_pagination = function(cur_page, total_pages) {
     
     var pagination = "";
     if(cur_page > 1) {
-        pagination += '<div class="page-change" data-page="' + 1 + '"><<</div>';
-        pagination += '<div class="page-change" data-page="' + (cur_page - 1) + '"><</div>';
+        pagination += '<a class="page-change" data-page="' + 1 + '"><<</a>';
+        pagination += '<a class="page-change" data-page="' + (cur_page - 1) + '"><</a>';
     }
     for(var i = min_page; i <= max_page; i++) {
         if(i == cur_page) {
-            pagination += '<div class="page-num active" data-page="' + i + '">' + i + '</div>';
+            pagination += '<a class="page-num active" data-page="' + i + '">' + i + '</a>';
         } else {
-            pagination += '<div class="page-num" data-page="' + i + '">' + i + '</div>';
+            pagination += '<a class="page-num" data-page="' + i + '">' + i + '</a>';
         }
     }
     if(cur_page < total_pages) {
-        pagination += '<div class="page-change" data-page="' + (cur_page + 1) + '">></div>';
-        pagination += '<div class="page-change" data-page="' + total_pages + '">>></div>';
+        pagination += '<a class="page-change" data-page="' + (cur_page + 1) + '">></a>';
+        pagination += '<a class="page-change" data-page="' + total_pages + '">>></a>';
     }
     return pagination;
 }

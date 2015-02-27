@@ -14,10 +14,10 @@
 
 {% block detail %}
 <div id="sub-title-line" class="container">
-    <div id="sub-title"><label class="commas_number">{{ total_found }}</label> Videos</div>
-    <form id="sub-search-block" method="get" action="{{ uri_for('manage_video') }}">
-        <input id="sub-search-input" type="text" name="keywords" placeholder="Search Videos" value="{{ video_keywords }}">
-        <input type="submit" id="sub-search-button" value="">
+    <div id="sub-title"><span class="commas_number">{{ total_found }}</span> Videos</div>
+    <form class="sub-search-block" method="get" action="{{ uri_for('manage_video') }}">
+        <input class="sub-search-input" type="text" name="keywords" placeholder="Search Videos" value="{{ video_keywords }}">
+        <input type="submit" class="sub-search-button" value="">
     </form>
     <div id="view-method">
         {% if order == "created" %}
@@ -68,10 +68,10 @@
                 <label class="list-title">Not listed</label>
             </div>
             <div class="video-statistic">
-                <div class="video-statistic-entry">Views: <label class="commas_number">{{ video.hits }}</label></div>
-                <div class="video-statistic-entry">Favors: <label class="commas_number">{{ video.favors }}</label></div>
-                <div class="video-statistic-entry">Comments: <label class="commas_number">{{ video.comment_counter }}</label></div>
-                <div class="video-statistic-entry">Bullets: <label class="commas_number">{{ video.bullets }}</label></div>
+                <div class="video-statistic-entry">Views: <span class="commas_number">{{ video.hits }}</span></div>
+                <div class="video-statistic-entry">Favors: <span class="commas_number">{{ video.favors }}</span></div>
+                <div class="video-statistic-entry">Comments: <span class="commas_number">{{ video.comment_counter }}</span></div>
+                <div class="video-statistic-entry">Bullets: <span class="commas_number">{{ video.bullets }}</span></div>
             </div>
             <div class="video-edit">
                 <a href="{{ uri_for('edit_video', video_id=video.id_num) }}" class="edit-entry">[Edit Video]</a>
@@ -100,15 +100,15 @@
 {% endblock %}
 
 {% block popup_window %}
-<div class="delete-confirm-container">
-    <div class="delete-confirm-center">
-        <div class="delete-padding"></div>
-        <div class="delete-confirm-box">
+<div class="popup-window-container">
+    <div class="popup-window-center">
+        <div class="popup-window-padding"></div>
+        <div class="popup-window-box">
             <div class="ajax-icon warning"></div>
             <div class="delete-confirm-message">Are you sure to delete the video(s):</div>
             <div class="delete-target-name">sdf</div>
             <div class="delete-buttons-line container">
-                <div class="inline-button special delete-button delete">Delete</div>
+                <input class="inline-button special delete-button" type="button" value="Delete">
                 <div class="inline-button delete-button">Cancel</div>
             </div>
         </div>

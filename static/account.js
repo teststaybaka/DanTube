@@ -80,7 +80,7 @@ $(document).ready(function() {
         $("#sub-change-info").addClass("active");
     } else if (urls[urls.length-1] === "video" || urls[urls.length-3] === 'video') {
         $("#sub-videos").addClass("active");
-    } else if (urls[urls.length-1] === "playlists") {
+    } else if (urls[urls.length-1] === "playlists" || urls[urls.length-3] === 'playlists') {
         $("#sub-playlists").addClass("active");
     } else if (urls[urls.length-1] === "submit") {
         $("#sub-submit").addClass("active");
@@ -131,7 +131,7 @@ $(document).ready(function() {
         });
     });
 
-    $('.statistic-entry span').each(function() {
+    $('div.statistic-entry span').each(function() {
         // var colors = [[163,163,163], [83,187,83], [39,143,250], [208,51,208], [255,138,34]]
         var count = parseInt($(this).text());
         $(this).text(numberWithCommas(count));

@@ -44,10 +44,10 @@
             <a href="{{ video.url }}" class="video-title favored" target="_blank">{{ video.title }}</a>
         </div>
         <div class="video-statistic favored">
-            <div class="video-statistic-entry">Views: <label class="commas_number">{{ video.hits }}</label></div>
-            <div class="video-statistic-entry">Favors: <label class="commas_number">{{ video.favors }}</label></div>
-            <div class="video-statistic-entry">Comments: <label class="commas_number">{{ video.comment_counter }}</label></div>
-            <div class="video-statistic-entry">Bullets: <label class="commas_number">{{ video.bullets }}</label></div>
+            <div class="video-statistic-entry">Views: <span class="commas_number">{{ video.hits }}</span></div>
+            <div class="video-statistic-entry">Favors: <span class="commas_number">{{ video.favors }}</span></div>
+            <div class="video-statistic-entry">Comments: <span class="commas_number">{{ video.comment_counter }}</span></div>
+            <div class="video-statistic-entry">Bullets: <span class="commas_number">{{ video.bullets }}</span></div>
         </div>
         <div class="favored-time">
             <label>Favored at: </label>
@@ -76,15 +76,15 @@
 {% endblock %}
 
 {% block popup_window %}
-<div class="delete-confirm-container">
-    <div class="delete-confirm-center">
-        <div class="delete-padding"></div>
-        <div class="delete-confirm-box">
+<div class="popup-window-container">
+    <div class="popup-window-center">
+        <div class="popup-window-padding"></div>
+        <div class="popup-window-box">
             <div class="ajax-icon warning"></div>
             <div class="delete-confirm-message">Are you sure to remove the video(s) from your favorites?</div>
             <div class="delete-target-name">ffffd</div>
             <div class="delete-buttons-line container">
-                <div class="inline-button special delete-button delete">Remove</div>
+                <input class="inline-button special delete-button" type="button" value="Remove">
                 <div class="inline-button delete-button">Cancel</div>
             </div>
         </div>
