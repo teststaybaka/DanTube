@@ -11,14 +11,14 @@
     <form id="signinform" method="post">
         <div class="input-line">
             <label for="email" class="form-label">Email:</label>
-            <input type="text" class="inputtext" id="email" name="email" tabindex="1" value="{{ email_value }}" placeholder="Enter your email">
+            <input type="text" class="inputtext normal-input" id="email" name="email" tabindex="1" value="{{ email_value }}" placeholder="Enter your email">
         </div>
         <div class="input-line">
             <div class="password-label-row">
                 <label for="password" class="form-label" id="password-label">Password:</label>
                 <a class="blue-link signin_up-link" id="forgot-password" href="{{ uri_for('forgot_password') }}">Forgot password?</a>
             </div>
-            <input type="password" class="inputpassword" id="password" name="password" tabindex="2" placeholder="Enter your password">
+            <input type="password" class="inputpassword normal-input" id="password" name="password" tabindex="2" placeholder="Enter your password">
         </div>
         <label for="remember" class="check-label">
             <input type="checkbox" class="checkbox" id="remember" name="remember" tabindex="3" checked>

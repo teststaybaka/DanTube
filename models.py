@@ -305,7 +305,7 @@ class PlayList(ndb.Model):
     if self.title != title:
       self.title = title
 
-    if selt.intro != intro:
+    if self.intro != intro:
       self.intro = intro
 
     if changed:

@@ -25,7 +25,7 @@ var video_subcategories = {};
 <form class="change" id="video-submission-form" method="post" enctype="multipart/form-data" action="{{ uri_for('edit_video_post', video_id=video.id_num) }}">
     <div class="input-line">
       <label for="video-total-title" class="form-label">Title:</label>
-      <input type="text" id="video-total-title" name="total-title" value="{{ video.title }}" tabindex="1" placeholder="No longer than 100 characters.">
+      <input type="text" id="video-total-title" class="normal-input" name="total-title" value="{{ video.title }}" tabindex="1" placeholder="No longer than 100 characters.">
       <div class="input-error" id="video-title-error">Please.</div>
     </div>
     <div class="input-line">
@@ -54,7 +54,7 @@ var video_subcategories = {};
     </div>
     <div class="input-line">
       <label for="video-description" class="form-label">Introduction:</label>
-      <textarea class="normal" id="video-description" name="description" tabindex="1" placeholder="No longer than 2000 characters.">{{ video.description }}</textarea>
+      <textarea class="normal normal-input" id="video-description" name="description" tabindex="1" placeholder="No longer than 2000 characters.">{{ video.description }}</textarea>
       <div class="input-error" id="video-description-error">Please.</div>
     </div>
     <div class="input-line">
@@ -65,7 +65,7 @@ var video_subcategories = {};
     </div>
     <div class="input-line">
       <label for="video-tags" class="form-label">Tags:</label>
-      <input type="text"  id="video-tags" name="tags" tabindex="1" placeholder="e.g., flying pig, the binding of isaac, sonic" value="{% for tag in video.tags %}{{ tag }},{% endfor %}">
+      <input type="text" id="video-tags" class="normal-input" name="tags" tabindex="1" placeholder="e.g., flying pig, the binding of isaac, sonic" value="{% for tag in video.tags %}{{ tag }},{% endfor %}">
       <div class="input-error" id="video-tags-error">Please.</div>
       <div class="check-label-line">
         <label class="form-label"></label>
@@ -87,14 +87,14 @@ var video_subcategories = {};
         <div class="video-part-line">
             <div class="video-part-drag-wrapper" ondragstart="return false;" ondrop="return false;">
                 <div class="video-part-error">Title too long.</div>
-                <input type="text" class="title-input" placeholder="Optional" name="sub-title[]" value="{{ clip.subtitle }}">
+                <input type="text" class="title-input normal-input" placeholder="Optional" name="sub-title[]" value="{{ clip.subtitle }}">
                 <div class="video-part-error">Title too long.</div>
-                <textarea class="intro-input" placeholder="Optional" name="sub-intro[]">{{ clip.subintro }}</textarea>
+                <textarea class="intro-input normal-input" placeholder="Optional" name="sub-intro[]">{{ clip.subintro }}</textarea>
                 <select class="source-select">
                     <option>YouTube</option>
                 </select>
                 <div class="video-part-error">Title too long.</div>
-                <input type="text" class="url-input" name="video-url[]" placeholder="e,g., youtube.com/watch?v=8NNTvx5eoXE" value="{{ clip.raw_url }}">
+                <input type="text" class="url-input normal-input" name="video-url[]" placeholder="e,g., youtube.com/watch?v=8NNTvx5eoXE" value="{{ clip.raw_url }}">
                 <div class="video-part-delete" title="Remove"></div>
                 <input class="hidden" type="text" name="index[]" value="{{ clip.index }}">
             </div>

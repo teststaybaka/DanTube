@@ -111,13 +111,12 @@ $(document).ready(function() {
                 console.log(result);
                 if (!result.error) {
                     pop_ajax_message('Playlist updated!', 'success');
-                    setTimeout(function(){
-                        window.location.reload();
-                    }, 3000);
+                    $('#playlist-title-change-form').removeClass('show');
+                    $('#sub-title').removeClass('hide');
                 } else {
                     pop_ajax_message(result.message, 'error');
-                    $("input.create-button").prop('disabled', false);
                 }
+                $("input.create-button").prop('disabled', false);
             },
             error: function (xhr, ajaxOptions, thrownError) {
                 console.log(xhr.status);
@@ -189,6 +188,46 @@ $(document).ready(function() {
             $(this).addClass('selected');
         }
     });
+
+    $('a.move-to').click(function() {
+        var target = $(this).next();
+        target.addClass('show');
+        target.focus();
+    });
+
+    $("input.move-to-input").focusout(function(evt) {
+        $(evt.target).removeClass('show');
+    });
+
+    $("input.move-to-input").keyup(function(evt){
+        if(evt.keyCode == 13){
+            var ori_idx = $(evt.target).parent().parent().siblings('div.list-No').text();
+            var target_idx = $(evt.target).val();
+            var urls = window.location.href.split('/');
+            $.ajax({
+                type: "POST",
+                url: '/account/playlists/edit/move/'+urls[urls.length - 1],
+                data: {ori_idx: ori_idx, target_idx: target_idx},
+                success: function(result) {
+                    if (!result.error) {
+                        window.location.reload();
+                    } else {
+                        pop_ajax_message(result.message, 'error');
+                    }
+                },
+                error: function (xhr, ajaxOptions, thrownError) {
+                    console.log(xhr.status);
+                    console.log(thrownError);
+                    pop_ajax_message('Request error.', 'error');
+                }
+            });
+            $(evt.target).val('')
+            $(evt.target).removeClass('show');
+        } else if (evt.keyCode == 27) {
+            $(evt.target).val('');
+            $(evt.target).removeClass('show');
+        }
+    });
 });
 
 function search_video(page) {
@@ -196,8 +235,8 @@ function search_video(page) {
     var pagination_container = $('div.pagination-line.popup');
     var form = document.getElementById('search-video-form');
     video_container.empty();
-    $('a.page-change').remove();
-    $('a.page-num').remove();
+    pagination_container.children('a.page-change').remove();
+    pagination_container.children('a.page-num').remove();
     video_container.append('<div class="video-entry loading"></div>');
     $.ajax({
         type: "POST",

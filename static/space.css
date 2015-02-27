@@ -280,17 +280,9 @@ div.message-content {
 }
 
 #write-text {
-    padding: 5px;
     resize: vertical;
     width: 500px;
     min-height: 100px;
-    font-size: 14px;
-    border: 1px solid rgb(200,200,200);
-}
-
-#write-text:focus {
-    box-shadow: 0 0 2px rgb(81,203,238);
-    border: 1px solid rgb(81,203,238);
 }
 
 .inline-button.write {

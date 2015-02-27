@@ -57,21 +57,7 @@ label.check-label {
 }
 
 input.inputtext, input.inputpassword {
-  padding: 5px;
-  font-size: 14px;
   width: 300px;
-  border: 1px solid rgb(200,200,200);
-  box-shadow: inset 0px 1px 3px rgb(220,220,220);
-}
-
-input.inputtext.error, input.inputpassword.error {
-  /*box-shadow: 0 0 2px rgb(232,0,0);*/
-  border: 1px solid rgb(232,0,0);
-}
-
-input.inputtext:focus, input.inputpassword:focus {
-  /*box-shadow: 0 0 2px rgb(81,203,238);*/
-  border: 1px solid rgb(81,203,238);
 }
 
 input.signin_up-button {

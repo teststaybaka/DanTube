@@ -107,13 +107,12 @@ class BaseHandler(webapp2.RequestHandler):
     def get_page_range(self, cur_page, total_pages, page_range=10):
         cur_page = int(cur_page)
         total_pages = int(total_pages)
-        res_pages = []
         if cur_page > total_pages:
+            max_page = total_pages
             min_page = max(total_pages - page_range + 1, 1)
-            res_pages = range(min_page, total_pages+1)
         elif cur_page < 1:
-            max_page = max(page_range, total_pages)
-            res_pages = range(1, max_page+1)
+            min_page = 1
+            max_page = max(min_page + page_range - 1, total_pages)
         else:
             max_page = min(cur_page + 4, total_pages)
             min_page = max(cur_page - 5, 1)
@@ -121,35 +120,34 @@ class BaseHandler(webapp2.RequestHandler):
             if remain_page > 0:
                 max_page = min(max_page + remain_page, total_pages);
                 min_page = max(min_page - remain_page, 1);
-            res_pages = range(min_page, max_page+1)
         return {
             'total_pages': total_pages,
             'cur_page': cur_page,
-            'pages': res_pages,
+            'pages': range(min_page, max_page+1)
         }
 
 def login_required(handler):
-  """
-    Decorator that checks if there's a user associated with the current session.
-    Will also fail if there's no session present.
-  """
-  def check_login(self, *args, **kwargs):
-    auth = self.auth
-    if not auth.get_user_by_session():
-        xrequest = self.request.headers.get('X-Requested-With')
-        if xrequest and xrequest == 'XMLHttpRequest':
-            self.response.headers['Content-Type'] = 'application/json'
-            self.response.out.write(json.dumps({
-                'error': True,
-                'message': 'Please log in!'
-            }))
-            return
+    """
+        Decorator that checks if there's a user associated with the current session.
+        Will also fail if there's no session present.
+    """
+    def check_login(self, *args, **kwargs):
+        auth = self.auth
+        if not auth.get_user_by_session():
+            xrequest = self.request.headers.get('X-Requested-With')
+            if xrequest and xrequest == 'XMLHttpRequest':
+                self.response.headers['Content-Type'] = 'application/json'
+                self.response.out.write(json.dumps({
+                    'error': True,
+                    'message': 'Please log in!'
+                }))
+                return
+            else:
+                self.redirect(self.uri_for('signin'), abort=True)
         else:
-            self.redirect(self.uri_for('signin'), abort=True)
-    else:
-        return handler(self, *args, **kwargs)
+            return handler(self, *args, **kwargs)
  
-  return check_login
+    return check_login
 
 class MultiPartForm(object):
     """Accumulate the data to be used when posting a form."""

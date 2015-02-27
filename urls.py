@@ -73,6 +73,7 @@ routes = [
     webapp2.Route(r'/account/playlists/search_video', playlist.SearchVideo, name="search_video_to_list"),
     webapp2.Route(r'/account/playlists/edit/add/<playlist_id:\d+>', playlist.AddVideo, name="add_video_to_list"),
     webapp2.Route(r'/account/playlists/edit/remove/<playlist_id:\d+>', playlist.RemoveVideo, name="remove_video_from_list"),
+    webapp2.Route(r'/account/playlists/edit/move/<playlist_id:\d+>', playlist.MoveVideo, name="move_video_in_list"),
 
     webapp2.Route(r'/video', views.Video, name="video"),
     webapp2.Route(r'/video/random', video.RandomVideos, name="random_videos"),

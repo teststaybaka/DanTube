@@ -614,11 +614,9 @@ form.change label.form-label {
 }
 
 form.change input[type=password], form.change input[type=text], form.change select, form.change textarea {
-    padding: 5px;
+    padding: 4px;
     font-size: 14px;
     width: 300px;
-    border: 1px solid rgb(200,200,200);
-    box-shadow: inset 0px 1px 3px rgb(220,220,220);
 }
 
 form.change select {
@@ -658,16 +656,6 @@ a.add-more {
     margin-right: 0;
     font-size: 14px;
     cursor: pointer;
-}
-
-form.change input[type=password].error, form.change input[type=text].error, form.change textarea.error {
-  /*box-shadow: inset 0px 1px 3px rgb(232,0,0);*/
-  border: 1px solid rgb(232,0,0);
-}
-
-form.change input[type=password]:focus, form.change input[type=text]:focus, form.change textarea:focus {
-  /*box-shadow: inset 0px 1px 3px rgb(81,203,238);*/
-  border: 1px solid rgb(81,203,238);
 }
 
 form.change textarea.normal {

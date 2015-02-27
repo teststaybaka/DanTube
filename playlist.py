@@ -360,3 +360,48 @@ class RemoveVideo(BaseHandler):
             'error': False, 
             'message': deleted_ids
         }))
+
+class MoveVideo(BaseHandler):
+    @login_required
+    def post(self, playlist_id):
+        self.response.headers['Content-Type'] = 'application/json'
+        playlist = models.PlayList.get_by_id(int(playlist_id))
+        user = self.user
+        if not playlist:
+            self.response.out.write(json.dumps({
+                'error': True, 
+                'message': 'Playlist not found.'
+            }))
+            return
+        elif user.key.id() != playlist.creator.id():
+            self.response.out.write(json.dumps({
+                'error': True, 
+                'message': 'You are not allowed to edit this video.'
+            }))
+            return
+
+        try:
+            ori_idx = int(self.request.get('ori_idx')) - 1
+            target_idx = int(self.request.get('target_idx')) - 1
+        except ValueError:
+            self.response.out.write(json.dumps({
+                'error': True, 
+                'message': 'Index value error.'
+            }))
+            return
+
+        if ori_idx < 0 or ori_idx >= len(playlist.videos) or target_idx < 0 or target_idx >= len(playlist.videos):
+            self.response.out.write(json.dumps({
+                'error': True, 
+                'message': 'Index value error.'
+            }))
+            return
+
+        if ori_idx != target_idx:
+            temp_key = playlist.videos.pop(ori_idx)
+            playlist.videos.insert(target_idx, temp_key)
+            playlist.put()
+
+        self.response.out.write(json.dumps({
+            'error': False, 
+        }))

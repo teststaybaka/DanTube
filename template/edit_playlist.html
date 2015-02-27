@@ -19,8 +19,8 @@
 {% block detail %}
 <div id="sub-title-line" class="container">
     <form id="playlist-title-change-form" action="{{ uri_for('edit_playlist_info', playlist_id=playlist.id) }}" method="POST">
-        <input id="playlist-title-change" type="text" name="title" placeholder="No longer than 100 characters." value="{{ playlist.title }}" />
-        <textarea id="playlist-intro-change" type="text" name="intro" placeholder="Brief introduction to your playlist.">{{ playlist.intro }}</textarea>
+        <input id="playlist-title-change" class="normal-input" type="text" name="title" placeholder="No longer than 100 characters." value="{{ playlist.title }}" />
+        <textarea id="playlist-intro-change" class="normal-input" type="text" name="intro" placeholder="Brief introduction to your playlist.">{{ playlist.intro }}</textarea>
         <div id="playlist-change-buttons-line">
             <div class="inline-button create-button">Cancel</div>
             <input type="submit" class="inline-button special create-button done" value="Done">
@@ -42,7 +42,7 @@
     </div>
     {% endif %}
     {% for video in videos %}
-    <div class="video-entry dt{{ video.id_num }}">
+    <div class="video-entry list dt{{ video.id_num }}">
         <div class="list-No">{{ video.index }}</div>
         <a class="video-img playlist" href="{{ video.url }}" target="_blank">
             <img class="list-video-img" src="{{ video.thumbnail_url }}">
@@ -52,6 +52,10 @@
                 <a class="video-title list" href="{{ video.url }}" target="_blank">{{ video.title }}</a>
             </div>
             <div class="list-video-time">{{ video.created }}</div>
+            <div class="video-edit">
+                <a class="edit-entry move-to">[Move to]</a>
+                <input type="text" class="normal-input move-to-input" placeholder="1-{{ playlist.videos_num }}">
+            </div>
             <div class="video-select-checkbox" data-id="{{ video.id_num }}" data-title="{{ video.title }}"></div>
         </div>
     </div>

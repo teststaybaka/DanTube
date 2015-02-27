@@ -19,13 +19,13 @@
   </div>
   <div class="input-line">
     <label for="space-name-change" class="form-label">Space name:</label>
-    <input type="text" id="space-name-change" value="{% if user.spacename %}{{ user.spacename }}{% else %}{{ user.nickname }}'s Space{% endif %}" tabindex="1" name="space-name">
+    <input type="text" class="normal-input" id="space-name-change" value="{% if user.spacename %}{{ user.spacename }}{% else %}{{ user.nickname }}'s Space{% endif %}" tabindex="1" name="space-name">
     <div class="input-error" id="change-space-name-error">Please enter your nickname.</div>
   </div>
   <div class="input-line">
     <label for="space-css-change" class="form-label">Customize CSS:</label>
     <input type="file" id="space-css-file" name="css-file">
-    <input type="text" id="space-css-change" tabindex="1" placeholder="{% if user.space_css %}User customized{% else %}Click to select a file.{% endif %}">
+    <input type="text" class="normal-input" id="space-css-change" tabindex="1" placeholder="{% if user.space_css %}User customized{% else %}Click to select a file.{% endif %}">
     <div class="input-error" id="change-space-css-error">Please enter your nickname.</div>
   </div>
   <div>

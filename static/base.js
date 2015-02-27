@@ -131,15 +131,24 @@ function get_video_list(url, query, callback) {
 render_pagination = function(cur_page, total_pages) {
     var page_range = 10;
     cur_page = parseInt(cur_page);
-    var max_page = Math.min(cur_page + 4, total_pages);
-    var min_page = Math.max(cur_page - 5, 1);
-    var remain_page = page_range - (max_page - cur_page) - (cur_page - min_page) - 1;
+    var max_page;
+    var min_page;
+    if (cur_page > total_pages) {
+        max_page = total_pages;
+        min_page = Math.min(max_page - page_range + 1, 1);
+    } else if (cur_page < 1) {
+        min_page = 1;
+        max_page = Math.max(min_page + page_range - 1, total_pages);
+    } else {
+        max_page = Math.min(cur_page + 4, total_pages);
+        min_page = Math.max(cur_page - 5, 1);
+        var remain_page = page_range - (max_page - cur_page) - (cur_page - min_page) - 1;
 
-    if (remain_page > 0) {
-        max_page = Math.min(max_page + remain_page, total_pages);
-        min_page = Math.max(min_page - remain_page, 1);
+        if (remain_page > 0) {
+            max_page = Math.min(max_page + remain_page, total_pages);
+            min_page = Math.max(min_page - remain_page, 1);
+        }
     }
-    // console.log(page_range+' '+max_page+' '+remain_page+' '+min_page+' '+cur_page+' '+total_pages)
     
     var pagination = "";
     if(cur_page > 1) {
