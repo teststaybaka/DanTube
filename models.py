@@ -690,7 +690,7 @@ class Video(ndb.Model):
   def Delete(self):
     if self.playlist_belonged != None:
       belonged = video.playlist_belonged.get()
-      belonged.videos.index(video.key)
+      idx = belonged.videos.index(video.key)
       belonged.videos.pop(idx)
       belonged.put()
 
