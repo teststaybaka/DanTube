@@ -35,7 +35,7 @@ class History(BaseHandler):
         for i in range(0, len(requested_history)):
             video = videos[i]
             video_info = video.get_basic_info()
-            uploader = models.User.get_by_id(video.uploader.id())
+            uploader = video.uploader.get()
             video_info['uploader'] = uploader.get_public_info()
             video_info['last_viewed_time'] = requested_history[i].last_viewed_time.strftime("%Y-%m-%d %H:%M")
             context['videos'].append(video_info)
@@ -82,41 +82,42 @@ class Favor(BaseHandler):
         user = self.user
 
         video = models.Video.get_by_id('dt'+video_id)
-        if video is not None:
-            if video.key not in [f.video for f in user.favorites]:
-                if len(user.favorites) >= user.favorites_limit:
-                    self.response.out.write(json.dumps({
-                        'error': True,
-                        'message': 'You have reached favorites limit.'
-                    }))
-                    return
+        if not video:
+            self.response.out.write(json.dumps({
+                'error': True,
+                'message': 'Video not found.'
+            }))
+            return
 
-                new_favorite = models.Favorite(video=video.key)
-                user.favorites.append(new_favorite)
-                user.put()
-
-                video.favors += 1
-                video.put()
-
-                video.create_index('videos_by_favors', video.favors)
-                uploader = models.User.get_by_id(video.uploader.id())
-                uploader.videos_favored += 1
-                uploader.put()
-
-                self.response.out.write(json.dumps({
-                    'error': False,
-                    'message': 'success'
-                }))
-            else:
+        if video.key not in [f.video for f in user.favorites]:
+            if len(user.favorites) >= user.favorites_limit:
                 self.response.out.write(json.dumps({
                     'error': True,
-                    'message': 'video already favored'
+                    'message': 'You have reached the limit for your favorite videos.'
                 }))
+                return
+
+            new_favorite = models.Favorite(video=video.key)
+            user.favorites.append(new_favorite)
+            user.put()
+
+            video.favors += 1
+            video.put()
+
+            video.create_index('videos_by_favors', video.favors)
+            uploader = video.uploader.get()
+            uploader.videos_favored += 1
+            uploader.put()
+
+            self.response.out.write(json.dumps({
+                'error': False,
+            }))
         else:
             self.response.out.write(json.dumps({
                 'error': True,
-                'message': 'video not found'
+                'message': 'This video is already one of your favorites.'
             }))
+            
 
 class Unfavor(BaseHandler):
     @login_required
@@ -147,7 +148,7 @@ class Unfavor(BaseHandler):
                 video.put()
                 video.create_index('videos_by_favors', video.favors )
 
-                uploader = models.User.get_by_id(video.uploader.id())
+                uploader = video.uploader.get()
                 uploader.videos_favored -= 1
                 uploader.put()
 

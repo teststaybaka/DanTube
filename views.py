@@ -218,7 +218,7 @@ class Home(BaseHandler):
         context['top_ten_videos'] = []
         videos, total_page = models.Video.get_page(order=models.Video.hits, page=1, page_size=10)
         for video in videos:
-            uploader = models.User.get_by_id(video.uploader.id())
+            uploader = video.uploader.get()
             video_info = video.get_basic_info()
             video_info['uploader'] = uploader.get_public_info()
             context['top_ten_videos'].append(video_info)
@@ -232,7 +232,7 @@ class Category(BaseHandler):
         context['top_ten_videos'] = []
         videos, total_page = models.Video.get_page(category=category, order=models.Video.hits, page=1, page_size=10)
         for video in videos:
-            uploader = models.User.get_by_id(video.uploader.id())
+            uploader = video.uploader.get()
             video_info = video.get_basic_info()
             video_info['uploader'] = uploader.get_public_info()
             context['top_ten_videos'].append(video_info)
@@ -247,7 +247,7 @@ class Subcategory(BaseHandler):
         context['top_ten_videos'] = []
         videos, total_page = models.Video.get_page(category=category, subcategory=subcategory, order=models.Video.hits, page=1, page_size=10)
         for video in videos:
-            uploader = models.User.get_by_id(video.uploader.id())
+            uploader = video.uploader.get()
             video_info = video.get_basic_info()
             video_info['uploader'] = uploader.get_public_info()
             context['top_ten_videos'].append(video_info)
@@ -343,45 +343,13 @@ class Video(BaseHandler):
         result['videos'] = []
         for i in range(0, len(videos)): # videos[0:limit]:
             video = videos[i]
-            uploader = models.User.get_by_id(video.uploader.id())
+            uploader = video.uploader.get()
             video_info = video.get_basic_info()
             video_info['uploader'] = uploader.get_public_info()
             result['videos'].append(video_info)
         result['total_pages'] = total_pages
 
         self.response.out.write(json.dumps(result))
-
-class Watch(BaseHandler):
-    def get(self, video_id):
-        video = models.Video.get_by_id('dt'+video_id)
-        if video is not None:
-            uploader = models.User.get_by_id(video.uploader.id())
-            context = {'video': video.get_basic_info(), 'uploader': uploader.get_public_info()}
-            self.render('video', context)
-
-            video.hits += 1
-            video.put()
-            video.create_index('videos_by_hits', video.hits )
-            uploader.videos_watched += 1
-            uploader.put()
-
-            user = self.user
-            if user is not None:
-                l = len(user.history)
-                videos = [h.video for h in user.history]
-                try:
-                    idx = videos.index(video.key)
-                    user.history.pop(idx)
-                except ValueError:
-                    logging.info('not found')
-                    l += 1
-                if l > 100:
-                    user.history.pop(0)
-                new_history = models.History(video=video.key)
-                user.history.append(new_history)
-                user.put()
-        else:
-            self.notify('video not found.', 404)
 
 class Like(BaseHandler):
     @login_required
@@ -407,6 +375,7 @@ class Danmaku(BaseHandler):
     def get(self, video_id):
         self.response.headers['Content-Type'] = 'application/json'
         video = models.Video.get_by_id('dt'+video_id)
+        logging.info('sdfwedvsdghf')
         if video is not None:
             danmaku_itr = models.Danmaku.query(models.Danmaku.video==video.key)
             danmakus = []
@@ -417,6 +386,7 @@ class Danmaku(BaseHandler):
                     'created': danmaku.created.strftime("%m-%d %H:%M"),
                     'created_seconds': (danmaku.created - datetime(1970,1,1)).total_seconds(),
                 });
+            logging.info('sdfwedvsdghf')
             self.response.out.write(json.dumps(danmakus))
         else:
             self.response.out.write(json.dumps({
@@ -453,11 +423,6 @@ class Danmaku(BaseHandler):
                 'error': True,
                 'message': 'video not found',
             }))
-
-
-class Player(BaseHandler):
-    def get(self):
-        self.render('video')
 
 class Search(BaseHandler):
     def get(self):
@@ -621,26 +586,102 @@ class SearchUPer(BaseHandler):
         page =  min(page, math.ceil(models.MAX_QUERY_RESULT/float(page_size)) )
         offset = (page - 1) * page_size
         context['upers'] = []
-        # try:
-        options = search.QueryOptions(offset=offset, limit=page_size)
-        query = search.Query(query_string=query_string, options=options)
-        result = index.search(query)
-        total_found = min(result.number_found, models.MAX_QUERY_RESULT)
-        total_pages = math.ceil(total_found/float(page_size))
+        try:
+            options = search.QueryOptions(offset=offset, limit=page_size)
+            query = search.Query(query_string=query_string, options=options)
+            result = index.search(query)
+            total_found = min(result.number_found, models.MAX_QUERY_RESULT)
+            total_pages = math.ceil(total_found/float(page_size))
 
-        uper_keys = []
-        for uper_doc in result.results:
-            uper_keys.append(ndb.Key(urlsafe=uper_doc.doc_id))
-        upers = ndb.get_multi(uper_keys)
+            uper_keys = []
+            for uper_doc in result.results:
+                uper_keys.append(ndb.Key(urlsafe=uper_doc.doc_id))
+            upers = ndb.get_multi(uper_keys)
 
-        for i in range(0, len(upers)):
-            uper = upers[i]
-            uper_info = uper.get_public_info()
-            uper_info.update(uper.get_statistic_info())
-            context['upers'].append(uper_info)
+            for i in range(0, len(upers)):
+                uper = upers[i]
+                uper_info = uper.get_public_info()
+                uper_info.update(uper.get_statistic_info())
+                context['upers'].append(uper_info)
 
-        context['total_found'] = total_found
-        context.update(self.get_page_range(page, total_pages) )
-        self.render('search_uper', context)
-        # except Exception, e:
-        #     self.notify('UPer search error.');
+            context['total_found'] = total_found
+            context.update(self.get_page_range(page, total_pages) )
+            self.render('search_uper', context)
+        except Exception, e:
+            self.notify('UPer search error.');
+
+class Watch(BaseHandler):
+    def get(self, video_id):
+        video = models.Video.get_by_id('dt'+video_id)
+        if not video:
+            self.notify('Video not found.', 404)
+            return
+
+        try:
+            clip_index = int(self.request.get('index') )
+        except ValueError:
+            clip_index = 1
+
+        if clip_index < 1 or clip_index > len(video.video_clips):
+            self.notify('Video not found.', 404)
+            return
+
+        video.hits += 1
+        video.put()
+        video.create_index('videos_by_hits', video.hits )
+        uploader = video.uploader.get()
+        uploader.videos_watched += 1
+        uploader.put()
+
+        user = self.user
+        if user is not None:
+            l = len(user.history)
+            videos = [h.video for h in user.history]
+            try:
+                idx = videos.index(video.key)
+                user.history.pop(idx)
+            except ValueError:
+                logging.info('not found')
+                l += 1
+            if l > 100:
+                user.history.pop(0)
+            new_history = models.History(video=video.key)
+            user.history.append(new_history)
+            user.put()
+
+        video_info = video.get_basic_info()
+        cur_clip = video.video_clips[clip_index-1].get()
+        video_info['cur_vid'] = cur_clip.vid
+        video_info['cur_subintro'] = cur_clip.subintro
+        video_info['cur_index'] = clip_index
+        video_info['clip_titles'] = video.video_clip_titles
+        if clip_index == 1:
+            video_info['clip_range'] = range(0, min(3, len(video.video_clip_titles)) )
+        elif clip_index == len(video.video_clip_titles):
+            video_info['clip_range'] = range(max(0, len(video.video_clip_titles) - 3), len(video.video_clip_titles))
+        else:
+            video_info['clip_range'] = range(clip_index - 2, clip_index + 1)
+        
+        context = {'video': video_info, 'uploader': uploader.get_public_info()}
+        self.render('video', context)
+
+    def more_episode(self, video_id):
+        self.response.headers['Content-Type'] = 'application/json' 
+        video = models.Video.get_by_id('dt'+video_id)
+        if not video:
+            self.response.out.write(json.dumps({
+                'error': True,
+                'message': 'Video not found.'
+            }))
+            return
+
+        try:
+            clip_index = int(self.request.get('index') )
+        except ValueError:
+            clip_index = 1
+
+        result = {'error': False}
+        result['cur_index'] = clip_index
+        result['clip_titles'] = video.video_clip_titles
+        self.response.out.write(json.dumps(result))
+        

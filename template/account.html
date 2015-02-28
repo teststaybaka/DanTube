@@ -82,7 +82,7 @@
                 <div class="detail-entry" id="account-intro">{% if user.intro %}{{ user.intro }}{% else %}Say something to others.{% endif %}</div>
             </div>
             <div id="mine-statistic">
-                <div><span id="personal-bullets">{{ user.bullets }}<div>The bullets you have.</div></span></div>
+                <div><span id="personal-bullets">{{ user.bullets }}<div>Your bullets.</div></span></div>
                 <div><span id="personal-favorites" onclick="location.href='{{ uri_for('favorites') }}'">{{ user.favorites_counter }}<div>Your favorites.</div></span></div>
                 <div><span id="personal-subscriptions" onclick="location.href='{{ uri_for('subscriptions') }}'">{{ user.subscriptions_counter }}<div>Your subscriptions.</div></span></div>
             </div>

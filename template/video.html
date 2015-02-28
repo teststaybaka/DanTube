@@ -1,7 +1,6 @@
 {% extends "template/base.html" %}
 {% block head %}
 {{ super() }}
-<link href="/static/video.css" rel="stylesheet" type="text/css">
 <link href="/static/player.css" rel="stylesheet" type="text/css">
 <script type="text/javascript">
   var tag = document.createElement('script');
@@ -14,7 +13,7 @@
     player = new YT.Player('player', {
       height: '360',
       width: '100%',
-      videoId: '{{ video.vid }}',
+      videoId: '{{ video.cur_vid }}',
       playerVars: {
         autoplay: 0,
         controls: 0,
@@ -34,37 +33,44 @@
 {% endblock %}
 
 {% block body %}
-<div id="info-container" class="container">
+<div id="video-info-container" class="container">
   <div id="video-info">
-    <div id="video-title">
-      <h2>{{ video.title }}</h2>
-      <button id='like'>Like!</button>
+    <div id="video-title">{{ video.title }}</div>
+    <div id="video-sub-title-line" class="container">
+      <a class="category-link" href="/">Home</a>
+      <div class="category-arrow"></div>
+      <a class="category-link" href="{{ uri_for(video.category) }}">{{ video.category }}</a>
+      <div class="category-arrow"></div>
+      <a class="category-link cur-subcategory" href="{{ uri_for([video.category, video.subcategory]|join('-')) }}">{{ video.subcategory }}</a>
+      <div class="video-statistic">Views: <span class="commas_number">{{ video.hits }}</span></div>
+      <div class="video-statistic">Likes: <span class="commas_number">{{ video.likes }}</span></div>
+      <div class="video-statistic">Bullets: <span class="commas_number">{{ video.bullets }}</span></div>
+      <div class="video-statistic">Favors: <span class="commas_number">{{ video.favors }}</span></div>
+      <div id="add-to-favorite"><span id="favor-icon"></span>Add to favorites</div>
     </div>
-    <div id="video-details">
-      <a href="/">Home<a> > 
-      <a href="{{ uri_for(video.category) }}">{{ video.category }}</a> > 
-      <a href="{{ uri_for([video.category, video.subcategory]|join('-')) }}">{{ video.subcategory }}</a>
-      <i>Hits: {{ video.hits }}</i>
-      <i>Likes: {{ video.likes }}</i>
-      <i>Bullets: {{ video.bullet }}</i>
-      <i>Favors: {{ video.favors }}</i>
+    <div id="video-parts-container" class="container">
+      {% if video.clip_titles|length > 1 %}
+        {% for i in video.clip_range %}
+          <a class="inline-button episode-link {% if i+1 == video.cur_index %}active{% endif %}" href="{{ video.url }}?index={{ i+1 }}">{{ i+1 }}. {{ video.clip_titles[i] }}</a>
+        {% endfor %}
+      {% endif %}
+      {% if video.clip_titles|length > 3 %}
+        <div class="inline-button more-episode">...</div>
+      {% endif %}
     </div>
-    <div id="add-to-favorite">Add to favorites</div>
   </div>
-  <div id="uploader-info">
+  <div id="uploader-info-box">
     <a href="{{ uploader.space_url}}" target="_blank">
-      <div id="uploader-avatar">
-        <img src="{{ uploader.avatar_url }}">
-      </div>
+      <img id="uploader-img" src="{{ uploader.avatar_url }}">
     </a>
-    <div id="uploader-details">
-      <div id="uploader-nickname">
-        <a href="{{ uploader.space_url}}" target="_blank">{{ uploader.nickname }}</a>
+    <div id="uploader-info">
+      <div id="uploader-link-line">
+        <div id="uploader-link">
+          <a class="blue-link" href="{{ uploader.space_url}}" target="_blank">{{ uploader.nickname }}</a>
+        </div>
+        <div class="inline-button" id="subscribe-button">+ Subscribe</div>
       </div>
       <div id="uploader-intro">{{ uploader.intro }}</div>
-      <div id="uploader-subscribe" uid="{{ uploader.id }}">
-        <a>Subscribe</a>
-      </div>
     </div>
   </div>
 </div>
@@ -107,7 +113,7 @@
       <div id="shooter" class="container">
         <div id="danmaku-color-setting"></div>
         <input id="danmaku-input" type="text" name="danmaku">
-        <button id="fire-button" type="button">Fire!</button>
+        <input id="fire-button" type="button" value="Fire!">
       </div>
     </div>
   </div>

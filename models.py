@@ -427,7 +427,7 @@ class Video(ndb.Model):
   title = ndb.StringProperty(required=True, indexed=False)
   category = ndb.StringProperty(required=True, choices=Video_Category)
   subcategory = ndb.StringProperty(required=True)
-  video_type = ndb.StringProperty(required=True, choices=['self-made', 'republish'], default='republish')
+  video_type = ndb.StringProperty(required=True, choices=['original', 'republish'], default='republish')
   thumbnail = ndb.BlobKeyProperty()
   deleted = ndb.BooleanProperty(required=True, default=False)
 
@@ -716,10 +716,14 @@ class Video(ndb.Model):
 
   def Delete(self):
     if self.playlist_belonged != None:
-      belonged = video.playlist_belonged.get()
-      idx = belonged.videos.index(video.key)
+      belonged = self.playlist_belonged.get()
+      idx = belonged.videos.index(self.key)
       belonged.videos.pop(idx)
       belonged.put()
+
+    if self.thumbnail != None:
+      images.delete_serving_url(self.thumbnail)
+      models.blobstore.BlobInfo(self.thumbnail).delete()
 
     self.delete_index('videos_by_created')
     self.delete_index('videos_by_hits')

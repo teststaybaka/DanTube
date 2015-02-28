@@ -249,8 +249,8 @@ $(document).ready(function() {
     $('div.option-button.type').click(function(evt) {
         $('div.option-button.type').removeClass('select');
         $(evt.target).addClass('select');
-        if (evt.target.id === 'self-made-option') {
-            $('#video-type-option').val('self-made');
+        if (evt.target.id === 'original-option') {
+            $('#video-type-option').val('original');
         } else {//republish
             $('#video-type-option').val('republish');
         }

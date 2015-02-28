@@ -219,7 +219,7 @@ div.uper-statistic-content {
 
 div.message-entry {
     font-size: 0;
-    padding: 25px;
+    padding: 15px 25px;
 }
 
 div.message-entry:nth-child(even) {

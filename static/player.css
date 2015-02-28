@@ -567,3 +567,138 @@ div.space-padding {
 	display: inline-block;
 	float: left;
 }
+
+#video-info-container {
+	margin-top: 20px;
+}
+
+#video-info {
+	float: left;
+	width: 700px;
+}
+
+#video-title {
+	font-weight: bold;
+	font-size: 20px;
+	color: rgb(100,100,100);
+	padding: 5px 0;
+	word-wrap: break-word;
+}
+
+#video-sub-title-line {
+	padding-bottom: 5px;
+	font-size: 14px;
+	color: rgb(150,150,150);
+	border-bottom: 1px solid rgb(200,200,200);
+}
+
+a.category-link {
+	float: left;
+	color: rgb(100,100,100);
+}
+
+a.cur-subcategory {
+	font-weight: bold;
+	color: rgb(0,140,255);
+}
+
+div.category-arrow {
+	float: left;
+	display: inline-block;
+	width: 8px;
+	height: 8px;
+	background-image: url("/static/img/arrow.png");
+	margin: 4px 5px;
+}
+
+div.video-statistic {
+	float: left;
+	margin-left: 5px;
+}
+
+#add-to-favorite {
+	float: right;
+	cursor: pointer;
+	color: rgb(100,100,100);
+}
+
+#add-to-favorite:hover {
+	color: rgb(0,140,255);
+}
+
+#favor-icon {
+	background: url("/static/img/statistic_favor.png");
+	background-repeat: no-repeat;
+	height: 16px;
+	width: 16px;
+	background-size: contain;
+	display: inline-block;
+	vertical-align: middle;
+	margin-right: 2px;
+}
+
+#uploader-img {
+	width: 58px;
+	height: 58px;
+	box-shadow: 0 0 1px rgb(100,100,100);
+}
+
+#uploader-info-box {
+	float: right;
+	border: 1px solid rgb(200,200,200);
+	border-radius: 5px;
+	padding: 8px;
+	font-size: 0;
+}
+
+#uploader-info {
+	display: inline-block;
+	vertical-align: top;
+	padding-left: 5px;
+}
+
+#uploader-link {
+	font-size: 14px;
+	display: inline-block;
+	width: 120px;
+	word-wrap: break-word;
+	vertical-align: top;
+	margin-right: 10px;
+}
+
+#subscribe-button {
+	margin: 0;
+}
+
+#uploader-intro {
+	margin-top: 5px;
+	font-size: 14px;
+	color: rgb(100,100,100);
+	white-space: pre-wrap;
+}
+
+#video-parts-container {
+	padding-top: 5px;
+}
+
+a.episode-link {
+	font-weight: normal;
+	float: left;
+	color: rgb(100,100,100);
+	word-wrap: break-word;
+	-webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
+    -moz-box-sizing: border-box;    /* Firefox, other Gecko */
+    box-sizing: border-box;
+    max-width: 100%;
+}
+
+a.inline-button.episode-link.active {
+	color: white;
+	background-color: rgb(85,178,255);
+	border: 1px solid rgb(85,178,255);
+}
+
+div.more-episode, div.less-epsidoe {
+	float: left;
+	color: rgb(100,100,100);
+}

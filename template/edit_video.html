@@ -59,7 +59,7 @@ var video_subcategories = {};
     </div>
     <div class="input-line">
       <label class="form-label">Type:</label>
-      <div class="option-button type {% if video.type == 'self-made' %}select{% endif %}" id="self-made-option">Self-made</div>
+      <div class="option-button type {% if video.type == 'original' %}select{% endif %}" id="original-option">Original</div>
       <div class="option-button type {% if video.type == 'republish' %}select{% endif %}" id="republish-option">Republish</div>
       <input type="text" name="video-type-option" value="{{ video.type }}" class="hidden" id="video-type-option">
     </div>

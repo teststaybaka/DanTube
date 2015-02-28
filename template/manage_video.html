@@ -37,7 +37,7 @@
     <div id="action-select">
         <div class="selected">Actions</div>
         <div class="option">
-            <div class="option-entry">Add to</div>
+            <!-- <div class="option-entry">Add to</div> -->
             <div class="option-entry delete">Delete</div>
         </div>
     </div>
@@ -64,8 +64,8 @@
                 <a href="{{ video.url }}" class="video-title" target="_blank">{{ video.title }}</a>
             </div>
             <div class="video-playlist">
-                <label>Prime list: </label>
-                <label class="list-title">Not listed</label>
+                <label>Playlist: </label>
+                <label class="list-title">{% if video.playlist_title %}{{ video.playlist_title }}{% else %}Not listed{% endif %}</label>
             </div>
             <div class="video-statistic">
                 <div class="video-statistic-entry">Views: <span class="commas_number">{{ video.hits }}</span></div>

@@ -40,12 +40,12 @@ class Message(BaseHandler):
                 thread_dict['updated'] = thread.updated.strftime("%Y-%m-%d %H:%M")
                 thread_dict['url'] = '/account/messages/' + str(thread.key.id())
                 if thread.delete_user:
-                    partner = models.User.get_by_id(thread.delete_user.id()) # the other user deleted the message
+                    partner = thread.delete_user.get() # the other user deleted the message
                 else:
                     if user.key.id() == thread.sender.id():
-                        partner = models.User.get_by_id(thread.receiver.id())
+                        partner = thread.receiver.get()
                     else:
-                        partner = models.User.get_by_id(thread.sender.id())
+                        partner = thread.sender.get()
                 thread_dict['partner'] = partner.get_public_info()
 
                 if user.key.id() == thread.messages[-1].sender.id():
@@ -205,12 +205,12 @@ class Detail(BaseHandler):
         context = {}
         context['subject'] = thread.subject
         if thread.delete_user:
-            partner = models.User.get_by_id(thread.delete_user.id()) # the other user deleted the message
+            partner = thread.delete_user.get() # the other user deleted the message
         else:
             if self.is_user_sender:
-                partner = models.User.get_by_id(thread.receiver.id())
+                partner = thread.receiver.get()
             else:
-                partner = models.User.get_by_id(thread.sender.id())
+                partner =thread.sender.get()
         context['partner'] = partner.get_public_info()
 
         context['messages'] = []

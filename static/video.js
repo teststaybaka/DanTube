@@ -649,12 +649,60 @@ function generate_danmaku_pool_list() {
 
 $(document).ready(function() {
     var url = document.URL;
-    var video_id = url.substr(url.lastIndexOf('/dt') + 3);
+    var urls = document.URL.split('/');
+    var video_id = url.split('?')[0].substr(url.lastIndexOf('/dt') + 3);
+
+    $('div.more-episode').click(function() {
+        $('a.episode-link').remove();
+        $.ajax({
+            type: 'POST',
+            url: '/video/more_episode/' + urls[urls.length-1],
+            success: function(result) {
+                if(!result.error) {
+                    $('div.more-episode').remove();
+                    titles = result.clip_titles;
+                    for (var i = 0; i < titles.length; i++) {
+                        var active = '';
+                        if (i+1 == result.cur_index) {
+                            active = 'active';
+                        }
+                        $('#video-parts-container').append('<a class="inline-button episode-link ' + active + '" href="/video/dt' + video_id + '?index=' + (i+1) + '">' + (i+1) + '. ' + titles[i] + '</a>');
+                    }
+                    // $('#video-parts-container').append('<div class="inline-button less-episode"><<</div>')
+                } else {
+                    pop_ajax_message(result.message, 'error');
+                }
+            },
+            error: function (xhr, ajaxOptions, thrownError) {
+                console.log(xhr.status);
+                console.log(thrownError);
+            }
+        });
+    });
+
+    $('#add-to-favorite').click(function(e) {
+        e.preventDefault();
+        $.ajax({
+            type: "POST",
+            url: '/account/favor/dt'+video_id,
+            success: function(result) {
+                if(!result.error) {
+                    pop_ajax_message('This video has been added to your favorites.', 'success');
+                } else {
+                    pop_ajax_message(result.message, 'error');
+                }
+            },
+            error: function (xhr, ajaxOptions, thrownError) {
+                console.log(xhr.status);
+                console.log(thrownError);
+            }
+        });
+    });
 
     // Retrieve Danmaku
     $.ajax({
         type: "GET",
-        url: url + "/danmaku",
+        url: '/video/danmaku/' + urls[urls.length-1],
         success: function(result) {
             if(!result.error) {
                 console.log(result.length);
@@ -709,25 +757,6 @@ $(document).ready(function() {
             });
         }
     });
-    
-    $('#add-to-favorite').click(function(e) {
-        e.preventDefault();
-        $.ajax({
-            type: "POST",
-            url: '/account/favor/dt'+video_id,
-            success: function(result) {
-                if(!result.error) {
-                    alert('success!');
-                } else {
-                    alert(result.message);
-                }
-            },
-            error: function (xhr, ajaxOptions, thrownError) {
-                console.log(xhr.status);
-                console.log(thrownError);
-            }
-        });
-    })
 
     $('#uploader-subscribe').click(function(e) {
         var uploader_id = $(this).attr('uid');

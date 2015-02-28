@@ -30,20 +30,21 @@ function update_random_videos() {
         data: {'size': 5},
         success: function(result) {
             $('div.single-preview-line').empty();
-            if(result.error) {
-                console.log(result.message);
-            } else {
+            if(!result.error) {
                 for(var i = 0; i < result.videos.length; i++) {
                     var video_div = render_wide_preview_video_div(result.videos[i]);
                     $('div.single-preview-line').append(video_div);
                 }
+            } else {
+                $('div.single-preview-line').empty();
+                $('div.single-preview-line').append('<div class="preview-status">Load failed.</div>');
             }
         },
         error: function (xhr, ajaxOptions, thrownError) {
             console.log(xhr.status);
             console.log(thrownError);
             $('div.single-preview-line').empty();
-            $('div.single-preview-line').append('<div class="preview-status">Load failed.</div>')
+            $('div.single-preview-line').append('<div class="preview-status">Load failed.</div>');
         }
     });
 }
@@ -80,7 +81,8 @@ function update_page(query, video_container, pagination_container, video_div_typ
                     pagination_container.append(pagination);
                 }
             } else {
-                console.log(result);
+                video_container.empty();
+                video_container.append('<div class="preview-status">Load failed.</div>');
             }
         },
         error: function (xhr, ajaxOptions, thrownError) {
