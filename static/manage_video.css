@@ -347,7 +347,6 @@ div.create-button, input.create-button {
 }
 
 a.sub-title-link {
-    cursor: pointer;
     max-width: 474px;
     display: inline-block;
     overflow: hidden;

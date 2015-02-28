@@ -5,10 +5,11 @@
 {% endblock %}
 
 {% block body %}
+{% block search_scope %}
 <div class="search-scope-line">
     <a class="search-scope active">Videos</a>
-    <a class="search-scope">Playlists</a>
-    <a class="search-scope">UPers</a>
+    <a class="search-scope" href="{{ uri_for('search_playlist') }}?keywords={{ keywords }}">Playlists</a>
+    <a class="search-scope" href="{{ uri_for('search_uper') }}?keywords={{ keywords }}">UPers</a>
 </div>
 <div class="search-scope-line">
     <a class="search-scope {% if not cur_category %}active{% endif %}" {% if cur_category %}href="{{ uri_for('search') }}?keywords={{ keywords }}&order={{ order }}"{% endif %}>All</a>
@@ -24,8 +25,10 @@
     {% endfor %}
 </div>
 {% endif %}
+{% endblock %}
 
 <div class="search-scope-line container">
+    {% block search_subtitle_line %}
     <div class="search-result-num">Found <span class="commas_number">{{ total_found }}</span> videos.</div>
     <div id="view-method-block">
         <label id="view-method-label">Sorted by:</label>
@@ -44,6 +47,7 @@
             </div>
         </div>
     </div>
+    {% endblock %}
 </div>
 {% if total_pages == 0 %}
 <div class="video-entry no-result">
@@ -78,18 +82,15 @@
                 <div class="video-statistic-entry">Comments: <span class="commas_number">{{ video.comment_counter }}</span></div>
                 <div class="video-statistic-entry">Bullets: <span class="commas_number">{{ video.bullets }}</span></div>
             </div>
-            <div class="video-description">
-                {{ video.description }}
-            </div>
+            <div class="video-description">{{ video.description }}</div>
             <div class="video-tags">
                 {% for tag in video.tags %}
-                <div class="tag-entry">{{ tag }}</div>
+                <a class="tag-entry" href="{{ uri_for('search') }}?keywords={{ tag }}">{{ tag }}</a>
                 {% endfor %}
             </div>
         </div>
     </div>
     {% endfor %}
-    {% endblock %}
     <div class="search-pagination-line">
         {% if cur_page > 1%}
             <a class="page-change" href="{{ uri_for('search') }}?keywords={{ keywords }}&order={{ order }}&category={{ cur_category }}&subcategory={{ cur_subcategory }}&page=1"><<</a>
@@ -103,5 +104,6 @@
             <a class="page-change" href="{{ uri_for('search') }}?keywords={{ keywords }}&order={{ order }}&category={{ cur_category }}&subcategory={{ cur_subcategory }}&page={{ total_pages }}">>></a>
         {% endif %}
     </div>
+    {% endblock %}
 {% endif %}
 {% endblock %}

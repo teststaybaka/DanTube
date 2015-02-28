@@ -508,10 +508,10 @@ class Search(BaseHandler):
 
         page =  min(page, math.ceil(models.MAX_QUERY_RESULT/float(page_size)) )
         offset = (page - 1) * page_size
-        options = search.QueryOptions(offset=offset, limit=page_size)
-        query = search.Query(query_string=query_string, options=options)
         context['videos'] = []
         try:
+            options = search.QueryOptions(offset=offset, limit=page_size)
+            query = search.Query(query_string=query_string, options=options)
             result = index.search(query)
             total_found = min(result.number_found, models.MAX_QUERY_RESULT)
             total_pages = math.ceil(total_found/float(page_size))
@@ -524,7 +524,7 @@ class Search(BaseHandler):
             for i in range(0, len(videos)):
                 video = videos[i]
                 video_info = video.get_basic_info()
-                uploader = models.User.get_by_id(video.uploader.id())
+                uploader = video.uploader.get()
                 video_info['uploader'] = uploader.get_public_info()
                 context['videos'].append(video_info)
 
@@ -532,9 +532,9 @@ class Search(BaseHandler):
             context.update(self.get_page_range(page, total_pages) )
             # logging.info(videos)
             self.render('search', context)
-        except search.Error:
+        except Exception, e:
             logging.info("search failed")
-            self.notify('Gloabal search error.');
+            self.notify('Video search error.');
 
         # total_pages = -(-total_videos // page_size)
 
@@ -546,3 +546,101 @@ class Search(BaseHandler):
         # key_words_ori = self.request.get('keywords')
         # logging.info(key_words_ori)
         # self.render('search', {'keywords': key_words_ori})
+
+class SearchPlaylist(BaseHandler):
+    def get(self):
+        page_size = models.DEFAULT_PAGE_SIZE
+        try:
+            page = int(self.request.get('page') )
+        except ValueError:
+            page = 1
+
+        context = {}
+        keywords = self.request.get('keywords').strip().lower()
+        if not keywords:
+            query_string = ''
+        else:
+            query_string = 'content: ' + keywords
+        context['keywords'] = keywords
+
+        index = search.Index(name='playlists_by_modified')
+        page =  min(page, math.ceil(models.MAX_QUERY_RESULT/float(page_size)) )
+        offset = (page - 1) * page_size
+        context['playlists'] = []
+        try:
+            options = search.QueryOptions(offset=offset, limit=page_size)
+            query = search.Query(query_string=query_string, options=options)
+            result = index.search(query)
+            total_found = min(result.number_found, models.MAX_QUERY_RESULT)
+            total_pages = math.ceil(total_found/float(page_size))
+
+            playlist_keys = []
+            for playlist_doc in result.results:
+                playlist_keys.append(ndb.Key(urlsafe=playlist_doc.doc_id))
+            playlists = ndb.get_multi(playlist_keys)
+
+            for i in range(0, len(playlists)):
+                playlist = playlists[i]
+                playlist_info = playlist.get_basic_info()
+                creator = playlist.creator.get()
+                playlist_info['creator'] = creator.get_public_info()
+                playlist_info['videos'] = []
+
+                videos_limit = min(9, len(playlist.videos))
+                for i in range(0, videos_limit):
+                    video = playlist.videos[i].get()
+                    video_info = video.get_basic_info()
+                    video_info['index'] = i + 1;
+                    playlist_info['videos'].append(video_info)
+
+                context['playlists'].append(playlist_info)
+
+            context['total_found'] = total_found
+            context.update(self.get_page_range(page, total_pages) )
+            self.render('search_playlist', context)
+        except Exception, e:
+            self.notify('Playlist search error.');
+        
+class SearchUPer(BaseHandler):
+    def get(self):
+        page_size = models.DEFAULT_PAGE_SIZE
+        try:
+            page = int(self.request.get('page') )
+        except ValueError:
+            page = 1
+
+        context = {}
+        keywords = self.request.get('keywords').strip().lower()
+        if not keywords:
+            query_string = ''
+        else:
+            query_string = 'content: ' + keywords
+        context['keywords'] = keywords
+
+        index = search.Index(name='upers_by_created')
+        page =  min(page, math.ceil(models.MAX_QUERY_RESULT/float(page_size)) )
+        offset = (page - 1) * page_size
+        context['upers'] = []
+        # try:
+        options = search.QueryOptions(offset=offset, limit=page_size)
+        query = search.Query(query_string=query_string, options=options)
+        result = index.search(query)
+        total_found = min(result.number_found, models.MAX_QUERY_RESULT)
+        total_pages = math.ceil(total_found/float(page_size))
+
+        uper_keys = []
+        for uper_doc in result.results:
+            uper_keys.append(ndb.Key(urlsafe=uper_doc.doc_id))
+        upers = ndb.get_multi(uper_keys)
+
+        for i in range(0, len(upers)):
+            uper = upers[i]
+            uper_info = uper.get_public_info()
+            uper_info.update(uper.get_statistic_info())
+            context['upers'].append(uper_info)
+
+        context['total_found'] = total_found
+        context.update(self.get_page_range(page, total_pages) )
+        self.render('search_uper', context)
+        # except Exception, e:
+        #     self.notify('UPer search error.');

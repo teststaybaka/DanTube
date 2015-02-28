@@ -113,6 +113,7 @@ $(document).ready(function() {
                     pop_ajax_message('Playlist updated!', 'success');
                     $('#playlist-title-change-form').removeClass('show');
                     $('#sub-title').removeClass('hide');
+                    $('#sub-title a.sub-title-link').text(title);
                 } else {
                     pop_ajax_message(result.message, 'error');
                 }

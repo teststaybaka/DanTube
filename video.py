@@ -283,7 +283,7 @@ class VideoUpload(BaseHandler):
             }))
             return
 
-        user.videos_submited += 1
+        user.videos_submitted += 1
         user.put()
         self.response.out.write(json.dumps({
             'error': False,
@@ -430,7 +430,7 @@ class DeleteVideo(BaseHandler):
                 'message': 'No video deleted.'
             }))
             return
-        self.user.videos_submited -= len(deleted_ids)
+        self.user.videos_submitted -= len(deleted_ids)
         self.user.put()
 
         self.response.out.write(json.dumps({
@@ -459,10 +459,10 @@ class ManageVideo(BaseHandler):
             query_string = 'content: ' + keywords
             page =  min(page, math.ceil(models.MAX_QUERY_RESULT/float(page_size)) )
             offset = (page - 1)*page_size
-            options = search.QueryOptions(offset=offset, limit=page_size)
-            query = search.Query(query_string=query_string, options=options)
-            index = search.Index(name='videos_by_user' + str(user.key.id()))
             try:
+                options = search.QueryOptions(offset=offset, limit=page_size)
+                query = search.Query(query_string=query_string, options=options)
+                index = search.Index(name='videos_by_user' + str(user.key.id()))
                 result = index.search(query)                
                 total_found = min(result.number_found, models.MAX_QUERY_RESULT)
                 total_pages = math.ceil(total_found/float(page_size))
@@ -471,7 +471,7 @@ class ManageVideo(BaseHandler):
                 for video_doc in result.results:
                     video_keys.append(ndb.Key(urlsafe=video_doc.doc_id))
                 videos = ndb.get_multi(video_keys)
-            except search.Error:
+            except Exception, e:
                 self.notify('Search error.')
                 return
         else:
@@ -487,7 +487,7 @@ class ManageVideo(BaseHandler):
                 context['order'] = 'created'
                 order = models.Video.created
             
-            total_found = user.videos_submited
+            total_found = user.videos_submitted
             total_pages = math.ceil(total_found/float(page_size))
             videos = []
             if total_found != 0 and page <= total_pages:

@@ -332,6 +332,7 @@ class ChangeInfo(BaseHandler):
         elif intro != user.intro:
             user.intro = intro
 
+        user.create_index()
         user.put()
         self.response.out.write(json.dumps({'error':False}))
 

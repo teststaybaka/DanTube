@@ -3,25 +3,54 @@
 {{ super() }}
 {% endblock %}
 
+{% block search_url %}
+action="{{ uri_for('search_uper') }}"
+{% endblock %}
+
+{% block search_scope %}
+<div class="search-scope-line">
+    <a class="search-scope" href="{{ uri_for('search') }}?keywords={{ keywords }}">Videos</a>
+    <a class="search-scope" href="{{ uri_for('search_playlist') }}?keywords={{ keywords }}">Playlists</a>
+    <a class="search-scope active">UPers</a>
+</div>
+{% endblock %}
+
+{% block search_subtitle_line %}
+<div class="search-result-num">Found <span class="commas_number">{{ total_found }}</span> UPers.</div>
+{% endblock %}
+
 {% block search_result %}
+{% for uper in upers %}
 <div class="video-entry">
-    <a class="uper-img" href="{{ video.url }}">
-        <img class="uper-img" src="{{ video.thumbnail_url }}">
+    <a class="uper-img" href="{{ uper.space_url }}">
+        <img class="uper-img" src="{{ uper.avatar_url }}">
     </a>
     <div class="uper-info">
-        <a class="uploader" href="{{ video.url }}">UPer: Markipier</a>
+        <a class="uploader" href="{{ uper.space_url }}">{{ uper.nickname }}</a>
         <div class="uper-detail-line">
-            <div class="uper-detail-info">Videos: 10</div>
-            <div class="uper-detail-info">Subscribers: 10</div>
-            <div class="uper-detail-info">Subscriptions: 10</div>
+            <div class="uper-detail-info">Videos: <span class="commas_number">{{ uper.videos_submitted }}</span></div>
+            <div class="uper-detail-info">Subscribers: <span class="commas_number">{{ uper.subscribers_counter }}</span></div>
+            <div class="uper-detail-info">Subscriptions: <span class="commas_number">{{ uper.subscriptions_counter }}</span></div>
         </div>
-        <div class="uper-description">
-            WHY!? WHY DID YOU HAVE TO
-        </div>
+        <div class="uper-description">{{ uper.intro }}</div>
         <div class="uper-buttons">
-            <div class="inline-button">+ Subscribe</div>
-            <div class="inline-button">Send Message</div>
+            <div class="inline-button uper-button">+ Subscribe</div>
+            <a class="inline-button uper-button">Send Message</a>
         </div>
     </div>
+</div>
+{% endfor %}
+<div class="search-pagination-line">
+    {% if cur_page > 1%}
+        <a class="page-change" href="{{ uri_for('search_uper') }}?keywords={{ keywords }}&page=1"><<</a>
+        <a class="page-change" href="{{ uri_for('search_uper') }}?keywords={{ keywords }}&page={{ cur_page - 1 }}"><</a>
+    {% endif %}
+    {% for p in pages %}
+        <a class="page-num {% if p == cur_page %}active{% endif %}" href="{{ uri_for('search_uper') }}?keywords={{ keywords }}&page={{ p }}">{{ p }}</a>
+    {% endfor %}
+    {% if cur_page < total_pages %}
+        <a class="page-change" href="{{ uri_for('search_uper') }}?keywords={{ keywords }}&page={{ cur_page + 1 }}">></a>
+        <a class="page-change" href="{{ uri_for('search_uper') }}?keywords={{ keywords }}&page={{ total_pages }}">>></a>
+    {% endif %}
 </div>
 {% endblock %}

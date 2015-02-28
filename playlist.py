@@ -20,10 +20,10 @@ class ManagePlaylist(BaseHandler):
             query_string = 'content: ' + keywords
             page =  min(page, math.ceil(models.MAX_QUERY_RESULT/float(page_size)) )
             offset = (page - 1)*page_size
-            options = search.QueryOptions(offset=offset, limit=page_size)
-            query = search.Query(query_string=query_string, options=options)
-            index = search.Index(name='playlists_by_user' + str(user.key.id()))
             try:
+                options = search.QueryOptions(offset=offset, limit=page_size)
+                query = search.Query(query_string=query_string, options=options)
+                index = search.Index(name='playlists_by_user' + str(user.key.id()))
                 result = index.search(query)                
                 total_found = min(result.number_found, models.MAX_QUERY_RESULT)
                 total_pages = math.ceil(total_found/float(page_size))
@@ -32,7 +32,7 @@ class ManagePlaylist(BaseHandler):
                 for list_doc in result.results:
                     playlist_keys.append(ndb.Key(urlsafe=list_doc.doc_id))
                 playlists = ndb.get_multi(playlist_keys)
-            except search.Error:
+            except Exception, e:
                 self.notify('Search error.')
                 return
         else:
@@ -241,14 +241,14 @@ class SearchVideo(BaseHandler):
                 for video_doc in result.results:
                     video_keys.append(ndb.Key(urlsafe=video_doc.doc_id))
                 videos = ndb.get_multi(video_keys)
-            except search.Error:
+            except Exception, e:
                 self.response.out.write(json.dumps({
                     'error': True, 
                     'message': 'Search error.'
                 }))
                 return
         else:
-            total_found = user.videos_submited
+            total_found = user.videos_submitted
             total_pages = math.ceil(total_found/float(page_size))
             videos = []
             if total_found != 0 and page <= total_pages:
@@ -308,6 +308,7 @@ class AddVideo(BaseHandler):
                 'message': 'No video added.'
             }))
             return
+        playlist.modified = datetime.now()
         playlist.put()
 
         self.response.out.write(json.dumps({
@@ -354,6 +355,7 @@ class RemoveVideo(BaseHandler):
                 'message': 'No video removed.'
             }))
             return
+        playlist.modified = datetime.now()
         playlist.put()
 
         self.response.out.write(json.dumps({
@@ -400,6 +402,7 @@ class MoveVideo(BaseHandler):
         if ori_idx != target_idx:
             temp_key = playlist.videos.pop(ori_idx)
             playlist.videos.insert(target_idx, temp_key)
+            playlist.modified = datetime.now()
             playlist.put()
 
         self.response.out.write(json.dumps({

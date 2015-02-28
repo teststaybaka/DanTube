@@ -60,6 +60,7 @@ div.video-img-uper {
 a.video-img {
     display: block;
     font-size: 0;
+    position: relative;
 }
 
 img.video-img {
@@ -151,6 +152,7 @@ div.video-description, div.playlist-description, div.uper-description {
     height: 48px;
     overflow: hidden;
     word-wrap: break-word;
+    white-space: pre-wrap;
 }
 
 div.uper-description {
@@ -161,7 +163,7 @@ div.video-tags, div.playlist-episode, div.uper-buttons {
     border-top: 1px solid rgb(220,220,220);
 }
 
-div.tag-entry, div.episode-entry {
+a.tag-entry {
     border-radius: 3px;
     padding: 3px 8px;
     display: inline-block;
@@ -172,18 +174,19 @@ div.tag-entry, div.episode-entry {
     color: rgb(100,100,100);
 }
 
-div.episode-entry {
+a.episode-entry {
+    border-radius: 3px;
     width: 120px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    margin-top: 8px;
     margin-right: 10px;
-    border: 1px solid rgb(200,200,200);
-    text-align: center;
     padding: 6px;
+    font-weight: normal;
 }
 
-div.tag-entry:hover, div.episode-entry:hover {
+a.tag-entry:hover {
     background-color: rgb(240,240,240);
     color: rgb(0,140,255);
 }
@@ -224,17 +227,27 @@ div.uper-detail-info {
     color: rgb(150,150,150);
 }
 
-div.inline-button {
-    color: rgb(81,203,238);
-    border: 1px solid rgb(81,203,238);
+div.video-num-box {
+    text-align: center;
+    position: absolute;
+    right: 0;
+    top: 0;
+    height: 100%;
+    width: 40%;
+    font-size: 14px;
+    padding-top: 30px;
+    font-weight: bold;
+    color: rgb(240,240,240);
+    background-color: rgba(0,0,0,0.5);
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
 }
 
-div.inline-button:hover {
-    color: rgb(81,203,238);
-    background-color: rgb(232,250,255);
+div.video-num {
+    padding: 3px;
 }
 
-div.inline-button:active {
-    background-color: rgb(81,203,238);
-    color: rgb(255,255,255);
+.inline-button.uper-button {
+    font-weight: normal;
 }

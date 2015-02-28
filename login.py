@@ -57,6 +57,7 @@ class Signup(BaseHandler):
 
         user = user_data[1]
         user_id = user.get_id()
+        user.create_index()
 
         # auto-login user
         self.auth.set_session(self.auth.store.user_to_dict(user), remember=True)

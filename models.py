@@ -41,7 +41,7 @@ class User(webapp2_extras.appengine.auth.models.User):
   history = ndb.StructuredProperty(History, repeated=True, indexed=False)
   subscriptions = ndb.KeyProperty(kind='User', repeated=True, indexed=False)
   bullets = ndb.IntegerProperty(required=True, default=0)
-  videos_submited = ndb.IntegerProperty(required=True, default=0, indexed=False)
+  videos_submitted = ndb.IntegerProperty(required=True, default=0, indexed=False)
   playlists_created = ndb.IntegerProperty(required=True, default=0, indexed=False)
   videos_watched = ndb.IntegerProperty(required=True, default=0, indexed=False)
   videos_favored = ndb.IntegerProperty(required=True, default=0, indexed=False)
@@ -49,6 +49,25 @@ class User(webapp2_extras.appengine.auth.models.User):
   subscribers_counter = ndb.IntegerProperty(required=True, default=0, indexed=False)
   threads_counter = ndb.IntegerProperty(required=True, default=0, indexed=False)
   new_messages = ndb.IntegerProperty(required=True, default=0, indexed=False)
+
+  def delete_index(self):
+    index = search.Index(name='upers_by_created')
+    index.delete(self.key.urlsafe())
+
+  def create_index(self):
+    index = search.Index(name='upers_by_created')
+    searchable = " ".join([self.nickname, self.intro]);
+    doc = search.Document(
+      doc_id = self.key.urlsafe(), 
+      fields = [
+        search.TextField(name='content', value=searchable),
+      ],
+      rank = time_to_seconds(self.created),
+    )
+    try:
+      add_result = index.put(doc)
+    except search.Error:
+      logging.info('failed to create upers_by_created index for user %s' % (self.key.id()))
 
   def set_password(self, raw_password):
     self.password = security.generate_password_hash(raw_password, length=12)
@@ -81,12 +100,11 @@ class User(webapp2_extras.appengine.auth.models.User):
       'email': self.email,
       'bullets': self.bullets
     }
-    
     return private_info
 
   def get_statistic_info(self):
     statistic_info = {
-      'videos_submited': self.videos_submited,
+      'videos_submitted': self.videos_submitted,
       'videos_watched': self.videos_watched,
       'videos_favored': self.videos_favored,
       'space_visited': self.space_visited,
@@ -95,6 +113,8 @@ class User(webapp2_extras.appengine.auth.models.User):
       'subscriptions_counter': len(self.subscriptions)
     }
     return statistic_info
+
+
 
   @classmethod
   def validate_nickname(cls, nickname):
@@ -298,17 +318,24 @@ class PlayList(ndb.Model):
       video_info = self.videos[0].get().get_basic_info()
       basic_info['thumbnail_url'] = video_info['thumbnail_url']
       basic_info['thumbnail_url_hq'] = video_info['thumbnail_url_hq']
+      basic_info['url'] = video_info['url']
+    else:
+      basic_info['thumbnail_url'] = '/static/img/empty_list.png'
+      basic_info['thumbnail_url_hq'] = '/static/img/empty_list.png'
     return basic_info
 
   def change_info(self, title, intro):
     changed = False
     if self.title != title:
       self.title = title
+      changed = True
 
     if self.intro != intro:
       self.intro = intro
+      changed = True
 
     if changed:
+      self.modified = datetime.now()
       self.put()
       self.create_index('playlists_by_modified', time_to_seconds(self.modified) )
       self.create_index('playlists_by_user' + str(self.creator.id()), time_to_seconds(self.modified) )

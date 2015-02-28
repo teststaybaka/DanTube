@@ -82,6 +82,8 @@ routes = [
     webapp2.Route(r'/video/dt<video_id:\d+>/like', views.Like, name="like"),
     webapp2.Route(r'/player', views.Player, name="player"),
     webapp2.Route(r'/search', views.Search, name="search"),
+    webapp2.Route(r'/search/playlist', views.SearchPlaylist, name="search_playlist"),
+    webapp2.Route(r'/search/uper', views.SearchUPer, name="search_uper"),
 
     webapp2.Route(r'/admin/video', admin.VideoPageTest, name="Admin_Video"),
     webapp2.Route(r'/admin/danmaku', admin.DanmakuTest, name="Admin_Danmaku"),
