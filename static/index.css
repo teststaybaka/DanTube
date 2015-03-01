@@ -351,16 +351,10 @@ div.video-preview-hits, div.video-preview-comment-num {
     display: inline-block;
     font-size: 14px;
     color: rgb(150,150,150);
-    padding-left: 12px;
-    background-image: url("/static/img/play-icon-preview.png");
-    background-repeat: no-repeat;
-    background-position: 0 2px;
 }
 
 div.video-preview-comment-num {
     width: 50px;
-    background-position: 0 3px;
-    background-image: url("/static/img/comment-preview.png");
 }
 
 div.video-preview-popup {
@@ -394,29 +388,33 @@ div.popup-statistic-line {
 }
 
 div.popup-statistic-entry {
-    width: 19%;
+    width: 20%;
     display: inline-block;
     padding: 7px 2px;
-    background-repeat: no-repeat;
-    background-position: 0 9px;
-    padding-left: 12px;
 }
 
-div.popup-statistic-entry.views {
-    background-image: url("/static/img/play-icon-preview.png");
+span.preview-icon {
+    width: 10px;
+    height: 10px;
+    margin-right: 2px;
+    display: inline-block;
+    background-image: url("/static/img/basic_icons.png");
 }
 
-div.popup-statistic-entry.favorites {
-    background-image: url("/static/img/favorites-preview.png");
+span.preview-icon.views {
+    background-position: 0 -182px;
 }
 
-div.popup-statistic-entry.comment {
-    background-position: 0 10px;
-    background-image: url("/static/img/comment-preview.png");
+span.preview-icon.favorites {
+    background-position: 0 -172px;
 }
 
-div.popup-statistic-entry.bullets {
-    background-image: url("/static/img/bullets-preview.png");
+span.preview-icon.comment {
+    background-position: 0 -162px;
+}
+
+span.preview-icon.bullets {
+    background-position: 0 -152px;
 }
 
 div.popup-intro {
@@ -541,11 +539,7 @@ div.top-video-hits {
     display: inline-block;
     color: rgb(150,150,150);
     width: 120px;
-    padding-left: 12px;
     vertical-align: text-bottom;
-    background-image: url("/static/img/play-icon-preview.png");
-    background-repeat: no-repeat;
-    background-position: 0 2px;
 }
 
 div.top-video-comment-num {
@@ -553,10 +547,6 @@ div.top-video-comment-num {
     color: rgb(150,150,150);
     vertical-align: text-bottom;
     margin-left: 10px;
-    padding-left: 12px;
-    background-position: 0 3px;
-    background-repeat: no-repeat;
-    background-image: url("/static/img/comment-preview.png");
 }
 
 div.ranking-No {
@@ -637,6 +627,7 @@ span.category-middle {
     height: 8px;
     margin: 6px 10px;
     background-repeat: no-repeat;
-    background-image: url("/static/img/arrow.png");
+    background-position: 0 0;
+    background-image: url("/static/img/basic_icons.png");
     float: left;
 }

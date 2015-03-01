@@ -75,7 +75,8 @@ div.video-category-arrow {
     vertical-align: middle;
     width: 8px;
     height: 8px;
-    background-image: url("/static/img/arrow.png");
+    background-position: 0 0;
+    background-image: url("/static/img/basic_icons.png");
     margin: 0 5px;
 }
 
@@ -126,6 +127,7 @@ div.video-statistic {
 
 div.video-statistic.favored {
     margin-top: 7px;
+    color: rgb(100,100,100);
 }
 
 div.video-statistic-entry {
@@ -197,7 +199,8 @@ div.video-entry:hover div.video-select-checkbox {
 
 div.video-select-checkbox.checked {
     display: inline-block;
-    background-image: url("/static/img/checked.png");
+    background-position: 0 -192px;
+    background-image: url("/static/img/basic_icons.png");
 }
 
 div.video-delete:hover {
@@ -366,14 +369,15 @@ div.edit-title-button {
     height: 20px;
     width: 20px;
     background-repeat: no-repeat;
-    background-image: url("/static/img/edit_medium.png");
+    background-position: 0 -384px;
+    background-image: url("/static/img/basic_icons.png");
     cursor: pointer;
     display: inline-block;
     vertical-align: text-bottom;
 }
 
 div.edit-title-button:hover {
-    background-image: url("/static/img/edit_medium-hover.png");
+    background-position: 0 -403px;
 }
 
 #action-select {

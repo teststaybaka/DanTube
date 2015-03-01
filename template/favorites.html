@@ -18,7 +18,7 @@
   <div id="action-select">
       <div class="selected">Actions</div>
       <div class="option">
-          <div class="option-entry delete">Delete</div>
+          <div class="option-entry delete">Remove</div>
       </div>
   </div>
 </div>
@@ -51,7 +51,7 @@
         </div>
         <div class="favored-time">
             <label>Favored at: </label>
-            video.favored_time
+            {{ video.favored_time }}
         </div>
         <div class="video-select-checkbox" data-id="{{ video.id_num }}" data-title="{{ video.title }}"></div>
     </div>

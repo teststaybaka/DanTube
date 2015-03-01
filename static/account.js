@@ -107,7 +107,7 @@ $(document).ready(function() {
     $('#resend-email-link').click(function(evt) {
         if ($(evt.target).hasClass('send')) return;
         $(evt.target).addClass('send');
-        $(evt.target).text('Sending');
+        $(evt.target).text('Sending...');
 
         $.ajax({
             type: "POST",

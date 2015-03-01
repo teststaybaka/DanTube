@@ -281,34 +281,37 @@ div.link:hover, a.link:hover {
 }
 
 #user-at {
-	background-image: url("/static/img/at_icon.png");
+    background-position: 0 -8px;
+	background-image: url("/static/img/basic_icons.png");
 	background-repeat: no-repeat;
 }
 
 #user-at:hover {
-	background-image: url("/static/img/at_icon-hover.png");
+    background-position: 0 -28px;
 	background-repeat: no-repeat;
 	color: rgb(0,140,255);
 }
 
 #user-notification {
-	background-image: url("/static/img/notification.png");
+	background-position: 0 -48px;
+    background-image: url("/static/img/basic_icons.png");
 	background-repeat: no-repeat;
 }
 
 #user-notification:hover {
-	background-image: url("/static/img/notification-hover.png");
+	background-position: 0 -68px;
 	background-repeat: no-repeat;
 	color: rgb(0,140,255);
 }
 
 #user-message {
-	background-image: url("/static/img/message.png");
+	background-position: 0 -88px;
+    background-image: url("/static/img/basic_icons.png");
 	background-repeat: no-repeat;
 }
 
 #user-message:hover {
-	background-image: url("/static/img/message-hover.png");
+	background-position: 0 -108px;
 	background-repeat: no-repeat;
 	color: rgb(0,140,255);
 }
@@ -325,7 +328,8 @@ div.link:hover, a.link:hover {
 }
 
 #user-config-icon {
-	background-image: url("/static/img/config.png");
+	background-position: 0 -128px;
+    background-image: url("/static/img/basic_icons.png");
 	background-repeat: no-repeat;
 	width: 24px;
 	height: 24px;
@@ -428,11 +432,12 @@ a.navi-category-name {
 	margin: 0;
 	display: inline-block;
 	position: relative;
-	background-image: url("/static/img/search-icon.png");
+    background-position: 8px -204px;
+	background-image: url("/static/img/basic_icons.png");
 	background-color: rgb(240,240,240);
 	width: 38px;
 	height: 38px;
-	background-position: 9px 9px;
+	
 	background-repeat: no-repeat;
 	border-right: 1px solid rgb(200,200,200);
 	cursor: pointer;
@@ -440,11 +445,11 @@ a.navi-category-name {
 }
 
 #search-button:hover {
-	background-image: url("/static/img/search-icon-hover.png");
+	background-position: 8px -234px;
 }
 
 #search-button:active {
-	background-image: url("/static/img/search-icon-active.png");
+	background-position: 8px -264px;
 	background-color: rgb(0,135,255);
 }
 
@@ -511,7 +516,8 @@ span.category-arrow {
 	display: inline-block;
 	width: 10px;
 	height: 8px;
-	background-image: url("/static/img/arrow.png");
+	background-position: 0 0;
+    background-image: url("/static/img/basic_icons.png");
 	background-repeat: no-repeat;
 }
 
@@ -632,6 +638,7 @@ a.page-num.hide, a.page-change.hide {
 .inline-button:active {
     background-color: rgb(81,203,238);
     color: rgb(255,255,255);
+
 }
 
 .inline-button:disabled {
@@ -653,9 +660,7 @@ a.page-num.hide, a.page-change.hide {
 }
 
 .inline-button.special:active {
-    background-color: rgb(0,50,200);
-    border-color: rgb(0,50,200);
-    box-shadow: 0;
+    box-shadow: inset 0 3px 5px rgba(0,0,0,0.125);
 }
 
 .inline-button.special:disabled {
@@ -745,22 +750,23 @@ div.ajax-icon {
     vertical-align: middle;
     margin-right: 5px;
     margin-left: 15px;
+    background-image: url("/static/img/basic_icons.png");
 }
 
 div.ajax-icon.success {
-    background-image: url("/static/img/note_success.png");
+    background-position: 0 -704px;
 }
 
 div.ajax-icon.info {
-    background-image: url("/static/img/note_info.png");
+    background-position: 0 -670px;
 }
 
 div.ajax-icon.warning {
-    background-image: url("/static/img/note_warning.png");
+    background-position: 0 -739px;
 }
 
 div.ajax-icon.error {
-    background-image: url("/static/img/note_error.png");
+    background-position: 0 -636px;
 }
 
 div.ajax-content {

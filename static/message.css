@@ -276,23 +276,14 @@ form.reply-block {
     width: 500px;
 }
 
-div.send-button {
+div.inline-button.send {
     float: right;
+    margin-top: 15px;
     margin-right: 0;
     min-width: 40px;
     text-align: center;
-    margin-top: 15px;
-    background-color: rgb(0,140,255);
-    color: rgb(255,255,255);
-    border-radius: 5px;
     padding: 5px 8px;
-    cursor: pointer;
     font-size: 14px;
-    font-weight: bold;
-}
-
-div.send-button:hover {
-    background-color: rgb(81,203,238);
 }
 
 form.change label.message-label {

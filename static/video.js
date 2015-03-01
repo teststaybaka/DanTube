@@ -666,7 +666,13 @@ $(document).ready(function() {
                         if (i+1 == result.cur_index) {
                             active = 'active';
                         }
-                        $('#video-parts-container').append('<a class="inline-button episode-link ' + active + '" href="/video/dt' + video_id + '?index=' + (i+1) + '">' + (i+1) + '. ' + titles[i] + '</a>');
+                        var title = titles[i];
+                        if (!titles[i]) {
+                            title = 'Part '+(i+1);
+                        } else {
+                            title = (i+1)+'. '+title;
+                        }
+                        $('#video-parts-container').append('<a class="inline-button episode-link ' + active + '" href="/video/dt' + video_id + '?index=' + (i+1) + '">' + title  + '</a>');
                     }
                     // $('#video-parts-container').append('<div class="inline-button less-episode"><<</div>')
                 } else {

@@ -346,8 +346,8 @@ class PlayList(ndb.Model):
 
   def Delete(self):
     videos = ndb.get_multi(self.videos)
-    for j in range(0, len(videos)):
-        video[i].playlist_belonged = None
+    for i in range(0, len(videos)):
+        videos[i].playlist_belonged = None
     ndb.put_multi(videos)
 
     self.delete_index('playlists_by_modified')
@@ -723,7 +723,10 @@ class Video(ndb.Model):
 
     if self.thumbnail != None:
       images.delete_serving_url(self.thumbnail)
-      models.blobstore.BlobInfo(self.thumbnail).delete()
+      blobstore.BlobInfo(self.thumbnail).delete()
+
+    for i in range(0, len(self.video_clips)):
+      self.video_clips[i].delete()
 
     self.delete_index('videos_by_created')
     self.delete_index('videos_by_hits')

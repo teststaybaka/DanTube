@@ -105,7 +105,8 @@ div.video-category-arrow {
     vertical-align: middle;
     width: 8px;
     height: 8px;
-    background-image: url("/static/img/arrow.png");
+    background-position: 0 0;
+    background-image: url("/static/img/basic_icons.png");
     margin: 0 5px;
 }
 

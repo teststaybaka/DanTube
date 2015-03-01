@@ -42,16 +42,22 @@
       <a class="category-link" href="{{ uri_for(video.category) }}">{{ video.category }}</a>
       <div class="category-arrow"></div>
       <a class="category-link cur-subcategory" href="{{ uri_for([video.category, video.subcategory]|join('-')) }}">{{ video.subcategory }}</a>
-      <div class="video-statistic">Views: <span class="commas_number">{{ video.hits }}</span></div>
-      <div class="video-statistic">Likes: <span class="commas_number">{{ video.likes }}</span></div>
-      <div class="video-statistic">Bullets: <span class="commas_number">{{ video.bullets }}</span></div>
-      <div class="video-statistic">Favors: <span class="commas_number">{{ video.favors }}</span></div>
-      <div id="add-to-favorite"><span id="favor-icon"></span>Add to favorites</div>
+      <div class="video-date">{{ video.created }}</div>
+      <div class="video-statistic" title="views"><span class="statistic-icon views"></span><span class="commas_number">{{ video.hits }}</span></div>
+      <div class="video-statistic" title="favors"><span class="statistic-icon favorites"></span><span class="commas_number">{{ video.favors }}</span></div>
+      <div class="video-statistic" title="comments"><span class="statistic-icon comment"></span><span class="commas_number">{{ video.comment_counter }}</span></div>
+      <div class="video-statistic" title="bullets"><span class="statistic-icon bullets"></span><span class="commas_number">{{ video.bullets }}</span></div>
     </div>
     <div id="video-parts-container" class="container">
       {% if video.clip_titles|length > 1 %}
         {% for i in video.clip_range %}
-          <a class="inline-button episode-link {% if i+1 == video.cur_index %}active{% endif %}" href="{{ video.url }}?index={{ i+1 }}">{{ i+1 }}. {{ video.clip_titles[i] }}</a>
+          <a class="inline-button episode-link {% if i+1 == video.cur_index %}active{% endif %}" href="{{ video.url }}?index={{ i+1 }}">
+          {% if video.clip_titles[i] %}
+            {{ i+1 }}. {{ video.clip_titles[i] }}
+          {% else %}
+            Part {{ i+1 }}
+          {% endif %}
+          </a>
         {% endfor %}
       {% endif %}
       {% if video.clip_titles|length > 3 %}
@@ -74,7 +80,6 @@
     </div>
   </div>
 </div>
-
 <div id="player-container" class="container">
   <div id="player-controller">
     <div id="player-canvas">
@@ -112,7 +117,7 @@
       </div>
       <div id="shooter" class="container">
         <div id="danmaku-color-setting"></div>
-        <input id="danmaku-input" type="text" name="danmaku">
+        <input id="danmaku-input" class="normal-input" type="text" name="danmaku">
         <input id="fire-button" type="button" value="Fire!">
       </div>
     </div>
@@ -123,5 +128,22 @@
     <div class="danmaku-order-title" id="date">Date</div>
     <div id="danmaku-list"></div>
   </div>
+</div>
+<div id="left-info-box">
+  <div id="video-detail-info-block">
+    <div id="video-tags-line">
+      {% for tag in video.tags %}
+      <a href="{{ uri_for('search') }}?keywords={{ tag }}" target="_blank" class="tags-link">{{ tag }}</a>
+      {% endfor %}
+    </div>
+    <div id="video-intro-box">{% if video.cur_subintro %}{{ video.cur_subintro }}{% else %}{{ video.description }}{% endif %}</div>
+    <div class="container">
+      <div class="operation-button">Like</div>
+    </div>
+  </div>
+  <div id="comments-block"></div>
+</div>
+<div id="right-video-list">
+  
 </div>
 {% endblock %}
