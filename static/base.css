@@ -535,7 +535,7 @@ div.pagination-line {
     font-size: 0;
 }
 
-a.page-change, div.page-change {
+a.page-change {
     display: inline-block;
     font-weight: bold;
     font-size: 14px;
@@ -831,7 +831,6 @@ div.emoticons-label {
     border: 1px solid rgb(200,200,200);
     padding: 4px 8px;
     position: relative;
-    z-index: 1;
     background-color: white;
 }
 

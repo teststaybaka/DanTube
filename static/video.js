@@ -653,37 +653,8 @@ $(document).ready(function() {
     var video_id = url.split('?')[0].substr(url.lastIndexOf('/dt') + 3);
 
     $('div.more-episode').click(function() {
-        $('a.episode-link').remove();
-        $.ajax({
-            type: 'POST',
-            url: '/video/more_episode/' + urls[urls.length-1],
-            success: function(result) {
-                if(!result.error) {
-                    $('div.more-episode').remove();
-                    titles = result.clip_titles;
-                    for (var i = 0; i < titles.length; i++) {
-                        var active = '';
-                        if (i+1 == result.cur_index) {
-                            active = 'active';
-                        }
-                        var title = titles[i];
-                        if (!titles[i]) {
-                            title = 'Part '+(i+1);
-                        } else {
-                            title = (i+1)+'. '+title;
-                        }
-                        $('#video-parts-container').append('<a class="inline-button episode-link ' + active + '" href="/video/dt' + video_id + '?index=' + (i+1) + '">' + title  + '</a>');
-                    }
-                    // $('#video-parts-container').append('<div class="inline-button less-episode"><<</div>')
-                } else {
-                    pop_ajax_message(result.message, 'error');
-                }
-            },
-            error: function (xhr, ajaxOptions, thrownError) {
-                console.log(xhr.status);
-                console.log(thrownError);
-            }
-        });
+        $('a.episode-link.hidden').removeClass('hidden');
+        $('div.more-episode').remove();
     });
 
     $('#add-to-favorite').click(function(e) {

@@ -51,7 +51,7 @@
     <div id="video-parts-container" class="container">
       {% if video.clip_titles|length > 1 %}
         {% for i in video.clip_range %}
-          <a class="inline-button episode-link {% if i+1 == video.cur_index %}active{% endif %}" href="{{ video.url }}?index={{ i+1 }}">
+          <a class="inline-button episode-link {% if i+1 == video.cur_index %}active{% endif %} {% if i < video.clip_range_min or i > video.clip_range_max %}hidden{% endif %}" href="{{ video.url }}?index={{ i+1 }}">
           {% if video.clip_titles[i] %}
             {{ i+1 }}. {{ video.clip_titles[i] }}
           {% else %}
@@ -138,12 +138,67 @@
     </div>
     <div id="video-intro-box">{% if video.cur_subintro %}{{ video.cur_subintro }}{% else %}{{ video.description }}{% endif %}</div>
     <div class="container">
-      <div class="operation-button">Like</div>
+      <div class="operation-button" title="Like this!"><span class="operation-icon like"></span><span class="commas_number">{{ video.likes }}</span></div>
+      <div class="operation-button" title="Strongly recommend!"><span class="operation-icon bullets"></span><span class="commas_number">{{ video.bullets }}</span></div>
+      <div class="operation-button" title="It's my favorite!"><span class="operation-icon favors"></span><span class="commas_number">{{ video.favors }}</span></div>
     </div>
   </div>
-  <div id="comments-block"></div>
+  <div id="comments-block-title">Comments <span class="commas_number">{{ video.comment_counter }}</span></div>
+  <form id="user-comment-form">
+    <img class="comment-img" src="{% if user.is_auth %}{{ user.avatar_url }}{% else %}/static/emoticons_img/default_avatar1.png{% endif %}">
+    <div id="write-comment-block">
+      <textarea class="normal-input" id="comment-textarea" placeholder="{% if user.is_auth %}Share what you think{% else %}Please sign in{% endif %}"></textarea>
+      <div class="container">
+        <div class="emoticons-select"></div>
+        <input class="inline-button special post" value="Post" type="submit">
+      </div>
+    </div>
+  </form>
+  <div id="comments-list-container">
+    <!-- <div class="comment-entry no-comment">Be the first one to comment!</div> -->
+    <div class="comment-entry">
+      <a href="" target="_blank">
+        <img class="comment-img" src="">
+      </a>
+      <div class="comment-detail-box">
+        <div class="user-title-line">
+          <label class="floorth">#1</label>
+          <a class="blue-link user-name" target="_blank">OOOOOOOOOOOOOOOOOOOOOOOOOOOOOO</a>
+          <label class="comment-time">2013-12-23 10:20</label>
+        </div>
+        <div class="comment-content">xvd</div>
+        <div class="comment-operation-line">
+          <div class="comment-operation">Reply</div>
+          <div class="comment-operation report">Report</div>
+        </div>
+      </div> 
+    </div>
+  </div>
+  <div class="pagination-line"><a class="page-num active" href="">1</a></div>
 </div>
+{% if playlist %}
 <div id="right-video-list">
-  
+  <div id="list-title">{{ playlist.title }}</div>
+  {% if playlist.intro %}
+  <div id="list-intro">{{ playlist.intro }}</div>
+  {% endif %}
+  <div id="list-scroll-bar">
+    {% for list_video in playlist.videos %}
+    <div class="list-entry {% if loop.index == playlist.cur_index+1 %}active{% endif %}">
+      <div class="list-entry-index {% if loop.index == playlist.cur_index+1 %}active{% endif %}">{{ loop.index }}</div>
+      <a href="{{ list_video.url }}" target="_blank">
+        <img class="list-video-img" src="{{ list_video.thumbnail_url }}">
+      </a>
+      <div class="list-entry-info">
+        <a class="list-video-title" href="{{ list_video.url }}" target="_blank">{{ list_video.title }}</a>
+        <div>
+          <div class="list-video-statistic hits"><span class="statistic-icon views"></span>{{ list_video.hits }}</div>
+          <div class="list-video-statistic comments"><span class="statistic-icon comment"></span>{{ list_video.comment_counter }}</div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
 </div>
+{% endif %}
 {% endblock %}

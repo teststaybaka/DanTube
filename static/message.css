@@ -22,8 +22,8 @@ div.message-entry.none {
 
 a.user-img {
     display: inline-block;
-    width: 58px;
-    height: 58px;
+    width: 64px;
+    height: 64px;
     font-size: 0;
 }
 
@@ -169,8 +169,8 @@ div.message-date.receive {
 }
 
 a.user-img {
-    width: 58px;
-    height: 58px;
+    width: 64px;
+    height: 64px;
     display: inline-block;
 }
 
@@ -251,8 +251,8 @@ form.reply-block {
 }
 
 #self-img {
-    width: 58px;
-    height: 58px;
+    width: 64px;
+    height: 64px;
     display: inline-block;
     box-shadow: 0 0 1px rgb(100,100,100);
     margin-right: 15px;

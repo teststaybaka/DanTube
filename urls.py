@@ -78,7 +78,6 @@ routes = [
     webapp2.Route(r'/video', views.Video, name="video"),
     webapp2.Route(r'/video/random', video.RandomVideos, name="random_videos"),
     webapp2.Route(r'/video/dt<video_id:\d+>', views.Watch, name="watch"),
-    webapp2.Route(r'/video/more_episode/dt<video_id:\d+>', views.Watch, name="more_episode", handler_method="more_episode"),
     webapp2.Route(r'/video/dt<video_id:\d+>/danmaku', views.Danmaku, name="danmaku"),
     webapp2.Route(r'/video/dt<video_id:\d+>/like', views.Like, name="like"),
     webapp2.Route(r'/search', views.Search, name="search"),

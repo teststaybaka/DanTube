@@ -168,9 +168,9 @@ form.change  div.input-error.show {
 }
 
 div.preview-block {
-  width: 128px;
+  width: 148px;
   text-align: center;
-  margin: 10px;
+  margin: 10px 0;
 }
 
 div.preview-container {
@@ -194,15 +194,15 @@ div.preview-text {
 }
 
 div.preview-container.small {
-  width: 35px;
-  height: 35px;
+  width: 64px;
+  height: 64px;
   display: inline-block;
-  margin: 10px 10px 0 0;
+  margin: 10px 5px 0 0;
 }
 
 div.preview-container.small.round {
-  border-radius: 35px;
-  margin: 10px 0 0 10px;
+  border-radius: 64px;
+  margin: 10px 0 0 5px;
 }
 
 #avatar-preview-medium, #avatar-preview-medium-round {
@@ -211,6 +211,6 @@ div.preview-container.small.round {
 }
 
 #avatar-preview-small, #avatar-preview-small-round {
-  width: 35px;
-  height: 35px;
+  width: 64px;
+  height: 64px;
 }

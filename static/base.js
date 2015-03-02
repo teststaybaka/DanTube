@@ -88,6 +88,7 @@ $(document).ready(function() {
         clearTimeout(window.user_box_hide);
         clearTimeout(window.user_box_clear);
     });
+
     $('#portrait').mouseout(function() {
         window.user_box_hide = setTimeout(function() {
             $('#user-box').addClass('hide');
@@ -96,9 +97,59 @@ $(document).ready(function() {
             }, 100);
         }, 100);
     });
+
     $('span.commas_number').each(function() {
         $(this).text(numberWithCommas($(this).text()) )
-    })
+    });
+
+    $('div.emoticons-select').append('<div class="emoticons-menu container">\
+                <div class="emoticons-option">(⌒▽⌒)</div>\
+                <div class="emoticons-option">（￣▽￣）</div>\
+                <div class="emoticons-option">(=・ω・=)</div>\
+                <div class="emoticons-option">(｀・ω・´)</div>\
+                <div class="emoticons-option">(〜￣△￣)〜</div>\
+                <div class="emoticons-option">(･∀･)</div>\
+                <div class="emoticons-option">(°∀°)ﾉ</div>\
+                <div class="emoticons-option">(￣3￣)</div>\
+                <div class="emoticons-option">╮(￣▽￣)╭</div>\
+                <div class="emoticons-option">( ´_ゝ｀)</div>\
+                <div class="emoticons-option">←_←</div>\
+                <div class="emoticons-option">→_→</div>\
+                <div class="emoticons-option">(&lt;_&lt;)</div>\
+                <div class="emoticons-option">(&gt;_&gt;)</div>\
+                <div class="emoticons-option">(;¬_¬)</div>\
+                <div class="emoticons-option">("▔□▔)/</div>\
+                <div class="emoticons-option">(ﾟДﾟ≡ﾟдﾟ)!?</div>\
+                <div class="emoticons-option">Σ(ﾟдﾟ;)</div>\
+                <div class="emoticons-option">Σ( ￣□￣||)</div>\
+                <div class="emoticons-option">(´；ω；`)</div>\
+                <div class="emoticons-option">（/TДT)/</div>\
+                <div class="emoticons-option">(^・ω・^ )</div>\
+                <div class="emoticons-option">(｡･ω･｡)</div>\
+                <div class="emoticons-option">(●￣(ｴ)￣●)</div>\
+                <div class="emoticons-option">ε=ε=(ノ≧∇≦)ノ</div>\
+                <div class="emoticons-option">(´･_･`)</div>\
+                <div class="emoticons-option">(-_-#)</div>\
+                <div class="emoticons-option">（￣へ￣）</div>\
+                <div class="emoticons-option">(￣ε(#￣) Σ</div>\
+                <div class="emoticons-option">ヽ(`Д´)ﾉ</div>\
+                <div class="emoticons-option">(╯°口°)╯(┴—┴</div>\
+                <div class="emoticons-option">（#-_-)┯━┯</div>\
+                <div class="emoticons-option">_(:3」∠)_</div>\
+                <div class="emoticons-option">T_T</div>\
+                <div class="emoticons-option">OTL</div>\
+            </div>\
+            <div class="emoticons-label">Emoticons</div>');
+    $('div.emoticons-select').click(function(evt) {
+        if ($('div.emoticons-select').hasClass('show')) {
+            $('div.emoticons-select').removeClass('show');
+        } else {
+            $('div.emoticons-select').addClass('show')
+        }
+    });
+    $('div.emoticons-option').click(function(evt) {
+        $('textarea').val($('textarea').val() + $(evt.target).text());
+    });
 });
 
 function get_video_list(url, query, callback) {

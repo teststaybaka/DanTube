@@ -118,8 +118,8 @@ div.activity-entry.none {
 }
 
 a.uploader-img {
-  width: 58px;
-  height: 58px;
+  width: 64px;
+  height: 64px;
   display: inline-block;
 }
 
@@ -133,7 +133,7 @@ div.activity-detail {
   display: inline-block;
   vertical-align: top;
   margin-left: 15px;
-  width: 627px;
+  width: 621px;
 }
 
 div.uploader-name, div.activity-title {

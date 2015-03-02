@@ -655,33 +655,27 @@ class Watch(BaseHandler):
         video_info['cur_subintro'] = cur_clip.subintro
         video_info['cur_index'] = clip_index
         video_info['clip_titles'] = video.video_clip_titles
+        video_info['clip_range'] = range(0, len(video.video_clip_titles))
         if clip_index == 1:
-            video_info['clip_range'] = range(0, min(3, len(video.video_clip_titles)) )
+            video_info['clip_range_min'] = 0
+            video_info['clip_range_max'] = min(2, len(video.video_clip_titles) - 1)
         elif clip_index == len(video.video_clip_titles):
-            video_info['clip_range'] = range(max(0, len(video.video_clip_titles) - 3), len(video.video_clip_titles))
+            video_info['clip_range_min'] = max(0, len(video.video_clip_titles) - 3)
+            video_info['clip_range_max'] = len(video.video_clip_titles) - 1
         else:
-            video_info['clip_range'] = range(clip_index - 2, clip_index + 1)
+            video_info['clip_range_min'] = clip_index - 2
+            video_info['clip_range_max'] = clip_index
+
+        playlist_info = {}
+        if video.playlist_belonged != None:
+            playlist = video.playlist_belonged.get()
+            playlist_info = playlist.get_basic_info()
+            idx = playlist.videos.index(video.key)
+            playlist_info['cur_index'] = idx
+            playlist_info['videos'] = []
+            videos = ndb.get_multi(playlist.videos)
+            for i in range(0, len(videos)):
+                playlist_info['videos'].append(videos[i].get_basic_info())
         
-        context = {'video': video_info, 'uploader': uploader.get_public_info()}
+        context = {'video': video_info, 'uploader': uploader.get_public_info(), 'playlist': playlist_info}
         self.render('video', context)
-
-    def more_episode(self, video_id):
-        self.response.headers['Content-Type'] = 'application/json' 
-        video = models.Video.get_by_id('dt'+video_id)
-        if not video:
-            self.response.out.write(json.dumps({
-                'error': True,
-                'message': 'Video not found.'
-            }))
-            return
-
-        try:
-            clip_index = int(self.request.get('index') )
-        except ValueError:
-            clip_index = 1
-
-        result = {'error': False}
-        result['cur_index'] = clip_index
-        result['clip_titles'] = video.video_clip_titles
-        self.response.out.write(json.dumps(result))
-        
