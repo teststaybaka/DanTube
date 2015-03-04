@@ -23,7 +23,7 @@
 }
 
 div.ranking-and-topic {
-    margin-top: 40px;
+    padding-top: 40px;
     padding-bottom: 40px;
     border-bottom: 1px solid rgb(220,220,220);
 }
@@ -202,7 +202,7 @@ div.sub-category-dynamic-list.wide {
 div.sub-category-side-line {
     width: 280px;
     float: right;
-    background-color: rgb(250,250,250);
+    background-color: rgb(240,240,240);
     padding: 0 10px;
     -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
     -moz-box-sizing: border-box;    /* Firefox, other Gecko */

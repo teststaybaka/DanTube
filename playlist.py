@@ -174,7 +174,7 @@ class EditPlaylist(BaseHandler):
             self.notify('You are not allowed to edit this list.')
             return
 
-        page_size = models.DEFAULT_PAGE_SIZE
+        page_size = 15
         try:
             page = int(self.request.get('page'))
         except ValueError:
@@ -294,7 +294,7 @@ class AddVideo(BaseHandler):
         for i in range(0, len(ids)):
             video_id = ids[i]
             video = models.Video.get_by_id('dt'+video_id)
-            if (not video) or video.playlist_belonged != None or video.uploader.id() != user.key.id():
+            if (not video) or video.playlist_belonged != None or video.uploader.id() != user.key.id() or len(playlist.videos) > 2000:
                 continue
 
             video.playlist_belonged = playlist.key

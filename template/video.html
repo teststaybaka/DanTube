@@ -137,6 +137,7 @@
       {% endfor %}
     </div>
     <div id="video-intro-box">{% if video.cur_subintro %}{{ video.cur_subintro }}{% else %}{{ video.description }}{% endif %}</div>
+    <div id="video-intro-display-button" class="display-button intro"><span class="intro-display-text">SHOW MORE</span><span class="display-arrow"></span></div>
     <div class="container">
       <div class="operation-button" title="Like this!"><span class="operation-icon like"></span><span class="commas_number">{{ video.likes }}</span></div>
       <div class="operation-button" title="Strongly recommend!"><span class="operation-icon bullets"></span><span class="commas_number">{{ video.bullets }}</span></div>
@@ -146,7 +147,7 @@
   <div id="comments-block-title">Comments <span class="commas_number">{{ video.comment_counter }}</span></div>
   <form id="user-comment-form">
     <img class="comment-img" src="{% if user.is_auth %}{{ user.avatar_url }}{% else %}/static/emoticons_img/default_avatar1.png{% endif %}">
-    <div id="write-comment-block">
+    <div class="write-comment-block">
       <textarea class="normal-input" id="comment-textarea" placeholder="{% if user.is_auth %}Share what you think{% else %}Please sign in{% endif %}"></textarea>
       <div class="container">
         <div class="emoticons-select"></div>
@@ -167,11 +168,43 @@
           <label class="comment-time">2013-12-23 10:20</label>
         </div>
         <div class="comment-content">xvd</div>
+        <div class="display-button comment"><span class="reply-display-text">Read more</span><span class="display-arrow"></span></div>
         <div class="comment-operation-line">
           <div class="comment-operation">Reply</div>
           <div class="comment-operation report">Report</div>
         </div>
-      </div> 
+      </div>
+
+      <div class="inner-comment-container">
+        <div class="display-button replies"><span class="reply-display-text">View more replies</span><span class="display-arrow"></span></div>
+        <div class="comment-entry inner">
+          <a href="" target="_blank">
+            <img class="comment-img" src="">
+          </a>
+          <div class="comment-detail-box inner">
+            <div class="user-title-line">
+              <a class="blue-link user-name" target="_blank">OOOOOOOOOOOOOOOOOOOOOOOOOOOOOO</a>
+              <label class="comment-time">2013-12-23 10:20</label>
+            </div>
+            <div class="comment-content">xvd</div>
+            <div class="comment-operation-line">
+              <div class="comment-operation">Reply</div>
+              <div class="comment-operation report">Report</div>
+            </div>
+          </div>
+        </div>
+        <div class="pagination-line replies"><a class="page-num active" href="">1</a></div>
+        <form id="user-reply-form" class="">
+          <img class="comment-img" src="{% if user.is_auth %}{{ user.avatar_url }}{% else %}/static/emoticons_img/default_avatar1.png{% endif %}">
+          <div class="write-comment-block">
+            <textarea class="normal-input" id="reply-textarea" placeholder="{% if user.is_auth %}Share what you think{% else %}Please sign in{% endif %}"></textarea>
+            <div class="container">
+              <div class="emoticons-select"></div>
+              <input class="inline-button special post" value="Post" type="submit">
+            </div>
+          </div>
+        </form>
+      </div>
     </div>
   </div>
   <div class="pagination-line"><a class="page-num active" href="">1</a></div>
@@ -181,6 +214,7 @@
   <div id="list-title">{{ playlist.title }}</div>
   {% if playlist.intro %}
   <div id="list-intro">{{ playlist.intro }}</div>
+  <div id="list-intro-display-button" class="display-button intro"><span class="intro-display-text">SHOW MORE</span><span class="display-arrow"></span></div>
   {% endif %}
   <div id="list-scroll-bar">
     {% for list_video in playlist.videos %}

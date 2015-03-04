@@ -3,21 +3,23 @@
 {{ super() }}
 <script type="text/javascript">
 $(document).ready(function() {
-    setTimeout(function(){
-        window.location.replace('/'); 
-    }, 3000);
+    // setTimeout(function(){
+    //     window.location.replace('/'); 
+    // }, 3000);
 });
 </script>
 {% endblock %}
 
 {% block body %}
-<div id="notice-block">
-    <div>
-        <div class="ajax-icon {{ type }}"></div>
-        <div id="notice-content">{{ notice }}</div>
-    </div>
-    <div id="notice-redirect-line">
-        <a id="notice-redirect" href="{{ uri_for('home') }}"> Redirecting to Home in 3 seconds...</a>
+<div id="notice-block-container">
+    <div id="notice-block">
+        <div>
+            <div class="ajax-icon {{ type }}"></div>
+            <div id="notice-content">{{ notice }}</div>
+        </div>
+        <div id="notice-redirect-line">
+            <a id="notice-redirect" href="{{ uri_for('home') }}"> Redirecting to Home in 3 seconds...</a>
+        </div>
     </div>
 </div>
 {% endblock %}

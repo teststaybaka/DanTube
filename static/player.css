@@ -17,7 +17,7 @@ div.danmaku:active {
 
 #player-container {
 	margin: 20px 0;
-    box-shadow: 0px 0 8px rgb(200,200,200);
+    box-shadow: 0 0 8px rgb(200,200,200);
 }
 
 #player-controller {
@@ -411,26 +411,23 @@ div.danmaku:active {
 	float: left;
 	display: inline-block;
 	height: 100%;
-	margin: 0;
-	padding: 0;
-	border-width: 0;
-	width: 555px;
+	border: 0;
+	width: 553px;
 	border-right: 1px solid rgb(200, 200, 200);
-	padding-left: 3px;
-	padding-right: 3px;
+	padding: 0 4px;
 	overflow: hidden;
 }
 
 #fire-button {
 	float: left;
 	display: inline-block;
-	margin: 0;
 	height: 100%;
-	border-width: 0;
+	border: 0;
 	background-color: rgb(0,140,255);
 	width: 50px;
 	color: white;
 	text-align: center;
+	cursor: pointer;
 }
 
 #fire-button:hover {
@@ -575,7 +572,7 @@ div.space-padding {
 }
 
 #video-info-container {
-	margin-top: 20px;
+	padding-top: 20px;
 }
 
 #video-info {
@@ -587,7 +584,7 @@ div.space-padding {
 	font-weight: bold;
 	font-size: 20px;
 	color: rgb(100,100,100);
-	padding: 5px 0;
+	padding: 10px 0;
 	word-wrap: break-word;
 }
 
@@ -664,6 +661,7 @@ span.statistic-icon.favorites {
 	border-radius: 5px;
 	padding: 8px;
 	font-size: 0;
+	background-color: white;
 }
 
 #uploader-info {
@@ -734,6 +732,8 @@ div.more-episode, div.less-epsidoe {
 
 #video-detail-info-block {
 	border: 1px solid rgb(200,200,200);
+	border-radius: 3px;
+	background-color: white;
 }
 
 #video-tags-line {
@@ -757,13 +757,75 @@ a.tags-link:hover {
 }
 
 #video-intro-box {
-	padding: 10px;
+	margin: 10px 10px 25px 10px;
 	font-size: 14px;
 	color: rgb(100,100,100);
 	word-wrap: break-word;
 	white-space: pre-wrap;
 	/*border-bottom: 1px solid rgb(220,220,220);*/
-	margin-bottom: 15px;
+	overflow: hidden;
+	-webkit-transition: height .15s; /* For Safari 3.1 to 6.0 */
+    transition: height .15s;
+}
+
+div.display-button.intro {
+	position: absolute;
+	margin-left: 10px;
+	font-size: 12px;
+	color: rgb(150,150,150);
+	margin-top: -20px;
+	cursor: pointer;
+}
+
+div.display-button.intro:hover {
+	color: rgb(100,100,100);
+}
+
+div.display-button.comment {
+	cursor: pointer;
+	font-size: 14px;
+	color: rgb(0,140,255);
+	margin-bottom: 5px;
+	display: inline-block;
+}
+
+div.display-button.comment:hover {
+	text-decoration: underline;
+}
+
+div.display-button.replies {
+	margin-left: 10px;
+	cursor: pointer;
+	font-size: 14px;
+	color: rgb(0,140,255);
+	margin-top: 10px;
+	display: inline-block;
+}
+
+div.display-button.replies:hover {
+	text-decoration: underline;
+}
+
+span.display-arrow {
+	margin-left: 5px;
+	width: 8px;
+	height: 6px;
+	background-position: 0 -855px;
+	background-image: url("/static/img/basic_icons.png");
+	display: inline-block;
+	vertical-align: middle;
+}
+
+div.display-button:hover span.display-arrow {
+	background-position: 0 -865px;
+}
+
+div.display-button.less span.display-arrow {
+	background-position: -14px -855px;
+}
+
+div.display-button.less:hover span.display-arrow {
+	background-position: -14px -865px;
 }
 
 div.operation-button {
@@ -803,7 +865,18 @@ span.operation-icon.favors {
 
 #comments-block-title {
 	color: rgb(100,100,100);
+	font-size: 18px;
+	font-weight: bold;
 	padding: 20px 0;
+}
+
+#user-reply-form {
+	padding-bottom: 15px;
+	padding-left: 10px;
+}
+
+#user-reply-form.hide {
+	display: none;
 }
 
 img.comment-img {
@@ -814,15 +887,21 @@ img.comment-img {
 	vertical-align: text-top;
 }
 
-#write-comment-block {
+div.write-comment-block {
 	display: inline-block;
 	vertical-align: text-top;
-	margin-left: 15px;
+	margin-left: 10px;
 }
 
 #comment-textarea {
 	width: 540px;
 	min-height: 100px;
+	resize: vertical;
+}
+
+#reply-textarea {
+	width: 442px;
+	min-height: 60px;
 	resize: vertical;
 }
 
@@ -835,13 +914,28 @@ input.inline-button.post {
 }
 
 #comments-list-container {
-	margin-top: 25px;
+	margin-top: 20px;
+}
+
+div.inner-comment-container {
+	margin-top: 15px;
+	margin-left: 48px;
+	background-color: rgb(240,240,240);
+	border-radius: 3px;
+	border: 1px solid rgb(200,200,200);
+	display: inline-block;
+	padding-right: 20px;
 }
 
 div.comment-entry {
 	padding: 15px 0;
 	font-size: 0;
 	border-bottom: 1px solid rgb(220,220,220);
+}
+
+div.comment-entry.inner {
+	padding-left: 10px;
+	border-bottom: 0;
 }
 
 div.comment-entry.no-comment {
@@ -853,16 +947,20 @@ div.comment-entry.no-comment {
 }
 
 img.comment-img {
-	width: 64px;
-	height: 64px;
+	width: 48px;
+	height: 48px;
 	box-shadow: 0 0 1px rgb(100,100,100);
 }
 
 div.comment-detail-box {
 	display: inline-block;
 	vertical-align: top;
-	margin-left: 15px;
-	width: 561px;
+	margin-left: 10px;
+	width: 572px;
+}
+
+div.comment-detail-box.inner {
+	width: 474px;
 }
 
 label.floorth {
@@ -882,7 +980,7 @@ label.comment-time {
 }
 
 div.comment-content {
-	margin: 10px 0;
+	margin: 7px 0;
 	word-wrap: break-word;
 	white-space: pre-wrap;
 	font-size: 14px;
@@ -915,6 +1013,11 @@ div.pagination-line {
 	padding-top: 15px;
 }
 
+div.pagination-line.replies {
+	padding-top: 0;
+	padding-bottom: 15px;
+}
+
 #right-video-list {
 	float: right;
 	width: 370px;
@@ -923,6 +1026,8 @@ div.pagination-line {
     -moz-box-sizing: border-box;    /* Firefox, other Gecko */
     box-sizing: border-box;
     border: 1px solid rgb(220,220,220);
+    background-color: white;
+    border-radius: 3px;
 }
 
 #list-title {
@@ -933,18 +1038,20 @@ div.pagination-line {
 }
 
 #list-intro {
-	padding: 10px;
-	color: rgb(150,150,150);
+	margin: 10px 10px 25px 10px;
+	color: rgb(100,100,100);
 	font-size: 14px;
-	border-bottom: 1px solid rgb(220,220,220);
 	word-wrap: break-word;
 	white-space: pre-wrap;
-	min-height: 32px;
+	overflow: hidden;
+	-webkit-transition: height .15s; /* For Safari 3.1 to 6.0 */
+    transition: height .15s;
 }
 
 #list-scroll-bar {
 	max-height: 500px;
 	overflow: auto;
+	border-top: 1px solid rgb(220,220,220)
 }
 
 div.list-entry {
@@ -953,7 +1060,7 @@ div.list-entry {
 }
 
 div.list-entry.active {
-	background-color: rgb(245,245,245);
+	background-color: rgb(240,240,240);
 	height: 45px;
 }
 

@@ -34,6 +34,8 @@ class History(BaseHandler):
         videos = ndb.get_multi([f.video for f in requested_history])
         for i in range(0, len(requested_history)):
             video = videos[i]
+            if video is None:
+                continue
             video_info = video.get_basic_info()
             uploader = video.uploader.get()
             video_info['uploader'] = uploader.get_public_info()
@@ -54,8 +56,6 @@ class Favorites(BaseHandler):
             page = 1
 
         context = {}
-        context['favorites_counter'] = len(user.favorites)
-        context['favorites_limit'] = user.favorites_limit
         context['videos'] = []
 
         requested_favorites = []
@@ -65,13 +65,25 @@ class Favorites(BaseHandler):
                 break
             requested_favorites.append(user.favorites[base - i])
 
-        videos = ndb.get_multi([f.video for f in requested_favorites])
+        video_keys = [f.video for f in requested_favorites]
+        videos = ndb.get_multi(video_keys)
+        popped = False
         for i in range(0, len(requested_favorites)):
             video = videos[i]
+            if video is None:
+                idx = user.favorites.index(video_keys[i])
+                user.favorites.pop(idx)
+                popped = True
+                continue
+
             video_info = video.get_basic_info()
             video_info['favored_time'] = requested_favorites[i].favored_time.strftime("%Y-%m-%d %H:%M")
             context['videos'].append(video_info)
+        if popped:
+            user.put()
 
+        context['favorites_counter'] = len(user.favorites)
+        context['favorites_limit'] = user.favorites_limit
         context.update(self.get_page_range(page, math.ceil(len(user.favorites)/float(page_size))) )
         self.render('favorites', context)
 

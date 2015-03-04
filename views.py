@@ -384,7 +384,7 @@ class Danmaku(BaseHandler):
                     'content': danmaku.content,
                     'timestamp': danmaku.timestamp,
                     'created': danmaku.created.strftime("%m-%d %H:%M"),
-                    'created_seconds': (danmaku.created - datetime(1970,1,1)).total_seconds(),
+                    'created_seconds': models.time_to_seconds(video.created),
                 });
             logging.info('sdfwedvsdghf')
             self.response.out.write(json.dumps(danmakus))

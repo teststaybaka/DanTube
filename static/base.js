@@ -140,15 +140,16 @@ $(document).ready(function() {
                 <div class="emoticons-option">OTL</div>\
             </div>\
             <div class="emoticons-label">Emoticons</div>');
-    $('div.emoticons-select').click(function(evt) {
-        if ($('div.emoticons-select').hasClass('show')) {
-            $('div.emoticons-select').removeClass('show');
+    $('div.emoticons-select').click(function() {
+        if ($(this).hasClass('show')) {
+            $(this).removeClass('show');
         } else {
-            $('div.emoticons-select').addClass('show')
+            $(this).addClass('show')
         }
     });
     $('div.emoticons-option').click(function(evt) {
-        $('textarea').val($('textarea').val() + $(evt.target).text());
+        var textarea = $(evt.target).parent().parent().parent().prev();
+        textarea.val(textarea.val() + $(evt.target).text());
     });
 });
 

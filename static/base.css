@@ -84,7 +84,7 @@ div.container:after {
 }
 
 #navigation-bar-background {
-	background-color: rgb(250,250,250);
+	/*background-color: rgb(250,250,250);*/
 	border-bottom: 1px solid rgb(200,200,200);
 	min-width: 1024px;
 	width: 100%;
@@ -523,6 +523,13 @@ span.category-arrow {
 
 #body-background {
 	padding-bottom: 50px;
+    background-color: rgb(250,250,250);
+    min-height: calc(100vh - 39px - 68px);
+    min-height: -moz-calc(100vh - 39px - 68px); /* Firefox */
+    min-height: -webkit-calc(100vh - 39px - 68px); /* Chrome, Safari */
+    -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
+    -moz-box-sizing: border-box;    /* Firefox, other Gecko */
+    box-sizing: border-box;
 }
 
 #body-container {
@@ -630,7 +637,7 @@ a.page-num.hide, a.page-change.hide {
 }
 
 .inline-button:hover {
-    box-shadow: 0 0 2px rgb(81,203,238);
+    /*box-shadow: 0 0 2px rgb(81,203,238);*/
     border: 1px solid rgb(81,203,238);
     color: rgb(0,140,255);
 }
@@ -638,12 +645,11 @@ a.page-num.hide, a.page-change.hide {
 .inline-button:active {
     background-color: rgb(81,203,238);
     color: rgb(255,255,255);
-
 }
 
 .inline-button:disabled {
     color: rgb(200,200,200);
-    box-shadow: 0 0 0;
+    /*box-shadow: 0 0 0;*/
     background-color: rgb(250,250,250);
     border: 1px solid rgb(200,200,200);
 }
@@ -664,7 +670,7 @@ a.page-num.hide, a.page-change.hide {
 }
 
 .inline-button.special:disabled {
-    box-shadow: 0 0 0;
+    /*box-shadow: 0 0 0;*/
     background-color: rgb(164,214,255);
     border: 1px solid rgb(164,214,255);
 }
@@ -779,13 +785,17 @@ div.ajax-content {
     padding: 20px 20px 20px 0;
 }
 
+#notice-block-container {
+    padding-top: 120px;
+}
+
 #notice-block {
     width: 400px;
     border: 1px solid rgb(200,200,200);
     margin: auto;
-    margin-top: 120px;
     box-shadow: -2px 2px 4px rgb(200,200,200);
     padding: 40px 25px;
+    background-color: white;
 }
 
 #notice-content {
