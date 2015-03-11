@@ -292,6 +292,8 @@ class Video(BaseHandler):
         order_str = self.request.get('order')
         if order_str == 'hits': # ranking
             order = models.Video.hits
+        elif order_str == 'hot_score':
+            order = models.Video.hot_score
         elif order_str == 'created': # newest upload
             order = models.Video.created
         elif order_str == 'last_liked': # neweset activity
@@ -627,6 +629,7 @@ class Watch(BaseHandler):
             return
 
         video.hits += 1
+        video.update_hot_score(10)
         video.put()
         video.create_index('videos_by_hits', video.hits )
         uploader = video.uploader.get()

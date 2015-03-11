@@ -443,6 +443,8 @@ class Video(ndb.Model):
   banned_tags = ndb.StringProperty(repeated=True)
 
   hits = ndb.IntegerProperty(required=True, default=0)
+  hot_score = ndb.IntegerProperty(required=True, default=0)
+  hot_score_updated = ndb.IntegerProperty(required=True, default=0)
   likes = ndb.IntegerProperty(required=True, default=0)
   favors = ndb.IntegerProperty(required=True, default=0)
   bullets = ndb.IntegerProperty(required=True, default=0)
@@ -580,6 +582,16 @@ class Video(ndb.Model):
     logging.info(cls._page_cursors)
     return videos, more
 
+  def update_hot_score(self, score):
+    now = time_to_seconds(datetime.now())
+    raw_score = self.hot_score - self.hot_score_updated
+    time_passed = now - self.hot_score_updated
+    max_time = 60 * 30 # score decayed linearly to 0 after 30 min
+    decay = max(-1.0 * time_passed / max_time + 1, 0)
+    new_score = now + int(min(decay * raw_score + score, max_time))
+    self.hot_score = new_score
+    self.hot_score_updated = now
+
   def get_basic_info(self):
     if self.thumbnail is None:
       thumbnail_url = 'http://img.youtube.com/vi/' + self.default_thumbnail + '/mqdefault.jpg'
@@ -683,6 +695,7 @@ class Video(ndb.Model):
     try:
       id = 'dt'+str(cls.getID())
       logging.info(id)
+      current_time = time_to_seconds(datetime.now())
       video = Video(
         # id = 'dt'+str(cls.getID()),
         key = ndb.Key('Video', id, parent=ndb.Key('EntityType', 'Video')),
@@ -698,6 +711,8 @@ class Video(ndb.Model):
         default_thumbnail = video_clips[0].get().vid,
         video_clip_titles = subtitles,
         video_clips = video_clips,
+        hot_score_updated = current_time,
+        hot_score = current_time
       )
       video.put()
     except Exception, e:

@@ -133,7 +133,8 @@ $(document).ready(function() {
         if (!($(this).hasClass('wide')) ) {
             var ranking_video_container = $(this).find('div.ranking-video-container');
             var ranking_pagination_container = $(this).find('div.sub-category-side-line div.pagination-line');
-            var ranking_query = {'category': category, 'subcategory': subcategory, 'order': 'hits', 'page': 1, 'page_size': ranking_page_size};
+            // var ranking_query = {'category': category, 'subcategory': subcategory, 'order': 'hits', 'page': 1, 'page_size': ranking_page_size};
+            var ranking_query = {'category': category, 'subcategory': subcategory, 'order': 'hot_score', 'page': 1, 'page_size': ranking_page_size};
             update_page(ranking_query, ranking_video_container, ranking_pagination_container, 'ranking');
         }
     });
@@ -166,7 +167,8 @@ $(document).ready(function() {
         var category = sub_category_block.attr('data-category');
         var subcategory = sub_category_block.attr('data-subcategory');
         var page = $(this).attr('data-page');
-        var query = {'category': category, 'subcategory': subcategory, 'order': 'hits', 'page': page, 'page_size': ranking_page_size};
+        // var query = {'category': category, 'subcategory': subcategory, 'order': 'hits', 'page': page, 'page_size': ranking_page_size};
+        var query = {'category': category, 'subcategory': subcategory, 'order': 'hot_score', 'page': page, 'page_size': ranking_page_size};
         update_page(query, video_container, pagination_container, 'ranking');
     });
 });
