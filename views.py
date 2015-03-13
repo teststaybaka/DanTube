@@ -292,6 +292,8 @@ class CategoryVideo(BaseHandler):
         order_str = self.request.get('order')
         if order_str == 'hits': # ranking
             order = models.Video.hits
+        elif order_str == 'hot_score':
+            order = models.Video.hot_score
         elif order_str == 'created': # newest upload
             order = models.Video.created
         elif order_str == 'last_liked': # neweset activity
