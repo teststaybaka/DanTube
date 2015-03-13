@@ -650,6 +650,7 @@ function generate_danmaku_pool_list() {
 $(document).ready(function() {
 	var url = document.URL;
 	var urls = document.URL.split('/');
+	var url_suffix = urls[urls.length-1];
 	var video_id = url.split('?')[0].substr(url.lastIndexOf('/dt') + 3);
 
 	$('div.more-episode').click(function() {
@@ -677,30 +678,30 @@ $(document).ready(function() {
 	});
 
 	// Retrieve Danmaku
-	$.ajax({
-		type: "GET",
-		url: '/video/danmaku/' + urls[urls.length-1],
-		success: function(result) {
-			if(!result.error) {
-				console.log(result.length);
-				for(var i = 0; i < result.length; i++) {
-					danmaku_list.push(result[i]);
-				}
-				// quick_sort(danmaku_list, 0, danmaku_list.length - 1, danmaku_timestamp_lower_compare);
-				quick_sort(danmaku_list, 0, danmaku_list.length - 1, danmaku_date_lower_compare);
-				generate_danmaku_pool_list();
+	// $.ajax({
+	// 	type: "GET",
+	// 	url: '/video/danmaku/' + url_suffix,
+	// 	success: function(result) {
+	// 		if(!result.error) {
+	// 			console.log(result.length);
+	// 			for(var i = 0; i < result.length; i++) {
+	// 				danmaku_list.push(result[i]);
+	// 			}
+	// 			// quick_sort(danmaku_list, 0, danmaku_list.length - 1, danmaku_timestamp_lower_compare);
+	// 			quick_sort(danmaku_list, 0, danmaku_list.length - 1, danmaku_date_lower_compare);
+	// 			generate_danmaku_pool_list();
 
-				danmaku = result;
-				quick_sort(danmaku, 0, danmaku.length-1, danmaku_timestamp_lower_compare);
-			} else {
-				console.log(result);
-			}
-		},
-		error: function (xhr, ajaxOptions, thrownError) {
-			console.log(xhr.status);
-			console.log(thrownError);
-		}
-	});
+	// 			danmaku = result;
+	// 			quick_sort(danmaku, 0, danmaku.length-1, danmaku_timestamp_lower_compare);
+	// 		} else {
+	// 			console.log(result);
+	// 		}
+	// 	},
+	// 	error: function (xhr, ajaxOptions, thrownError) {
+	// 		console.log(xhr.status);
+	// 		console.log(thrownError);
+	// 	}
+	// });
 
 	// Post Danmaku
 	$('#fire-button').click(function(e){
@@ -810,4 +811,247 @@ $(document).ready(function() {
 			}
 		});
 	}
+
+	$('#user-comment-form').submit(function(evt) {
+		var button = document.querySelector('#user-comment-form input.inline-button.post');
+		button.disabled = true;
+
+		var error = false;
+		var content = $('#comment-textarea').val();
+		if (!content) {
+			pop_ajax_message('You can\'t post empty comment.', 'error');
+			error = true;
+		} else if (content.length > 2000) {
+			pop_ajax_message('Your comment is too long (less than 2000 characters).', 'error');
+			error = true;
+		}
+
+		if (error) {
+			button.disabled = false;
+			return false;
+		}
+
+		$.ajax({
+			type: "POST",
+			url: '/video/comment_post/dt'+video_id,
+			data: $(evt.target).serialize(),
+			success: function(result) {
+				if(!result.error) {
+					pop_ajax_message('Comment posted!', 'success');
+					$('#comment-textarea').val('');
+					update_comments(1, video_id);
+				} else {
+					pop_ajax_message(result.message, 'error');
+				}
+				button.disabled = false;
+			},
+			error: function (xhr, ajaxOptions, thrownError) {
+				console.log(xhr.status);
+				console.log(thrownError);
+				pop_ajax_message(xhr.status+' '+thrownError, 'error');
+				button.disabled = false;
+			}
+		});
+		return false;
+	});
+
+	$('#user-reply-form').submit(function(evt) {
+		var button = document.querySelector('#user-reply-form input.inline-button.post');
+		button.disabled = true;
+
+		var error = false;
+		var content = $('#reply-textarea').val();
+		if (!content) {
+			pop_ajax_message('You can\'t post empty comment.', 'error');
+			error = true;
+		} else if (content.length > 2000) {
+			pop_ajax_message('Your comment is too long (less than 2000 characters).', 'error');
+			error = true;
+		}
+		var comment_id = $(evt.target).parent().parent().attr('data-id');
+		if (!comment_id) {
+			error = true;
+		}
+
+		if (error) {
+			button.disabled = false;
+			return false;
+		}
+
+		$.ajax({
+			type: "POST",
+			url: '/video/reply_post/dt'+video_id,
+			data: {content: content, comment_id: comment_id},
+			success: function(result) {
+				if(!result.error) {
+					pop_ajax_message('Reply posted!', 'success');
+					$('#reply-textarea').val('');
+					// update_comments(1, video_id);
+				} else {
+					pop_ajax_message(result.message, 'error');
+				}
+				button.disabled = false;
+			},
+			error: function (xhr, ajaxOptions, thrownError) {
+				console.log(xhr.status);
+				console.log(thrownError);
+				pop_ajax_message(xhr.status+' '+thrownError, 'error');
+				button.disabled = false;
+			}
+		});
+		return false;
+	});
+
+	$('div.pagination-line.all').on('click', 'a', function() {
+		var page = $(this).attr('data-page');
+		update_comments(page, video_id);
+	});
+	$('#comments-list-container').on('click', 'div.comment-entry.error', function() {
+		var page = $(this).attr('data-page');
+		update_comments(page, video_id);
+	});
+
+	$(window).scroll(function() {
+		if ($('#comments-list-container').children().length > 0) return;
+
+		if ($(window).scrollTop() > $('#user-comment-form').offset().top + $('#user-comment-form').height()  - $(window).height()) {
+			update_comments(1, video_id);
+		}
+	});
+	$('#comments-list-container').on('click', 'div.display-button.comment', function() {
+		if ($(this).hasClass('less')) {
+			var comment_div = $(this).prev();
+			comment_div[0].style.height = '48px';
+			$(this).removeClass('less');
+			$(this).children('span.reply-display-text').text('Read more');
+		} else {
+			var comment_div = $(this).prev();
+			comment_div[0].style.height = comment_div[0].scrollHeight + 'px';
+			$(this).addClass('less');
+			$(this).children('span.reply-display-text').text('Read less');
+		}
+	});
+	$('#comments-list-container').on('click', 'div.comment-operation.reply', function() {
+		var comment_box = $(this).parent().parent();
+		var inner_comment_container = comment_box.next();
+		if (inner_comment_container.length == 0) {
+			comment_box.after('<div class="inner-comment-container"></div>');
+			inner_comment_container = comment_box.next();
+		}
+		inner_comment_container.append($('#user-reply-form'));
+		$('#user-reply-form').removeClass('hide');
+	});
 });
+
+function update_comments(page, video_id) {
+	var comment_container = $('#comments-list-container');
+	var pagination_container = $('div.pagination-line.all');
+	$('#user-comment-form').after($('#user-reply-form'));
+	$('#user-reply-form').addClass('hide')
+	comment_container.empty();
+	pagination_container.empty();
+	comment_container.append('<div class="comment-entry loading"></div>');
+	$.ajax({
+		type: "GET",
+		url: '/video/comment/dt'+video_id,
+		data: {page: page},
+		success: function(result) {
+			comment_container.empty();
+			if(!result.error) {
+				$('#comments-block-title').children('span.commas_number').text(numberWithCommas(result.total_comments));
+				if (result.total_pages == 0) {
+					comment_container.append('<div class="comment-entry no-comment">Be the first one to comment!</div>');
+				} else {
+					for(var i = 0; i < result.comments.length; i++) {
+	                    var comment_div = render_comment_div(result.comments[i]);
+	                    comment_container.append(comment_div);
+	                    var last_div = $('div.comment-entry:last-child');
+	                    var content_div = last_div.find('div.comment-content');
+	                    if (content_div[0].scrollHeight > 48) {
+	                    	content_div.addClass('collapse');
+	                    } else {
+	                    	content_div.next().remove();
+	                    }
+	                }
+
+	                var pagination = render_pagination(page, result.total_pages);
+                    pagination_container.append(pagination);
+				}
+			} else {
+				pop_ajax_message(result.message, 'error');
+				comment_container.append('<div class="comment-entry no-comment error">Load error.</div>');
+			}
+		},
+		error: function (xhr, ajaxOptions, thrownError) {
+			console.log(xhr.status);
+			console.log(thrownError);
+			comment_container.empty();
+			pop_ajax_message(xhr.status+' '+thrownError, 'error');
+			comment_container.append('<div class="comment-entry no-comment error" data-page="'+page+'">Load error.</div>');
+		}
+	});
+}
+
+function render_comment_div(comment) {
+	var div = '<div class="comment-entry" data-id="' + comment.id + '">\
+      <a href="' + comment.creator.space_url + '" target="_blank">\
+        <img class="comment-img" src="' + comment.creator.avatar_url + '">\
+      </a>\
+      <div class="comment-detail-box">\
+        <div class="user-title-line">\
+          <label class="floorth">#'+ comment.floorth +'</label>\
+          <a class="blue-link user-name" href="' + comment.creator.space_url + '" target="_blank">' + comment.creator.nickname + '</a>\
+          <label class="comment-time">' + comment.created + '</label>\
+        </div>\
+        <div class="comment-content">' + comment.content + '</div>\
+        <div class="display-button comment"><span class="reply-display-text">Read more</span><span class="display-arrow"></span></div>\
+        <div class="comment-operation-line">\
+          <div class="comment-operation reply">Reply</div>\
+          <div class="comment-operation report">Report</div>\
+        </div>\
+      </div>'
+    if (comment.inner_comments.length != 0) {
+    	div += '<div class="inner-comment-container">'
+    	if (comment.inner_comment_counter > 3) {
+    		div += '<div class="display-button replies"><span class="reply-display-text">View more replies</span><span class="display-arrow"></span></div>'
+    	}
+    	for (var i = 0; i < comment.inner_comments.length; i++) {
+	        div += render_inner_comment_div(comment.inner_comments[i])
+        }
+        div += '<div class="pagination-line replies hide"></div>'
+    }
+    div += '</div>'
+    return div;
+}
+
+function render_inner_comment_div(inner_comment) {
+	// var div = '<div class="comment-entry inner">\
+	//           <a href="' + inner_comment.creator.space_url + '" target="_blank">\
+	//             <img class="comment-img" src="' + inner_comment.creator.avatar_url + '">\
+	//           </a>\
+	//           <div class="comment-detail-box inner">\
+	//             <div class="user-title-line">\
+	//               <a class="blue-link user-name" href="' + inner_comment.creator.space_url + '" target="_blank">' + inner_comment.creator.nickname + '</a>\
+	//               <label class="comment-time">' + inner_comment.created + '</label>\
+	//             </div>\
+	//             <div class="comment-content">' + inner_comment.content + '</div><div>ffffffffffffffff</div>\
+	//           </div>\
+	//         </div>'
+	var div = '<div class="comment-entry inner">\
+					<a href="' + inner_comment.creator.space_url + '" target="_blank">\
+			          <img class="comment-img" src="' + inner_comment.creator.avatar_url + '">\
+			        </a>\
+			        <div class="comment-detail-box inner">\
+			        	<div class="user-title-line">\
+			              <a class="blue-link user-name" href="' + inner_comment.creator.space_url + '" target="_blank">' + inner_comment.creator.nickname + '</a>\
+			              <label class="comment-time">' + inner_comment.created + '</label>\
+			            </div>\
+			            <div class="comment-content">' + inner_comment.content + '</div>\
+						<div class="comment-operation-line">\
+				          <div class="comment-operation reply">Reply</div>\
+				          <div class="comment-operation report">Report</div>\
+				        </div>\
+			        </div>\
+		        </div>'
+	return div;
+}

@@ -8,6 +8,8 @@ class ManagePlaylist(BaseHandler):
         page_size = models.DEFAULT_PAGE_SIZE
         try:
             page = int(self.request.get('page'))
+            if page < 1:
+                raise ValueError('Negative')
         except ValueError:
             page = 1
 
@@ -177,6 +179,8 @@ class EditPlaylist(BaseHandler):
         page_size = 15
         try:
             page = int(self.request.get('page'))
+            if page < 1:
+                raise ValueError('Negative')
         except ValueError:
             page = 1
 
@@ -210,6 +214,8 @@ class SearchVideo(BaseHandler):
         page_size = models.DEFAULT_PAGE_SIZE
         try:
             page = int(self.request.get('page'))
+            if page < 1:
+                raise ValueError('Negative')
         except ValueError:
             page = 1
 

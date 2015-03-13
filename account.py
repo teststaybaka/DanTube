@@ -18,6 +18,8 @@ class History(BaseHandler):
         page_size = models.DEFAULT_PAGE_SIZE
         try:
             page = int(self.request.get('page'))
+            if page < 1:
+                raise ValueError('Negative')
         except ValueError:
             page = 1
 
@@ -52,6 +54,8 @@ class Favorites(BaseHandler):
         page_size = models.DEFAULT_PAGE_SIZE
         try:
             page = int(self.request.get('page'))
+            if page < 1:
+                raise ValueError('Negative')
         except ValueError:
             page = 1
 

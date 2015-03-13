@@ -14,6 +14,8 @@ class Message(BaseHandler):
 
             try:
                 page = int(self.request.get('page') )
+                if page < 1:
+                    raise ValueError('Negative')
             except ValueError:
                 page = 1
 

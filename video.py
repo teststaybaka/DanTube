@@ -36,10 +36,10 @@ class VideoUpload(BaseHandler):
     @login_required
     def edit(self, video_id):
         video = models.Video.get_by_id('dt'+video_id)
-        if video.uploader.id() == self.user.key.id():
-            self.render('edit_video', {'video':video.get_full_info()})
-        else:
+        if video is None or video.uploader.id() != self.user.key.id():
             self.notify('You are not allowed to edit this video.')
+        else:
+            self.render('edit_video', {'video':video.get_full_info()})
 
     def field_check(self):
         self.title = self.request.get('total-title').strip()
@@ -296,7 +296,7 @@ class VideoUpload(BaseHandler):
         video = models.Video.get_by_id('dt'+video_id)
         user = self.user
 
-        if video.uploader.id() != user.key.id():
+        if video is None or video.uploader.id() != user.key.id():
             self.response.out.write(json.dumps({
                 'error': True,
                 'message': 'You are not allowed to edit this video.',
@@ -445,6 +445,8 @@ class ManageVideo(BaseHandler):
         page_size = models.DEFAULT_PAGE_SIZE
         try:
             page = int(self.request.get('page'))
+            if page < 1:
+                raise ValueError('Negative')
         except ValueError:
             page = 1
 
@@ -533,7 +535,7 @@ class RandomVideos(BaseHandler):
                     random_id = random.randint(1, max_id)
                     # if not fetched.get(random_id):
                     video = models.Video.get_by_id('dt'+str(random_id))
-                    if (video is not None) and (not video.deleted):
+                    if video is not None:
                         uploader = video.uploader.get()
                         video_info = video.get_basic_info()
                         video_info['uploader'] = uploader.get_public_info()

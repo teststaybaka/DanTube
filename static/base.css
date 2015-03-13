@@ -55,7 +55,7 @@ a.blue-link:active {
     color: rgb(0,50,200);
 }
 
-div.container:after {
+.container:after {
     clear: both;
     display: table;
     content: "";

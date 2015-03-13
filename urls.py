@@ -1,6 +1,6 @@
 import webapp2
 
-import views, admin, login, account, video, message, user, playlist
+import views, admin, login, account, video, message, user, playlist, watch
 import models
 
 secret_key = 'efrghtrrouhsmvnmxdiosjkgjfds68_=' \
@@ -75,11 +75,16 @@ routes = [
     webapp2.Route(r'/account/playlists/edit/remove/<playlist_id:\d+>', playlist.RemoveVideo, name="remove_video_from_list"),
     webapp2.Route(r'/account/playlists/edit/move/<playlist_id:\d+>', playlist.MoveVideo, name="move_video_in_list"),
 
-    webapp2.Route(r'/video', views.Video, name="video"),
+    webapp2.Route(r'/video/dt<video_id:\d+>', watch.Video, name="watch"),
+    webapp2.Route(r'/video/comment/dt<video_id:\d+>', watch.Comment, name="comment", handler_method="get_comment"),
+    webapp2.Route(r'/video/comment/dt<video_id:\d+>', watch.Comment, name="comment", handler_method="get_comment"),
+    webapp2.Route(r'/video/comment_post/dt<video_id:\d+>', watch.Comment, name="comment_post", handler_method="comment_post"),
+    webapp2.Route(r'/video/reply_post/dt<video_id:\d+>', watch.Comment, name="reply_post", handler_method="reply_post"),
+    webapp2.Route(r'/video/danmaku/dt<video_id:\d+>', watch.Danmaku, name="danmaku"),
+    webapp2.Route(r'/video/like/dt<video_id:\d+>', watch.Like, name="like"),
+
+    webapp2.Route(r'/video/category', views.CategoryVideo, name="category_video"),
     webapp2.Route(r'/video/random', video.RandomVideos, name="random_videos"),
-    webapp2.Route(r'/video/dt<video_id:\d+>', views.Watch, name="watch"),
-    webapp2.Route(r'/video/dt<video_id:\d+>/danmaku', views.Danmaku, name="danmaku"),
-    webapp2.Route(r'/video/dt<video_id:\d+>/like', views.Like, name="like"),
     webapp2.Route(r'/search', views.Search, name="search"),
     webapp2.Route(r'/search/playlist', views.SearchPlaylist, name="search_playlist"),
     webapp2.Route(r'/search/uper', views.SearchUPer, name="search_uper"),
