@@ -872,10 +872,9 @@ span.operation-icon.favors {
 }
 
 #user-reply-form {
-	padding-top: 15px;
+	margin-top: 15px;
 	padding-bottom: 15px;
 	padding-left: 10px;
-	width: 532px;
 }
 
 #user-reply-form.hide {
@@ -923,11 +922,15 @@ input.inline-button.post {
 div.inner-comment-container {
 	margin-top: 15px;
 	margin-left: 48px;
+	margin-right: 20px;
 	background-color: rgb(240,240,240);
 	border-radius: 3px;
 	border: 1px solid rgb(200,200,200);
-	display: inline-block;
 	padding-right: 20px;
+}
+
+div.inner-comment-container:empty {
+	display: none;
 }
 
 div.comment-entry {
@@ -1032,14 +1035,10 @@ div.comment-operation:hover {
 
 div.pagination-line {
 	text-align: center;
-	padding-top: 15px;
+	margin: 15px 0;
 }
 
-div.pagination-line.replies {
-	padding-top: 0;
-}
-
-div.pagination-line.replies.hide {
+div.pagination-line.replies:empty {
 	display: none;
 }
 

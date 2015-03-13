@@ -127,6 +127,7 @@ $(document).ready(function() {
                 console.log(thrownError);
                 $(evt.target).text('Resend email');
                 $(evt.target).removeClass('send');
+                pop_ajax_message(xhr.status+' '+thrownError, 'error');
             }
         });
     });
@@ -205,6 +206,7 @@ $(document).ready(function() {
                 console.log(thrownError);
                 button.disabled = false;
                 $('#change-applying').removeClass('show');
+                pop_ajax_message(xhr.status+' '+thrownError, 'error');
             }
         });
         return false;
@@ -311,6 +313,7 @@ $(document).ready(function() {
                 console.log(thrownError);
                 button.disabled = false;
                 $('#change-applying').removeClass('show');
+                pop_ajax_message(xhr.status+' '+thrownError, 'error');
             }
         });
         return false;

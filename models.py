@@ -86,11 +86,12 @@ class User(webapp2_extras.appengine.auth.models.User):
       public_info['space_css'] = ''
 
     if self.avatar:
-      avatar_url = images.get_serving_url(self.avatar)
+      public_info['avatar_url'] = images.get_serving_url(self.avatar)
+      public_info['avatar_url_small'] = images.get_serving_url(self.avatar, size=64)
     else:
-      avatar_url = '/static/emoticons_img/default_avatar' + str(self.default_avatar) + '.png'
+      public_info['avatar_url'] = '/static/emoticons_img/default_avatar' + str(self.default_avatar) + '.png'
+      public_info['avatar_url_small'] = public_info['avatar_url']
       
-    public_info['avatar_url'] = avatar_url
     public_info['space_url'] = '/user/' + str(self.key.id())
     
     return public_info

@@ -108,19 +108,20 @@ $(document).ready(function() {
             success: function(result){
                 console.log(result);
                 if(!result.error) {
-                    $('input.save_change-button').after('<div id="save-change-message" class="success show">Change applied successfully!</div>');
+                    pop_ajax_message('Change applied successfully.', 'success')
                     setTimeout(function(){
                         window.location.replace('/account'); 
                     }, 3000);
                 } else {
-                    $('input.save_change-button').after('<div id="save-change-message" class="fail show">'+result.message+'</div>');
                     button.disabled = false;
+                    pop_ajax_message(result.message, 'error');
                 }
             },
             error: function (xhr, ajaxOptions, thrownError) {
                 console.log(xhr.status);
                 console.log(thrownError);
                 button.disabled = false;
+                pop_ajax_message(xhr.status+' '+thrownError, 'error');
             }
         });
         // $('#avatar-upload-form').submit();
@@ -180,6 +181,7 @@ $(document).ready(function() {
                     console.log(thrownError);
                     button.disabled = false;
                     $('#change-applying').removeClass('show');
+                    pop_ajax_message(xhr.status+' '+thrownError, 'error');
                 }
             });
         } else {

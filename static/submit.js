@@ -359,6 +359,7 @@ $(document).ready(function() {
                 console.log(thrownError);
                 button.disabled = false;
                 $('#change-applying').removeClass('show');
+                pop_ajax_message(xhr.status+' '+thrownError, 'error');
             }
         });
         return false;

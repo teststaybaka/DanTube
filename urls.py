@@ -77,7 +77,7 @@ routes = [
 
     webapp2.Route(r'/video/dt<video_id:\d+>', watch.Video, name="watch"),
     webapp2.Route(r'/video/comment/dt<video_id:\d+>', watch.Comment, name="comment", handler_method="get_comment"),
-    webapp2.Route(r'/video/comment/dt<video_id:\d+>', watch.Comment, name="comment", handler_method="get_comment"),
+    webapp2.Route(r'/video/inner_comment/dt<video_id:\d+>', watch.Comment, name="inner_comment", handler_method="get_inner_comment"),
     webapp2.Route(r'/video/comment_post/dt<video_id:\d+>', watch.Comment, name="comment_post", handler_method="comment_post"),
     webapp2.Route(r'/video/reply_post/dt<video_id:\d+>', watch.Comment, name="reply_post", handler_method="reply_post"),
     webapp2.Route(r'/video/danmaku/dt<video_id:\d+>', watch.Danmaku, name="danmaku"),

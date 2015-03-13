@@ -67,7 +67,7 @@
   </div>
   <div id="uploader-info-box">
     <a href="{{ uploader.space_url}}" target="_blank">
-      <img id="uploader-img" src="{{ uploader.avatar_url }}">
+      <img id="uploader-img" src="{{ uploader.avatar_url_small }}">
     </a>
     <div id="uploader-info">
       <div id="uploader-link-line">
@@ -146,7 +146,7 @@
   </div>
   <div id="comments-block-title">Comments <span class="commas_number"></span></div>
   <form id="user-comment-form">
-    <img class="comment-img" src="{% if user.is_auth %}{{ user.avatar_url }}{% else %}/static/emoticons_img/default_avatar1.png{% endif %}">
+    <img class="comment-img" src="{% if user.is_auth %}{{ user.avatar_url_small }}{% else %}/static/emoticons_img/default_avatar1.png{% endif %}">
     <div class="write-comment-block">
       <textarea class="normal-input" name="content" id="comment-textarea" placeholder="{% if user.is_auth %}Share what you think{% else %}Please sign in{% endif %}"></textarea>
       <div class="container">
@@ -156,7 +156,7 @@
     </div>
   </form>
   <form id="user-reply-form" class="hide">
-    <img class="comment-img" src="{% if user.is_auth %}{{ user.avatar_url }}{% else %}/static/emoticons_img/default_avatar1.png{% endif %}">
+    <img class="comment-img" src="{% if user.is_auth %}{{ user.avatar_url_small }}{% else %}/static/emoticons_img/default_avatar1.png{% endif %}">
     <div class="write-comment-block">
       <textarea class="normal-input" id="reply-textarea" placeholder="{% if user.is_auth %}Share what you think{% else %}Please sign in{% endif %}"></textarea>
       <div class="container">

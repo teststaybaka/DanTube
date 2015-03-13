@@ -25,6 +25,7 @@ $(document).ready(function() {
                 console.log(xhr.status);
                 console.log(thrownError);
                 $(evt.target).prop('disabled', false);
+                pop_ajax_message(xhr.status+' '+thrownError, 'error');
             }
         });
         $('div.popup-window-container.remove').removeClass('show');
@@ -123,6 +124,7 @@ $(document).ready(function() {
                 console.log(xhr.status);
                 console.log(thrownError);
                 $("input.create-button").prop('disabled', false);
+                pop_ajax_message(xhr.status+' '+thrownError, 'error');
             }
         });
         return false;
@@ -167,6 +169,7 @@ $(document).ready(function() {
                 console.log(xhr.status);
                 console.log(thrownError);
                 $(evt.target).prop('disabled', false);
+                pop_ajax_message(xhr.status+' '+thrownError, 'error');
             }
         });
     });
@@ -219,7 +222,7 @@ $(document).ready(function() {
                 error: function (xhr, ajaxOptions, thrownError) {
                     console.log(xhr.status);
                     console.log(thrownError);
-                    pop_ajax_message('Request error.', 'error');
+                    pop_ajax_message(xhr.status+' '+thrownError, 'error');
                 }
             });
             $(evt.target).val('')
