@@ -207,6 +207,9 @@ class Comment(BaseHandler):
         at_users = self.request.POST.getall('ats[]')
 
         comment = models.Comment.Create(video, user, content)
+        video.comment_counter = comment.floorth 
+        video.put()
+
         self.response.out.write(json.dumps({
             'error': False,
         }))
@@ -255,9 +258,10 @@ class Comment(BaseHandler):
 
         at_users = self.request.POST.getall('ats[]')
 
-        comment = models.InnerComment.Create(comment, user, content)
+        inner_comment = models.InnerComment.Create(comment, user, content)
         self.response.out.write(json.dumps({
             'error': False,
+            'total_pages': math.ceil(comment.inner_comment_counter/float(models.DEFAULT_PAGE_SIZE)),
         }))
 
 class Like(BaseHandler):

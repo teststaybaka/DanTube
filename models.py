@@ -676,9 +676,9 @@ class Video(ndb.Model):
     except search.Error:
       logging.info('failed to create %s index for video %s' % (index_name, self.key.id()))
 
-  @staticmethod
-  def get_by_id(id):
-    return super(Video, Video).get_by_id(id, parent=ndb.Key('VideoEntry', 'Video'+id))
+  # @staticmethod
+  # def get_by_id(id):
+  #   return super(Video, Video).get_by_id(id, parent=ndb.Key('VideoEntry', 'Video'+id))
 
   @staticmethod
   def get_max_id():
@@ -712,7 +712,7 @@ class Video(ndb.Model):
       logging.info(id)
       current_time = time_to_seconds(datetime.now())
       video = Video(
-        parent = ndb.Key('VideoEntry', 'Video'+id),
+        # parent = ndb.Key('VideoEntry', 'Video'+id),
         id = id,
         # key = ndb.Key('Video', id, parent=ndb.Key('VideoEntry', 'Video'+id)),
         uploader = user.key,
@@ -794,10 +794,14 @@ class Comment(ndb.Model):
   @staticmethod
   @ndb.transactional(retries=10)
   def Create(video, user, content):
-    video.comment_counter += 1
-    video.put()
-
-    comment = Comment(parent=video.key, creator=user.key, content=content, floorth=video.comment_counter)
+    newest_comment = Comment.query(ancestor=video.key).order(-Comment.created).get()
+    if not newest_comment:
+      comment_counter = 0
+    else:
+      comment_counter = newest_comment.floorth
+    comment_counter += 1
+    
+    comment = Comment(parent=video.key, creator=user.key, content=content, floorth=comment_counter)
     comment.put()
     return comment
 

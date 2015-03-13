@@ -890,7 +890,7 @@ $(document).ready(function() {
 				if(!result.error) {
 					pop_ajax_message('Reply posted!', 'success');
 					$('#reply-textarea').val('');
-					// update_comments(1, video_id);
+					update_inner_comments(result.total_pages, video_id, $(evt.target).parent());
 				} else {
 					pop_ajax_message(result.message, 'error');
 				}
@@ -1013,7 +1013,6 @@ function update_inner_comments(page, video_id, inner_comment_container) {
 	inner_comment_container.children('div.comment-entry').remove();
 	inner_comment_container.children('div.display-button.replies').remove();
 	var pagination_container = inner_comment_container.children('div.pagination-line.replies');
-	pagination_container.removeClass('hide')
 	pagination_container.empty();
 
 	inner_comment_container.prepend('<div class="comment-entry loading"></div>');
@@ -1029,7 +1028,7 @@ function update_inner_comments(page, video_id, inner_comment_container) {
 				// } else {
 					for(var i = 0; i < result.inner_comments.length; i++) {
 	                    var comment_div = render_inner_comment_div(result.inner_comments[i]);
-	                    inner_comment_container.prepend(comment_div);
+	                    pagination_container.before(comment_div);
 	                }
 	                var content_div = inner_comment_container.find('div.comment-content');
                     for (var j = 0; j < content_div.length; j++) {
@@ -1040,8 +1039,10 @@ function update_inner_comments(page, video_id, inner_comment_container) {
                     	}
                     }
 
-	                var pagination = render_pagination(page, result.total_pages);
-                    pagination_container.append(pagination);
+                    if (result.total_pages > 1) {
+		                var pagination = render_pagination(page, result.total_pages);
+	                    pagination_container.append(pagination);
+	                }
 				}
 			} else {
 				pop_ajax_message(result.message, 'error');
