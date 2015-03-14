@@ -94,6 +94,7 @@ $(document).ready(function() {
                     buttons[i].disabled = false;
                 }
                 $('#change-applying').removeClass('show');
+                pop_ajax_message(xhr.status+' '+thrownError, 'error');
             }
         });
     });
@@ -151,6 +152,7 @@ $(document).ready(function() {
                     buttons[i].disabled = false;
                 }
                 $('#change-applying').removeClass('show');
+                pop_ajax_message(xhr.status+' '+thrownError, 'error');
             }
         });
         return false;

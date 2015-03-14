@@ -124,8 +124,59 @@ class Comment(BaseHandler):
         result['total_pages'] = math.ceil(video.comment_counter/float(page_size))
         self.response.out.write(json.dumps(result))
 
-    def get_inner_comment(BaseHandler):
-        pass
+    def get_inner_comment(self, video_id):
+        self.response.headers['Content-Type'] = 'application/json'
+        video = models.Video.get_by_id('dt'+video_id)
+        if not video:
+            self.response.out.write(json.dumps({
+                'error': True,
+                'message': 'video not found'
+            }))
+            return
+
+        comment_id = self.request.get('comment_id')
+        if not comment_id:
+            self.response.out.write(json.dumps({
+                'error': True,
+                'message': 'Comment not found'
+            }))
+            return
+        else:
+            comment = models.Comment.get_by_id(int(comment_id), video.key)
+            if not comment:
+                self.response.out.write(json.dumps({
+                    'error': True,
+                    'message': 'Comment not found'
+                }))
+                return
+
+        page_size = models.DEFAULT_PAGE_SIZE
+        try:
+            page = int(self.request.get('page') )
+            if page < 1:
+                raise ValueError('Negative')
+        except ValueError:
+            self.response.out.write(json.dumps({
+                'error': True,
+                'message': 'Page invalid.'
+            }))
+            return
+
+        offset = (page-1)*page_size
+        inner_comments = models.InnerComment.query(ancestor=comment.key).order(models.InnerComment.created).fetch(offset=offset, limit=page_size)
+        result = {'error': False, 'inner_comments': []}
+        for i in range(0, len(inner_comments)):
+            inner_comment = inner_comments[i]
+            info = {
+                'creator': inner_comment.creator.get().get_public_info(),
+                'content': inner_comment.content,
+                'created': inner_comment.created.strftime("%Y-%m-%d %H:%M"),
+                'deleted': inner_comment.deleted,
+            }
+            result['inner_comments'].append(info)
+
+        result['total_pages'] = math.ceil(comment.inner_comment_counter/float(page_size))
+        self.response.out.write(json.dumps(result))
 
     @login_required
     def comment_post(self, video_id):
@@ -156,6 +207,9 @@ class Comment(BaseHandler):
         at_users = self.request.POST.getall('ats[]')
 
         comment = models.Comment.Create(video, user, content)
+        video.comment_counter = comment.floorth 
+        video.put()
+
         self.response.out.write(json.dumps({
             'error': False,
         }))
@@ -204,9 +258,10 @@ class Comment(BaseHandler):
 
         at_users = self.request.POST.getall('ats[]')
 
-        comment = models.InnerComment.Create(comment, user, content)
+        inner_comment = models.InnerComment.Create(comment, user, content)
         self.response.out.write(json.dumps({
             'error': False,
+            'total_pages': math.ceil(comment.inner_comment_counter/float(models.DEFAULT_PAGE_SIZE)),
         }))
 
 class Like(BaseHandler):

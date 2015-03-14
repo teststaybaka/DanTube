@@ -153,33 +153,6 @@ $(document).ready(function() {
     });
 });
 
-function get_video_list(url, query, callback) {
-    $.ajax({
-        type: "GET",
-        url: url,
-        data: query,
-        success: function(result) {
-            if (callback && typeof(callback) === "function") {
-                if(result.error)
-                    callback(result, []);
-                else
-                    callback(null, result);
-            }
-            else
-                return result;
-        },
-        error: function (xhr, ajaxOptions, thrownError) {
-            console.log(xhr.status);
-            console.log(thrownError);
-            var err = {'error': true, 'message': thrownError};
-            if (callback && typeof(callback) === "function")
-                callback(err, []);
-            else
-                return err;
-        }
-    });
-}
-
 render_pagination = function(cur_page, total_pages) {
     var page_range = 10;
     cur_page = parseInt(cur_page);

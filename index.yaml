@@ -26,6 +26,11 @@ indexes:
   ancestor: yes
   properties:
   - name: created
+
+- kind: InnerComment
+  ancestor: yes
+  properties:
+  - name: created
     direction: desc
 
 - kind: MessageThread

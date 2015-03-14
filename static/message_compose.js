@@ -17,6 +17,7 @@ $(document).ready(function() {
             error: function (xhr, ajaxOptions, thrownError) {
                 console.log(xhr.status);
                 console.log(thrownError);
+                pop_ajax_message(xhr.status+' '+thrownError, 'error');
             }
         });
     });

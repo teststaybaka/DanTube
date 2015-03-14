@@ -24,6 +24,7 @@ $(document).ready(function() {
                 console.log(xhr.status);
                 console.log(thrownError);
                 $(evt.target).prop('disabled', false);
+                pop_ajax_message(xhr.status+' '+thrownError, 'error');
             }
         });
         $('div.popup-window-container').removeClass('show');
@@ -119,6 +120,7 @@ $(document).ready(function() {
                 console.log(xhr.status);
                 console.log(thrownError);
                 $("input.create-button").prop('disabled', false);
+                pop_ajax_message(xhr.status+' '+thrownError, 'error');
             }
         });
         return false;

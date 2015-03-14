@@ -86,11 +86,12 @@ class User(webapp2_extras.appengine.auth.models.User):
       public_info['space_css'] = ''
 
     if self.avatar:
-      avatar_url = images.get_serving_url(self.avatar)
+      public_info['avatar_url'] = images.get_serving_url(self.avatar)
+      public_info['avatar_url_small'] = images.get_serving_url(self.avatar, size=64)
     else:
-      avatar_url = '/static/emoticons_img/default_avatar' + str(self.default_avatar) + '.png'
+      public_info['avatar_url'] = '/static/emoticons_img/default_avatar' + str(self.default_avatar) + '.png'
+      public_info['avatar_url_small'] = public_info['avatar_url']
       
-    public_info['avatar_url'] = avatar_url
     public_info['space_url'] = '/user/' + str(self.key.id())
     
     return public_info
@@ -673,9 +674,9 @@ class Video(ndb.Model):
     except search.Error:
       logging.info('failed to create %s index for video %s' % (index_name, self.key.id()))
 
-  @staticmethod
-  def get_by_id(id):
-    return super(Video, Video).get_by_id(id, parent=ndb.Key('VideoEntry', 'Video'+id))
+  # @staticmethod
+  # def get_by_id(id):
+  #   return super(Video, Video).get_by_id(id, parent=ndb.Key('VideoEntry', 'Video'+id))
 
   @staticmethod
   def get_max_id():
@@ -709,7 +710,7 @@ class Video(ndb.Model):
       logging.info(id)
       current_time = time_to_seconds(datetime.now())
       video = Video(
-        parent = ndb.Key('VideoEntry', 'Video'+id),
+        # parent = ndb.Key('VideoEntry', 'Video'+id),
         id = id,
         # key = ndb.Key('Video', id, parent=ndb.Key('VideoEntry', 'Video'+id)),
         uploader = user.key,
@@ -793,10 +794,14 @@ class Comment(ndb.Model):
   @staticmethod
   @ndb.transactional(retries=10)
   def Create(video, user, content):
-    video.comment_counter += 1
-    video.put()
-
-    comment = Comment(parent=video.key, creator=user.key, content=content, floorth=video.comment_counter)
+    newest_comment = Comment.query(ancestor=video.key).order(-Comment.created).get()
+    if not newest_comment:
+      comment_counter = 0
+    else:
+      comment_counter = newest_comment.floorth
+    comment_counter += 1
+    
+    comment = Comment(parent=video.key, creator=user.key, content=content, floorth=comment_counter)
     comment.put()
     return comment
 

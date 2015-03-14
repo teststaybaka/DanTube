@@ -90,6 +90,7 @@ $(document).ready(function() {
                 console.log(xhr.status);
                 console.log(thrownError);
                 button.disabled = false;
+                pop_ajax_message(xhr.status+' '+thrownError, 'error');
             }
         });
         return false;

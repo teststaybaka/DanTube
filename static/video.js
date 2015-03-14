@@ -673,6 +673,7 @@ $(document).ready(function() {
 			error: function (xhr, ajaxOptions, thrownError) {
 				console.log(xhr.status);
 				console.log(thrownError);
+				pop_ajax_message(xhr.status+' '+thrownError, 'error');
 			}
 		});
 	});
@@ -731,6 +732,7 @@ $(document).ready(function() {
 				error: function (xhr, ajaxOptions, thrownError) {
 					console.log(xhr.status);
 					console.log(thrownError);
+					pop_ajax_message(xhr.status+' '+thrownError, 'error');
 				}
 			});
 		}
@@ -751,6 +753,7 @@ $(document).ready(function() {
 			error: function (xhr, ajaxOptions, thrownError) {
 				console.log(xhr.status);
 				console.log(thrownError);
+				pop_ajax_message(xhr.status+' '+thrownError, 'error');
 			}
 		});
 	})
@@ -770,6 +773,7 @@ $(document).ready(function() {
 			error: function (xhr, ajaxOptions, thrownError) {
 				console.log(xhr.status);
 				console.log(thrownError);
+				pop_ajax_message(xhr.status+' '+thrownError, 'error');
 			}
 		});
 	})
@@ -886,7 +890,7 @@ $(document).ready(function() {
 				if(!result.error) {
 					pop_ajax_message('Reply posted!', 'success');
 					$('#reply-textarea').val('');
-					// update_comments(1, video_id);
+					update_inner_comments(result.total_pages, video_id, $(evt.target).parent());
 				} else {
 					pop_ajax_message(result.message, 'error');
 				}
@@ -908,15 +912,22 @@ $(document).ready(function() {
 	});
 	$('#comments-list-container').on('click', 'div.comment-entry.error', function() {
 		var page = $(this).attr('data-page');
-		update_comments(page, video_id);
+		if ($(this).hasClass('inner')) {
+			update_inner_comments(page, video_id, $(this).parent());
+		} else {
+			update_comments(page, video_id);
+		}
+	});
+	$('#comments-list-container').on('click', 'a.page-num, a.page-change', function() {
+		var page = $(this).attr('data-page');
+		update_inner_comments(page, video_id, $(this).parent().parent());
 	});
 
 	$(window).scroll(function() {
-		if ($('#comments-list-container').children().length > 0) return;
+		if ($('#comments-list-container').children().length > 0
+			|| $(window).scrollTop() < $('#comments-list-container').offset().top - 30  - $(window).height()) return;
 
-		if ($(window).scrollTop() > $('#user-comment-form').offset().top + $('#user-comment-form').height()  - $(window).height()) {
-			update_comments(1, video_id);
-		}
+		update_comments(1, video_id);
 	});
 	$('#comments-list-container').on('click', 'div.display-button.comment', function() {
 		if ($(this).hasClass('less')) {
@@ -931,12 +942,16 @@ $(document).ready(function() {
 			$(this).children('span.reply-display-text').text('Read less');
 		}
 	});
+	$('#comments-list-container').on('click', 'div.display-button.replies', function() {
+		update_inner_comments(1, video_id, $(this).parent());
+	});
 	$('#comments-list-container').on('click', 'div.comment-operation.reply', function() {
 		var comment_box = $(this).parent().parent();
-		var inner_comment_container = comment_box.next();
-		if (inner_comment_container.length == 0) {
-			comment_box.after('<div class="inner-comment-container"></div>');
-			inner_comment_container = comment_box.next();
+		var comment_entry = comment_box.parent();
+		if (comment_entry.hasClass('inner')) {
+			var inner_comment_container = comment_entry.parent();
+		} else {
+			var inner_comment_container = comment_box.next();
 		}
 		inner_comment_container.append($('#user-reply-form'));
 		$('#user-reply-form').removeClass('hide');
@@ -965,14 +980,15 @@ function update_comments(page, video_id) {
 					for(var i = 0; i < result.comments.length; i++) {
 	                    var comment_div = render_comment_div(result.comments[i]);
 	                    comment_container.append(comment_div);
-	                    var last_div = $('div.comment-entry:last-child');
-	                    var content_div = last_div.find('div.comment-content');
-	                    if (content_div[0].scrollHeight > 48) {
-	                    	content_div.addClass('collapse');
-	                    } else {
-	                    	content_div.next().remove();
-	                    }
 	                }
+	                var content_div = comment_container.find('div.comment-content');
+                    for (var j = 0; j < content_div.length; j++) {
+                    	if (content_div[j].scrollHeight > 48) {
+                    		$(content_div[j]).addClass('collapse');
+                    	} else {
+                    		$(content_div[j]).next().remove();
+                    	}
+                    }
 
 	                var pagination = render_pagination(page, result.total_pages);
                     pagination_container.append(pagination);
@@ -992,10 +1008,61 @@ function update_comments(page, video_id) {
 	});
 }
 
+function update_inner_comments(page, video_id, inner_comment_container) {
+	var comment_id = inner_comment_container.parent().attr('data-id');
+	inner_comment_container.children('div.comment-entry').remove();
+	inner_comment_container.children('div.display-button.replies').remove();
+	var pagination_container = inner_comment_container.children('div.pagination-line.replies');
+	pagination_container.empty();
+
+	inner_comment_container.prepend('<div class="comment-entry loading"></div>');
+	$.ajax({
+		type: "GET",
+		url: '/video/inner_comment/dt'+video_id,
+		data: {page: page, comment_id: comment_id},
+		success: function(result) {
+			inner_comment_container.children('div.comment-entry').remove();
+			if(!result.error) {
+				if (result.total_pages != 0) {
+					// inner_comment_container.append('<div class="comment-entry no-comment">Be the first one to comment!</div>');
+				// } else {
+					for(var i = 0; i < result.inner_comments.length; i++) {
+	                    var comment_div = render_inner_comment_div(result.inner_comments[i]);
+	                    pagination_container.before(comment_div);
+	                }
+	                var content_div = inner_comment_container.find('div.comment-content');
+                    for (var j = 0; j < content_div.length; j++) {
+                    	if (content_div[j].scrollHeight > 48) {
+                    		$(content_div[j]).addClass('collapse');
+                    	} else {
+                    		$(content_div[j]).next().remove();
+                    	}
+                    }
+
+                    if (result.total_pages > 1) {
+		                var pagination = render_pagination(page, result.total_pages);
+	                    pagination_container.append(pagination);
+	                }
+				}
+			} else {
+				pop_ajax_message(result.message, 'error');
+				inner_comment_container.prepend('<div class="comment-entry no-comment inner error">Load error.</div>');
+			}
+		},
+		error: function (xhr, ajaxOptions, thrownError) {
+			console.log(xhr.status);
+			console.log(thrownError);
+			inner_comment_container.children('div.comment-entry').remove();
+			pop_ajax_message(xhr.status+' '+thrownError, 'error');
+			inner_comment_container.prepend('<div class="comment-entry no-comment inner error" data-page="'+page+'">Load error.</div>');
+		}
+	});
+}
+
 function render_comment_div(comment) {
 	var div = '<div class="comment-entry" data-id="' + comment.id + '">\
       <a href="' + comment.creator.space_url + '" target="_blank">\
-        <img class="comment-img" src="' + comment.creator.avatar_url + '">\
+        <img class="comment-img" src="' + comment.creator.avatar_url_small + '">\
       </a>\
       <div class="comment-detail-box">\
         <div class="user-title-line">\
@@ -1009,37 +1076,25 @@ function render_comment_div(comment) {
           <div class="comment-operation reply">Reply</div>\
           <div class="comment-operation report">Report</div>\
         </div>\
-      </div>'
+      </div>\
+      <div class="inner-comment-container">'
     if (comment.inner_comments.length != 0) {
-    	div += '<div class="inner-comment-container">'
     	if (comment.inner_comment_counter > 3) {
-    		div += '<div class="display-button replies"><span class="reply-display-text">View more replies</span><span class="display-arrow"></span></div>'
+    		div += '<div class="display-button replies"><span class="reply-display-text">View more replies (' + (comment.inner_comment_counter-3) + ')</span><span class="display-arrow"></span></div>'
     	}
     	for (var i = 0; i < comment.inner_comments.length; i++) {
 	        div += render_inner_comment_div(comment.inner_comments[i])
         }
-        div += '<div class="pagination-line replies hide"></div>'
+        div += '<div class="pagination-line replies"></div>'
     }
     div += '</div>'
     return div;
 }
 
 function render_inner_comment_div(inner_comment) {
-	// var div = '<div class="comment-entry inner">\
-	//           <a href="' + inner_comment.creator.space_url + '" target="_blank">\
-	//             <img class="comment-img" src="' + inner_comment.creator.avatar_url + '">\
-	//           </a>\
-	//           <div class="comment-detail-box inner">\
-	//             <div class="user-title-line">\
-	//               <a class="blue-link user-name" href="' + inner_comment.creator.space_url + '" target="_blank">' + inner_comment.creator.nickname + '</a>\
-	//               <label class="comment-time">' + inner_comment.created + '</label>\
-	//             </div>\
-	//             <div class="comment-content">' + inner_comment.content + '</div><div>ffffffffffffffff</div>\
-	//           </div>\
-	//         </div>'
 	var div = '<div class="comment-entry inner">\
 					<a href="' + inner_comment.creator.space_url + '" target="_blank">\
-			          <img class="comment-img" src="' + inner_comment.creator.avatar_url + '">\
+			          <img class="comment-img" src="' + inner_comment.creator.avatar_url_small + '">\
 			        </a>\
 			        <div class="comment-detail-box inner">\
 			        	<div class="user-title-line">\
@@ -1047,6 +1102,7 @@ function render_inner_comment_div(inner_comment) {
 			              <label class="comment-time">' + inner_comment.created + '</label>\
 			            </div>\
 			            <div class="comment-content">' + inner_comment.content + '</div>\
+			            <div class="display-button comment"><span class="reply-display-text">Read more</span><span class="display-arrow"></span></div>\
 						<div class="comment-operation-line">\
 				          <div class="comment-operation reply">Reply</div>\
 				          <div class="comment-operation report">Report</div>\
