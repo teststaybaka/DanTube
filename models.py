@@ -60,7 +60,7 @@ class User(webapp2_extras.appengine.auth.models.User):
     doc = search.Document(
       doc_id = self.key.urlsafe(), 
       fields = [
-        search.TextField(name='content', value=searchable),
+        search.TextField(name='content', value=searchable.lower()),
       ],
       rank = time_to_seconds(self.created),
     )
@@ -361,7 +361,7 @@ class PlayList(ndb.Model):
     doc = search.Document(
       doc_id = self.key.urlsafe(), 
       fields = [
-        search.TextField(name='content', value=searchable),
+        search.TextField(name='content', value=searchable.lower()),
       ],
       rank = rank
     )
@@ -660,11 +660,11 @@ class Video(ndb.Model):
 
   def create_index(self, index_name, rank):
     index = search.Index(name=index_name)
-    searchable = " ".join([tag.lower() for tag in self.tags] + [self.title.lower(), self.description.lower()]);
+    searchable = " ".join(self.tags + [self.title, self.description]);
     doc = search.Document(
       doc_id = self.key.urlsafe(), 
       fields = [
-        search.TextField(name='content', value=searchable),
+        search.TextField(name='content', value=searchable.lower()),
         search.AtomField(name='category', value=self.category),
         search.AtomField(name='subcategory', value=self.subcategory)
       ],
@@ -729,7 +729,6 @@ class Video(ndb.Model):
         video_clips = video_clips,
         hot_score_updated = current_time,
         hot_score = current_time,
-        duration = duration,
       )
       video.put()
     except Exception, e:
