@@ -1,7 +1,7 @@
 {% extends "template/base.html" %}
 
 {% block page_title %}
-{% if user.spacename %}{{ host.spacename }}{% else %}{{ host.nickname }}'s Space{% endif %}
+{% if host.spacename %}{{ host.spacename }}{% else %}{{ host.nickname }}'s Space{% endif %}
 {% endblock %}
 
 {% block head %}
@@ -27,7 +27,7 @@
     });
   })
 </script>
-{% if user.space_css %}
+{% if host.space_css %}
 <link rel="stylesheet" href="{{ uri_for('space_css', resource=host.space_css) }}" type="text/css" />
 {% else %}
 <link rel="stylesheet" href="/static/space.css" type="text/css" />
@@ -37,7 +37,7 @@
 {% block navigation %}
 <div id="space-navigation-background">
   <div id="space-navigation" class="container">
-    <div id="space-title">{% if user.spacename %}{{ host.spacename }}{% else %}{{ host.nickname }}'s Space{% endif %}</div>
+    <div id="space-title">{% if host.spacename %}{{ host.spacename }}{% else %}{{ host.nickname }}'s Space{% endif %}</div>
     <div id="navi-link-line">
       <a class="space-navi-link {% block videos_active %}active{% endblock %}" href="{{ uri_for('space', user_id=host.id) }}">Videos</a>
       <a class="space-navi-link {% block playlists_active %}{% endblock %}" href="{{ uri_for('space_playlist', user_id=host.id) }}">Playlists</a>
@@ -51,47 +51,50 @@
 {% block body %}
 {% block left_body %}
 <div id="video-list">
-  <div class="video-entry">
-    <a class="video-img" href="" target="_blank">
-      <img class="video-img" src="">
-    </a>
-    <div class="video-info">
-      <div class="category-and-time">
-        <div class="video-category">Anime</div>
-        <div class="video-category-arrow"></div>
-        <div class="video-category">Continuing Anime</div>
-        <div class="video-time">2015-02-09 04:35</div>
-      </div>
-      <div class="video-title">
-        <a class="video-title" href="" target="_blank">WHY!? WHY DID YOU HAVE TO DO THAT!? | Exoptable Money (Prequel to Presentable Liberty)</a>
-      </div>
-      <div class="video-intro">sdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdf</div>
+  {% if total_pages == 0 %}
+    <div class="video-entry none">
+        No videos found.
     </div>
-  </div>
-  <div class="video-entry">
-    <a class="video-img" href="" target="_blank">
-      <img class="video-img" src="">
-    </a>
-    <div class="video-info">
-      <div class="category-and-time">
-        <div class="video-category">Anime</div>
-        <div class="video-category-arrow"></div>
-        <div class="video-category">Continuing Anime</div>
-        <div class="video-time">2015-02-09 04:35</div>
+  {% endif %}
+  {% for video in videos %}
+    <div class="video-entry">
+      <a class="video-img" href="{{ video.url }}" target="_blank">
+        <img class="video-img" src="{{ video.thumbnail_url }}">
+      </a>
+      <div class="video-info">
+        <div class="category-and-time">
+          <div class="video-category">{{ video.category }}</div>
+          <div class="video-category-arrow"></div>
+          <div class="video-category">{{ video.subcategory }}</div>
+          <div class="video-time">{{ video.created }}</div>
+        </div>
+        <div class="video-title">
+          <a class="video-title" href="{{ video.url }}" target="_blank">{{ video.title }}</a>
+        </div>
+        <div class="video-intro">{{ video.description }}</div>
       </div>
-      <div class="video-title">
-        <a class="video-title" href="" target="_blank">dsdf</a>
-      </div>
-      <div class="video-intro">sdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdf</div>
     </div>
-  </div>
+  {% endfor %}
+  {% if total_pages != 0 %}
   <div class="pagination-line">
-    <div class="page-num active">1</div>
+    {% if cur_page > 1 %}
+      <a class="page-change" href="?page=1"><<</a>
+      <a class="page-change" href="?page={{ cur_page - 1 }}"><</a>
+    {% endif %}
+    {% for p in pages %}
+      <a class="page-num {% if p == cur_page %}active{% endif %}" href="?page={{ p }}">{{ p }}</a>
+    {% endfor %}
+    {% if cur_page < total_pages %}
+      <a class="page-change" href="?page={{ cur_page + 1 }}">></a>
+      <a class="page-change" href="?page={{ total_pages }}">>></a>
+    {% endif %}
   </div>
+  {% endif %}
 </div>
 {% endblock %}
+
 <div id="uper-info-box">
-  <img id="uper-img" src="">
+  <img id="uper-img" src="{{ host.avatar_url }}">
   <div class="uper-buttons-line">
     <a class="inline-button uper" href="">Send Message</a>
     <div class="inline-button uper">Subscribe</div>
@@ -100,15 +103,15 @@
   <div id="uper-statistic">
     <div class="uper-statistic-entry">
       <label class="uper-statistic-label">Videos:</label>
-      <div class="uper-statistic-content">0</div>
+      <div class="uper-statistic-content">{{ host.videos_submitted }}</div>
     </div>
     <div class="uper-statistic-entry">
       <label class="uper-statistic-label">Views:</label>
-      <div class="uper-statistic-content">1</div>
+      <div class="uper-statistic-content">{{ host.videos_watched }}</div>
     </div>
     <div class="uper-statistic-entry">
       <label class="uper-statistic-label">Subscribers:</label>
-      <div class="uper-statistic-content">1</div>
+      <div class="uper-statistic-content">{{ host.subscribers_counter }}</div>
     </div>
   </div>
   <div id="recent-visiter-box">

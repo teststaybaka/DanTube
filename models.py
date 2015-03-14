@@ -386,6 +386,7 @@ class VideoClip(ndb.Model):
   subintro = ndb.TextProperty(default='', required=True, indexed=False)
   raw_url = ndb.StringProperty(indexed=False)
   vid = ndb.StringProperty(required=True, indexed=False)
+  duration = ndb.IntegerProperty(required=True, indexed=False, default=0)
   source = ndb.StringProperty(required=True, choices=['youtube'])
 
   @staticmethod
@@ -402,22 +403,17 @@ class VideoClip(ndb.Model):
     return {'url': url, 'vid': vid, 'source': source}
 
   @staticmethod
-  def Create(subintro, raw_url):
-    res = VideoClip.parse_url(raw_url)
+  def Create(subintro, duration, raw_url, vid, source):
+    # res = VideoClip.parse_url(raw_url)
     clip = VideoClip(
-      subintro=subintro, 
-      raw_url=raw_url,
-      vid = res['vid'],
-      source=res['source']
+      subintro = subintro, 
+      raw_url = raw_url,
+      duration = duration,
+      vid = vid,
+      source = source
     )
     clip.put()
     return clip
-
-  def set_url(self, raw_url):
-    res = VideoClip.parse_url(raw_url)
-    self.raw_url = raw_url
-    self.vid = res['vid']
-    self.source = res['source']
 
 class CategoryCounter(ndb.Model):
   counter = ndb.IntegerProperty(required=True, default=0, indexed=False)
@@ -434,6 +430,7 @@ class Video(ndb.Model):
   category = ndb.StringProperty(required=True, choices=Video_Category)
   subcategory = ndb.StringProperty(required=True)
   video_type = ndb.StringProperty(required=True, choices=['original', 'republish'], default='republish')
+  duration = ndb.IntegerProperty(required=True, indexed=False, default=0)
   thumbnail = ndb.BlobKeyProperty(indexed=False)
 
   video_clips = ndb.KeyProperty(kind='VideoClip', repeated=True, indexed=False)
@@ -516,7 +513,7 @@ class Video(ndb.Model):
   @staticmethod
   def get_page_count(page_size, category="", subcategory=""):
     video_count = Video.get_video_count(category, subcategory)
-    page_count = math.ceil(video_count/float(page_size))
+    page_count = int(math.ceil(video_count/float(page_size)))
     return min(page_count, 100)
 
   @staticmethod
@@ -626,6 +623,7 @@ class Video(ndb.Model):
       'created': self.created.strftime("%Y-%m-%d %H:%M"),
       'category': self.category,
       'subcategory': self.subcategory,
+      'duration': self.duration,
       'hits': self.hits,
       'bullets': self.bullets,
       'comment_counter': self.comment_counter,
@@ -736,6 +734,7 @@ class Video(ndb.Model):
       # Video._dec_video_count(category, subcategory)
       raise Exception('Failed to submit the video. Please try again.')
     else:
+      Video.inc_video_count()
       Video.inc_video_count(category)
       Video.inc_video_count(category, subcategory)
       video.create_index('videos_by_created', time_to_seconds(video.created) )
@@ -758,6 +757,7 @@ class Video(ndb.Model):
     for i in range(0, len(self.video_clips)):
       self.video_clips[i].delete()
 
+    Video.dec_video_count()
     Video.dec_video_count(self.category)
     Video.dec_video_count(self.category, self.subcategory)
     self.delete_index('videos_by_created')

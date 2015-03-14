@@ -27,7 +27,7 @@ action="{{ uri_for('search_playlist') }}"
             <img class="video-img" src="{{ playlist.thumbnail_url }}">
             <div class="video-num-box">
                 <div class="video-num">{{ playlist.videos_num }}</div>
-                <div class="video-num">Videos</div>
+                <div class="video-num">Video{% if playlist.videos_num > 1 %}s{% endif %}</div>
             </div>
         </a>
         <div class="uper-line">

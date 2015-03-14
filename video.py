@@ -4,6 +4,42 @@ from google.appengine.api import images
 import urlparse
 import random
 
+YOUTUBE_API_URL = "https://www.googleapis.com/youtube/v3"
+YOUTUBE_API_KEY = "AIzaSyBbf3cs6Nw483po40jw7hZLejmdrgwozWc"
+                
+def ISO_8601_to_seconds(duration):
+    ISO_8601_period_rx = re.compile(
+        'P'   # designates a period
+        '(?:(?P<years>\d+)Y)?'   # years
+        '(?:(?P<months>\d+)M)?'  # months
+        '(?:(?P<weeks>\d+)W)?'   # weeks
+        '(?:(?P<days>\d+)D)?'    # days
+        '(?:T' # time part must begin with a T
+        '(?:(?P<hours>\d+)H)?'   # hourss
+        '(?:(?P<minutes>\d+)M)?' # minutes
+        '(?:(?P<seconds>\d+)S)?' # seconds
+        ')?'   # end of time part
+    )
+    d = ISO_8601_period_rx.match(duration).groupdict()
+    days = 0
+    if d['years']:
+        days += int(d['years']) * 365
+    if d['months']:
+        days += int(d['month']) * 30
+    if d['weeks']:
+        days += int(d['weeks']) * 7
+    if d['days']:
+        days += int(d['days'])
+    seconds = days * 24 * 60 * 60
+    if d['hours']:
+        seconds += int(d['hours']) * 60 * 60
+    if d['minutes']:
+        seconds += int(d['minutes']) * 60
+    if d['seconds']:
+        seconds += int(d['seconds'])
+
+    return seconds
+
 class CoverUpload(BaseHandler, blobstore_handlers.BlobstoreUploadHandler):
     def post(self):
         self.response.headers['Content-Type'] = 'text/plain'
@@ -113,6 +149,9 @@ class VideoUpload(BaseHandler):
         else:
             self.allow_tag_add = False
 
+        self.durations = []
+        self.sources = []
+        self.vids = []
         self.raw_urls = self.request.POST.getall('video-url[]')
         if len(self.raw_urls) == 0:
             return {
@@ -128,16 +167,20 @@ class VideoUpload(BaseHandler):
                     'index': i,
                 }
             else:
-                if not urlparse.urlparse(raw_url).scheme:
-                    raw_url = "https://" + raw_url
-                try:
-                    req = urllib2.urlopen(raw_url)
-                except Exception, e:
+                res = models.VideoClip.parse_url(raw_url)
+                youtube_api_url = YOUTUBE_API_URL + '/videos?id=' + res['vid'] + '&part=contentDetails&key=' + YOUTUBE_API_KEY
+                vlist = json.load(urllib2.urlopen(youtube_api_url))['items']
+                if len(vlist) < 1:
                     return {
                         'error': True,
                         'message': 'invalid url',
                         'index': i,
                     }
+                self.sources.append(res['source'])
+                self.vids.append(res['vid'])
+                vinfo = vlist[0]
+                duration = ISO_8601_to_seconds(vinfo['contentDetails']['duration'])
+                self.durations.append(duration)
 
         self.subtitles = self.request.POST.getall('sub-title[]')
         for i in range(0, len(self.subtitles)):
@@ -248,7 +291,13 @@ class VideoUpload(BaseHandler):
         try:
             self.video_clips = []
             for i in range(0, len(self.raw_urls)):
-                video_clip = models.VideoClip.Create(subintro=self.subintros[i], raw_url=self.raw_urls[i])
+                video_clip = models.VideoClip.Create(
+                    subintro=self.subintros[i], 
+                    duration=self.durations[i], 
+                    raw_url=self.raw_urls[i],
+                    source=self.sources[i],
+                    vid=self.vids[i]
+                    )
                 self.video_clips.append(video_clip.key)
         except Exception, e: # TODO: a regular thread is required to remove unused clip
             for i in range(0, len(self.video_clips)):
@@ -268,6 +317,7 @@ class VideoUpload(BaseHandler):
                 category = self.category,
                 subcategory = self.subcategory,
                 video_type = self.video_type,
+                duration = sum(self.durations),
                 tags = self.tags,
                 allow_tag_add = self.allow_tag_add,
                 thumbnail = self.thumbnail_key,
@@ -360,6 +410,7 @@ class VideoUpload(BaseHandler):
             new_clips = []
             ori_clips = ndb.get_multi(video.video_clips)
             used_clips = {}
+            video_duration = 0
             for i in range(0, len(self.indices)):
                 index = int(self.indices[i])
                 if index != -1:
@@ -367,12 +418,26 @@ class VideoUpload(BaseHandler):
                     if clip.subintro != self.subintros[i]:
                         clip.subintro = self.subintros[i]
                     if clip.raw_url != self.raw_urls[i]:
-                        clip.set_url(self.raw_urls[i])
+                        clip.raw_url = self.raw_urls[i]
+                    if clip.source != self.sources[i]:
+                        clip.source = self.sources[i]
+                    if clip.vid != self.vids[i]:
+                        clip.vid = self.vids[i]
+                    if clip.duration != self.durations[i]:
+                        clip.duration = self.durations[i]
                     clip.put()
+                    video_duration += clip.duration
                     new_clips.append(clip.key)
                     used_clips[index] = 1
                 else:
-                    clip = models.VideoClip.Create(subintro=self.subintros[i], raw_url=self.raw_urls[i])
+                    clip = models.VideoClip.Create(
+                        subintro=self.subintros[i], 
+                        duration=self.durations[i], 
+                        raw_url=self.raw_urls[i],
+                        source=self.sources[i],
+                        vid=self.vids[i]
+                    )
+                    video_duration += clip.duration
                     new_clips.append(clip.key)
 
             if video.video_clips != new_clips:
@@ -383,6 +448,7 @@ class VideoUpload(BaseHandler):
                 video.video_clips = new_clips
 
             # logging.info('put')
+            video.duration = video_duration
             video.put()
         except Exception, e:
             self.response.out.write(json.dumps({

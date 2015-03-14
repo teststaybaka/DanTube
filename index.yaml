@@ -106,6 +106,13 @@ indexes:
   properties:
   - name: category
   - name: subcategory
+  - name: hot_score
+    direction: desc
+
+- kind: Video
+  properties:
+  - name: category
+  - name: subcategory
   - name: last_liked
 
 - kind: Video
