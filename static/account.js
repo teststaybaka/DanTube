@@ -54,10 +54,10 @@ function confirm_password_check(confirm_pw) {
 }
 
 function self_intro_check(ori_intro) {
-    var intro = $('#self-intro-change').val().trim();
-    if (intro.length > 500) {
+    var intro = $('#self-intro-change').val();
+    if (intro.length > 2000) {
         $('#self-intro-error').addClass('show');
-        $('#self-intro-error').text('Your intro can\'t exceed 500 characters.');
+        $('#self-intro-error').text('Your intro can\'t exceed 2000 characters.');
         $("#self-intro-change").addClass('error');
         return false;
     } else {

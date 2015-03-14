@@ -60,6 +60,7 @@ routes = [
     webapp2.Route(r'/submit', video.VideoUpload, name="submit", handler_method="submit"),
     webapp2.Route(r'/submit_post', video.VideoUpload, name="submit_post", handler_method="submit_post"),
     webapp2.Route(r'/cover_upload', video.CoverUpload, name="cover_upload"),
+    webapp2.Route(r'/video/new_tag/dt<video_id:\d+>', video.AddTag, name="add_tag"),
     webapp2.Route(r'/account/video', video.ManageVideo, name="manage_video"),
     webapp2.Route(r'/account/video/edit/dt<video_id:\d+>', video.VideoUpload, name="edit_video", handler_method="edit"),
     webapp2.Route(r'/account/video/edit_post/dt<video_id:\d+>', video.VideoUpload, name="edit_video_post", handler_method="edit_post"),

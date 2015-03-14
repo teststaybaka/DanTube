@@ -19,8 +19,8 @@
 {% block detail %}
 <div id="sub-title-line" class="container">
     <form id="playlist-title-change-form" action="{{ uri_for('edit_playlist_info', playlist_id=playlist.id) }}" method="POST">
-        <input id="playlist-title-change" class="normal-input" type="text" name="title" placeholder="No longer than 100 characters." value="{{ playlist.title }}" />
-        <textarea id="playlist-intro-change" class="normal-input" type="text" name="intro" placeholder="Brief introduction to your playlist.">{{ playlist.intro }}</textarea>
+        <input id="playlist-title-change" class="normal-input" type="text" name="title" placeholder="Title here." value="{{ playlist.title }}" />
+        <textarea id="playlist-intro-change" class="normal-input" type="text" name="intro" placeholder="Optional introduction to your playlist.">{{ playlist.intro }}</textarea>
         <div id="playlist-change-buttons-line">
             <div class="inline-button create-button">Cancel</div>
             <input type="submit" class="inline-button special create-button done" value="Done">

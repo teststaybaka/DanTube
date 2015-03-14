@@ -114,7 +114,7 @@ $(document).ready(function() {
     $('a.refresh-video.random').click(update_random_videos);
     if ($('div.sub-category-block.random').length == 1) update_random_videos();
 
-    $(window).scroll(function() {
+    var initialize_check = function() {
         $('div.sub-category-block.category').each(function() {
             var category = $(this).attr('data-category');
             var subcategory = $(this).attr('data-subcategory');
@@ -144,7 +144,9 @@ $(document).ready(function() {
                 update_page(ranking_query, ranking_video_container, ranking_pagination_container, 'ranking');
             }
         });
-    });
+    }
+    $(window).scroll(initialize_check);
+    initialize_check();
 
     $('div.sub-category-dynamic-list div.pagination-line').on('click', 'a', function() {
         var pagination_container = $(this).parent();

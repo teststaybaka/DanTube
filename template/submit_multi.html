@@ -48,7 +48,7 @@ var video_subcategories = {};
     </div>
     <div class="input-line">
         <label for="video-description" class="form-label">Introduction:</label>
-        <textarea class="normal normal-input" id="video-description" class="normal-input" name="description" tabindex="1" placeholder="No longer than 2000 characters."></textarea>
+        <textarea class="normal normal-input" id="video-description" class="normal-input" name="description" tabindex="1" placeholder="A default introduction if no sub-intruduction specified."></textarea>
         <div class="input-error" id="video-description-error">Please.</div>
     </div>
     <div class="input-line">
@@ -80,9 +80,9 @@ var video_subcategories = {};
         <div class="video-part-line">
             <div class="video-part-drag-wrapper" ondragstart="return false;" ondrop="return false;">
                 <div class="video-part-error">Title too long.</div>
-                <input type="text" class="title-input normal-input" placeholder="Optional" name="sub-title[]">
+                <input type="text" class="title-input normal-input" placeholder="Optional title" name="sub-title[]">
                 <div class="video-part-error">Title too long.</div>
-                <textarea class="intro-input normal-input" placeholder="Optional" name="sub-intro[]"></textarea>
+                <textarea class="intro-input normal-input" placeholder="Optional sub-introduction" name="sub-intro[]"></textarea>
                 <select class="source-select">
                     <option>YouTube</option>
                 </select>

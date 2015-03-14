@@ -62,7 +62,7 @@ class PlaylistInfo(BaseHandler):
                 'error': True,
                 'message': 'Title can\'t be empty.'
             }
-        elif len(self.title) > 100:
+        elif len(self.title) > 400:
             return {
                 'error': True,
                 'message': 'Title too long.'

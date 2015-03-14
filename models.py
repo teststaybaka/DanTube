@@ -659,7 +659,7 @@ class Video(ndb.Model):
 
   def create_index(self, index_name, rank):
     index = search.Index(name=index_name)
-    searchable = " ".join(self.tags + [self.title, self.description]);
+    searchable = " ".join([tag.lower() for tag in self.tags] + [self.title.lower(), self.description.lower()]);
     doc = search.Document(
       doc_id = self.key.urlsafe(), 
       fields = [
@@ -704,7 +704,7 @@ class Video(ndb.Model):
     return Video.video_id_factory.id_counter
 
   @staticmethod
-  def Create(user, description, title, category, subcategory, video_type, tags, allow_tag_add, thumbnail, subtitles, video_clips):
+  def Create(user, description, title, category, subcategory, video_type, tags, allow_tag_add, thumbnail, subtitles, video_clips, duration):
     try:
       id = 'dt'+str(Video.getID())
       logging.info(id)
@@ -726,7 +726,8 @@ class Video(ndb.Model):
         video_clip_titles = subtitles,
         video_clips = video_clips,
         hot_score_updated = current_time,
-        hot_score = current_time
+        hot_score = current_time,
+        duration = duration,
       )
       video.put()
     except Exception, e:

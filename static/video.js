@@ -778,6 +778,51 @@ $(document).ready(function() {
 		});
 	})
 
+	$('div.add-new-tag-button').click(function() {
+		$('input.add-new-tag-input').addClass('show');
+		$('input.add-new-tag-input').focus();
+	});
+
+	$('input.add-new-tag-input').focusout(function() {
+		$('input.add-new-tag-input').removeClass('show');
+	})
+
+	$('#add-new-tag-form').submit(function(evt) {
+		var error = false;
+		var new_tag = $('input.add-new-tag-input').val().trim();
+		if (!new_tag) {
+			pop_ajax_message('You can\'t add an empty tag.', 'error');
+			error = true;
+		} else if (new_tag.length > 100) {
+			pop_ajax_message('Tag is too long (less than 100 characters).', 'error');
+			error = true;
+		}
+
+		if (error) {
+			return false;
+		}
+
+		$.ajax({
+			type: "POST",
+			url: '/video/new_tag/dt'+video_id,
+			data: $(evt.target).serialize(),
+			success: function(result) {
+				if(!result.error) {
+					pop_ajax_message('A new tag has been added!', 'success');
+					$('input.add-new-tag-input').val('');
+				} else {
+					pop_ajax_message(result.message, 'error');
+				}
+			},
+			error: function (xhr, ajaxOptions, thrownError) {
+				console.log(xhr.status);
+				console.log(thrownError);
+				pop_ajax_message(xhr.status+' '+thrownError, 'error');
+			}
+		});
+		return false;
+	});
+
 	var video_intro = document.getElementById('video-intro-box');
 	if (video_intro.scrollHeight > 48) {
 		video_intro.style.height = "48px";
@@ -821,7 +866,7 @@ $(document).ready(function() {
 		button.disabled = true;
 
 		var error = false;
-		var content = $('#comment-textarea').val();
+		var content = $('#comment-textarea').val().trim();
 		if (!content) {
 			pop_ajax_message('You can\'t post empty comment.', 'error');
 			error = true;
@@ -864,7 +909,7 @@ $(document).ready(function() {
 		button.disabled = true;
 
 		var error = false;
-		var content = $('#reply-textarea').val();
+		var content = $('#reply-textarea').val().trim();
 		if (!content) {
 			pop_ajax_message('You can\'t post empty comment.', 'error');
 			error = true;

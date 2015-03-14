@@ -81,8 +81,8 @@ $(document).ready(function() {
             pop_ajax_message('Title can not be empty.', 'error');
             $('#playlist-title-change').addClass('error');
             error = true;
-        } else if (title.length > 100) {
-            pop_ajax_message('Title can not be longer than 100 characters.', 'error');
+        } else if (title.length > 400) {
+            pop_ajax_message('Title can not be longer than 400 characters.', 'error');
             $('#playlist-title-change').addClass('error');
             error = true;
         } else {
@@ -90,7 +90,7 @@ $(document).ready(function() {
         }
 
         var intro = $('#playlist-intro-change').val();
-        if (intro.length > 100) {
+        if (intro.length > 2000) {
             pop_ajax_message('Introduction can not be longer than 2000 characters.', 'error');
             $('#playlist-intro-change').addClass('error');
             error = true;
@@ -103,7 +103,6 @@ $(document).ready(function() {
             return false;
         }
 
-        pop_ajax_message('Change applying...', 'info');
         $.ajax({
             type: "POST",
             url: evt.target.action,

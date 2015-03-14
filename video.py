@@ -84,7 +84,7 @@ class VideoUpload(BaseHandler):
                 'error': True,
                 'message': 'Title must not be empty!'
             }
-        elif len(self.title) > 100:
+        elif len(self.title) > 400:
             return {
                 'error': True,
                 'message': 'Title is too long!'
@@ -108,8 +108,8 @@ class VideoUpload(BaseHandler):
                 'message': 'Category mismatch!'
             }
 
-        self.description = self.request.get('description').strip()
-        if not self.description:
+        self.description = self.request.get('description')
+        if not self.description.strip():
             return {
                 'error': True,
                 'message': 'Description must not be empty!'
@@ -130,7 +130,13 @@ class VideoUpload(BaseHandler):
         self.tags_ori = self.request.get('tags').split(',')
         self.tags = []
         for i in range(0, len(self.tags_ori)):
-            if self.tags_ori[i].strip() != '':
+            tag = self.tags_ori[i].strip()
+            if tag != '':
+                if len(tag) > 100:
+                    return {
+                        'error': True,
+                        'message': 'Tags are too long!'
+                    }
                 self.tags.append(self.tags_ori[i].strip())
         if len(self.tags) == 0:
             return {
@@ -158,8 +164,13 @@ class VideoUpload(BaseHandler):
                 'error': True,
                 'message': 'You must submit at least one video!'
             }
+        elif len(self.raw_urls) > 500:
+            return {
+                'error': True,
+                'message': 'Too many parts!'
+            }
         for i in range(0, len(self.raw_urls)):
-            raw_url = self.raw_urls[i];
+            raw_url = self.raw_urls[i].strip();
             if not raw_url:
                 return {
                     'error': True,
@@ -184,8 +195,8 @@ class VideoUpload(BaseHandler):
 
         self.subtitles = self.request.POST.getall('sub-title[]')
         for i in range(0, len(self.subtitles)):
-            subtitle = self.subtitles[i]
-            if len(subtitle) > 100:
+            subtitle = self.subtitles[i].strip()
+            if len(subtitle) > 400:
                 return {
                     'error': True,
                     'message': 'Sub title too long!',
@@ -297,7 +308,7 @@ class VideoUpload(BaseHandler):
                     raw_url=self.raw_urls[i],
                     source=self.sources[i],
                     vid=self.vids[i]
-                    )
+                )
                 self.video_clips.append(video_clip.key)
         except Exception, e: # TODO: a regular thread is required to remove unused clip
             for i in range(0, len(self.video_clips)):
@@ -468,6 +479,50 @@ class VideoUpload(BaseHandler):
             'message': 'Video updated successfully!'
         }))
 
+class AddTag(BaseHandler):
+    @login_required
+    def post(self, video_id):
+        self.response.headers['Content-Type'] = 'application/json'
+        video = models.Video.get_by_id('dt'+video_id)
+        if not video:
+            self.response.out.write(json.dumps({
+                'error': True,
+                'message': 'Video not found.'
+            }))
+            return
+
+        new_tag = self.request.get('new-tag').strip()
+        if not new_tag:
+            self.response.out.write(json.dumps({
+                'error': True,
+                'message': 'Empty tag.'
+            }))
+            return
+        elif len(new_tag) > 100:
+            self.response.out.write(json.dumps({
+                'error': True,
+                'message': 'Tag too long.'
+            }))
+            return
+
+        if len(video.tags) > 20:
+            self.response.out.write(json.dumps({
+                'error': True,
+                'message': 'Can not add more tags.'
+            }))
+            return
+
+        video.tags.append(new_tag)
+        video.put()
+        video.create_index('videos_by_created', models.time_to_seconds(video.created) )
+        video.create_index('videos_by_hits', video.hits )
+        video.create_index('videos_by_favors', video.favors )
+        video.create_index('videos_by_user' + str(video.uploader.id()), models.time_to_seconds(video.created) )
+        self.response.out.write(json.dumps({
+            'error': False,
+            'message': 'Video updated successfully!'
+        }))
+
 class DeleteVideo(BaseHandler):
     @login_required
     def post(self):
@@ -577,7 +632,6 @@ class ManageVideo(BaseHandler):
         self.render('manage_video', context)
 
 class RandomVideos(BaseHandler):
-    #Assuming that there are always more videos than requeseted
     def post(self):
         self.response.headers['Content-Type'] = 'application/json'
         try:
@@ -588,7 +642,7 @@ class RandomVideos(BaseHandler):
                 'message': 'Size invalid'
             }))
             return
-        size = min(100, models.Video.get_video_count(), size)
+        size = min(models.Video.get_video_count(), size)
 
         try:
             fetched = {}
@@ -599,15 +653,15 @@ class RandomVideos(BaseHandler):
             for i in range(0, size):
                 while True:
                     random_id = random.randint(1, max_id)
-                    # if not fetched.get(random_id):
-                    video = models.Video.get_by_id('dt'+str(random_id))
-                    if video is not None:
-                        uploader = video.uploader.get()
-                        video_info = video.get_basic_info()
-                        video_info['uploader'] = uploader.get_public_info()
-                        result['videos'].append(video_info)
-                        fetched[random_id] = 1;
-                        break
+                    if not fetched.get(random_id):
+                        video = models.Video.get_by_id('dt'+str(random_id))
+                        if video is not None:
+                            uploader = video.uploader.get()
+                            video_info = video.get_basic_info()
+                            video_info['uploader'] = uploader.get_public_info()
+                            result['videos'].append(video_info)
+                            fetched[random_id] = 1;
+                            break
 
             self.response.out.write(json.dumps(result))
         except Exception, e:

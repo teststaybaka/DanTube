@@ -5,7 +5,7 @@ class Video(BaseHandler):
     def get(self, video_id):
         video = models.Video.get_by_id('dt'+video_id)
         if not video:
-            self.notify('Video not found.', 404)
+            self.notify('Video not found or deleted.', 404)
             return
 
         try:
@@ -191,7 +191,7 @@ class Comment(BaseHandler):
 
         user = self.user
         content = self.request.get('content')
-        if not content:
+        if not content.strip():
             self.response.out.write(json.dumps({
                 'error': True,
                 'message': 'No content.'
@@ -243,7 +243,7 @@ class Comment(BaseHandler):
 
         user = self.user
         content = self.request.get('content')
-        if not content:
+        if not content.strip():
             self.response.out.write(json.dumps({
                 'error': True,
                 'message': 'No content.'

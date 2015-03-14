@@ -1,9 +1,9 @@
 video_part_line_html = '<div class="video-part-line">\
             <div class="video-part-drag-wrapper" ondragstart="return false;" ondrop="return false;">\
                 <div class="video-part-error">Title too long.</div>\
-                <input type="text" class="title-input normal-input" placeholder="Optional" name="sub-title[]">\
+                <input type="text" class="title-input normal-input" placeholder="Optional title" name="sub-title[]">\
                 <div class="video-part-error">Title too long.</div>\
-                <textarea class="intro-input normal-input" placeholder="Optional" name="sub-intro[]"></textarea>\
+                <textarea class="intro-input normal-input" placeholder="Optional sub-introduction" name="sub-intro[]"></textarea>\
                 <select class="source-select">\
                     <option>YouTube</option>\
                 </select>\
@@ -21,9 +21,9 @@ function title_check() {
         $('#video-title-error').text('Please enter a title for your video');
         $('#video-total-title').addClass('error');
         return false;
-    } else if (title.length > 100) {
+    } else if (title.length > 400) {
         $('#video-title-error').addClass('show');
-        $('#video-title-error').text('Video title can\'t exceed 100 characters.');
+        $('#video-title-error').text('Video title can\'t exceed 400 characters.');
         $('#video-total-title').addClass('error');
         return false;
     } else {
@@ -36,9 +36,9 @@ function title_check() {
 function sub_title_check(target) {
     var title = $(target).val().trim();
     var error = $(target).prev();
-    if (title.length > 100) {
+    if (title.length > 400) {
         error.addClass('show');
-        error.text('No longer than 100 characters.');
+        error.text('No longer than 400 characters.');
         $(target).addClass('error');
         return false;
     } else {
@@ -86,8 +86,15 @@ function video_tag_check() {
     var tags_ori = $('#video-tags').val().split(',');
     var tags = []
     for (var i = 0; i < tags_ori.length; i++) {
-        if (tags_ori[i].trim() != '') {
-            tags.push(tags_ori[i].trim());
+        tag = tags_ori[i].trim()
+        if (tag != '') {
+            if (tag.length > 100) {
+                $('#video-tags-error').addClass('show');
+                $('#video-tags-error').text('All tags must be no longer than 100 characters.');
+                $('#video-tags').addClass('error');
+                return false;
+            }
+            tags.push(tag);
         }
     }
     

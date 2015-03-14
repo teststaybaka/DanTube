@@ -217,7 +217,6 @@ class Home(BaseHandler):
         context = {}
         context['top_ten_videos'] = []
         videos, total_page = models.Video.get_page(order=models.Video.hits, page=1, page_size=10)
-        logging.info(videos)
         for video in videos:
             uploader = video.uploader.get()
             video_info = video.get_basic_info()

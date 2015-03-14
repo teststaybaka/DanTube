@@ -329,7 +329,7 @@ class ChangeInfo(BaseHandler):
 
         user = self.user
         nickname = self.request.get('nickname').strip()
-        intro = self.request.get('intro').strip()
+        intro = self.request.get('intro')
 
         if nickname == user.nickname and intro == user.intro:
             self.response.out.write(json.dumps({'error':True,'message': 'Already applied.'}))
@@ -343,8 +343,8 @@ class ChangeInfo(BaseHandler):
             else:
                 user.nickname = nickname
 
-        if len(intro) > 500:
-            self.response.out.write(json.dumps({'error':True,'message': 'Intro can\'t exceed 500 characters.'}))
+        if len(intro) > 2000:
+            self.response.out.write(json.dumps({'error':True,'message': 'Intro can\'t exceed 2000 characters.'}))
             return
         elif intro != user.intro:
             user.intro = intro
