@@ -74,7 +74,7 @@
         <div id="uploader-link">
           <a class="blue-link" href="{{ uploader.space_url}}" target="_blank">{{ uploader.nickname }}</a>
         </div>
-        <div class="inline-button" id="subscribe-button">+ Subscribe</div>
+        <div class="inline-button" id="subscribe-button"><span class="subscribe-add-icon"></span>Subscribe</div>
       </div>
       <div id="uploader-intro">{{ uploader.intro }}</div>
     </div>
@@ -115,11 +115,11 @@
         <div id="progress-pointer" ondragstart="return false;" ondrop="return false;" onselectstart="return false;"></div>
         <div id="progress-tip">23:23</div>
       </div>
-      <div id="shooter" class="container">
+      <form id="shooter" class="container">
         <div id="danmaku-color-setting"></div>
-        <input id="danmaku-input" class="normal-input" type="text" name="danmaku">
-        <input id="fire-button" type="button" value="Fire!">
-      </div>
+        <input id="danmaku-input" class="normal-input" type="text" name="content">
+        <input id="fire-button" type="submit" value="Fire!">
+      </form>
     </div>
   </div>
   <div id="danmaku-pool">
@@ -135,17 +135,19 @@
       {% for tag in video.tags %}
       <a href="{{ uri_for('search') }}?keywords={{ tag }}" target="_blank" class="tags-link">{{ tag }}</a>
       {% endfor %}
+      {% if video.allow_tag_add %}
       <form id="add-new-tag-form">
         <div class="add-new-tag-button" title="Add a new tag"></div>
         <input class="add-new-tag-input normal-input" type="text" name="new-tag">
       </form>
+      {% endif %}
     </div>
     <div id="video-intro-box">{% if video.cur_subintro %}{{ video.cur_subintro }}{% else %}{{ video.description }}{% endif %}</div>
     <div id="video-intro-display-button" class="display-button intro"><span class="intro-display-text">SHOW MORE</span><span class="display-arrow"></span></div>
     <div class="container">
-      <div class="operation-button" title="Like this!"><span class="operation-icon like"></span><span class="commas_number">{{ video.likes }}</span></div>
+      <div class="operation-button" title="Like it!"><span class="operation-icon like"></span><span class="commas_number">{{ video.likes }}</span></div>
       <div class="operation-button" title="Strongly recommend!"><span class="operation-icon bullets"></span><span class="commas_number">{{ video.bullets }}</span></div>
-      <div class="operation-button" title="It's my favorite!"><span class="operation-icon favors"></span><span class="commas_number">{{ video.favors }}</span></div>
+      <div class="operation-button" title="It's my favorite!" id="add-to-favorite"><span class="operation-icon favors"></span><span class="commas_number">{{ video.favors }}</span></div>
     </div>
   </div>
   <div id="comments-block-title">Comments <span class="commas_number"></span></div>

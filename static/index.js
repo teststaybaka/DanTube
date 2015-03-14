@@ -129,7 +129,7 @@ $(document).ready(function() {
                 page_size = wide_dynamic_page_size;
                 renderType = 'wide_preview';
             }
-            var order = 'last_liked';
+            var order = 'last_updated';
             if ($(this).hasClass('newest')) {
                 order = 'created';
             }
@@ -161,7 +161,7 @@ $(document).ready(function() {
             page_size = wide_dynamic_page_size;
             renderType = 'wide_preview';
         }
-        var order = 'last_liked';
+        var order = 'last_updated';
         if (sub_category_block.hasClass('newest')) {
             order = 'created';
         }
@@ -195,7 +195,7 @@ $(document).ready(function() {
             page_size = wide_dynamic_page_size;
             renderType = 'wide_preview';
         }
-        var order = 'last_liked';
+        var order = 'last_updated';
         if (sub_category_block.hasClass('newest')) {
             order = 'created';
         }

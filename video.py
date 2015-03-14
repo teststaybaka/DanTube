@@ -2,7 +2,6 @@ from views import *
 from PIL import Image
 from google.appengine.api import images
 import urlparse
-import random
 
 YOUTUBE_API_URL = "https://www.googleapis.com/youtube/v3"
 YOUTUBE_API_KEY = "AIzaSyBbf3cs6Nw483po40jw7hZLejmdrgwozWc"
@@ -505,6 +504,12 @@ class AddTag(BaseHandler):
                 'message': 'Video not found.'
             }))
             return
+        if not video.allow_tag_add:
+            self.response.out.write(json.dumps({
+                'error': True,
+                'message': 'You are not allowed to add more tags to this video.'
+            }))
+            return
 
         new_tag = self.request.get('new-tag').strip()
         if not new_tag:
@@ -520,10 +525,17 @@ class AddTag(BaseHandler):
             }))
             return
 
-        if len(video.tags) > 20:
+        if len(video.tags) >= 20:
             self.response.out.write(json.dumps({
                 'error': True,
                 'message': 'Can not add more tags.'
+            }))
+            return
+
+        if new_tag in video.tags:
+            self.response.out.write(json.dumps({
+                'error': True,
+                'message': 'Tag already existed.'
             }))
             return
 
@@ -645,43 +657,3 @@ class ManageVideo(BaseHandler):
         context['total_found'] = total_found
         context.update(self.get_page_range(page, total_pages) )
         self.render('manage_video', context)
-
-class RandomVideos(BaseHandler):
-    def post(self):
-        self.response.headers['Content-Type'] = 'application/json'
-        try:
-            size = int(self.request.get('size'))
-        except ValueError:
-            self.response.out.write(json.dumps({
-                'error': True,
-                'message': 'Size invalid'
-            }))
-            return
-        size = min(models.Video.get_video_count(), size)
-
-        try:
-            fetched = {}
-            result = {'error': False}
-            result['videos'] = []
-            max_id = models.Video.get_max_id()
-
-            for i in range(0, size):
-                while True:
-                    random_id = random.randint(1, max_id)
-                    if not fetched.get(random_id):
-                        video = models.Video.get_by_id('dt'+str(random_id))
-                        if video is not None:
-                            uploader = video.uploader.get()
-                            video_info = video.get_basic_info()
-                            video_info['uploader'] = uploader.get_public_info()
-                            result['videos'].append(video_info)
-                            fetched[random_id] = 1;
-                            break
-
-            self.response.out.write(json.dumps(result))
-        except Exception, e:
-            logging.info('error occurred fetching random videos')
-            self.response.out.write(json.dumps({
-                'error': True,
-                'message': str(e)
-            }))

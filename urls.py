@@ -85,7 +85,7 @@ routes = [
     webapp2.Route(r'/video/like/dt<video_id:\d+>', watch.Like, name="like"),
 
     webapp2.Route(r'/video/category', views.CategoryVideo, name="category_video"),
-    webapp2.Route(r'/video/random', video.RandomVideos, name="random_videos"),
+    webapp2.Route(r'/video/random', views.RandomVideo, name="random_video"),
     webapp2.Route(r'/search', views.Search, name="search"),
     webapp2.Route(r'/search/playlist', views.SearchPlaylist, name="search_playlist"),
     webapp2.Route(r'/search/uper', views.SearchUPer, name="search_uper"),

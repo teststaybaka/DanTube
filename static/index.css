@@ -257,7 +257,7 @@ a.category-title:hover, a.refresh-video:hover {
 
 a.category-title.no-link {
     cursor: default;
-    color: rgb(100,100,100);   
+    color: rgb(100,100,100);
 }
 
 div.side-title {

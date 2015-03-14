@@ -207,7 +207,8 @@ class Comment(BaseHandler):
         at_users = self.request.POST.getall('ats[]')
 
         comment = models.Comment.Create(video, user, content)
-        video.comment_counter = comment.floorth 
+        video.comment_counter = comment.floorth
+        video.last_updated = datetime.now()
         video.put()
 
         self.response.out.write(json.dumps({
@@ -273,7 +274,7 @@ class Like(BaseHandler):
         video = models.Video.get_by_id('dt'+video_id)
         if video is not None:
             video.likes += 1
-            video.last_liked = datetime.now()
+            video.last_updated = datetime.now()
             video.put()
             self.response.out.write(json.dumps({
                 'message': 'success'
@@ -311,28 +312,27 @@ class Danmaku(BaseHandler):
     def post(self, video_id):
         self.response.headers['Content-Type'] = 'application/json'
         user = self.user
-
         video = models.Video.get_by_id('dt'+video_id)
-        if video is not None:
-            danmaku = models.Danmaku(
-                video = video.key,
-                timestamp = float(self.request.get('timestamp')),
-                creator = user.key,
-                content = self.request.get('content'),
-                protected = False
-            )
-            danmaku.put()
-
-            self.response.out.write(json.dumps({
-                'timestamp': danmaku.timestamp,
-                'content': danmaku.content,
-                'creator': user.nickname,
-                'created': danmaku.created.strftime("%m-%d %H:%M")
-            }))
-            video.danmaku_counter += 1
-            video.put()
-        else:
+        if not video:
             self.response.out.write(json.dumps({
                 'error': True,
                 'message': 'video not found',
             }))
+
+        danmaku = models.Danmaku(
+            video = video.key,
+            timestamp = float(self.request.get('timestamp')),
+            creator = user.key,
+            content = self.request.get('content'),
+            protected = False
+        )
+        danmaku.put()
+
+        self.response.out.write(json.dumps({
+            'timestamp': danmaku.timestamp,
+            'content': danmaku.content,
+            'creator': user.nickname,
+            'created': danmaku.created.strftime("%m-%d %H:%M")
+        }))
+        video.danmaku_counter += 1
+        video.put()

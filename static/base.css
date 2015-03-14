@@ -881,3 +881,22 @@ div.emoticons-option:hover {
     color: rgb(0,140,255);
     background-color: rgb(240,240,240);
 }
+
+span.subscribe-add-icon {
+    display: inline-block;
+    vertical-align: top;
+    width: 10px;
+    height: 16px;
+    background-repeat: no-repeat;
+    background-image: url("/static/img/basic_icons.png");
+    background-position: 0px -875px;
+    margin-right: 4px;
+}
+
+#subscribe-button:hover span.subscribe-add-icon {
+    background-position: -22px -875px;
+}
+
+#subscribe-button:active span.subscribe-add-icon {
+    background-position: 0 -893px;
+}

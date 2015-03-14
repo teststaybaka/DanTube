@@ -658,14 +658,15 @@ $(document).ready(function() {
 		$('div.more-episode').remove();
 	});
 
-	$('#add-to-favorite').click(function(e) {
-		e.preventDefault();
+	$('#add-to-favorite').click(function() {
 		$.ajax({
 			type: "POST",
 			url: '/account/favor/dt'+video_id,
 			success: function(result) {
 				if(!result.error) {
-					pop_ajax_message('This video has been added to your favorites.', 'success');
+					pop_ajax_message('This video has been added to your favorites successfully.', 'success');
+					console.log(result.favors)
+					$('#add-to-favorite').children('span.commas_number').text(numberWithCommas(result.favors));
 				} else {
 					pop_ajax_message(result.message, 'error');
 				}
@@ -676,33 +677,8 @@ $(document).ready(function() {
 				pop_ajax_message(xhr.status+' '+thrownError, 'error');
 			}
 		});
+		return false;
 	});
-
-	// Retrieve Danmaku
-	// $.ajax({
-	// 	type: "GET",
-	// 	url: '/video/danmaku/' + url_suffix,
-	// 	success: function(result) {
-	// 		if(!result.error) {
-	// 			console.log(result.length);
-	// 			for(var i = 0; i < result.length; i++) {
-	// 				danmaku_list.push(result[i]);
-	// 			}
-	// 			// quick_sort(danmaku_list, 0, danmaku_list.length - 1, danmaku_timestamp_lower_compare);
-	// 			quick_sort(danmaku_list, 0, danmaku_list.length - 1, danmaku_date_lower_compare);
-	// 			generate_danmaku_pool_list();
-
-	// 			danmaku = result;
-	// 			quick_sort(danmaku, 0, danmaku.length-1, danmaku_timestamp_lower_compare);
-	// 		} else {
-	// 			console.log(result);
-	// 		}
-	// 	},
-	// 	error: function (xhr, ajaxOptions, thrownError) {
-	// 		console.log(xhr.status);
-	// 		console.log(thrownError);
-	// 	}
-	// });
 
 	// Post Danmaku
 	$('#fire-button').click(function(e){
@@ -737,6 +713,32 @@ $(document).ready(function() {
 			});
 		}
 	});
+
+	// Retrieve Danmaku
+	// $.ajax({
+	// 	type: "GET",
+	// 	url: '/video/danmaku/' + url_suffix,
+	// 	success: function(result) {
+	// 		if(!result.error) {
+	// 			console.log(result.length);
+	// 			for(var i = 0; i < result.length; i++) {
+	// 				danmaku_list.push(result[i]);
+	// 			}
+	// 			// quick_sort(danmaku_list, 0, danmaku_list.length - 1, danmaku_timestamp_lower_compare);
+	// 			quick_sort(danmaku_list, 0, danmaku_list.length - 1, danmaku_date_lower_compare);
+	// 			generate_danmaku_pool_list();
+
+	// 			danmaku = result;
+	// 			quick_sort(danmaku, 0, danmaku.length-1, danmaku_timestamp_lower_compare);
+	// 		} else {
+	// 			console.log(result);
+	// 		}
+	// 	},
+	// 	error: function (xhr, ajaxOptions, thrownError) {
+	// 		console.log(xhr.status);
+	// 		console.log(thrownError);
+	// 	}
+	// });
 
 	$('#uploader-subscribe').click(function(e) {
 		var uploader_id = $(this).attr('uid');
@@ -810,7 +812,9 @@ $(document).ready(function() {
 				if(!result.error) {
 					pop_ajax_message('A new tag has been added!', 'success');
 					$('input.add-new-tag-input').val('');
+					$('input.add-new-tag-input').focusout();
 				} else {
+					$('input.add-new-tag-input').val('');
 					pop_ajax_message(result.message, 'error');
 				}
 			},

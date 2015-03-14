@@ -1,5 +1,4 @@
 from views import *
-import random
 
 class VideoPageTest(webapp2.RequestHandler):
     def get(self):

@@ -34,10 +34,8 @@ class User(webapp2_extras.appengine.auth.models.User):
   default_avatar = ndb.IntegerProperty(default=1, choices=[1,2,3,4,5,6], indexed=False)
   spacename = ndb.StringProperty(indexed=False)
   css_file = ndb.BlobKeyProperty(indexed=False)
-  # favorites = ndb.KeyProperty(kind='Video', repeated=True)
   favorites = ndb.StructuredProperty(Favorite, repeated=True, indexed=False)
   favorites_limit = ndb.IntegerProperty(default=100, required=True, indexed=False)
-  # history = ndb.KeyProperty(kind='Video', repeated=True)
   history = ndb.StructuredProperty(History, repeated=True, indexed=False)
   subscriptions = ndb.KeyProperty(kind='User', repeated=True, indexed=False)
   bullets = ndb.IntegerProperty(required=True, default=0, indexed=False)
@@ -295,7 +293,7 @@ URL_NAME_DICT = {
     'Tokusatsu': 'tokusatsu',
     'Trailer/Highlights': 'trailer',
   }],
-};
+}
 
 MAX_QUERY_RESULT = 1000
 DEFAULT_PAGE_SIZE = 10
@@ -424,7 +422,7 @@ class VideoIDFactory(ndb.Model):
 
 class Video(ndb.Model):
   created = ndb.DateTimeProperty(auto_now_add=True)
-  last_liked = ndb.DateTimeProperty(default=datetime.fromtimestamp(0))
+  last_updated = ndb.DateTimeProperty(auto_now_add=True, default=datetime.fromtimestamp(0))
   uploader = ndb.KeyProperty(kind='User', required=True)
   description = ndb.TextProperty(required=True, indexed=False)
   title = ndb.StringProperty(required=True, indexed=False)
@@ -631,16 +629,16 @@ class Video(ndb.Model):
       'comment_counter': self.comment_counter,
       'likes': self.likes,
       'favors': self.favors,
-      'last_liked': self.last_liked.strftime("%Y-%m-%d %H:%M:%S"),
+      'last_updated': self.last_updated.strftime("%Y-%m-%d %H:%M:%S"),
       'tags': self.tags,
       'type': self.video_type,
+      'allow_tag_add': self.allow_tag_add,
     }
     return basic_info
 
   def get_full_info(self):
     full_info = {
       'clips': [],
-      'allow_tag_add': self.allow_tag_add,
     }
     clips = ndb.get_multi(self.video_clips)
     for i in range(0, len(self.video_clips)):
@@ -770,16 +768,17 @@ class Video(ndb.Model):
     self.key.delete()
 
 class Danmaku(ndb.Model):
-  video = ndb.KeyProperty(kind='Video', required=True, indexed=False)
   timestamp = ndb.FloatProperty(required=True, indexed=False)
   content = ndb.StringProperty(required=True, indexed=False)
   position = db.StringProperty(required=True, default='RightToLeft', choices=['RightToLeft', 'Top', 'Bottom'], indexed=False)
   color = db.IntegerProperty(required=True, default=255*256*256+255*256+255, indexed=False)
-  # creator = db.ReferenceProperty(User)
-  # order = ndb.IntegerProperty(required=True)
-  protected = ndb.BooleanProperty(required=True, indexed=False)
+  protected = ndb.BooleanProperty(required=True, default=False, indexed=False)
   creator = ndb.KeyProperty(kind='User', required=True)
   created = ndb.DateTimeProperty(auto_now_add=True, indexed=False)
+
+class DanmakuPool(ndb.Model):
+  video = ndb.KeyProperty(kind='Video', required=True, indexed=False)
+  danmaku_list = ndb.StructuredProperty(Danmaku, repeated=True, indexed=False)
 
 class Comment(ndb.Model):
   creator = ndb.KeyProperty(kind='User', required=True, indexed=False) # add an Activity class to record it

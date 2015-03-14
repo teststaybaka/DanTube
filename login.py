@@ -1,6 +1,5 @@
 from views import *
 from google.appengine.api import mail
-import random
 import time
 
 class EmailCheck(BaseHandler):

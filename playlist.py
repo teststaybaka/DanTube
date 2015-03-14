@@ -349,11 +349,14 @@ class RemoveVideo(BaseHandler):
             if (not video) or video.playlist_belonged.id() != playlist.key.id() or video.uploader.id() != user.key.id():
                 continue
 
-            idx = playlist.videos.index(video.key)
-            playlist.videos.pop(idx)
-            video.playlist_belonged = None
-            video.put()
-            deleted_ids.append(video_id)
+            try:
+                idx = playlist.videos.index(video.key)
+                playlist.videos.pop(idx)
+                video.playlist_belonged = None
+                video.put()
+                deleted_ids.append(video_id)
+            except Exception, e:
+                continue
 
         if len(deleted_ids) == 0:
             self.response.out.write(json.dumps({

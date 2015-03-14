@@ -9,6 +9,7 @@ import mimetools
 import mimetypes
 import urllib
 import urllib2
+import random
 
 from datetime import datetime
 from jinja2 import Undefined
@@ -253,6 +254,46 @@ class Subcategory(BaseHandler):
             context['top_ten_videos'].append(video_info)
         self.render('subcategory', context)
 
+class RandomVideo(BaseHandler):
+    def post(self):
+        self.response.headers['Content-Type'] = 'application/json'
+        try:
+            size = int(self.request.get('size'))
+        except ValueError:
+            self.response.out.write(json.dumps({
+                'error': True,
+                'message': 'Size invalid'
+            }))
+            return
+        size = min(models.Video.get_video_count(), size)
+
+        try:
+            fetched = {}
+            result = {'error': False}
+            result['videos'] = []
+            max_id = models.Video.get_max_id()
+
+            for i in range(0, size):
+                while True:
+                    random_id = random.randint(1, max_id)
+                    if not fetched.get(random_id):
+                        video = models.Video.get_by_id('dt'+str(random_id))
+                        if video is not None:
+                            uploader = video.uploader.get()
+                            video_info = video.get_basic_info()
+                            video_info['uploader'] = uploader.get_public_info()
+                            result['videos'].append(video_info)
+                            fetched[random_id] = 1;
+                            break
+
+            self.response.out.write(json.dumps(result))
+        except Exception, e:
+            logging.info('error occurred fetching random videos:'+str(e))
+            self.response.out.write(json.dumps({
+                'error': True,
+                'message': str(e)
+            }))
+
 class CategoryVideo(BaseHandler):
     def post(self):
         # models.Video.fetch_page()
@@ -296,8 +337,8 @@ class CategoryVideo(BaseHandler):
             order = models.Video.hot_score
         elif order_str == 'created': # newest upload
             order = models.Video.created
-        elif order_str == 'last_liked': # neweset activity
-            order = models.Video.last_liked
+        elif order_str == 'last_updated': # neweset activity
+            order = models.Video.last_updated
         else:
             self.response.out.write(json.dumps({
                 'error': True,
