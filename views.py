@@ -217,7 +217,6 @@ class Home(BaseHandler):
         context = {}
         context['top_ten_videos'] = []
         videos, total_page = models.Video.get_page(order=models.Video.hits, page=1, page_size=10)
-        logging.info(videos)
         for video in videos:
             uploader = video.uploader.get()
             video_info = video.get_basic_info()
@@ -421,7 +420,6 @@ class Search(BaseHandler):
             for video_doc in result.results:
                 video_keys.append(ndb.Key(urlsafe=video_doc.doc_id))
             videos = ndb.get_multi(video_keys)
-
             for i in range(0, len(videos)):
                 video = videos[i]
                 video_info = video.get_basic_info()
@@ -435,6 +433,7 @@ class Search(BaseHandler):
             self.render('search', context)
         except Exception, e:
             logging.info("search failed")
+            logging.info(e)
             self.notify('Video search error.');
 
         # total_pages = -(-total_videos // page_size)
@@ -506,6 +505,10 @@ class SearchPlaylist(BaseHandler):
         
 class SearchUPer(BaseHandler):
     def get(self):
+        # all_users = models.User.query().fetch()
+        # for user in all_users:
+        #     user.create_index()
+            
         page_size = models.DEFAULT_PAGE_SIZE
         try:
             page = int(self.request.get('page') )

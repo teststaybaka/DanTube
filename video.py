@@ -168,7 +168,9 @@ class VideoUpload(BaseHandler):
                 }
             else:
                 res = models.VideoClip.parse_url(raw_url)
-                youtube_api_url = YOUTUBE_API_URL + '/videos?id=' + res['vid'] + '&part=contentDetails&key=' + YOUTUBE_API_KEY
+                youtube_api_url = YOUTUBE_API_URL + '/videos?key=' + YOUTUBE_API_KEY + '&id=' + res['vid'] + '&part=contentDetails'
+                if i == 0:
+                    youtube_api_url += ',snippet'
                 vlist = json.load(urllib2.urlopen(youtube_api_url))['items']
                 if len(vlist) < 1:
                     return {
@@ -181,6 +183,18 @@ class VideoUpload(BaseHandler):
                 vinfo = vlist[0]
                 duration = ISO_8601_to_seconds(vinfo['contentDetails']['duration'])
                 self.durations.append(duration)
+                if i == 0:
+                    self.default_thumbnail = res['vid']
+                    thumbnails = vinfo['snippet']['thumbnails']
+                    if thumbnails.get('maxres'):
+                        self.default_thumbnail += ':maxres'
+                    elif thumbnails.get('standard'):
+                        self.default_thumbnail += ':sd'
+                    elif thumbnails.get('high'):
+                        self.default_thumbnail += ':hq'
+                    else:
+                        self.default_thumbnail += ':mq'
+
 
         self.subtitles = self.request.POST.getall('sub-title[]')
         for i in range(0, len(self.subtitles)):
@@ -321,6 +335,7 @@ class VideoUpload(BaseHandler):
                 tags = self.tags,
                 allow_tag_add = self.allow_tag_add,
                 thumbnail = self.thumbnail_key,
+                default_thumbnail = self.default_thumbnail,
                 subtitles = self.subtitles,
                 video_clips = self.video_clips,
             )

@@ -608,8 +608,9 @@ class Video(ndb.Model):
 
   def get_basic_info(self):
     if self.thumbnail is None:
-      thumbnail_url = 'http://img.youtube.com/vi/' + self.default_thumbnail + '/mqdefault.jpg'
-      thumbnail_url_hq = 'http://img.youtube.com/vi/' + self.default_thumbnail + '/maxresdefault.jpg'
+      res = self.default_thumbnail.split(':')
+      thumbnail_url = 'http://img.youtube.com/vi/' + res[0] + '/mqdefault.jpg'
+      thumbnail_url_hq = 'http://img.youtube.com/vi/' + res[0] + '/' + res[1] + 'default.jpg'
     else:
       thumbnail_url = images.get_serving_url(self.thumbnail, size=240)
       thumbnail_url_hq = images.get_serving_url(self.thumbnail)
@@ -704,7 +705,7 @@ class Video(ndb.Model):
     return Video.video_id_factory.id_counter
 
   @staticmethod
-  def Create(user, description, title, category, subcategory, video_type, tags, allow_tag_add, thumbnail, subtitles, video_clips):
+  def Create(user, description, title, category, subcategory, video_type, duration, tags, allow_tag_add, thumbnail, default_thumbnail, subtitles, video_clips):
     try:
       id = 'dt'+str(Video.getID())
       logging.info(id)
@@ -719,10 +720,11 @@ class Video(ndb.Model):
         category = category,
         subcategory = subcategory,
         video_type = video_type,
+        duration = duration,
         tags = tags,
         allow_tag_add = allow_tag_add,
         thumbnail = thumbnail,
-        default_thumbnail = video_clips[0].get().vid,
+        default_thumbnail = default_thumbnail,
         video_clip_titles = subtitles,
         video_clips = video_clips,
         hot_score_updated = current_time,
