@@ -103,16 +103,16 @@
   <div id="uper-intro">{% if host.intro %}{{ host.intro }}{% else %}This UPer is too lazy to speak.{% endif %}</div>
   <div id="uper-statistic">
     <div class="uper-statistic-entry">
-      <label class="uper-statistic-label">Videos:</label>
-      <div class="uper-statistic-content">{{ host.videos_submitted }}</div>
+      <label class="uper-statistic-label">Views:</label>
+      <div class="uper-statistic-content"><span class="commas_number">{{ host.videos_watched }}</span></div>
     </div>
     <div class="uper-statistic-entry">
-      <label class="uper-statistic-label">Views:</label>
-      <div class="uper-statistic-content">{{ host.videos_watched }}</div>
+      <label class="uper-statistic-label">Videos:</label>
+      <div class="uper-statistic-content"><span class="commas_number">{{ host.videos_submitted }}</span></div>
     </div>
     <div class="uper-statistic-entry">
       <label class="uper-statistic-label">Subscribers:</label>
-      <div class="uper-statistic-content">{{ host.subscribers_counter }}</div>
+      <div class="uper-statistic-content"><span class="commas_number">{{ host.subscribers_counter }}</span></div>
     </div>
   </div>
   <div id="recent-visiter-box">

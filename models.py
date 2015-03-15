@@ -15,7 +15,7 @@ import logging
 import math
 
 def time_to_seconds(time):
-  return int((time - datetime(2000, 1, 1)).total_seconds())
+  return int((time - datetime(1970, 1, 1)).total_seconds())
 
 class History(ndb.Model):
   video = ndb.KeyProperty(kind='Video', required=True, indexed=False)
@@ -38,6 +38,7 @@ class User(webapp2_extras.appengine.auth.models.User):
   favorites_limit = ndb.IntegerProperty(default=100, required=True, indexed=False)
   history = ndb.StructuredProperty(History, repeated=True, indexed=False)
   subscriptions = ndb.KeyProperty(kind='User', repeated=True, indexed=False)
+  
   bullets = ndb.IntegerProperty(required=True, default=0, indexed=False)
   videos_submitted = ndb.IntegerProperty(required=True, default=0, indexed=False)
   playlists_created = ndb.IntegerProperty(required=True, default=0, indexed=False)
@@ -387,6 +388,7 @@ class VideoClip(ndb.Model):
   vid = ndb.StringProperty(required=True, indexed=False)
   duration = ndb.IntegerProperty(required=True, indexed=False, default=0)
   source = ndb.StringProperty(required=True, choices=['youtube'])
+  danmaku_pools = ndb.KeyProperty(kind='DanmakuPool', repeated=True, indexed=False)
 
   @staticmethod
   def parse_url(raw_url):
@@ -429,12 +431,12 @@ class Video(ndb.Model):
   category = ndb.StringProperty(required=True, choices=Video_Category)
   subcategory = ndb.StringProperty(required=True)
   video_type = ndb.StringProperty(required=True, choices=['original', 'republish'], default='republish')
-  duration = ndb.IntegerProperty(required=True, indexed=False, default=0)
-  thumbnail = ndb.BlobKeyProperty(indexed=False)
+  duration = ndb.IntegerProperty(required=True, default=0, indexed=False)
 
   video_clips = ndb.KeyProperty(kind='VideoClip', repeated=True, indexed=False)
   video_clip_titles = ndb.StringProperty(repeated=True, indexed=False)
   default_thumbnail = ndb.StringProperty(indexed=False)
+  thumbnail = ndb.BlobKeyProperty(indexed=False)
 
   playlist_belonged = ndb.KeyProperty(kind='PlayList', indexed=False)
   allow_tag_add = ndb.BooleanProperty(required=True, default=True, indexed=False)
@@ -447,7 +449,6 @@ class Video(ndb.Model):
   likes = ndb.IntegerProperty(required=True, default=0)
   favors = ndb.IntegerProperty(required=True, default=0)
   bullets = ndb.IntegerProperty(required=True, default=0)
-  be_collected = ndb.IntegerProperty(required=True, default=0, indexed=False)
   comment_counter = ndb.IntegerProperty(required=True, default=0)
 
   # cls_var = 0
@@ -755,8 +756,12 @@ class Video(ndb.Model):
       images.delete_serving_url(self.thumbnail)
       blobstore.BlobInfo(self.thumbnail).delete()
 
-    for i in range(0, len(self.video_clips)):
-      self.video_clips[i].delete()
+    video_clips = ndb.get_multi(self.video_clips)
+    for i in range(0, len(video_clips)):
+      clip = video_clips[i]
+      for j in range(0, len(clip.danmaku_pools)):
+        clip.danmaku_pools[j].delete()
+      clip.key.delete()
 
     Video.dec_video_count()
     Video.dec_video_count(self.category)
@@ -772,12 +777,11 @@ class Danmaku(ndb.Model):
   content = ndb.StringProperty(required=True, indexed=False)
   position = db.StringProperty(required=True, default='RightToLeft', choices=['RightToLeft', 'Top', 'Bottom'], indexed=False)
   color = db.IntegerProperty(required=True, default=255*256*256+255*256+255, indexed=False)
-  protected = ndb.BooleanProperty(required=True, default=False, indexed=False)
+  size = db.IntegerProperty(required=True, default=16)
   creator = ndb.KeyProperty(kind='User', required=True)
   created = ndb.DateTimeProperty(auto_now_add=True, indexed=False)
 
 class DanmakuPool(ndb.Model):
-  video = ndb.KeyProperty(kind='Video', required=True, indexed=False)
   danmaku_list = ndb.StructuredProperty(Danmaku, repeated=True, indexed=False)
 
 class Comment(ndb.Model):

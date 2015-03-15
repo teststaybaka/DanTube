@@ -9,17 +9,16 @@ class Video(BaseHandler):
             return
 
         try:
-            clip_index = int(self.request.get('index') )
+            clip_index = int(self.request.get('index'))
         except ValueError:
             clip_index = 1
-
         if clip_index < 1 or clip_index > len(video.video_clips):
             self.notify('Video not found.', 404)
             return
 
         video.hits += 1
         video.put()
-        video.create_index('videos_by_hits', video.hits )
+        video.create_index('videos_by_hits', video.hits)
         uploader = video.uploader.get()
         uploader.videos_watched += 1
         uploader.put()
@@ -78,7 +77,7 @@ class Comment(BaseHandler):
         if not video:
             self.response.out.write(json.dumps({
                 'error': True,
-                'message': 'video not found'
+                'message': 'Video not found.'
             }))
             return
 
@@ -130,7 +129,7 @@ class Comment(BaseHandler):
         if not video:
             self.response.out.write(json.dumps({
                 'error': True,
-                'message': 'video not found'
+                'message': 'Video not found.'
             }))
             return
 
@@ -185,7 +184,7 @@ class Comment(BaseHandler):
         if not video:
             self.response.out.write(json.dumps({
                 'error': True,
-                'message': 'video not found'
+                'message': 'Video not found.'
             }))
             return
 
@@ -222,7 +221,7 @@ class Comment(BaseHandler):
         if not video:
             self.response.out.write(json.dumps({
                 'error': True,
-                'message': 'video not found'
+                'message': 'Video not found.'
             }))
             return
 
@@ -265,6 +264,118 @@ class Comment(BaseHandler):
             'total_pages': math.ceil(comment.inner_comment_counter/float(models.DEFAULT_PAGE_SIZE)),
         }))
 
+class Danmaku(BaseHandler):
+    def get(self, video_id):
+        self.response.headers['Content-Type'] = 'application/json'
+        video = models.Video.get_by_id('dt'+video_id)
+        if not video:
+            self.response.out.write(json.dumps({
+                'error': True,
+                'message': 'Video not found.',
+            }))
+
+        try:
+            clip_index = int(self.request.get('index') )
+        except ValueError:
+            clip_index = 1
+        if clip_index < 1 or clip_index > len(video.video_clips):
+            self.response.out.write(json.dumps({
+                'error': True,
+                'message': 'Video not found.',
+            }))
+            return
+
+        clip = video.video_clips[clip_index-1].get()
+        danmaku_list = []
+        danmaku_pools = ndb.get_multi(clip.danmaku_pools)
+        for i in range(0, len(danmaku_pools)):
+            danmaku_pool = danmaku_pools[i]
+            for j in range(0, len(danmaku_pool.danmaku_list)):
+                danmaku = danmaku_pool.danmaku_list[j]
+                danmaku_list.append({
+                    'content': danmaku.content,
+                    'timestamp': danmaku.timestamp,
+                    'created': danmaku.created.strftime("%m-%d %H:%M"),
+                    'created_seconds': models.time_to_seconds(danmaku.created),
+                    'creator': danmaku.creator.id(),
+                })
+
+        self.response.out.write(json.dumps(danmaku_list))
+
+    @login_required
+    def post(self, video_id):
+        self.response.headers['Content-Type'] = 'application/json'
+        user = self.user
+        video = models.Video.get_by_id('dt'+video_id)
+        if not video:
+            self.response.out.write(json.dumps({
+                'error': True,
+                'message': 'Video not found.',
+            }))
+
+        try:
+            clip_index = int(self.request.get('index'))
+        except ValueError:
+            clip_index = 1
+        if clip_index < 1 or clip_index > len(video.video_clips):
+            self.response.out.write(json.dumps({
+                'error': True,
+                'message': 'Video not found.',
+            }))
+            return
+
+        try:
+            timestamp = float(self.request.get('timestamp'))
+        except Exception, e:
+            self.response.out.write(json.dumps({
+                'error': True,
+                'message': 'Invalid timestamp.',
+            }))
+            return
+
+        content = self.request.get('content').strip()
+        if not content:
+            self.response.out.write(json.dumps({
+                'error': True,
+                'message': 'Can not be empty.',
+            }))
+            return
+        elif len(content) > 350:
+            self.response.out.write(json.dumps({
+                'error': True,
+                'message': 'Comment is too long.',
+            }))
+            return
+
+        clip = video.video_clips[clip_index-1].get()
+        if len(clip.danmaku_pools) == 0:
+            danmaku_pool = models.DanmakuPool()
+            danmaku_pool.put()
+            clip.danmaku_pools.append(danmaku_pool.key)
+            clip.put()
+        else:
+            danmaku_pool = clip.danmaku_pools[-1].get()
+            if len(danmaku_pool.danmaku_list) >= 1000:
+                danmaku_pool = models.DanmakuPool()
+                danmaku_pool.put()
+                clip.danmaku_pools.append(danmaku_pool.key)
+                if len(clip.danmaku_pools) > 20:
+                    clip.danmaku_pools.pop(0).delete()
+                clip.put()
+
+        danmaku = models.Danmaku(timestamp=timestamp, creator=user.key, content=content)
+        danmaku.put()
+        danmaku_pool.danmaku_list.append(danmaku)
+        danmaku_pool.put()
+        
+        self.response.out.write(json.dumps({
+            'content': danmaku.content,
+            'timestamp': danmaku.timestamp,
+            'created': danmaku.created.strftime("%m-%d %H:%M"),
+            'created_seconds': models.time_to_seconds(danmaku.created),
+            'creator': danmaku.creator.id(),
+        }))
+        
 class Like(BaseHandler):
     @login_required
     def post(self, video_id):
@@ -282,57 +393,5 @@ class Like(BaseHandler):
         else:
             self.response.out.write(json.dumps({
                 'error': True,
-                'message': 'video not found'
+                'message': 'Video not found.'
             }))
-
-class Danmaku(BaseHandler):
-    def get(self, video_id):
-        self.response.headers['Content-Type'] = 'application/json'
-        video = models.Video.get_by_id('dt'+video_id)
-        logging.info('sdfwedvsdghf')
-        if video is not None:
-            danmaku_itr = models.Danmaku.query(models.Danmaku.video==video.key)
-            danmakus = []
-            for danmaku in danmaku_itr:
-                danmakus.append({
-                    'content': danmaku.content,
-                    'timestamp': danmaku.timestamp,
-                    'created': danmaku.created.strftime("%m-%d %H:%M"),
-                    'created_seconds': models.time_to_seconds(video.created),
-                });
-            logging.info('sdfwedvsdghf')
-            self.response.out.write(json.dumps(danmakus))
-        else:
-            self.response.out.write(json.dumps({
-                'error': True,
-                'message': 'video not found',
-            }))
-
-    @login_required
-    def post(self, video_id):
-        self.response.headers['Content-Type'] = 'application/json'
-        user = self.user
-        video = models.Video.get_by_id('dt'+video_id)
-        if not video:
-            self.response.out.write(json.dumps({
-                'error': True,
-                'message': 'video not found',
-            }))
-
-        danmaku = models.Danmaku(
-            video = video.key,
-            timestamp = float(self.request.get('timestamp')),
-            creator = user.key,
-            content = self.request.get('content'),
-            protected = False
-        )
-        danmaku.put()
-
-        self.response.out.write(json.dumps({
-            'timestamp': danmaku.timestamp,
-            'content': danmaku.content,
-            'creator': user.nickname,
-            'created': danmaku.created.strftime("%m-%d %H:%M")
-        }))
-        video.danmaku_counter += 1
-        video.put()

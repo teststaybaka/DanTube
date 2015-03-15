@@ -117,8 +117,8 @@
       </div>
       <form id="shooter" class="container">
         <div id="danmaku-color-setting"></div>
-        <input id="danmaku-input" class="normal-input" type="text" name="content">
-        <input id="fire-button" type="submit" value="Fire!">
+        <input id="danmaku-input" class="normal-input" type="text" name="content" placeholder="{% if not user.is_auth %}Please sign in{% endif %}">
+        <input id="fire-button" type="submit" value="Fire!" title="Burning Love!">
       </form>
     </div>
   </div>

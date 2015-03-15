@@ -524,18 +524,23 @@ class AddTag(BaseHandler):
                 'message': 'Tag too long.'
             }))
             return
+        elif ',' in new_tag:
+            self.response.out.write(json.dumps({
+                'error': True,
+                'message': 'Can not contain ",".'
+            }))
+            return
+        elif new_tag in video.tags:
+            self.response.out.write(json.dumps({
+                'error': True,
+                'message': 'Tag already existed.'
+            }))
+            return
 
         if len(video.tags) >= 20:
             self.response.out.write(json.dumps({
                 'error': True,
                 'message': 'Can not add more tags.'
-            }))
-            return
-
-        if new_tag in video.tags:
-            self.response.out.write(json.dumps({
-                'error': True,
-                'message': 'Tag already existed.'
             }))
             return
 

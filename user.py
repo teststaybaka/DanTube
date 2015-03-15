@@ -96,7 +96,6 @@ class SpaceBoard(BaseHandler):
         context['host'].update(host.get_statistic_info())
         self.render('space_board', context)
 
-
 class Subscribe(BaseHandler):
     @login_required
     def post(self, user_id):
