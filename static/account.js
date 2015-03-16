@@ -68,42 +68,6 @@ function self_intro_check(ori_intro) {
 }
 
 $(document).ready(function() {
-    var urls = window.location.href.split('?');
-    urls = urls[0].split('/')
-    if (urls[urls.length-1] === "account") {
-        $("#sub-overview").addClass("active");
-    } else if (urls[urls.length-1] === "password") {
-        $("#sub-change-password").addClass("active");
-    } else if (urls[urls.length-1] === "avatar") {
-        $("#sub-change-avatar").addClass("active");
-    } else if (urls[urls.length-1] === "info") {
-        $("#sub-change-info").addClass("active");
-    } else if (urls[urls.length-1] === "video" || urls[urls.length-3] === 'video') {
-        $("#sub-videos").addClass("active");
-    } else if (urls[urls.length-1] === "playlists" || urls[urls.length-3] === 'playlists') {
-        $("#sub-playlists").addClass("active");
-    } else if (urls[urls.length-1] === "submit") {
-        $("#sub-submit").addClass("active");
-    } else if (urls[urls.length-1] === "submit_multi") {
-        $("#sub-submit").addClass("active");
-    } else if (urls[urls.length-1] === "subscriptions") {
-        $("#subscriptions").addClass("active");
-    } else if (urls[urls.length-1] === "subscribed") {
-        $("#subscribed-users").addClass("active");
-    } else if (urls[urls.length-1] === "favorites") {
-        $("#favorites").addClass("active");
-    } else if (urls[urls.length-1] === "messages") {
-        $("#messages").addClass("active");
-    } else if (urls[urls.length-1] === "compose") {
-        $("#messages").addClass("active");
-    } else if (urls[urls.length-1] === "mentioned") {
-        $("#mentioned").addClass("active");
-    } else if (urls[urls.length-1] === "notifications") {
-        $("#notifications").addClass("active");
-    } else if (urls[urls.length-1] === "space") {
-        $("#space-setting").addClass("active");
-    }
-
     $('#resend-email-link').click(function(evt) {
         if ($(evt.target).hasClass('send')) return;
         $(evt.target).addClass('send');
@@ -225,9 +189,9 @@ $(document).ready(function() {
             $('#change-nickname-error').addClass('show');
             $('#change-nickname-error').text('Your nickname can\'t contain: @ . , ? ! ; : / \\ \" \'');
             $(evt.target).addClass('error');
-        } else if (nickname.length > 30) {
+        } else if (nickname.length > 50) {
             $('#change-nickname-error').addClass('show');
-            $('#change-nickname-error').text('Nickname can\'t exceed 30 characters long.');
+            $('#change-nickname-error').text('Nickname can\'t exceed 50 characters long.');
             $(evt.target).addClass('error');
         } else if (nickname == cur_nickname) {
             $('#change-nickname-error').removeClass('show');
@@ -271,9 +235,9 @@ $(document).ready(function() {
             $('#change-nickname-error').text('Your nickname can\'t contain: @ . , ? ! ; : / \\ \" \'');
             $('#nickname-change').addClass('error');
             error = true;
-        } else if (nickname.length > 30) {
+        } else if (nickname.length > 50) {
             $('#change-nickname-error').addClass('show');
-            $('#change-nickname-error').text('Nickname can\'t exceed 30 characters long.');
+            $('#change-nickname-error').text('Nickname can\'t exceed 50 characters long.');
             $('#nickname-change').addClass('error');
             error = true;
         } else {

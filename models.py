@@ -125,7 +125,7 @@ class User(webapp2_extras.appengine.auth.models.User):
     if re.match(r".*[@.,?!;:/\\\"'].*", nickname):
       logging.info('nickname 2')
       return None
-    if len(nickname) > 30:
+    if len(nickname) > 50:
       logging.info('nickname 3')
       return None
     res = cls.query(cls.nickname==nickname).get()

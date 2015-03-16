@@ -259,6 +259,9 @@ class Comment(BaseHandler):
         at_users = self.request.POST.getall('ats[]')
 
         inner_comment = models.InnerComment.Create(comment, user, content)
+        video.last_updated = datetime.now()
+        video.put()
+        
         self.response.out.write(json.dumps({
             'error': False,
             'total_pages': math.ceil(comment.inner_comment_counter/float(models.DEFAULT_PAGE_SIZE)),
@@ -367,6 +370,8 @@ class Danmaku(BaseHandler):
         danmaku.put()
         danmaku_pool.danmaku_list.append(danmaku)
         danmaku_pool.put()
+        video.last_updated = datetime.now()
+        video.put()
         
         self.response.out.write(json.dumps({
             'content': danmaku.content,

@@ -345,7 +345,7 @@ function Danmaku_Animation(index) {
 		}
 		
 		// console.log(index+' '+percent)
-		if (ele['generating'] && (ele['clear_request'] || ele['posX'] > ele['element'].offsetWidth + 5)) {
+		if (ele['generating'] && (ele['clear_request'] || ele['posX'] > ele['element'].offsetWidth + 20)) {
 			ele['generating'] = false;
 			for (var j = ele['posY']; j < ele['element'].offsetHeight + ele['posY']; j++) {
 				occupation[j] -= 1;
