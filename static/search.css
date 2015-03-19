@@ -10,15 +10,13 @@
     box-sizing: border-box;
     background-color: white;
     border-radius: 3px;
+    -webkit-border-radius: 3px;
+    -moz-border-radius: 3px;
 }
 
 div.search-scope-line {
     padding: 7px 25px;
     border-bottom: 1px solid rgb(220,220,220);
-}
-
-div.search-scope-line.hide {
-    display: none;
 }
 
 div.search-result-num {
@@ -171,6 +169,8 @@ div.video-tags, div.playlist-episode, div.uper-buttons {
 
 a.tag-entry {
     border-radius: 3px;
+    -webkit-border-radius: 3px;
+    -moz-border-radius: 3px;
     padding: 3px 8px;
     display: inline-block;
     margin: 8px 20px 0 0;
@@ -182,6 +182,8 @@ a.tag-entry {
 
 a.episode-entry {
     border-radius: 3px;
+    -webkit-border-radius: 3px;
+    -moz-border-radius: 3px;
     width: 120px;
     overflow: hidden;
     text-overflow: ellipsis;

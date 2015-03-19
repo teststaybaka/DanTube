@@ -271,7 +271,7 @@ class SendVerification(BaseHandler):
         verification_url = self.uri_for('verification', user_id=user_id,
           signup_token=token, _full=True)
 
-        message = mail.EmailMessage(sender="DanTube Support <tianfanw@gmail.com>",
+        message = mail.EmailMessage(sender="DanTube Support <dan-tube@appspot.gserviceaccount.com>",
                             subject="Verficaition Email from DanTube")
 
         message.to = user.email

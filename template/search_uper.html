@@ -28,9 +28,9 @@ action="{{ uri_for('search_uper') }}"
     <div class="uper-info">
         <a class="uploader" href="{{ uper.space_url }}">{{ uper.nickname }}</a>
         <div class="uper-detail-line">
+            <div class="uper-detail-info">Views: <span class="commas_number">{{ uper.videos_watched }}</span></div>
             <div class="uper-detail-info">Videos: <span class="commas_number">{{ uper.videos_submitted }}</span></div>
             <div class="uper-detail-info">Subscribers: <span class="commas_number">{{ uper.subscribers_counter }}</span></div>
-            <div class="uper-detail-info">Subscriptions: <span class="commas_number">{{ uper.subscriptions_counter }}</span></div>
         </div>
         <div class="uper-description">{{ uper.intro }}</div>
         <div class="uper-buttons">

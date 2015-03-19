@@ -22,6 +22,8 @@
     height: 128px;
     position: absolute;
     border-radius: 128px;
+    -webkit-border-radius: 128px;
+    -moz-border-radius: 128px;
     border: 6px solid white;
     box-shadow: 0 0 1px rgb(100,100,100);
     bottom: 0;
@@ -108,6 +110,8 @@ div.top-title-dot {
     width: 8px;
     height: 8px;
     border-radius: 8px;
+    -webkit-border-radius: 8px;
+    -moz-border-radius: 8px;
     background-color: rgb(150,150,150);
     vertical-align: top;
     margin-top: 8px;
@@ -159,6 +163,8 @@ a.top-title.active div.top-title-dot {
     font-weight: normal;
     position: relative;
     border-radius: 0;
+    -webkit-border-radius: 0;
+    -moz-border-radius: 0;
 }
 
 #action-select {
@@ -230,6 +236,8 @@ input.sub-search-button:active {
     height: 128px;
     box-shadow: 0 0 1px rgb(100,100,100);
     border-radius: 128px;
+    -webkit-border-radius: 128px;
+    -moz-border-radius: 128px;
 }
 
 #account-change-avatar {
@@ -238,6 +246,8 @@ input.sub-search-button:active {
     width: 128px;
     height: 128px;
     border-radius: 128px;
+    -webkit-border-radius: 128px;
+    -moz-border-radius: 128px;
     background-color: rgba(0,0,0,0.5);
     font-size: 14px;
     color: white;
@@ -360,6 +370,8 @@ div.detail-entry {
     padding: 5px 8px;
     margin-left: 9px;
     border-radius: 3px;
+    -webkit-border-radius: 3px;
+    -moz-border-radius: 3px;
     margin-top: -3px;
 }
 
@@ -698,10 +710,6 @@ form.change textarea.intro-input:focus {
     height: 48px;
 }
 
-form.change input.hidden {
-    display: none;
-}
-
 form.change label.explain {
     position: absolute;
     left: 0;
@@ -735,6 +743,8 @@ form.change div.option-button {
     font-size: 15px;
     padding: 7px 10px;
     border-radius: 5px;
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
     cursor: pointer;
     font-family:"Times New Roman",Georgia,Serif;
     font-weight: normal;
@@ -761,6 +771,8 @@ form.change div.input-error {
     color: white;
     padding: 5px 10px;
     border-radius: 3px;
+    -webkit-border-radius: 3px;
+    -moz-border-radius: 3px;
     white-space: nowrap;
     font-size: 16px;
 }
@@ -790,6 +802,8 @@ form.change div.video-part-error {
     color: white;
     padding: 5px 10px;
     border-radius: 3px;
+    -webkit-border-radius: 3px;
+    -moz-border-radius: 3px;
     white-space: nowrap;
     top: -22px;
     font-size: 14px;
@@ -881,6 +895,8 @@ input.save_change-button {
     padding: 7px 10px;
     border: 1px solid rgb(200,200,200);
     border-radius: 5px;
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
     background-color: rgb(255,255,255);
     cursor: pointer;
     font-family:"Times New Roman",Georgia,Serif;

@@ -10,8 +10,12 @@ var danmaku_list = [];
 var danmkau_elements = [];
 var danmaku_check_interval = 1/4;
 var lastTime = 0;
-var occupation = new Array(10000);
-var accumulate = new Array(10000);
+var occupation_normal = [];
+var accumulate_normal = [];
+var occupation_bottom = [];
+var accumulate_bottom = [];
+var occupation_top = [];
+var accumulate_top = [];
 
 function onPlayerReady(event) {
 	// console.log(player.getDuration());
@@ -69,11 +73,13 @@ function video_toggle(evt) {
 
 function volume_switch(evt) {
 	var volume_controller = document.getElementById("volume-controller");
-	if (volume_controller.className === "on") {
-		volume_controller.className = "off";
+	if ($(volume_controller).hasClass('on')) {
+		$(volume_controller).removeClass('on');
+		$(volume_controller).addClass('off');
 		player.setVolume(0);
 	} else {//off
-		volume_controller.className = "on";
+		$(volume_controller).removeClass('off');
+		$(volume_controller).addClass('on');
 		var volume = document.getElementById("volume-bar");
 		var volume_magnitude = document.getElementById("volume-magnitude");
 		player.setVolume(volume_magnitude.offsetHeight/volume.offsetHeight*100);
@@ -132,33 +138,38 @@ function volume_end(evt) {
 }
 
 function danmaku_switch(evt) {
-	if (evt.target.className === "on") {
-		evt.target.className = "off";
+	if ($(evt.target).hasClass('on')) {
+		$(evt.target).addClass('off');
+		$(evt.target).removeClass('on');
 	} else {//off
-		evt.target.className = "on";
+		$(evt.target).addClass('on');
+		$(evt.target).removeClass('off');
 	}
 }
 
 function loop_switch(evt) {
-	if (evt.target.className === "on") {
-		evt.target.className = "off";
+	if ($(evt.target).hasClass('on')) {
+		$(evt.target).addClass('off');
+		$(evt.target).removeClass('on');
 		isLoop = false;
 	} else {//off
-		evt.target.className = "on";
+		$(evt.target).addClass('on');
+		$(evt.target).removeClass('off');
 		isLoop = true;
 	}
 }
 
 function widescreen_switch(evt) {
-	if (evt.target.className === "on") {
-		evt.target.className = "off";
+	if ($(evt.target).hasClass('on')) {
+		$(evt.target).removeClass('on');
+		$(evt.target).addClass('off');
 		var danmaku_pool = document.getElementById("danmaku-pool");
 		danmaku_pool.style.display = "inline-table";
 		player.setSize(640, 360);
 		var player_controller = document.getElementById("player-controller");
 		player_controller.style.width = "640px";
 		var danmaku_input = document.getElementById("danmaku-input");
-		danmaku_input.style.width = "555px";
+		danmaku_input.style.width = "527px";
 		var player_canvas = document.getElementById("player-canvas");
 		player_canvas.style.width = "640px";
 		player_canvas.style.height = "360px";
@@ -169,14 +180,15 @@ function widescreen_switch(evt) {
 		   list[i].style.left = "650px";
 		}
 	} else {//off
-		evt.target.className = "on";
+		$(evt.target).removeClass('off');
+		$(evt.target).addClass('on');
 		var danmaku_pool = document.getElementById("danmaku-pool");
 		danmaku_pool.style.display = "none";
 		player.setSize(1024, 576);
 		var player_controller = document.getElementById("player-controller");
 		player_controller.style.width = "1024px";
 		var danmaku_input = document.getElementById("danmaku-input");
-		danmaku_input.style.width = "939px";
+		danmaku_input.style.width = "911px";
 		var player_canvas = document.getElementById("player-canvas");
 		player_canvas.style.width = "1024px";
 		player_canvas.style.height = "576px";
@@ -190,10 +202,12 @@ function widescreen_switch(evt) {
 }
 
 function fullscreen_switch(evt) {
-	if (evt.target.className === "on") {
-		evt.target.className = "off";
+	if ($(evt.target).hasClass('on')) {
+		$(evt.target).addClass('off');
+		$(evt.target).removeClass('on');
 	} else {//off
-		evt.target.className = "on";
+		$(evt.target).addClass('on');
+		$(evt.target).removeClass('off');
 	}
 }
 
@@ -322,21 +336,31 @@ function progress_update() {
 	}
 }
 
-function Danmaku_Animation(index) {
+function Danmaku_Animation(index, type) {
 	var player_canvas = document.getElementById("player-canvas");
 	var lTime = 0;
 	var ele = danmkau_elements[index];
 	var speed = (500 + ele['element'].offsetWidth)/10;
+	var existingTime = 5000;
 
 	this.startAnimation = function() {
 		lTime = Date.now();
-		requestAnimationFrame(update);
+		if (type === 'RightToLeft') {
+			requestAnimationFrame(float_update);
+		} else if (type === 'Top' || type === 'Bottom') {
+			ele['posX'] = (player_canvas.offsetWidth - ele['element'].offsetWidth)/2 + ele['element'].offsetWidth;
+			ele['element'].style.WebkitTransform = "translate(-"+ele['posX']+"px, "+ele['posY']+"px)";
+			ele['element'].style.msTransform = "translate(-"+ele['posX']+"px, "+ele['posY']+"px)";
+			ele['element'].style.transform = "translate(-"+ele['posX']+"px, "+ele['posY']+"px)";
+			requestAnimationFrame(staying_update);
+		}
 		// console.log(index+' '+startTime)
 	}
-	function update() {
+
+	function float_update() {
 		var curTime = Date.now();
 		var deltaTime = curTime - lTime;
-		lTime = curTime; 
+		lTime = curTime;
 		if (isPlaying) {
 			ele['posX'] += speed*deltaTime/1000;
 			ele['element'].style.WebkitTransform = "translate(-"+ele['posX']+"px, "+ele['posY']+"px)";
@@ -348,17 +372,46 @@ function Danmaku_Animation(index) {
 		if (ele['generating'] && (ele['clear_request'] || ele['posX'] > ele['element'].offsetWidth + 20)) {
 			ele['generating'] = false;
 			for (var j = ele['posY']; j < ele['element'].offsetHeight + ele['posY']; j++) {
-				occupation[j] -= 1;
+				occupation_normal[j] -= 1;
 			}
 		}
 
 		if (!ele['clear_request'] && ele['posX'] < ele['element'].offsetWidth + player_canvas.offsetWidth + 10) {
-			requestAnimationFrame(update);
+			requestAnimationFrame(float_update);
 		} else {
 			ele['element'].style.WebkitTransform = "translate(-"+0+"px, "+ele['posY']+"px)";
 			ele['element'].style.msTransform = "translate(-"+0+"px, "+ele['posY']+"px)";
 			ele['element'].style.transform = "translate(-"+0+"px, "+ele['posY']+"px)";
-			danmkau_elements[index]['idle'] = true;
+			ele['idle'] = true;
+			ele['posX'] = 0;
+		}
+	}
+
+	function staying_update() {
+		var curTime = Date.now();
+		var deltaTime = curTime - lTime;
+		lTime = curTime;
+		if (isPlaying) {
+			existingTime -= deltaTime;
+		}
+
+		if (!ele['clear_request'] && existingTime > 0) {
+			requestAnimationFrame(staying_update);
+		} else {
+			ele['generating'] = false;
+			if (type === 'Top') {
+				occupation = occupation_top;
+			} else if (type === 'Bottom') {
+				occupation = occupation_bottom;
+			}
+			for (var j = ele['posY']; j < ele['element'].offsetHeight + ele['posY']; j++) {
+				occupation[j] -= 1;
+			}
+			// console.log(type+': '+occupation)
+			ele['element'].style.WebkitTransform = "translate(-"+0+"px, "+ele['posY']+"px)";
+			ele['element'].style.msTransform = "translate(-"+0+"px, "+ele['posY']+"px)";
+			ele['element'].style.transform = "translate(-"+0+"px, "+ele['posY']+"px)";
+			ele['idle'] = true;
 			ele['posX'] = 0;
 		}
 	}
@@ -397,12 +450,23 @@ function danmaku_update() {
 		var ele = danmkau_elements[i];
 		if (ele['idle']) {
 			ele['element'].lastChild.nodeValue = danmaku[danmaku_pointer].content;
-			danmaku_pointer++;
+			ele['element'].style.color = '#'+('000000'+danmaku[danmaku_pointer].color.toString(16)).substr(-6);
+			ele['element'].style.fontSize = danmaku[danmaku_pointer].size+'px';
 			// ele['element'].lastChild.nodeValue = secondsToTime(danmaku[danmaku_pointer].timestamp);
 			ele['generating'] = true;
 			ele['idle'] = false;
 			ele['clear_request'] = false;
 
+			if (danmaku[danmaku_pointer].type === 'RightToLeft') {
+				accumulate = accumulate_normal;
+				occupation = occupation_normal;
+			} else if (danmaku[danmaku_pointer].type === 'Bottom') {
+				accumulate = accumulate_bottom;
+				occupation = occupation_bottom;
+			} else if (danmaku[danmaku_pointer].type === 'Top') {
+				accumulate = accumulate_top;
+				occupation = occupation_top;
+			} 
 			accumulate[0] = 0;
 			for (var z = 0; z < ele['element'].offsetHeight && z < player_canvas.offsetHeight; z++) {
 				accumulate[0] += occupation[z];
@@ -416,7 +480,8 @@ function danmaku_update() {
 			var min_value = 2000000;
 			var min_line = 0;
 			for (var j = 0; j < player_canvas.offsetHeight - ele['element'].offsetHeight + 1; j++) {
-				if (accumulate[j] < min_value) {
+				if ((danmaku[danmaku_pointer].type === 'Bottom' && accumulate[j] <= min_value)
+					|| (danmaku[danmaku_pointer].type != 'Bottom' && accumulate[j] < min_value)) {
 					min_value = accumulate[j];
 					min_line = j;
 				}
@@ -427,8 +492,9 @@ function danmaku_update() {
 				occupation[j] += 1;
 			}
 			
-			var danmaku_Animation = new Danmaku_Animation(i);
+			var danmaku_Animation = new Danmaku_Animation(i, danmaku[danmaku_pointer].type);
 			danmaku_Animation.startAnimation();
+			danmaku_pointer++;
 		}
 	}
 	lastTime = curTime;
@@ -446,8 +512,12 @@ $(document).ready(function() {
 		danmkau_elements.push({'idle':true, 'generating':false, 'posX': 0, 'posY': 0, 'clear_request':false, 'element':bul});
 	}
 	for (var i = 0; i < 10000; i++) {
-		occupation[i] = 0;
-		accumulate[i] = 0;
+		occupation_top.push(0);
+		occupation_bottom.push(0);
+		occupation_normal.push(0);
+		accumulate_top.push(0);
+		accumulate_bottom.push(0);
+		accumulate_normal.push(0);
 	}
 
 	var play_button = document.getElementById("play-pause-button");
@@ -658,67 +728,114 @@ $(document).ready(function() {
 		$('div.more-episode').remove();
 	});
 
-	$('#add-to-favorite').click(function() {
-		$.ajax({
-			type: "POST",
-			url: '/account/favor/dt'+video_id,
-			success: function(result) {
-				if(!result.error) {
-					pop_ajax_message('This video has been added to your favorites successfully.', 'success');
-					console.log(result.favors)
-					$('#add-to-favorite').children('span.commas_number').text(numberWithCommas(result.favors));
-				} else {
-					pop_ajax_message(result.message, 'error');
-				}
-			},
-			error: function (xhr, ajaxOptions, thrownError) {
-				console.log(xhr.status);
-				console.log(thrownError);
-				pop_ajax_message(xhr.status+' '+thrownError, 'error');
-			}
-		});
-		return false;
+	// $('#add-to-favorite').click(function() {
+	// 	$.ajax({
+	// 		type: "POST",
+	// 		url: '/account/favor/dt'+video_id,
+	// 		success: function(result) {
+	// 			if(!result.error) {
+	// 				pop_ajax_message('This video has been added to your favorites successfully.', 'success');
+	// 				console.log(result.favors)
+	// 				$('#add-to-favorite').children('span.commas_number').text(numberWithCommas(result.favors));
+	// 			} else {
+	// 				pop_ajax_message(result.message, 'error');
+	// 			}
+	// 		},
+	// 		error: function (xhr, ajaxOptions, thrownError) {
+	// 			console.log(xhr.status);
+	// 			console.log(thrownError);
+	// 			pop_ajax_message(xhr.status+' '+thrownError, 'error');
+	// 		}
+	// 	});
+	// 	return false;
+	// });
+
+	// $('#uploader-subscribe').click(function(e) {
+	// 	var uploader_id = $(this).attr('uid');
+	// 	$.ajax({
+	// 		type: "POST",
+	// 		url: "/user/" + uploader_id + "/subscribe",
+	// 		success: function(result) {
+	// 			if(!result.error) {
+	// 				alert('success!');
+	// 			} else {
+	// 				alert(result.message);
+	// 			}
+	// 		},
+	// 		error: function (xhr, ajaxOptions, thrownError) {
+	// 			console.log(xhr.status);
+	// 			console.log(thrownError);
+	// 			pop_ajax_message(xhr.status+' '+thrownError, 'error');
+	// 		}
+	// 	});
+	// })
+
+	// $('#like').click(function(e) {
+	// 	e.preventDefault();
+	// 	$.ajax({
+	// 		type: "POST",
+	// 		url: url + "/like",
+	// 		success: function(result) {
+	// 			if(!result.error) {
+	// 				alert('success!');
+	// 			} else {
+	// 				alert(result.message);
+	// 			}
+	// 		},
+	// 		error: function (xhr, ajaxOptions, thrownError) {
+	// 			console.log(xhr.status);
+	// 			console.log(thrownError);
+	// 			pop_ajax_message(xhr.status+' '+thrownError, 'error');
+	// 		}
+	// 	});
+	// })
+
+	$('#danmaku-type-setting').click(function() {
+		$('#danmaku-type-box').removeClass('hidden');
+		var hide_type_box = function() {
+			$('#danmaku-type-box').addClass('hidden');
+			$(document).off('mousedown', hide_type_box);
+		};
+		$(document).mousedown(hide_type_box);
 	});
 
-	$('#uploader-subscribe').click(function(e) {
-		var uploader_id = $(this).attr('uid');
-		$.ajax({
-			type: "POST",
-			url: "/user/" + uploader_id + "/subscribe",
-			success: function(result) {
-				if(!result.error) {
-					alert('success!');
-				} else {
-					alert(result.message);
-				}
-			},
-			error: function (xhr, ajaxOptions, thrownError) {
-				console.log(xhr.status);
-				console.log(thrownError);
-				pop_ajax_message(xhr.status+' '+thrownError, 'error');
-			}
-		});
-	})
+	$('#danmaku-type-box').mousedown(function(evt) {
+		evt.stopPropagation();
+	});
 
-	$('#like').click(function(e) {
-		e.preventDefault();
-		$.ajax({
-			type: "POST",
-			url: url + "/like",
-			success: function(result) {
-				if(!result.error) {
-					alert('success!');
-				} else {
-					alert(result.message);
-				}
-			},
-			error: function (xhr, ajaxOptions, thrownError) {
-				console.log(xhr.status);
-				console.log(thrownError);
-				pop_ajax_message(xhr.status+' '+thrownError, 'error');
-			}
-		});
-	})
+	$('div.danmaku-size-option').click(function() {
+		$('div.danmaku-size-option').removeClass('active');
+		$(this).addClass('active');
+		if ($(this).hasClass('small')) {
+			$('#danmaku-size-input').val('12');
+		} else if ($(this).hasClass('medium')) {
+			$('#danmaku-size-input').val('16');
+		} else if ($(this).hasClass('large')) {
+			$('#danmaku-size-input').val('18');
+		}
+	});
+
+	$('div.danmaku-type-option').click(function() {
+		$('div.danmaku-type-option').removeClass('active');
+		$(this).addClass('active');
+		if ($(this).hasClass('top')) {
+			$('#danmaku-type-input').val('Top');
+		} else if ($(this).hasClass('normal')) {
+			$('#danmaku-type-input').val('RightToLeft');
+		} else if ($(this).hasClass('bottom')) {
+			$('#danmaku-type-input').val('Bottom');
+		}
+	});
+
+	$('#danmaku-color-setting').colpick({
+		layout: 'rgbhex',
+		color: 'ffffff',
+		onSubmit: function(hsb,hex,rgb,el) {	
+			$('#danmaku-color-setting').colpickHide();
+			$('#danmaku-color-setting').css('background-color', '#'+hex);
+			$('#danmaku-color-input').val(hex);
+		},
+	});
 
 	// Retrieve Danmaku
 	$.ajax({
@@ -767,10 +884,13 @@ $(document).ready(function() {
 			return false;
 		}
 
+		var danmaku_color = $('#danmaku-color-input').val();
+		var danmaku_type = $('#danmaku-type-input').val();
+		var danmaku_size = $('#danmaku-size-input').val();
 		$.ajax({
 			type: "POST",
 			url: '/video/danmaku/' + url_suffix,
-			data: {content: content, timestamp: (player.getCurrentTime() + 0.05)},
+			data: {content: content, timestamp: (player.getCurrentTime() + 0.05), color: danmaku_color, type: danmaku_type, size: danmaku_size},
 			success: function(result) {
 				if(!result.error) {
 					$('#danmaku-input').val('');
@@ -1026,7 +1146,7 @@ $(document).ready(function() {
 			var inner_comment_container = comment_box.next();
 		}
 		inner_comment_container.append($('#user-reply-form'));
-		$('#user-reply-form').removeClass('hide');
+		$('#user-reply-form').removeClass('hidden');
 	});
 });
 
@@ -1034,7 +1154,7 @@ function update_comments(page, video_id) {
 	var comment_container = $('#comments-list-container');
 	var pagination_container = $('div.pagination-line.all');
 	$('#user-comment-form').after($('#user-reply-form'));
-	$('#user-reply-form').addClass('hide')
+	$('#user-reply-form').addClass('hidden')
 	comment_container.empty();
 	pagination_container.empty();
 	comment_container.append('<div class="comment-entry loading"></div>');

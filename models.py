@@ -1,4 +1,3 @@
-from google.appengine.ext import db
 from google.appengine.ext import ndb
 from google.appengine.datastore.datastore_query import Cursor
 from google.appengine.api import search
@@ -772,12 +771,13 @@ class Video(ndb.Model):
     self.delete_index('videos_by_user' + str(self.uploader.id()))
     self.key.delete()
 
+Danmaku_Positions = ['RightToLeft', 'Top', 'Bottom']
 class Danmaku(ndb.Model):
   timestamp = ndb.FloatProperty(required=True, indexed=False)
   content = ndb.StringProperty(required=True, indexed=False)
-  position = db.StringProperty(required=True, default='RightToLeft', choices=['RightToLeft', 'Top', 'Bottom'], indexed=False)
-  color = db.IntegerProperty(required=True, default=255*256*256+255*256+255, indexed=False)
-  size = db.IntegerProperty(required=True, default=16)
+  position = ndb.StringProperty(required=True, choices=Danmaku_Positions, indexed=False)
+  color = ndb.IntegerProperty(required=True, default=255*256*256+255*256+255, indexed=False)
+  size = ndb.IntegerProperty(required=True, default=16, indexed=False)
   creator = ndb.KeyProperty(kind='User', required=True)
   created = ndb.DateTimeProperty(auto_now_add=True, indexed=False)
 

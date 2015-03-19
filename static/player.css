@@ -93,6 +93,8 @@ div.danmaku:active {
 	display: inline-block;
 	height: 7px;
 	border-radius: 10px;
+	-webkit-border-radius: 10px;
+    -moz-border-radius: 10px;
 	position: absolute;
 	margin-top: 9px;
 	margin-bottom: 9px;
@@ -123,6 +125,8 @@ div.danmaku:active {
 	margin-bottom: 6px;
 	margin-left: 5px;
 	border-radius: 10px;
+	-webkit-border-radius: 10px;
+    -moz-border-radius: 10px;
 	position: absolute;
 	border: 4px solid white;
 	-webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
@@ -140,6 +144,8 @@ div.danmaku:active {
 	background-color: rgba(255,255,255,.5);
 	z-index: 1;
 	border-radius: 3px;
+	-webkit-border-radius: 3px;
+    -moz-border-radius: 3px;
 	margin-left: 9px;
 	padding: 0 3px;
 	will-change: transform, -ms-transform, -webkit-transform;
@@ -208,6 +214,8 @@ div.danmaku:active {
 	display: inline-block;
 	position: absolute;
 	border-radius: 10px;
+	-webkit-border-radius: 10px;
+    -moz-border-radius: 10px;
 	margin: 10px 10px;
 	width: 5px;
 	bottom: 0;
@@ -235,6 +243,8 @@ div.danmaku:active {
 	-moz-box-sizing: border-box;    /* Firefox, other Gecko */
 	box-sizing: border-box;
 	border-radius: 10px;
+	-webkit-border-radius: 10px;
+    -moz-border-radius: 10px;
 	box-shadow: 0px 0 1px rgb(50,50,50);
 	bottom: 0;
 	pointer-events: none;
@@ -247,6 +257,8 @@ div.danmaku:active {
 	bottom: 0;
 	margin-left: 28px;
 	border-radius: 3px;
+	-webkit-border-radius: 3px;
+    -moz-border-radius: 3px;
 	background-color: rgba(255,255,255,.5);
 	padding: 0 3px;
 	will-change: transform, -ms-transform, -webkit-transform;
@@ -278,25 +290,6 @@ div.danmaku:active {
 	background-position: 0 -50px;
 }
 
-#danmaku-on-tip, #danmaku-off-tip {
-	bottom: 53px;
-	border-radius: 3px;
-	position: absolute;
-	z-index: 1;
-	background-color: rgba(255,255,255,.5);
-	display: none;
-	padding: 0 3px;
-	margin-left: -20px;
-}
-
-#danmaku-switch.on:hover #danmaku-on-tip {
-	display: inline-block;
-}
-
-#danmaku-switch.off:hover #danmaku-off-tip {
-	display: inline-block;
-}
-
 #loop-switch {
 	display: inline-block;
 	float: right;
@@ -317,25 +310,6 @@ div.danmaku:active {
 
 #loop-switch:active {
 	background-position: 0 -315px;
-}
-
-#loop-on-tip, #loop-off-tip {
-	bottom: 53px;
-	border-radius: 3px;
-	position: absolute;
-	z-index: 1;
-	background-color: rgba(255,255,255,.5);
-	display: none;
-	padding: 0 3px;
-	margin-left: -15px;
-}
-
-#loop-switch.on:hover #loop-on-tip {
-	display: inline-block;
-}
-
-#loop-switch.off:hover #loop-off-tip {
-	display: inline-block;
 }
 
 #wide-screen {
@@ -390,6 +364,29 @@ div.danmaku:active {
 	background-position: 0 -155px;
 }
 
+div.button-tip {
+	top: 28px;
+	border-radius: 3px;
+	-webkit-border-radius: 3px;
+    -moz-border-radius: 3px;
+	position: absolute;
+	z-index: 1;
+	background-color: rgba(255,255,255,.5);
+	display: none;
+	padding: 0 3px;
+	margin-left: -20px;
+	font-size: 14px;
+	white-space: nowrap;
+}
+
+div.player-button.on:hover div.button-tip.on {
+	display: inline-block;
+}
+
+div.player-button.off:hover div.button-tip.off {
+	display: inline-block;
+}
+
 #shooter {
 	height: 25px;
 	border-top: 1px solid rgb(200, 200, 200);
@@ -399,13 +396,161 @@ div.danmaku:active {
 	height: 100%;
 }
 
-#danmaku-color-setting {
+div.danmaku-setting {
 	display: inline-block;
 	float: left;
 	height: 100%;
 	width: 25px;
 	border-right: 1px solid rgb(200, 200, 200);
 	background-color: white;
+	cursor: pointer;
+}
+
+#danmaku-type-setting {
+	background-image: url("/static/img/player_icons.png");
+	background-position: 0 -834px;
+	border-color: white;
+}
+
+#danmaku-color-setting {
+	background-image: url("/static/img/player_icons.png");
+	background-position: 0 -784px;
+}
+
+#danmaku-color-tip, #danmaku-type-tip {
+	margin-left: 30px;
+	border-radius: 3px;
+	-webkit-border-radius: 3px;
+    -moz-border-radius: 3px;
+	position: absolute;
+	z-index: 1;
+	background-color: rgba(255,255,255,.5);
+	display: none;
+	line-height: 25px;
+	padding: 0 3px;
+	box-shadow: 0px 2px 4px rgb(200,200,200);
+	font-size: 14px;
+}
+
+#danmaku-color-setting:hover {
+	background-position: 0 -809px;
+}
+
+#danmaku-type-setting:hover {
+	background-position: 0 -859px;
+}
+
+#danmaku-color-setting:hover #danmaku-color-tip {
+	display: inline-block;
+}
+
+#danmaku-type-setting:hover #danmaku-type-tip {
+	display: inline-block;
+}
+
+#danmaku-type-box {
+	position: absolute;
+	background-color: rgb(250,250,250);
+	bottom: 25px;
+	left: -1px;
+	border-radius: 5px;
+	-webkit-border-radius: 5px;
+	-moz-border-radius: 5px;
+	border: 1px solid rgb(200,200,200);
+	padding: 5px;
+	cursor: default;
+}
+
+div.type-select-title {
+	color: rgb(100,100,100);
+	font-size: 14px;
+	margin: 5px;
+}
+
+div.danmaku-size-option {
+	display: inline-block;
+	vertical-align: text-bottom;
+	width: 18px;
+	text-align: center;
+	margin: 3px;
+	padding: 2px;
+	color: rgb(150,150,150);
+	border-radius: 3px;
+	-webkit-border-radius: 3px;
+	-moz-border-radius: 3px;
+	cursor: pointer;
+}
+
+div.danmaku-size-option:hover {
+	color: rgb(100,100,100);
+	background-color: rgb(240,240,240);
+}
+
+div.danmaku-size-option.active {
+	background-color: rgb(85,178,255);
+	color: white;
+}
+
+div.danmaku-size-option.large {
+	font-size: 18px;
+}
+
+div.danmaku-size-option.medium {
+	font-size: 16px;
+}
+
+div.danmaku-size-option.small {
+	font-size: 12px;
+}
+
+div.danmaku-type-option {
+	display: inline-block;
+	text-align: center;
+	margin: 5px;
+	cursor: pointer;
+}
+
+div.danmaku-type-img {
+	width: 70px;
+	height: 50px;
+	background-image: url("/static/img/danmaku-types.png");
+	border-radius: 5px;
+	-webkit-border-radius: 5px;
+	-moz-border-radius: 5px;
+	margin-bottom: 2px;
+}
+
+div.danmaku-type-img.top {
+	background-position: 0 0;
+}
+
+div.danmaku-type-img.normal {
+	background-position: 0 -221px;
+}
+
+div.danmaku-type-img.bottom {
+	background-position: 0 -109px;
+}
+
+div.danmaku-type-option.active div.danmaku-type-img.top {
+	background-position: 0 -54px;
+}
+
+div.danmaku-type-option.active div.danmaku-type-img.normal {
+	background-position: 0 -277px;
+}
+
+div.danmaku-type-option.active div.danmaku-type-img.bottom {
+	background-position: 0 -165px;
+}
+
+div.danmaku-type-option:hover div.danmaku-type-img {
+	background-color: rgb(240,240,240);
+}
+
+div.danmaku-type-text {
+	font-size: 12px;
+	color: rgb(100,100,100);
 }
 
 #danmaku-input {
@@ -413,7 +558,7 @@ div.danmaku:active {
 	display: inline-block;
 	height: 100%;
 	border: 0;
-	width: 553px;
+	width: 527px;
 	border-right: 1px solid rgb(200, 200, 200);
 	padding: 0 4px;
 	overflow: hidden;
@@ -664,6 +809,8 @@ span.statistic-icon.favorites {
 	float: right;
 	border: 1px solid rgb(200,200,200);
 	border-radius: 5px;
+	-webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
 	padding: 8px;
 	font-size: 0;
 	background-color: white;
@@ -713,10 +860,6 @@ a.episode-link {
     max-width: 100%;
 }
 
-a.episode-link.hidden {
-	display: none;
-}
-
 a.inline-button.episode-link.active {
 	color: white;
 	background-color: rgb(85,178,255);
@@ -739,6 +882,8 @@ div.more-episode, div.less-epsidoe {
 #video-detail-info-block {
 	border: 1px solid rgb(200,200,200);
 	border-radius: 3px;
+	-webkit-border-radius: 3px;
+    -moz-border-radius: 3px;
 	background-color: white;
 }
 
@@ -751,6 +896,8 @@ div.more-episode, div.less-epsidoe {
 
 a.tags-link {
 	border-radius: 3px;
+	-webkit-border-radius: 3px;
+    -moz-border-radius: 3px;
 	padding: 3px 8px;
 	display: inline-block;
 	margin-right: 10px;
@@ -812,6 +959,8 @@ div.add-new-tag-button {
 	width: 16px;
 	padding: 2px;
 	border-radius: 5px;
+	-webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
 	display: inline-block;
 	border: 1px solid rgb(200,200,200);
 	cursor: pointer;
@@ -909,6 +1058,8 @@ div.operation-button {
 	padding: 5px 10px;
 	cursor: pointer;
 	border-radius: 3px;
+	-webkit-border-radius: 3px;
+    -moz-border-radius: 3px;
 }
 
 div.operation-button:hover {
@@ -947,10 +1098,6 @@ span.operation-icon.favors {
 	margin-top: 15px;
 	padding-bottom: 15px;
 	padding-left: 10px;
-}
-
-#user-reply-form.hide {
-	display: none;
 }
 
 img.comment-img {
@@ -997,6 +1144,8 @@ div.inner-comment-container {
 	margin-right: 20px;
 	background-color: rgb(240,240,240);
 	border-radius: 3px;
+	-webkit-border-radius: 3px;
+	-moz-border-radius: 3px;
 	border: 1px solid rgb(200,200,200);
 	padding-right: 20px;
 }
@@ -1124,6 +1273,8 @@ div.pagination-line.replies:empty {
     border: 1px solid rgb(200,200,200);
     background-color: white;
     border-radius: 3px;
+    -webkit-border-radius: 3px;
+	-moz-border-radius: 3px;
 }
 
 #list-title {

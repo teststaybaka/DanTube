@@ -68,6 +68,8 @@ input.signin_up-button {
   padding: 7px 10px;
   border: 1px solid rgb(200,200,200);
   border-radius: 5px;
+  -webkit-border-radius: 5px;
+  -moz-border-radius: 5px;
   background-color: rgb(255,255,255);
   cursor: pointer;
   font-family: "Times New Roman",Georgia,Serif;
@@ -123,6 +125,8 @@ div.input-error {
     color: white;
     padding: 5px 10px;
     border-radius: 3px;
+    -webkit-border-radius: 3px;
+    -moz-border-radius: 3px;
     white-space: nowrap;
 }
 

@@ -301,6 +301,9 @@ class Danmaku(BaseHandler):
                     'created': danmaku.created.strftime("%m-%d %H:%M"),
                     'created_seconds': models.time_to_seconds(danmaku.created),
                     'creator': danmaku.creator.id(),
+                    'type': danmaku.position,
+                    'size': danmaku.size,
+                    'color': danmaku.color,
                 })
 
         self.response.out.write(json.dumps(danmaku_list))
@@ -350,6 +353,32 @@ class Danmaku(BaseHandler):
             }))
             return
 
+        try:
+            size = int(self.request.get('size'))
+        except Exception, e:
+            self.response.out.write(json.dumps({
+                'error': True,
+                'message': 'Invalid font size.',
+            }))
+            return
+
+        try:
+            color = int(self.request.get('color'), 16)
+        except Exception, e:
+            self.response.out.write(json.dumps({
+                'error': True,
+                'message': 'Invalid color.',
+            }))
+            return
+
+        position = self.request.get('type')
+        if not position in models.Danmaku_Positions:
+            self.response.out.write(json.dumps({
+                'error': True,
+                'message': 'Invalid danmaku type.',
+            }))
+            return
+
         clip = video.video_clips[clip_index-1].get()
         if len(clip.danmaku_pools) == 0:
             danmaku_pool = models.DanmakuPool()
@@ -366,7 +395,7 @@ class Danmaku(BaseHandler):
                     clip.danmaku_pools.pop(0).delete()
                 clip.put()
 
-        danmaku = models.Danmaku(timestamp=timestamp, creator=user.key, content=content)
+        danmaku = models.Danmaku(timestamp=timestamp, content=content, position=position, size=size, color=color, creator=user.key)
         danmaku.put()
         danmaku_pool.danmaku_list.append(danmaku)
         danmaku_pool.put()
@@ -379,6 +408,9 @@ class Danmaku(BaseHandler):
             'created': danmaku.created.strftime("%m-%d %H:%M"),
             'created_seconds': models.time_to_seconds(danmaku.created),
             'creator': danmaku.creator.id(),
+            'type': danmaku.position,
+            'size': danmaku.size,
+            'color': danmaku.color,
         }))
         
 class Like(BaseHandler):

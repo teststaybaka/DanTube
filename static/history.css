@@ -6,6 +6,8 @@
     border: 1px solid rgb(200,200,200);
     background-color: white;
     border-radius: 3px;
+    -webkit-border-radius: 3px;
+    -moz-border-radius: 3px;
 }
 
 div.quick-title-line {

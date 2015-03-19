@@ -61,7 +61,7 @@ $(document).ready(function() {
     });
 
     $('div.edit-title-button').click(function(evt) {
-        $('#sub-title').addClass('hide');
+        $('#sub-title').addClass('hidden');
         $('#playlist-title-change-form').addClass('show');
         $('#playlist-title-change').val($('a.sub-title-link').text());
         $('#playlist-title-change').focus();
@@ -69,7 +69,7 @@ $(document).ready(function() {
 
     $('div.create-button').click(function() {
         $('#playlist-title-change-form').removeClass('show');
-        $('#sub-title').removeClass('hide');
+        $('#sub-title').removeClass('hidden');
     });
 
     $('#playlist-title-change-form').submit(function(evt) {
@@ -112,7 +112,7 @@ $(document).ready(function() {
                 if (!result.error) {
                     pop_ajax_message('Playlist updated!', 'success');
                     $('#playlist-title-change-form').removeClass('show');
-                    $('#sub-title').removeClass('hide');
+                    $('#sub-title').removeClass('hidden');
                     $('#sub-title a.sub-title-link').text(title);
                 } else {
                     pop_ajax_message(result.message, 'error');

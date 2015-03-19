@@ -190,6 +190,8 @@ div.video-select-checkbox {
     color: white;
     margin: 0;
     border-radius: 3px;
+    -webkit-border-radius: 3px;
+    -moz-border-radius: 3px;
     background-repeat: no-repeat;
 }
 
@@ -317,10 +319,6 @@ div.create-button, input.create-button {
 #sub-title.playlist {
     max-width: 498px;
     position: absolute;
-}
-
-#sub-title.playlist.hide {
-    display: none;
 }
 
 #playlist-title-change-form {
