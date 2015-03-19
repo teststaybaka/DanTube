@@ -19,7 +19,6 @@ def time_to_seconds(time):
 class History(ndb.Model):
   video = ndb.KeyProperty(kind='Video', required=True, indexed=False)
   last_viewed_time = ndb.DateTimeProperty(auto_now_add=True, indexed=False)
-  # last_viewed_timestamp
 
 class Favorite(ndb.Model):
   video = ndb.KeyProperty(kind='Video', required=True, indexed=False)
@@ -775,7 +774,7 @@ Danmaku_Positions = ['RightToLeft', 'Top', 'Bottom']
 class Danmaku(ndb.Model):
   timestamp = ndb.FloatProperty(required=True, indexed=False)
   content = ndb.StringProperty(required=True, indexed=False)
-  position = ndb.StringProperty(required=True, choices=Danmaku_Positions, indexed=False)
+  position = ndb.StringProperty(required=True, default='RightToLeft', choices=Danmaku_Positions, indexed=False)
   color = ndb.IntegerProperty(required=True, default=255*256*256+255*256+255, indexed=False)
   size = ndb.IntegerProperty(required=True, default=16, indexed=False)
   creator = ndb.KeyProperty(kind='User', required=True)

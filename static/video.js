@@ -701,6 +701,7 @@ function generate_danmaku_pool_list() {
 		padding1.className = "space-padding";
 		var content_value = document.createElement('div');
 		content_value.className = "bullet-content-value";
+		content_value.title = danmaku_list[i].content;
 		content_value.appendChild(document.createTextNode(danmaku_list[i].content));
 		var padding2 = document.createElement('div');
 		padding2.className = "space-padding";
@@ -728,27 +729,27 @@ $(document).ready(function() {
 		$('div.more-episode').remove();
 	});
 
-	// $('#add-to-favorite').click(function() {
-	// 	$.ajax({
-	// 		type: "POST",
-	// 		url: '/account/favor/dt'+video_id,
-	// 		success: function(result) {
-	// 			if(!result.error) {
-	// 				pop_ajax_message('This video has been added to your favorites successfully.', 'success');
-	// 				console.log(result.favors)
-	// 				$('#add-to-favorite').children('span.commas_number').text(numberWithCommas(result.favors));
-	// 			} else {
-	// 				pop_ajax_message(result.message, 'error');
-	// 			}
-	// 		},
-	// 		error: function (xhr, ajaxOptions, thrownError) {
-	// 			console.log(xhr.status);
-	// 			console.log(thrownError);
-	// 			pop_ajax_message(xhr.status+' '+thrownError, 'error');
-	// 		}
-	// 	});
-	// 	return false;
-	// });
+	$('#add-to-favorite').click(function() {
+		$.ajax({
+			type: "POST",
+			url: '/account/favor/dt'+video_id,
+			success: function(result) {
+				if(!result.error) {
+					pop_ajax_message('This video has been added to your favorites successfully.', 'success');
+					console.log(result.favors)
+					$('#add-to-favorite').children('span.commas_number').text(numberWithCommas(result.favors));
+				} else {
+					pop_ajax_message(result.message, 'error');
+				}
+			},
+			error: function (xhr, ajaxOptions, thrownError) {
+				console.log(xhr.status);
+				console.log(thrownError);
+				pop_ajax_message(xhr.status+' '+thrownError, 'error');
+			}
+		});
+		return false;
+	});
 
 	// $('#uploader-subscribe').click(function(e) {
 	// 	var uploader_id = $(this).attr('uid');

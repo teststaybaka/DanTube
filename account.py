@@ -38,6 +38,7 @@ class History(BaseHandler):
             video = videos[i]
             if video is None:
                 continue
+
             video_info = video.get_basic_info()
             uploader = video.uploader.get()
             video_info['uploader'] = uploader.get_public_info()
@@ -71,20 +72,21 @@ class Favorites(BaseHandler):
 
         video_keys = [f.video for f in requested_favorites]
         videos = ndb.get_multi(video_keys)
-        popped = False
         for i in range(0, len(requested_favorites)):
             video = videos[i]
             if video is None:
-                idx = user.favorites.index(video_keys[i])
-                user.favorites.pop(idx)
-                popped = True
-                continue
-
-            video_info = video.get_basic_info()
+                video_info = {}
+                video_info['title'] = 'Video deleted';
+                video_info['thumbnail_url'] = '/static/img/video_deleted.png'
+                video_info['thumbnail_url_hq'] = '/static/img/video_deleted.png'
+                video_info['id_num'] = video_keys[i].id().replace('dt', '')
+                video_info['url'] = '/video/'+ str(video_keys[i].id())
+                video_info['category'] = 'None'
+                video_info['subcategory'] = 'None'
+            else:
+                video_info = video.get_basic_info()
             video_info['favored_time'] = requested_favorites[i].favored_time.strftime("%Y-%m-%d %H:%M")
             context['videos'].append(video_info)
-        if popped:
-            user.put()
 
         context['favorites_counter'] = len(user.favorites)
         context['favorites_limit'] = user.favorites_limit
@@ -152,30 +154,28 @@ class Unfavor(BaseHandler):
         deleted_ids = []
         for i in range(0, len(ids)):
             video_id = ids[i]
-            video = models.Video.get_by_id('dt'+video_id)
+            # video = models.Video.get_by_id('dt'+video_id)
+            video_key = ndb.Key('Video', 'dt'+video_id)
+            video_keys = [f.video for f in user.favorites]
+            try:
+                idx = video_keys.index(video_key)
+                user.favorites.pop(idx)
+
+                deleted_ids.append(video_id)
+            except Exception, e:
+                continue
+
+            video = video_key.get()
             if video is None:
                 continue
 
-            video_keys = [f.video for f in user.favorites]
-            try:
-                idx = video_keys.index(video.key)
-                user.favorites.pop(idx)
-                
-                video.favors -= 1
-                video.put()
-                video.create_index('videos_by_favors', video.favors )
+            video.favors -= 1
+            video.put()
+            video.create_index('videos_by_favors', video.favors )
 
-                uploader = video.uploader.get()
-                uploader.videos_favored -= 1
-                uploader.put()
-
-                deleted_ids.append(video_id)
-            except ValueError:
-                continue
-                # self.response.out.write(json.dumps({
-                #     'error': True,
-                #     'message': 'video not favored',
-                # }))
+            uploader = video.uploader.get()
+            uploader.videos_favored -= 1
+            uploader.put()
         
         if len(deleted_ids) == 0:
             self.response.out.write(json.dumps({

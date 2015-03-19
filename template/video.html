@@ -132,14 +132,14 @@
             <div class="danmaku-size-option small" title="12">A</div>
             <div class="danmaku-size-option medium active" title="16">A</div>
             <div class="danmaku-size-option large" title="18">A</div>
-            <input id="danmaku-size-input" value="16" class="hidden">
+            <input id="danmaku-size-input" type="text" value="16" class="hidden">
           </div>
           <div class="type-select-title">Danmaku type</div>
           <div>
             <div class="danmaku-type-option top"><div class="danmaku-type-img top"></div><div class="danmaku-type-text">Top</div></div>
             <div class="danmaku-type-option bottom"><div class="danmaku-type-img bottom"></div><div class="danmaku-type-text">Bottom</div></div>
             <div class="danmaku-type-option normal active"><div class="danmaku-type-img normal"></div><div class="danmaku-type-text">Right to left</div></div>
-            <input id="danmaku-type-input" value="RightToLeft" class="hidden">
+            <input id="danmaku-type-input" type="text" value="RightToLeft" class="hidden">
           </div>
         </div>
         <div class="danmaku-setting" id="danmaku-type-setting">
@@ -148,7 +148,7 @@
         <div class="danmaku-setting" id="danmaku-color-setting">
           <div id="danmaku-color-tip">Danmaku color</div>
         </div>
-        <input id="danmaku-color-input" value="ffffff" class="hidden">
+        <input id="danmaku-color-input" type="text" value="ffffff" class="hidden">
         <input id="danmaku-input" class="normal-input" type="text" name="content" placeholder="{% if not user.is_auth %}Please sign in{% endif %}">
         <input id="fire-button" type="submit" value="Fire!" title="Burning Love!">
       </form>

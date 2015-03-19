@@ -574,6 +574,7 @@ class DeleteVideo(BaseHandler):
             if video is None or video.uploader.id() != self.user.key.id():
                 continue
 
+            self.user.videos_favored -= video.favors
             video.Delete()
             deleted_ids.append(video_id)
 

@@ -396,7 +396,6 @@ class Danmaku(BaseHandler):
                 clip.put()
 
         danmaku = models.Danmaku(timestamp=timestamp, content=content, position=position, size=size, color=color, creator=user.key)
-        danmaku.put()
         danmaku_pool.danmaku_list.append(danmaku)
         danmaku_pool.put()
         video.last_updated = datetime.now()
