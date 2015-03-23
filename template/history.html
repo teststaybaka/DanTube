@@ -8,37 +8,44 @@
 <div class="quick-title-line">
     <div class="quick-title-head"></div>
     <div class="quick-title">History</div>
+    {% block scope %}
+    <a class="search-scope active">Views</a>
+    <a class="search-scope" href="{{ uri_for('history_comment') }}">Comments</a>
+    {% endblock %}
 </div>
-<div class="history-video-container container">
+<div class="history-container container">
   {% if total_pages == 0 %}
   <div class="no-history">
-    No view history found.
+    No history found.
   </div>
   {% endif %}
-  {% for video in videos %}
-  <div class="video-entry">
-    <a class="video-img" href="{{ video.url }}" target="_blank">
-      <img src="{{ video.thumbnail_url }}">
-    </a>
-    <div class="video-info">
-      <div class="video-title">
-        <a href="{{ video.url }}" class="video-title" target="_blank">{{ video.title }}</a>
+  {% block history_entry %}
+    {% for video in videos %}
+    <div class="video-entry">
+      <a class="video-img" href="{{ video.url }}" target="_blank">
+        <img src="{{ video.thumbnail_url }}">
+      </a>
+      <div class="video-info">
+        <div class="video-title">
+          <a href="{{ video.url }}?index={{ video.index }}" class="video-title" target="_blank">{{ video.title }}</a>
+        </div>
+        <div class="uper-line">
+          <label>by</label>
+          <a href="{{ video.uploader.space_url }}" target="_blank">{{ video.uploader.nickname }}</a>
+        </div>
+        <div class="video-statistic">
+          <div class="video-statistic-entry">Views: <span class="commas_number">{{ video.hits }}</span></div>
+          <div class="video-statistic-entry">Favors: <span class="commas_number">{{ video.favors }}</span></div>
+          <div class="video-statistic-entry">Comments: <span class="commas_number">{{ video.comment_counter }}</span></div>
+          <div class="video-statistic-entry">Bullets: <span class="commas_number">{{ video.bullets }}</span></div>
+        </div>
+        <div class="last-viewed">Last watched: {{ video.last_viewed_time }}</div>
       </div>
-      <div class="uper-line">
-        <label>by</label>
-        <a href="{{ video.uploader.space_url }}" target="_blank">{{ video.uploader.nickname }}</a>
-      </div>
-      <div class="video-statistic">
-        <div class="video-statistic-entry">Views: <span class="commas_number">{{ video.hits }}</span></div>
-        <div class="video-statistic-entry">Favors: <span class="commas_number">{{ video.favors }}</span></div>
-        <div class="video-statistic-entry">Comments: <span class="commas_number">{{ video.comment_counter }}</span></div>
-        <div class="video-statistic-entry">Bullets: <span class="commas_number">{{ video.bullets }}</span></div>
-      </div>
-      <div class="last-viewed">Last watched: {{ video.last_viewed_time }}</div>
     </div>
-  </div>
-  {% endfor %}
+    {% endfor %}
+  {% endblock %}
 </div>
+{% block pagination %}
 {% if total_pages != 0 %}
 <div class="pagination-line">
   {% if cur_page > 1 %}
@@ -54,4 +61,6 @@
   {% endif %}
 </div>
 {% endif %}
+{% endblock %}
+
 {% endblock %}

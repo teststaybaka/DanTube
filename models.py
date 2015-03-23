@@ -18,6 +18,7 @@ def time_to_seconds(time):
 
 class History(ndb.Model):
   video = ndb.KeyProperty(kind='Video', required=True, indexed=False)
+  clip_index = ndb.IntegerProperty(required=True, default=1, indexed=False)
   last_viewed_time = ndb.DateTimeProperty(auto_now_add=True, indexed=False)
 
 class Favorite(ndb.Model):
@@ -46,6 +47,7 @@ class User(webapp2_extras.appengine.auth.models.User):
   subscribers_counter = ndb.IntegerProperty(required=True, default=0, indexed=False)
   threads_counter = ndb.IntegerProperty(required=True, default=0, indexed=False)
   new_messages = ndb.IntegerProperty(required=True, default=0, indexed=False)
+  comments_num = ndb.IntegerProperty(required=True, default=0, indexed=False)
 
   def delete_index(self):
     index = search.Index(name='upers_by_created')
@@ -761,6 +763,14 @@ class Video(ndb.Model):
         clip.danmaku_pools[j].delete()
       clip.key.delete()
 
+    comments = Comment.query(ancestor=self.key).fetch(keys_only=True)
+    for i in range(0, len(comments)):
+      comment = comments[i]
+      inner_comments = InnerComment.query(ancestor=comment).fetch(keys_only=True)
+      for j in range(0, len(inner_comments)):
+        inner_comments[j].delete()
+      comment.delete()
+
     Video.dec_video_count()
     Video.dec_video_count(self.category)
     Video.dec_video_count(self.category, self.subcategory)
@@ -770,6 +780,18 @@ class Video(ndb.Model):
     self.delete_index('videos_by_user' + str(self.uploader.id()))
     self.key.delete()
 
+Comment_Types = ['comment', 'inner_comment', 'danmaku']
+class CommentRecord(ndb.Model):
+  comment_type = ndb.StringProperty(required=True, choices=Comment_Types)
+  timestamp = ndb.FloatProperty(indexed=False)
+  floorth = ndb.IntegerProperty(indexed=False)
+  inner_floorth = ndb.IntegerProperty(indexed=False)
+  content = ndb.TextProperty(required=True, indexed=False)
+  created = ndb.DateTimeProperty(auto_now_add=True)
+  creator = ndb.KeyProperty(kind='User', required=True)
+  video = ndb.KeyProperty(kind='Video', required=True, indexed=False)
+  clip_index = ndb.IntegerProperty(required=True, default=0, indexed=False)
+
 Danmaku_Positions = ['RightToLeft', 'Top', 'Bottom']
 class Danmaku(ndb.Model):
   timestamp = ndb.FloatProperty(required=True, indexed=False)
@@ -777,7 +799,7 @@ class Danmaku(ndb.Model):
   position = ndb.StringProperty(required=True, default='RightToLeft', choices=Danmaku_Positions, indexed=False)
   color = ndb.IntegerProperty(required=True, default=255*256*256+255*256+255, indexed=False)
   size = ndb.IntegerProperty(required=True, default=16, indexed=False)
-  creator = ndb.KeyProperty(kind='User', required=True)
+  creator = ndb.KeyProperty(kind='User', required=True, indexed=False)
   created = ndb.DateTimeProperty(auto_now_add=True, indexed=False)
 
 class DanmakuPool(ndb.Model):
@@ -789,7 +811,7 @@ class Comment(ndb.Model):
   created = ndb.DateTimeProperty(auto_now_add=True)
   floorth = ndb.IntegerProperty(required=True, default=0, indexed=False)
   deleted = ndb.BooleanProperty(required=True, default=False, indexed=False)
-  inner_comment_counter = ndb.IntegerProperty(required=True, default=0)
+  inner_comment_counter = ndb.IntegerProperty(required=True, default=0, indexed=False)
 
   @staticmethod
   def get_by_id(id, video_key):
@@ -836,10 +858,3 @@ class InnerComment(ndb.Model):
     self.deleted = True
     self.content = ''
     self.put()
-
-class AtUser(ndb.Model):
-  sender = ndb.KeyProperty(kind='User', required=True, indexed=False)
-  receiver = ndb.KeyProperty(kind='User', required=True, indexed=False)
-  comment = ndb.KeyProperty(kind='Comment', indexed=False)
-  inner_comment = ndb.KeyProperty(kind='CommentOfComment', indexed=False)
-  danmaku = ndb.KeyProperty(kind='Danmaku', indexed=False)

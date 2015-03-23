@@ -130,9 +130,9 @@
           <div class="type-select-title">Font size</div>
           <div>
             <div class="danmaku-size-option small" title="12">A</div>
-            <div class="danmaku-size-option medium active" title="16">A</div>
-            <div class="danmaku-size-option large" title="18">A</div>
-            <input id="danmaku-size-input" type="text" value="16" class="hidden">
+            <div class="danmaku-size-option medium" title="16">A</div>
+            <div class="danmaku-size-option large active" title="20">A</div>
+            <input id="danmaku-size-input" type="text" value="20" class="hidden">
           </div>
           <div class="type-select-title">Danmaku type</div>
           <div>
@@ -182,7 +182,7 @@
       <div class="operation-button" title="It's my favorite!" id="add-to-favorite"><span class="operation-icon favors"></span><span class="commas_number">{{ video.favors }}</span></div>
     </div>
   </div>
-  <div id="comments-block-title">Comments <span class="commas_number"></span></div>
+  <div id="comments-block-title">Comments <span class="commas_number">{{ video.comment_counter }}</span></div>
   <form id="user-comment-form">
     <img class="comment-img" src="{% if user.is_auth %}{{ user.avatar_url_small }}{% else %}/static/emoticons_img/default_avatar1.png{% endif %}">
     <div class="write-comment-block">
@@ -193,7 +193,7 @@
       </div>
     </div>
   </form>
-  <form id="user-reply-form" class="hide">
+  <form id="user-reply-form" class="hidden">
     <img class="comment-img" src="{% if user.is_auth %}{{ user.avatar_url_small }}{% else %}/static/emoticons_img/default_avatar1.png{% endif %}">
     <div class="write-comment-block">
       <textarea class="normal-input" id="reply-textarea" placeholder="{% if user.is_auth %}Share what you think{% else %}Please sign in{% endif %}"></textarea>

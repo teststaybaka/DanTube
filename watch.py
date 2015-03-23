@@ -35,7 +35,7 @@ class Video(BaseHandler):
                 l += 1
             if l > 100:
                 user.history.pop(0)
-            new_history = models.History(video=video.key)
+            new_history = models.History(video=video.key, clip_index=clip_index)
             user.history.append(new_history)
             user.put()
 
@@ -116,6 +116,7 @@ class Comment(BaseHandler):
                     'content': inner_comment.content,
                     'created': inner_comment.created.strftime("%Y-%m-%d %H:%M"),
                     'deleted': inner_comment.deleted,
+                    'inner_floorth': inner_comment.inner_floorth,
                 }
                 info['inner_comments'].append(inner_info)
             result['comments'].append(info)
@@ -171,6 +172,7 @@ class Comment(BaseHandler):
                 'content': inner_comment.content,
                 'created': inner_comment.created.strftime("%Y-%m-%d %H:%M"),
                 'deleted': inner_comment.deleted,
+                'inner_floorth': inner_comment.inner_floorth,
             }
             result['inner_comments'].append(info)
 
@@ -209,6 +211,11 @@ class Comment(BaseHandler):
         video.comment_counter = comment.floorth
         video.last_updated = datetime.now()
         video.put()
+
+        comment_record = models.CommentRecord(creator=user.key, comment_type='comment', floorth=comment.floorth, content=comment.content, video=video.key)
+        comment_record.put()
+        user.comments_num += 1
+        user.put()
 
         self.response.out.write(json.dumps({
             'error': False,
@@ -261,6 +268,11 @@ class Comment(BaseHandler):
         inner_comment = models.InnerComment.Create(comment, user, content)
         video.last_updated = datetime.now()
         video.put()
+
+        comment_record = models.CommentRecord(creator=user.key, comment_type='inner_comment', floorth=inner_comment.floorth, inner_floorth=inner_comment.inner_floorth, content=inner_comment.content, video=video.key)
+        comment_record.put()
+        user.comments_num += 1
+        user.put()
         
         self.response.out.write(json.dumps({
             'error': False,
@@ -400,6 +412,11 @@ class Danmaku(BaseHandler):
         danmaku_pool.put()
         video.last_updated = datetime.now()
         video.put()
+
+        danmaku_record = models.CommentRecord(creator=user.key, comment_type='danmaku', timestamp=danmaku.timestamp, content=danmaku.content, video=video.key, clip_index=clip_index)
+        danmaku_record.put()
+        user.comments_num += 1
+        user.put()
         
         self.response.out.write(json.dumps({
             'content': danmaku.content,

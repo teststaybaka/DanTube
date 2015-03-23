@@ -14,6 +14,10 @@ div.quick-title-line {
     border-bottom: 1px solid rgb(200,200,200);
 }
 
+a.search-scope {
+    vertical-align: top;
+}
+
 div.video-entry {
     border-bottom: 1px solid rgb(200,200,200);
     padding: 25px;
@@ -108,4 +112,51 @@ div.no-history {
     font-size: 18px;
     color: rgb(100,100,100);
     border-bottom: 1px solid rgb(200,200,200);
+}
+
+.user-img {
+    width: 64px;
+    height: 64px;
+    box-shadow: 0 0 1px rgb(100,100,100);
+}
+
+.message-info {
+    display: inline-block;
+    margin-left: 10px;
+    vertical-align: top;
+    font-size: 14px;
+}
+
+.message-title {
+    display: inline-block;
+    margin-left: 5px;
+    max-width: 770px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    vertical-align: bottom;
+}
+
+.message-title:hover {
+    color: rgb(0,140,255);
+}
+
+.message-time {
+    color: rgb(150,150,150);
+}
+
+.info-label {
+    color: rgb(150,150,150);
+}
+
+.info-line {
+     margin-top: 2px;
+}
+
+.comment-content {
+    margin-top: 10px;
+    white-space: break-word;
+    color: rgb(100,100,100);
+    max-width: 100%;
+    white-space: pre-wrap;
 }

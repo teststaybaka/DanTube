@@ -13,7 +13,7 @@ class Account(BaseHandler):
 
 class History(BaseHandler):
     @login_required
-    def get(self):
+    def watch(self):
         user = self.user
         page_size = models.DEFAULT_PAGE_SIZE
         try:
@@ -40,6 +40,7 @@ class History(BaseHandler):
                 continue
 
             video_info = video.get_basic_info()
+            video_info['index'] = requested_history[i].clip_index
             uploader = video.uploader.get()
             video_info['uploader'] = uploader.get_public_info()
             video_info['last_viewed_time'] = requested_history[i].last_viewed_time.strftime("%Y-%m-%d %H:%M")
@@ -47,6 +48,43 @@ class History(BaseHandler):
 
         context.update(self.get_page_range(page, math.ceil(len(user.history)/float(page_size))) )
         self.render('history', context)
+
+    @login_required
+    def comment(self):
+        user = self.user
+        page_size = 20
+        try:
+            page = int(self.request.get('page'))
+            if page < 1:
+                raise ValueError('Negative')
+        except ValueError:
+            page = 1
+
+        context = {}
+        context['user'] = user.get_public_info()
+        context['comments'] = []
+
+        total_pages = min(10, math.ceil(user.comments_num/float(page_size)))
+        if page <= total_pages:
+            comment_keys = models.CommentRecord.query(models.CommentRecord.creator==user.key).order(-models.CommentRecord.created).fetch(keys_only=True, offset=(page-1)*page_size, limit=page_size)
+            comments = ndb.get_multi(comment_keys)
+            for i in range(0, len(comments)):
+                comment = comments[i]
+                video = comment.video.get()
+                comment_info = {
+                    'type': comment.comment_type,
+                    'timestamp': comment.timestamp,
+                    'floorth': comment.floorth,
+                    'inner_floorth': comment.inner_floorth,
+                    'content': comment.content,
+                    'created': comment.created.strftime("%Y-%m-%d %H:%M"),
+                    'video': video.get_basic_info(),
+                    'clip_index': comment.clip_index,
+                }
+                context['comments'].append(comment_info)
+
+        context.update(self.get_page_range(page, total_pages))
+        self.render('history_comment', context)
 
 class Favorites(BaseHandler):
     @login_required
