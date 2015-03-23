@@ -742,28 +742,6 @@ $(document).ready(function() {
 		$('div.more-episode').remove();
 	});
 
-	$('#add-to-favorite').click(function() {
-		$.ajax({
-			type: "POST",
-			url: '/account/favor/dt'+video_id,
-			success: function(result) {
-				if(!result.error) {
-					pop_ajax_message('This video has been added to your favorites successfully.', 'success');
-					console.log(result.favors)
-					$('#add-to-favorite').children('span.commas_number').text(numberWithCommas(result.favors));
-				} else {
-					pop_ajax_message(result.message, 'error');
-				}
-			},
-			error: function (xhr, ajaxOptions, thrownError) {
-				console.log(xhr.status);
-				console.log(thrownError);
-				pop_ajax_message(xhr.status+' '+thrownError, 'error');
-			}
-		});
-		return false;
-	});
-
 	// $('#uploader-subscribe').click(function(e) {
 	// 	var uploader_id = $(this).attr('uid');
 	// 	$.ajax({
@@ -784,25 +762,45 @@ $(document).ready(function() {
 	// 	});
 	// })
 
-	// $('#like').click(function(e) {
-	// 	e.preventDefault();
-	// 	$.ajax({
-	// 		type: "POST",
-	// 		url: url + "/like",
-	// 		success: function(result) {
-	// 			if(!result.error) {
-	// 				alert('success!');
-	// 			} else {
-	// 				alert(result.message);
-	// 			}
-	// 		},
-	// 		error: function (xhr, ajaxOptions, thrownError) {
-	// 			console.log(xhr.status);
-	// 			console.log(thrownError);
-	// 			pop_ajax_message(xhr.status+' '+thrownError, 'error');
-	// 		}
-	// 	});
-	// })
+	$('#add-to-favorite').click(function() {
+		$.ajax({
+			type: "POST",
+			url: '/account/favor/dt'+video_id,
+			success: function(result) {
+				if(!result.error) {
+					pop_ajax_message('You have successfully added it to your favorites.', 'success');
+					$('#add-to-favorite').children('span.commas_number').text(numberWithCommas(result.favors));
+				} else {
+					pop_ajax_message(result.message, 'error');
+				}
+			},
+			error: function (xhr, ajaxOptions, thrownError) {
+				console.log(xhr.status);
+				console.log(thrownError);
+				pop_ajax_message(xhr.status+' '+thrownError, 'error');
+			}
+		});
+	});
+
+	$('#like-this').click(function(e) {
+		$.ajax({
+			type: "POST",
+			url: '/video/like/dt' + video_id,
+			success: function(result) {
+				if(!result.error) {
+					pop_ajax_message('You liked it!', 'success');
+					$('#like-this').children('span.commas_number').text(numberWithCommas(result.likes));
+				} else {
+					pop_ajax_message(result.message, 'error');
+				}
+			},
+			error: function (xhr, ajaxOptions, thrownError) {
+				console.log(xhr.status);
+				console.log(thrownError);
+				pop_ajax_message(xhr.status+' '+thrownError, 'error');
+			}
+		});
+	});
 
 	$('#danmaku-type-setting').click(function() {
 		$('#danmaku-type-box').removeClass('hidden');
@@ -908,7 +906,7 @@ $(document).ready(function() {
 			success: function(result) {
 				if(!result.error) {
 					$('#danmaku-input').val('');
-					// pop_ajax_message('Comment sent!', 'error');
+					pop_ajax_message('Danmaku sent!', 'success');
 					result.timestamp = player.getCurrentTime();
 					$('#danmaku-list').append('<div class="per-bullet container">\
 						<div class="bullet-time-value">' + secondsToTime(result.timestamp) + '</div>\
@@ -1318,7 +1316,7 @@ function render_comment_div(comment) {
           <a class="blue-link user-name" href="' + comment.creator.space_url + '" target="_blank">' + comment.creator.nickname + '</a>\
           <label class="comment-time">' + comment.created + '</label>\
         </div>\
-        <div class="comment-content">' + comment.content + '</div>\
+        <div class="comment-content">' + mention_link(comment.content) + '</div>\
         <div class="display-button comment"><span class="reply-display-text">Read more</span><span class="display-arrow"></span></div>\
         <div class="comment-operation-line">\
           <div class="comment-operation reply">Reply</div>\
@@ -1358,4 +1356,24 @@ function render_inner_comment_div(inner_comment) {
 			        </div>\
 		        </div>'
 	return div;
+}
+
+function mention_link(content) {
+	var state = 0;
+	var new_content = '';
+	var part_content = '';
+	var puncts = /[@.,?!;:/\\"']/;
+	for (var i = 0; i < content.length; i++) {
+		if (content[i] === '@' && state == 0) {
+			state = 1;
+			part_content += content[i];
+		} else if (puncts.test(content[i]) && state == 1) {
+			state = 0;
+		} else if (state == 1) {
+			part_content += content[i]
+		} else if (state == 0) {
+			new_content += content[i]
+		}
+	}
+	return content;
 }

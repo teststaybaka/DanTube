@@ -155,7 +155,6 @@ div.no-history {
 
 .comment-content {
     margin-top: 10px;
-    white-space: break-word;
     color: rgb(100,100,100);
     max-width: 100%;
     white-space: pre-wrap;

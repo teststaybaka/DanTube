@@ -436,15 +436,17 @@ class Like(BaseHandler):
         user = self.user
 
         video = models.Video.get_by_id('dt'+video_id)
-        if video is not None:
-            video.likes += 1
-            video.last_updated = datetime.now()
-            video.put()
-            self.response.out.write(json.dumps({
-                'message': 'success'
-            }))
-        else:
+        if video is None:
             self.response.out.write(json.dumps({
                 'error': True,
                 'message': 'Video not found.'
             }))
+            return
+
+        video.likes += 1
+        video.last_updated = datetime.now()
+        video.put()
+        self.response.out.write(json.dumps({
+            'error': False,
+            'likes': video.likes,
+        }))

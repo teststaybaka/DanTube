@@ -23,7 +23,7 @@ class History(ndb.Model):
 
 class Favorite(ndb.Model):
   video = ndb.KeyProperty(kind='Video', required=True, indexed=False)
-  favored_time = ndb.DateTimeProperty(auto_now=True, indexed=False)
+  favored_time = ndb.DateTimeProperty(auto_now_add=True, indexed=False)
 
 class User(webapp2_extras.appengine.auth.models.User):
   verified = ndb.BooleanProperty(required=True, indexed=False)

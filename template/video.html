@@ -177,7 +177,7 @@
     <div id="video-intro-box">{% if video.cur_subintro %}{{ video.cur_subintro }}{% else %}{{ video.description }}{% endif %}</div>
     <div id="video-intro-display-button" class="display-button intro"><span class="intro-display-text">SHOW MORE</span><span class="display-arrow"></span></div>
     <div class="container">
-      <div class="operation-button" title="Like it!"><span class="operation-icon like"></span><span class="commas_number">{{ video.likes }}</span></div>
+      <div class="operation-button" title="Like this!" id="like-this"><span class="operation-icon like"></span><span class="commas_number">{{ video.likes }}</span></div>
       <div class="operation-button" title="Strongly recommend!"><span class="operation-icon bullets"></span><span class="commas_number">{{ video.bullets }}</span></div>
       <div class="operation-button" title="It's my favorite!" id="add-to-favorite"><span class="operation-icon favors"></span><span class="commas_number">{{ video.favors }}</span></div>
     </div>
