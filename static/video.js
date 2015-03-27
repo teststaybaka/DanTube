@@ -731,6 +731,15 @@ function generate_danmaku_pool_list() {
 	}
 }
 
+function isCookieExisted(cname) {
+	var cookie = getCookie(cname);
+	var res = (cookie != "");
+	var now = new Date().toUTCString();
+	var extime = 10 * 60 *1000; // 10 mins window to block next operation
+	setCookie(cname, now, extime);
+	return res;
+}
+
 $(document).ready(function() {
 	var url = document.URL;
 	var urls = document.URL.split('/');
@@ -762,6 +771,27 @@ $(document).ready(function() {
 	// 	});
 	// })
 
+	if( !isCookieExisted( video_id+'_last_hit' ) ) {
+		// Send to server hit +1
+		$.ajax({
+			type: "POST",
+			url: '/video/hit/dt' + video_id,
+			success: function(result) {
+				if(!result.error) {
+					console.log('hit +1 success.');
+				} else {
+					console.log(result.error);
+				}
+			},
+			error: function (xhr, ajaxOptions, thrownError) {
+				console.log(xhr.status);
+				console.log(thrownError);
+			}
+		});
+	} else {
+		console.log('Hit is not counted.');
+	}
+
 	$('#add-to-favorite').click(function() {
 		$.ajax({
 			type: "POST",
@@ -783,23 +813,28 @@ $(document).ready(function() {
 	});
 
 	$('#like-this').click(function(e) {
-		$.ajax({
-			type: "POST",
-			url: '/video/like/dt' + video_id,
-			success: function(result) {
-				if(!result.error) {
-					pop_ajax_message('You liked it!', 'success');
-					$('#like-this').children('span.commas_number').text(numberWithCommas(result.likes));
-				} else {
-					pop_ajax_message(result.message, 'error');
+		if( !isCookieExisted( video_id+'_last_like' ) ) {
+			// Send to server like + 1
+			$.ajax({
+				type: "POST",
+				url: '/video/like/dt' + video_id,
+				success: function(result) {
+					if(!result.error) {
+						pop_ajax_message('You liked it!', 'success');
+						$('#like-this').children('span.commas_number').text(numberWithCommas(result.likes));
+					} else {
+						pop_ajax_message(result.message, 'error');
+					}
+				},
+				error: function (xhr, ajaxOptions, thrownError) {
+					console.log(xhr.status);
+					console.log(thrownError);
+					pop_ajax_message(xhr.status+' '+thrownError, 'error');
 				}
-			},
-			error: function (xhr, ajaxOptions, thrownError) {
-				console.log(xhr.status);
-				console.log(thrownError);
-				pop_ajax_message(xhr.status+' '+thrownError, 'error');
-			}
-		});
+			});
+		} else {
+			pop_ajax_message('You already liked it.', 'error');
+		}
 	});
 
 	$('#danmaku-type-setting').click(function() {
