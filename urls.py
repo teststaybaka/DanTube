@@ -86,6 +86,7 @@ routes = [
     webapp2.Route(r'/video/reply_post/dt<video_id:\d+>', watch.Comment, name="reply_post", handler_method="reply_post"),
     webapp2.Route(r'/video/danmaku/dt<video_id:\d+>', watch.Danmaku, name="danmaku"),
     webapp2.Route(r'/video/like/dt<video_id:\d+>', watch.Like, name="like"),
+    webapp2.Route(r'/video/hit/dt<video_id:\d+>', watch.Hit, name="hit"),
 
     webapp2.Route(r'/video/category', views.CategoryVideo, name="category_video"),
     webapp2.Route(r'/video/random', views.RandomVideo, name="random_video"),

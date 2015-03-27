@@ -1,6 +1,11 @@
 from views import *
 import math
 
+HOT_SCORE_PER_HIT = 5
+HOT_SCORE_PER_DANMAKU = 10
+HOT_SCORE_PER_COMMENT = 15
+HOT_SCORE_PER_LIKE = 5
+
 class Video(BaseHandler):
     def get(self, video_id):
         video = models.Video.get_by_id('dt'+video_id)
@@ -15,13 +20,6 @@ class Video(BaseHandler):
         if clip_index < 1 or clip_index > len(video.video_clips):
             self.notify('Video not found.', 404)
             return
-
-        video.hits += 1
-        video.put()
-        video.create_index('videos_by_hits', video.hits)
-        uploader = video.uploader.get()
-        uploader.videos_watched += 1
-        uploader.put()
 
         user = self.user
         if user is not None:
@@ -67,6 +65,7 @@ class Video(BaseHandler):
             for i in range(0, len(videos)):
                 playlist_info['videos'].append(videos[i].get_basic_info())
         
+        uploader = video.uploader.get()
         context = {'video': video_info, 'uploader': uploader.get_public_info(user), 'playlist': playlist_info}
         self.render('video', context)
 
@@ -241,6 +240,7 @@ class Comment(BaseHandler):
 
         comment = models.Comment.Create(video, user, content)
         video.comment_counter = comment.floorth
+        video.update_hot_score(HOT_SCORE_PER_COMMENT)
         video.last_updated = datetime.now()
         video.put()
 
@@ -450,6 +450,7 @@ class Danmaku(BaseHandler):
         danmaku = models.Danmaku(timestamp=timestamp, content=content, position=position, size=size, color=color, creator=user.key)
         danmaku_pool.danmaku_list.append(danmaku)
         danmaku_pool.put()
+        video.update_hot_score(HOT_SCORE_PER_DANMAKU)
         video.last_updated = datetime.now()
         video.put()
 
@@ -488,9 +489,36 @@ class Like(BaseHandler):
             return
 
         video.likes += 1
+        video.update_hot_score(HOT_SCORE_PER_LIKE)
         video.last_updated = datetime.now()
         video.put()
         self.response.out.write(json.dumps({
             'error': False,
             'likes': video.likes,
+        }))
+
+class Hit(BaseHandler):
+    @login_required
+    def post(self, video_id):
+        self.response.headers['Content-Type'] = 'application/json'
+
+        video = models.Video.get_by_id('dt'+video_id)
+        if video is None:
+            self.response.out.write(json.dumps({
+                'error': True,
+                'message': 'Video not found.'
+            }))
+            return
+
+        video.hits += 1
+        video.update_hot_score(HOT_SCORE_PER_HIT)
+        video.put()
+        video.create_index('videos_by_hits', video.hits)
+        uploader = video.uploader.get()
+        uploader.videos_watched += 1
+        uploader.put()
+
+        self.response.out.write(json.dumps({
+            'error': False,
+            'hits': video.hits,
         }))
