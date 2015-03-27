@@ -40,3 +40,12 @@ class DanmakuTest(webapp2.RequestHandler):
         # logging.info(models.Danmaku.query(models.Danmaku.order==5000).get().content)
         self.response.headers['Content-Type'] = 'text/plain'
         self.response.write('Data initialized.')
+
+class Notify(webapp2.RequestHandler):
+    def get(self):
+        ns = models.Notification.query().fetch()
+        for n in ns:
+            n.key.delete()
+
+        n = models.Notification(receiver=ndb.Key('User', 6681749341863936), note_type='warning', title='SDFsdf', content='XXXXXXXXXXXXXXXXXX')
+        n.put()

@@ -51,6 +51,8 @@ routes = [
     webapp2.Route(r'/account/messages/compose', message.Compose, name='compose'),
     webapp2.Route(r'/account/mentioned', message.Mentioned, name='mentioned'),
     webapp2.Route(r'/account/notifications', message.Notifications, name='notifications'),
+    webapp2.Route(r'/account/notifications/read', message.Notifications, name='read_note', handler_method='read'),
+    webapp2.Route(r'/account/notifications/delete', message.Notifications, name='delete_note', handler_method='delete'),
 
     webapp2.Route(r'/user/<user_id:\d+>', user.Space, name='space'),
     webapp2.Route(r'/user/playlist/<user_id:\d+>', user.SpacePlaylist, name='space_playlist'),
@@ -93,6 +95,7 @@ routes = [
 
     webapp2.Route(r'/admin/video', admin.VideoPageTest, name="Admin_Video"),
     webapp2.Route(r'/admin/danmaku', admin.DanmakuTest, name="Admin_Danmaku"),
+    webapp2.Route(r'/admin/notify', admin.Notify, name="Admin_Notify"),
 ]
 for category in models.Video_Category:
     route = webapp2.Route(r'/%s' % models.URL_NAME_DICT[category][0], views.Category, name=category)

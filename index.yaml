@@ -10,9 +10,9 @@ indexes:
 # automatically uploaded to the admin console when you next deploy
 # your application using appcfg.py.
 
-- kind: Comment
+- kind: ActivityRecord
   properties:
-  - name: video
+  - name: creator
   - name: created
     direction: desc
 
@@ -39,21 +39,25 @@ indexes:
   - name: created
     direction: desc
 
-- kind: MessageThread
+- kind: MentionedComment
+  properties:
+  - name: receivers
+  - name: created
+
+- kind: MentionedComment
+  properties:
+  - name: receivers
+  - name: created
+    direction: desc
+
+- kind: Notification
   properties:
   - name: receiver
-  - name: updated
-    direction: desc
+  - name: created
 
-- kind: MessageThread
+- kind: Notification
   properties:
-  - name: sender
-  - name: updated
-    direction: desc
-
-- kind: PlayList
-  properties:
-  - name: creator
+  - name: receiver
   - name: created
     direction: desc
 
@@ -66,77 +70,12 @@ indexes:
 - kind: Video
   properties:
   - name: category
-  - name: created
-    direction: desc
-
-- kind: Video
-  properties:
-  - name: category
-  - name: hits
-    direction: desc
-
-- kind: Video
-  properties:
-  - name: category
   - name: hot_score
     direction: desc
 
 - kind: Video
   properties:
   - name: category
-  - name: last_liked
-    direction: desc
-
-- kind: Video
-  properties:
-  - name: category
-  - name: last_updated
-    direction: desc
-
-- kind: Video
-  properties:
-  - name: category
-  - name: subcategory
-  - name: created
-
-- kind: Video
-  properties:
-  - name: category
-  - name: subcategory
-  - name: created
-    direction: desc
-
-- kind: Video
-  properties:
-  - name: category
-  - name: subcategory
-  - name: hits
-
-- kind: Video
-  properties:
-  - name: category
-  - name: subcategory
-  - name: hits
-    direction: desc
-
-- kind: Video
-  properties:
-  - name: category
-  - name: subcategory
-  - name: hot_score
-    direction: desc
-
-- kind: Video
-  properties:
-  - name: category
-  - name: subcategory
-  - name: last_liked
-    direction: desc
-
-- kind: Video
-  properties:
-  - name: category
-  - name: subcategory
   - name: last_updated
     direction: desc
 
@@ -156,16 +95,4 @@ indexes:
   properties:
   - name: uploader
   - name: hits
-    direction: desc
-
-- kind: Video
-  ancestor: yes
-  properties:
-  - name: __key__
-    direction: desc
-
-- kind: Video
-  ancestor: yes
-  properties:
-  - name: created
     direction: desc

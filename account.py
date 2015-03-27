@@ -66,7 +66,7 @@ class History(BaseHandler):
 
         total_pages = min(10, math.ceil(user.comments_num/float(page_size)))
         if page <= total_pages:
-            comment_keys = models.CommentRecord.query(models.CommentRecord.creator==user.key).order(-models.CommentRecord.created).fetch(keys_only=True, offset=(page-1)*page_size, limit=page_size)
+            comment_keys = models.ActivityRecord.query(models.ActivityRecord.creator==user.key).order(-models.ActivityRecord.created).fetch(keys_only=True, offset=(page-1)*page_size, limit=page_size)
             comments = ndb.get_multi(comment_keys)
             for i in range(0, len(comments)):
                 comment = comments[i]

@@ -70,6 +70,39 @@ class Video(BaseHandler):
         context = {'video': video_info, 'uploader': uploader.get_public_info(), 'playlist': playlist_info}
         self.render('video', context)
 
+# TODO!!!! Get rid of tags in the content like <p></p>!
+def assemble_link(temp, add_link, users):
+    if temp != '' and add_link:
+        user = models.User.query(models.User.nickname==temp[1:].strip()).get(keys_only=True)
+        if user is not None:
+            temp = '<a class="blue-link" target="_blank" href="/user/' + str(user.id()) + '">' + temp + '</a>'
+            users.append(user)
+
+    return temp
+
+def comment_nickname_recognize(user, content, add_link):
+    new_content = ''
+    state = 0
+    temp = ''
+    users = []
+    for i in range(0, len(content)):
+        if re.match(r".*[@.,?!;:/\\\"'].*", content[i]) and state == 1:
+            state = 0
+            new_content += assemble_link(temp, add_link, users)
+            temp = ''
+
+        if content[i] == '@' and state == 0:
+            state = 1
+            temp += '@'
+        elif state == 0:
+            new_content += content[i]
+        else: # state == 1
+            temp += content[i]
+    new_content += assemble_link(temp, add_link, users)
+
+    seen = set()
+    return new_content, [ x for x in users if not (x == user.key or x in seen or seen.add(user))]
+
 class Comment(BaseHandler):
     def get_comment(self, video_id):
         self.response.headers['Content-Type'] = 'application/json'
@@ -204,18 +237,21 @@ class Comment(BaseHandler):
                 'message': 'Comment too long.'
             }))
             return
-
-        at_users = self.request.POST.getall('ats[]')
+        content, users = comment_nickname_recognize(user, content, True)
 
         comment = models.Comment.Create(video, user, content)
         video.comment_counter = comment.floorth
         video.last_updated = datetime.now()
         video.put()
 
-        comment_record = models.CommentRecord(creator=user.key, comment_type='comment', floorth=comment.floorth, content=comment.content, video=video.key)
+        comment_record = models.ActivityRecord(creator=user.key, comment_type='comment', floorth=comment.floorth, content=comment.content, video=video.key)
         comment_record.put()
         user.comments_num += 1
         user.put()
+
+        if len(users) != 0:
+            mentioned_message = models.MentionedComment(receivers=users, sender=user.key, comment_type='comment', floorth=comment.floorth, content=comment.content, video=video.key)
+            mentioned_message.put()
 
         self.response.out.write(json.dumps({
             'error': False,
@@ -262,17 +298,20 @@ class Comment(BaseHandler):
                 'message': 'Comment too long.'
             }))
             return
-
-        at_users = self.request.POST.getall('ats[]')
+        content, users = comment_nickname_recognize(user, content, True)
 
         inner_comment = models.InnerComment.Create(comment, user, content)
         video.last_updated = datetime.now()
         video.put()
 
-        comment_record = models.CommentRecord(creator=user.key, comment_type='inner_comment', floorth=inner_comment.floorth, inner_floorth=inner_comment.inner_floorth, content=inner_comment.content, video=video.key)
+        comment_record = models.ActivityRecord(creator=user.key, comment_type='inner_comment', floorth=inner_comment.floorth, inner_floorth=inner_comment.inner_floorth, content=inner_comment.content, video=video.key)
         comment_record.put()
         user.comments_num += 1
         user.put()
+
+        if len(users) != 0:
+            mentioned_message = models.MentionedComment(receivers=users, sender=user.key, comment_type='inner_comment', floorth=inner_comment.floorth, inner_floorth=inner_comment.inner_floorth, content=inner_comment.content, video=video.key)
+            mentioned_message.put()
         
         self.response.out.write(json.dumps({
             'error': False,
@@ -364,6 +403,7 @@ class Danmaku(BaseHandler):
                 'message': 'Comment is too long.',
             }))
             return
+        content, users = comment_nickname_recognize(user, content, False)
 
         try:
             size = int(self.request.get('size'))
@@ -413,10 +453,14 @@ class Danmaku(BaseHandler):
         video.last_updated = datetime.now()
         video.put()
 
-        danmaku_record = models.CommentRecord(creator=user.key, comment_type='danmaku', timestamp=danmaku.timestamp, content=danmaku.content, video=video.key, clip_index=clip_index)
+        danmaku_record = models.ActivityRecord(creator=user.key, comment_type='danmaku', timestamp=danmaku.timestamp, content=danmaku.content, video=video.key, clip_index=clip_index)
         danmaku_record.put()
         user.comments_num += 1
         user.put()
+
+        if len(users) != 0:
+            mentioned_message = models.MentionedComment(receivers=users, sender=user.key, comment_type='danmaku', timestamp=danmaku.timestamp, content=danmaku.content, video=video.key, clip_index=clip_index)
+            mentioned_message.put()
         
         self.response.out.write(json.dumps({
             'content': danmaku.content,
