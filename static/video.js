@@ -1192,8 +1192,10 @@ $(document).ready(function() {
 		} else {
 			var inner_comment_container = comment_box.next();
 		}
+		var user_name = comment_box.find('a.user-name').text();
 		inner_comment_container.append($('#user-reply-form'));
 		$('#user-reply-form').removeClass('hidden');
+		$('#reply-textarea').val('@' + user_name + ': ');
 	});
 
 	var arguments = url.split('?')[1]
@@ -1264,7 +1266,7 @@ function update_comments(page, video_id) {
 				}
 			} else {
 				pop_ajax_message(result.message, 'error');
-				comment_container.append('<div class="comment-entry no-comment error">Load error.</div>');
+				comment_container.append('<div class="comment-entry no-comment error" data-page="'+page+'">Load error.</div>');
 			}
 		},
 		error: function (xhr, ajaxOptions, thrownError) {
@@ -1327,7 +1329,7 @@ function update_inner_comments(page, video_id, inner_comment_container) {
 				}
 			} else {
 				pop_ajax_message(result.message, 'error');
-				inner_comment_container.prepend('<div class="comment-entry no-comment inner error">Load error.</div>');
+				inner_comment_container.prepend('<div class="comment-entry no-comment inner error" data-page="'+page+'">Load error.</div>');
 			}
 		},
 		error: function (xhr, ajaxOptions, thrownError) {
@@ -1351,7 +1353,7 @@ function render_comment_div(comment) {
           <a class="blue-link user-name" href="' + comment.creator.space_url + '" target="_blank">' + comment.creator.nickname + '</a>\
           <label class="comment-time">' + comment.created + '</label>\
         </div>\
-        <div class="comment-content">' + mention_link(comment.content) + '</div>\
+        <div class="comment-content">' + comment.content + '</div>\
         <div class="display-button comment"><span class="reply-display-text">Read more</span><span class="display-arrow"></span></div>\
         <div class="comment-operation-line">\
           <div class="comment-operation reply">Reply</div>\
@@ -1391,24 +1393,4 @@ function render_inner_comment_div(inner_comment) {
 			        </div>\
 		        </div>'
 	return div;
-}
-
-function mention_link(content) {
-	var state = 0;
-	var new_content = '';
-	var part_content = '';
-	var puncts = /[@.,?!;:/\\"']/;
-	for (var i = 0; i < content.length; i++) {
-		if (content[i] === '@' && state == 0) {
-			state = 1;
-			part_content += content[i];
-		} else if (puncts.test(content[i]) && state == 1) {
-			state = 0;
-		} else if (state == 1) {
-			part_content += content[i]
-		} else if (state == 0) {
-			new_content += content[i]
-		}
-	}
-	return content;
 }

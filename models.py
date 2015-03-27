@@ -47,7 +47,10 @@ class User(webapp2_extras.appengine.auth.models.User):
   subscribers_counter = ndb.IntegerProperty(required=True, default=0, indexed=False)
   threads_counter = ndb.IntegerProperty(required=True, default=0, indexed=False)
   new_messages = ndb.IntegerProperty(required=True, default=0, indexed=False)
+
   comments_num = ndb.IntegerProperty(required=True, default=0, indexed=False)
+  last_mentioned_check = ndb.DateTimeProperty(auto_now_add=True, required=True, indexed=False)
+  last_notification_check = ndb.DateTimeProperty(auto_now_add=True, required=True, indexed=False)
 
   def delete_index(self):
     index = search.Index(name='upers_by_created')
@@ -113,8 +116,6 @@ class User(webapp2_extras.appengine.auth.models.User):
       'subscriptions_counter': len(self.subscriptions)
     }
     return statistic_info
-
-
 
   @classmethod
   def validate_nickname(cls, nickname):
@@ -780,18 +781,6 @@ class Video(ndb.Model):
     self.delete_index('videos_by_user' + str(self.uploader.id()))
     self.key.delete()
 
-Comment_Types = ['comment', 'inner_comment', 'danmaku']
-class CommentRecord(ndb.Model):
-  comment_type = ndb.StringProperty(required=True, choices=Comment_Types)
-  timestamp = ndb.FloatProperty(indexed=False)
-  floorth = ndb.IntegerProperty(indexed=False)
-  inner_floorth = ndb.IntegerProperty(indexed=False)
-  content = ndb.TextProperty(required=True, indexed=False)
-  created = ndb.DateTimeProperty(auto_now_add=True)
-  creator = ndb.KeyProperty(kind='User', required=True)
-  video = ndb.KeyProperty(kind='Video', required=True, indexed=False)
-  clip_index = ndb.IntegerProperty(required=True, default=0, indexed=False)
-
 Danmaku_Positions = ['RightToLeft', 'Top', 'Bottom']
 class Danmaku(ndb.Model):
   timestamp = ndb.FloatProperty(required=True, indexed=False)
@@ -858,3 +847,36 @@ class InnerComment(ndb.Model):
     self.deleted = True
     self.content = ''
     self.put()
+
+class Notification(ndb.Model):
+  receiver = ndb.KeyProperty(kind='User', required=True)
+  content = ndb.TextProperty(required=True, indexed=False)
+  note_type = ndb.StringProperty(required=True, choices=['info', 'warning'], indexed=False)
+  read = ndb.BooleanProperty(required=True, default=False, indexed=False)
+  created = ndb.DateTimeProperty(auto_now_add=True)
+  title = ndb.StringProperty(required=True, indexed=False)
+
+Comment_Types = ['comment', 'inner_comment', 'danmaku']
+class MentionedComment(ndb.Model):
+  receivers = ndb.KeyProperty(kind='User', repeated=True)
+  sender = ndb.KeyProperty(kind='User', required=True, indexed=False)
+  created = ndb.DateTimeProperty(auto_now_add=True)
+  comment_type = ndb.StringProperty(required=True, choices=Comment_Types, indexed=False)
+  timestamp = ndb.FloatProperty(indexed=False)
+  floorth = ndb.IntegerProperty(indexed=False)
+  inner_floorth = ndb.IntegerProperty(indexed=False)
+  content = ndb.TextProperty(required=True, indexed=False)
+  video = ndb.KeyProperty(kind='Video', required=True, indexed=False)
+  clip_index = ndb.IntegerProperty(required=True, default=0, indexed=False)
+
+Activity_Types = Comment_Types + ['upload', 'edit']
+class ActivityRecord(ndb.Model):
+  creator = ndb.KeyProperty(kind='User', required=True)
+  comment_type = ndb.StringProperty(required=True, choices=Activity_Types)
+  timestamp = ndb.FloatProperty(indexed=False)
+  floorth = ndb.IntegerProperty(indexed=False)
+  inner_floorth = ndb.IntegerProperty(indexed=False)
+  content = ndb.TextProperty(required=True, indexed=False)
+  created = ndb.DateTimeProperty(auto_now_add=True)
+  video = ndb.KeyProperty(kind='Video', required=True, indexed=False)
+  clip_index = ndb.IntegerProperty(required=True, default=0, indexed=False)

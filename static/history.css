@@ -28,6 +28,16 @@ div.video-entry {
     box-sizing: border-box;
 }
 
+div.message-entry {
+    border-bottom: 1px solid rgb(200,200,200);
+    padding: 15px 25px;
+    display: inline-table;
+    width: 100%;
+    -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
+    -moz-box-sizing: border-box;    /* Firefox, other Gecko */
+    box-sizing: border-box;
+}
+
 a.video-img {
     display: inline-block;
     width: 176px;
@@ -115,8 +125,8 @@ div.no-history {
 }
 
 .user-img {
-    width: 64px;
-    height: 64px;
+    width: 48px;
+    height: 48px;
     box-shadow: 0 0 1px rgb(100,100,100);
 }
 
@@ -154,7 +164,6 @@ div.no-history {
 }
 
 .comment-content {
-    margin-top: 10px;
     color: rgb(100,100,100);
     max-width: 100%;
     white-space: pre-wrap;

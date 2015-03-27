@@ -1,6 +1,6 @@
 div.message-entry {
     border-top: 1px solid rgb(230,230,230);
-    padding: 25px;
+    padding: 15px 25px;
     width: 100%;
     display: inline-table;
     -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
@@ -18,6 +18,15 @@ div.message-entry.none {
     text-align: center;
     color: rgb(100,100,100);
     font-size: 18px;
+    background-color: rgb(255,255,255);
+}
+
+div.message-entry.loading {
+    padding: 50px;
+    background-image: url("/static/img/ajax-loader.gif");
+    background-repeat: no-repeat;
+    background-position: 50% 50%;
+    background-color: rgb(255,255,255);
 }
 
 a.user-img {
@@ -35,8 +44,8 @@ a.user-img img {
 
 div.message-info {
     display: inline-block;
-    margin-left: 20px;
-    width: 600px;
+    margin-left: 10px;
+    width: 620px;
     vertical-align: top;
     position: relative;
 }
@@ -58,9 +67,20 @@ div.info-line label.time {
     margin-left: 10px;
 }
 
-div.info-line a {
-    font-size: 16px;
+.user-name {
+    font-size: 14px;
     cursor: pointer;
+}
+
+.message-title {
+    display: inline-block;
+    max-width: 500px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 14px;
+    cursor: pointer;
+    vertical-align: bottom;
 }
 
 div.message-entry.unread a.message-title {
@@ -68,16 +88,17 @@ div.message-entry.unread a.message-title {
     color: rgb(0,0,0);
 }
 
-div.info-line a:hover, div.message-entry.unread a.message-title:hover {
+div.message-entry a.message-title:hover {
     color: rgb(0,140,255);
 }
 
 div.comment-content {
-    font-size: 16px;
+    margin-top: 5px;
+    font-size: 14px;
     word-wrap: break-word;
+    white-space: pre-wrap;
     color: rgb(100,100,100);
     max-width: 100%;
-    margin-top: 10px;
 }
 
 div.info-line a.reply-link {
@@ -169,8 +190,8 @@ div.message-date.receive {
 }
 
 a.user-img {
-    width: 64px;
-    height: 64px;
+    width: 48px;
+    height: 48px;
     display: inline-block;
 }
 
@@ -300,25 +321,54 @@ div.notification-type {
     width: 32px;
     height: 32px;
     display: inline-block;
+    background-image: url("/static/img/basic_icons.png");
 }
 
 div.notification-type.info {
-    background-image: url("/static/img/note_info.png");
+    background-position: 0 -670px;
 }
 
 div.notification-type.warning {
-    background-image: url("/static/img/note_warning.png");
+    background-position: 0 -739px;
 }
 
 div.notification-detail {
-    margin-top: 10px;
+    font-size: 14px;
+    color: rgb(100,100,100);
+    margin-top: 5px;
     word-wrap: break-word;
+    white-space: pre-wrap;
     width: 100%;
-}
-
-div.notification-detail {
     overflow: hidden;
     height: 0;
     -webkit-transition: height .3s; /* For Safari 3.1 to 6.0 */
     transition: height .3s;
+}
+
+div.message-select-checkbox {
+    width: 16px;
+    height: 16px;
+    position: absolute;
+    right: -16px;
+    top: 50%;
+    cursor: pointer;
+    display: none;
+    border: 1px solid rgb(200,200,200);
+    background-color: white;
+    color: white;
+    margin: 0;
+    border-radius: 3px;
+    -webkit-border-radius: 3px;
+    -moz-border-radius: 3px;
+    background-repeat: no-repeat;
+}
+
+div.message-entry:hover div.message-select-checkbox {
+    display: inline-block;
+}
+
+div.message-select-checkbox.checked {
+    display: inline-block;
+    background-position: 0 -192px;
+    background-image: url("/static/img/basic_icons.png");
 }

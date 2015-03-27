@@ -410,7 +410,7 @@ div.danmaku-setting {
 #danmaku-type-setting {
 	background-image: url("/static/img/player_icons.png");
 	background-position: 0 -834px;
-	border-color: white;
+	border-right: 1px solid rgb(255,255,255);
 }
 
 #danmaku-color-setting {

@@ -317,9 +317,151 @@ class DeleteMessage(BaseHandler):
 class Mentioned(BaseHandler):
     @login_required
     def get(self):
-        self.render('mentioned_me')
+        user = self.user
+        new_messages = models.MentionedComment.query(ndb.AND(models.MentionedComment.receivers==user.key, 
+                                                                models.MentionedComment.created > user.last_mentioned_check)).count()
+        user.last_mentioned_check = datetime.now()
+        user.put()
+        self.render('mentioned_me', {'new_messages': new_messages})
+
+    @login_required
+    def post(self):
+        self.response.headers['Content-Type'] = 'application/json'
+        user = self.user
+        page_size = 20
+
+        # urlsafe = self.request.get('cursor')
+        # logging.info(urlsafe)
+        # if urlsafe:
+        result = {'error': False}
+        result['comments'] = []
+
+        cursor = models.Cursor(urlsafe=self.request.get('cursor'))
+        comments, cursor, moge = models.MentionedComment.query(models.MentionedComment.receivers==user.key).order(-models.MentionedComment.created, models.MentionedComment.key).fetch_page(page_size, start_cursor=cursor)
+        for i in range(0, len(comments)):
+            comment = comments[i]
+            video = comment.video.get()
+            sender = comment.sender.get()
+            comment_info = {
+                'sender': sender.get_public_info(),
+                'type': comment.comment_type,
+                'timestamp': comment.timestamp,
+                'floorth': comment.floorth,
+                'inner_floorth': comment.inner_floorth,
+                'content': comment.content,
+                'created': comment.created.strftime("%Y-%m-%d %H:%M"),
+                'video': video.get_basic_info(),
+                'clip_index': comment.clip_index,
+            }
+            result['comments'].append(comment_info)
+        if not cursor:
+            result['cursor'] = ''
+        else:
+            result['cursor'] = cursor.urlsafe()
+        
+        self.response.out.write(json.dumps(result))
 
 class Notifications(BaseHandler):
     @login_required
     def get(self):
-        self.render('notifications')
+        user = self.user
+        new_notifications = models.Notification.query(ndb.AND(models.Notification.receiver==user.key, 
+                                                                models.Notification.created > user.last_notification_check)).count()
+        user.last_notification_check = datetime.now()
+        user.put()
+        self.render('notifications', {'new_notifications': new_notifications})
+
+    @login_required
+    def post(self):
+        self.response.headers['Content-Type'] = 'application/json'
+        user = self.user
+        page_size = 20
+
+        result = {'error': False}
+        result['notifications'] = []
+
+        cursor = models.Cursor(urlsafe=self.request.get('cursor'))
+        notifications, cursor, moge = models.Notification.query(models.Notification.receiver==user.key).order(-models.Notification.created, models.Notification.key).fetch_page(page_size, start_cursor=cursor)
+        for i in range(0, len(notifications)):
+            notification = notifications[i]
+            note_info = {
+                'type': notification.note_type,
+                'content': notification.content,
+                'created': notification.created.strftime("%Y-%m-%d %H:%M"),
+                'read': notification.read,
+                'title': notification.title,
+                'id': notification.key.id(),
+            }
+            result['notifications'].append(note_info)
+        if not cursor:
+            result['cursor'] = ''
+        else:
+            result['cursor'] = cursor.urlsafe()
+        
+        self.response.out.write(json.dumps(result))
+
+    @login_required
+    def read(self):
+        self.response.headers['Content-Type'] = 'application/json'
+        user = self.user
+
+        try:
+            note_id = int(self.request.get('id'))
+        except Exception, e:
+            self.response.out.write(json.dumps({
+                'error': True,
+                'message': 'Invalid id.'
+            }))
+            return
+
+        note = models.Notification.get_by_id(note_id)
+        if not note:
+            self.response.out.write(json.dumps({
+                'error': True,
+                'message': 'No notification found.'
+            }))
+
+        note.read = True
+        note.put()
+
+        self.response.out.write(json.dumps({
+            'error': False,
+        }))
+
+    @login_required
+    def delete(self):
+        self.response.headers['Content-Type'] = 'application/json'
+        user = self.user
+        ids = self.request.POST.getall('ids[]')
+        if len(ids) == 0:
+            self.response.out.write(json.dumps({
+                'error': True,
+                'message': 'No notification selected.'
+            }))
+            return
+
+        deleted_ids = []
+        for i in range(0, len(ids)):
+            try:
+                note_id = int(ids[i])
+            except Exception, e:
+                continue
+
+            note = models.Notification.get_by_id(note_id)
+            if note is None or note.receiver.id() != user.key.id():
+                continue
+
+            note.key.delete()
+            deleted_ids.append(note_id)
+
+        if len(deleted_ids) == 0:
+            self.response.out.write(json.dumps({
+                'error': True,
+                'message': 'No notification deleted.'
+            }))
+            return
+
+        self.response.out.write(json.dumps({
+            'error': False,
+            'message': deleted_ids,
+        }))
