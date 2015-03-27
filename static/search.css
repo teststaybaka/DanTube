@@ -50,7 +50,7 @@ div.video-entry {
 div.video-entry.no-result {
     text-align: center;
     font-size: 18px;
-    color: rgb(100,100,100);
+    color: rgb(150,150,150);
     padding: 100px;
     display: block;
 }
@@ -83,10 +83,6 @@ div.uper-line {
 
 a.video-uploader {
     vertical-align: middle;
-}
-
-a.video-uploader:hover {
-    color: rgb(0,140,255);
 }
 
 div.video-info {
@@ -133,7 +129,7 @@ a.video-title, a.uploader {
     max-width: 100%;
 }
 
-a.video-title:hover, a.uploader:hover {
+a.video-title:hover {
     color: rgb(0,140,255);
 }
 
@@ -254,8 +250,4 @@ div.video-num-box {
 
 div.video-num {
     padding: 3px;
-}
-
-.inline-button.uper-button {
-    font-weight: normal;
 }

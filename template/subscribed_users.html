@@ -35,9 +35,9 @@
         <img src="{{ subs_user.avatar_url }}" title="{{ subs_user.nickname }}">
     </a>
     <div class="user-details">
-      <div><a class="user-nickname" href="{{ subs_user.space_url}}" target="_blank" title="{{ subs_user.nickname }}">{{ subs_user.nickname }}</a></div>
-      <a class="inline-button send-message">Send Message</a>
-      <div class="inline-button unsubscribe-button" uid="{{ subs_user.id }}">Unsubscribe</div>
+      <div><a class="user-nickname blue-link" href="{{ subs_user.space_url}}" target="_blank" title="{{ subs_user.nickname }}">{{ subs_user.nickname }}</a></div>
+      <a class="inline-button subscribed">Send Message</a>
+      <div class="inline-button subscribed subscribe-button unsubscribe" data-id="{{ subs_user.id }}"><span class="subscribe-icon"></span><span class="subscribe-text">Subscribed</span></div>
     </div>
   </div>
   {% endfor %}

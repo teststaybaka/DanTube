@@ -98,6 +98,62 @@ $(document).ready(function() {
         }, 100);
     });
 
+    $('.subscribe-button').hover(
+        function() {
+            if ($(this).hasClass('unsubscribe')) {
+                $(this).children('.subscribe-text').text('Unsubscribe');
+            }
+        }, 
+        function() {
+            if ($(this).hasClass('unsubscribe')) {
+                $(this).children('.subscribe-text').text('Subscribed');
+            }
+        }
+    );
+    $('.subscribe-button').click(function(evt) {
+        var button = $(this);
+        var uploader_id = button.attr('data-id');
+        var action = ''
+        if (button.hasClass('unsubscribe')) {
+            action = "/user/unsubscribe/"+uploader_id;
+        } else {
+            action = "/user/subscribe/"+uploader_id;
+        }
+        $.ajax({
+            type: "POST",
+            url: action,
+            success: function(result) {
+                if(!result.error) {
+                    if (button.hasClass('unsubscribe')) {
+                        pop_ajax_message('Unsubscribed successfully.', 'success');
+                        button.removeClass('unsubscribe');
+                        button.children('.subscribe-text').text('Subscribe');
+                    } else {
+                        pop_ajax_message('You have successfully subscribed to the UPer.', 'success');
+                        button.addClass('unsubscribe');
+                        button.children('.subscribe-text').text('Subscribed');
+                    }
+                } else {
+                    pop_ajax_message(result.message, 'error');
+                    if (result.change) {
+                        if (button.hasClass('unsubscribe')) {
+                            button.removeClass('unsubscribe');
+                            button.children('.subscribe-text').text('Subscribe');
+                        } else {
+                            button.addClass('unsubscribe');
+                            button.children('.subscribe-text').text('Subscribed');
+                        }
+                    }
+                }
+            },
+            error: function (xhr, ajaxOptions, thrownError) {
+                console.log(xhr.status);
+                console.log(thrownError);
+                pop_ajax_message(xhr.status+' '+thrownError, 'error');
+            }
+        });
+    });
+
     $('span.commas_number').each(function() {
         $(this).text(numberWithCommas($(this).text()) )
     });

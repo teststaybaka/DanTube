@@ -74,7 +74,7 @@ class User(webapp2_extras.appengine.auth.models.User):
   def set_password(self, raw_password):
     self.password = security.generate_password_hash(raw_password, length=12)
 
-  def get_public_info(self):
+  def get_public_info(self, user=None):
     public_info = {}
     public_info['id'] = self.key.id()
     public_info['verified'] = self.verified
@@ -95,6 +95,11 @@ class User(webapp2_extras.appengine.auth.models.User):
       public_info['avatar_url_small'] = public_info['avatar_url']
       
     public_info['space_url'] = '/user/' + str(self.key.id())
+
+    if user and  self.key != user.key and self.key in user.subscriptions:
+      public_info['subscribed'] = True
+    else:
+      public_info['subscribed'] = False
     
     return public_info
 
@@ -198,26 +203,6 @@ class User(webapp2_extras.appengine.auth.models.User):
         return user, timestamp
  
     return None, None
-
-class Notification(ndb.Model):
-  receiver = ndb.KeyProperty(kind='User', required=True)
-  content = ndb.TextProperty(required=True, indexed=False)
-  title = ndb.StringProperty(required=True, indexed=False)
-
-class Message(ndb.Model):
-  sender = ndb.KeyProperty(kind='User', required=True, indexed=False)
-  content = ndb.TextProperty(required=True, indexed=False)
-  when = ndb.DateTimeProperty(required=True) #indexed=False)
-
-class MessageThread(ndb.Model):
-  messages = ndb.LocalStructuredProperty(Message, repeated=True)
-  # messages = ndb.KeyProperty(kind='Message', repeated=True, indexed=False)
-  subject = ndb.StringProperty(required=True, indexed=False)
-  sender = ndb.KeyProperty(kind='User')
-  receiver = ndb.KeyProperty(kind='User')
-  delete_user = ndb.KeyProperty(kind='User', default=None, indexed=False)
-  updated = ndb.DateTimeProperty(required=True)#, indexed=False)
-  new_messages = ndb.IntegerProperty(required=True, default=1, indexed=False)
 
 
 Video_Category = ['Anime', 'Music', 'Dance', 'Game', 'Entertainment', 'Techs', 'Sports', 'Movie', 'TV Series']
@@ -847,6 +832,21 @@ class InnerComment(ndb.Model):
     self.deleted = True
     self.content = ''
     self.put()
+
+class Message(ndb.Model):
+  sender = ndb.KeyProperty(kind='User', required=True, indexed=False)
+  content = ndb.TextProperty(required=True, indexed=False)
+  when = ndb.DateTimeProperty(required=True) #indexed=False)
+
+class MessageThread(ndb.Model):
+  messages = ndb.LocalStructuredProperty(Message, repeated=True)
+  # messages = ndb.KeyProperty(kind='Message', repeated=True, indexed=False)
+  subject = ndb.StringProperty(required=True, indexed=False)
+  sender = ndb.KeyProperty(kind='User')
+  receiver = ndb.KeyProperty(kind='User')
+  delete_user = ndb.KeyProperty(kind='User', default=None, indexed=False)
+  updated = ndb.DateTimeProperty(required=True)#, indexed=False)
+  new_messages = ndb.IntegerProperty(required=True, default=1, indexed=False)
 
 class Notification(ndb.Model):
   receiver = ndb.KeyProperty(kind='User', required=True)

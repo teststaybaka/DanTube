@@ -24,14 +24,13 @@ $(document).ready(function() {
                         var div = render_comment_div(comment);
                         $('.messages-container').append(div);
                     }
-                    if (result.comments.length == 0) {
-                        isOver = true;
-                        if (!cursor) {
-                            $('.messages-container').append('<div class="message-entry none"> No messages found. </div>');
-                        }
-                    } else {
-                        cursor = result.cursor;
+                    if (result.comments.length == 0 && !cursor) {
+                        $('.messages-container').append('<div class="message-entry none"> No messages found. </div>');
                     }
+                    if (result.comments.length < 20) {
+                        isOver = true;
+                    }
+                    cursor = result.cursor;
                 } else {
                     pop_ajax_message(result.message, 'error');
                 }

@@ -10,6 +10,7 @@ import mimetypes
 import urllib
 import urllib2
 import random
+import cgi
 
 from datetime import datetime
 from jinja2 import Undefined
@@ -549,7 +550,7 @@ class SearchUPer(BaseHandler):
         # all_users = models.User.query().fetch()
         # for user in all_users:
         #     user.create_index()
-            
+        
         page_size = models.DEFAULT_PAGE_SIZE
         try:
             page = int(self.request.get('page') )
@@ -584,7 +585,7 @@ class SearchUPer(BaseHandler):
 
             for i in range(0, len(upers)):
                 uper = upers[i]
-                uper_info = uper.get_public_info()
+                uper_info = uper.get_public_info(self.user)
                 uper_info.update(uper.get_statistic_info())
                 context['upers'].append(uper_info)
 
@@ -592,4 +593,5 @@ class SearchUPer(BaseHandler):
             context.update(self.get_page_range(page, total_pages) )
             self.render('search_uper', context)
         except Exception, e:
+            logging.info(e)
             self.notify('UPer search error.');

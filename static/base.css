@@ -902,21 +902,40 @@ div.emoticons-option:hover {
     background-color: rgb(240,240,240);
 }
 
-span.subscribe-add-icon {
+span.subscribe-icon {
     display: inline-block;
     vertical-align: top;
     width: 10px;
     height: 16px;
     background-repeat: no-repeat;
     background-image: url("/static/img/basic_icons.png");
-    background-position: 0px -875px;
     margin-right: 4px;
 }
 
-#subscribe-button:hover span.subscribe-add-icon {
+.subscribe-button span.subscribe-icon {
+    background-position: 0px -875px;
+}
+
+.subscribe-button:hover span.subscribe-icon {
     background-position: -22px -875px;
 }
 
-#subscribe-button:active span.subscribe-add-icon {
+.subscribe-button:active span.subscribe-icon {
     background-position: 0 -893px;
+}
+
+.unsubscribe {
+    color: rgb(150,150,150);
+}
+
+.unsubscribe span.subscribe-icon {
+    background-position: 0 -910px;
+}
+
+.unsubscribe:hover span.subscribe-icon {
+    background-position: -22px -910px;
+}
+
+.unsubscribe:active span.subscribe-icon {
+    background-position: 0 -928px;
 }

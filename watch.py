@@ -67,10 +67,9 @@ class Video(BaseHandler):
             for i in range(0, len(videos)):
                 playlist_info['videos'].append(videos[i].get_basic_info())
         
-        context = {'video': video_info, 'uploader': uploader.get_public_info(), 'playlist': playlist_info}
+        context = {'video': video_info, 'uploader': uploader.get_public_info(user), 'playlist': playlist_info}
         self.render('video', context)
 
-# TODO!!!! Get rid of tags in the content like <p></p>!
 def assemble_link(temp, add_link, users):
     if temp != '' and add_link:
         user = models.User.query(models.User.nickname==temp[1:].strip()).get(keys_only=True)
@@ -81,6 +80,7 @@ def assemble_link(temp, add_link, users):
     return temp
 
 def comment_nickname_recognize(user, content, add_link):
+    content = cgi.escape(content)
     new_content = ''
     state = 0
     temp = ''

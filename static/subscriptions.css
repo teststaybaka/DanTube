@@ -18,7 +18,7 @@ div.no-subscription {
   text-align: center;
   font-size: 18px;
   padding: 70px 0 100px 0;
-  color: rgb(100,100,100);
+  color: rgb(150,150,150);
 }
 
 div.no-subscription.quick {
@@ -34,7 +34,7 @@ div.no-subscription.quick {
 div.subscription-user-box {
   float: left;
   display: inline-block;
-  margin-right: 35px;
+  margin-right: 30px;
   padding: 15px;
   border-radius: 5px;
   -webkit-border-radius: 5px;
@@ -60,11 +60,11 @@ a.user-img img {
 div.user-details {
   display: inline-block;
   vertical-align: top;
-  width: 220px;
+  width: 230px;
 }
 
 a.user-nickname {
-  margin-left: 10px;
+  padding-left: 10px;
   max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -73,29 +73,18 @@ a.user-nickname {
   -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
   -moz-box-sizing: border-box;    /* Firefox, other Gecko */
   box-sizing: border-box;
-  color: rgb(100,100,100);
-  font-size: 16px;
+  font-size: 14px;
 }
 
-a.user-nickname:hover {
-  color: rgb(0,140,255);
-}
-
-a.send-message {
-  display: inline-block;
-  cursor: pointer;
+.subscribed {
+  margin-top: 10px;
   margin-left: 10px;
   margin-right: 0;
-  margin-top: 10px;
-  font-weight: normal;
-  color: rgb(150,150,150);
 }
 
-div.unsubscribe-button {
-  margin-top: 10px;
-  margin-left: 10px;
-  font-weight: normal;
-  color: rgb(150,150,150);
+.subscribe-button {
+  width: 90px;
+  text-align: center;
 }
 
 div.pagination-line {

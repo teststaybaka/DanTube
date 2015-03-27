@@ -728,7 +728,7 @@ div.space-padding {
 
 #video-info {
 	float: left;
-	width: 700px;
+	width: 690px;
 }
 
 #video-title {
@@ -832,9 +832,11 @@ span.statistic-icon.favorites {
 	margin-right: 10px;
 }
 
-#subscribe-button {
+.subscribe-button {
 	margin: 0;
-	padding: 4px 6px;
+	padding: 4px;
+	width: 90px;
+	text-align: center;
 }
 
 #uploader-intro {

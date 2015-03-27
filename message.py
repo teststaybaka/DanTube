@@ -144,7 +144,6 @@ class Compose(BaseHandler):
         }))
 
 def message_author_required(handler):
-  
     def check_message_author(self, thread_id):
         xrequest = self.request.headers.get('X-Requested-With')
         user = self.user

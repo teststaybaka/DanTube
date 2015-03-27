@@ -57,8 +57,8 @@ routes = [
     webapp2.Route(r'/user/<user_id:\d+>', user.Space, name='space'),
     webapp2.Route(r'/user/playlist/<user_id:\d+>', user.SpacePlaylist, name='space_playlist'),
     webapp2.Route(r'/user/board/<user_id:\d+>', user.SpaceBoard, name='space_board'),
-    webapp2.Route(r'/user/<user_id:\d+>/subscribe', user.Subscribe, name='subscribe'),
-    webapp2.Route(r'/user/<user_id:\d+>/unsubscribe', user.Unsubscribe, name='unsubscribe'),
+    webapp2.Route(r'/user/subscribe/<user_id:\d+>', user.Subscribe, name='subscribe'),
+    webapp2.Route(r'/user/unsubscribe/<user_id:\d+>', user.Unsubscribe, name='unsubscribe'),
 
     webapp2.Route(r'/submit', video.VideoUpload, name="submit", handler_method="submit"),
     webapp2.Route(r'/submit_post', video.VideoUpload, name="submit_post", handler_method="submit_post"),

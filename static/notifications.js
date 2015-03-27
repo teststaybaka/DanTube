@@ -94,14 +94,13 @@ $(document).ready(function() {
                         var div = render_notification_div(notification);
                         $('.messages-container').append(div);
                     }
-                    if (result.notifications.length == 0) {
-                        isOver = true;
-                        if (!cursor) {
-                            $('.messages-container').append('<div class="message-entry none"> No notifications found. </div>');
-                        }
-                    } else {
-                        cursor = result.cursor;
+                    if (result.notifications.length == 0 && !cursor) {
+                        $('.messages-container').append('<div class="message-entry none"> No notifications found. </div>');
                     }
+                    if (result.notifications.length < 20) {
+                        isOver = true;
+                    }
+                    cursor = result.cursor;
                 } else {
                     pop_ajax_message(result.message, 'error');
                 }

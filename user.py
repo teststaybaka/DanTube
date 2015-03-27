@@ -38,13 +38,13 @@ class Space(BaseHandler):
         context['total_found'] = total_found
         context.update(self.get_page_range(page, total_pages) )
 
-        auth = self.auth
-        if (not auth.get_user_by_session()) or int(user_id) != self.user.key.id():
+        if not self.user or int(user_id) != self.user.key.id():
             host.space_visited += 1
             host.put()
 
-        context['host'] = host.get_public_info()
+        context['host'] = host.get_public_info(self.user)
         context['host'].update(host.get_statistic_info())
+            
         self.render('space', context)
 
 class SpacePlaylist(BaseHandler):
@@ -104,7 +104,7 @@ class Subscribe(BaseHandler):
         if not host:
             self.response.out.write(json.dumps({
                 'error': True,
-                'message': 'user not found',
+                'message': 'User not found.',
             }))
             return
 
@@ -112,31 +112,35 @@ class Subscribe(BaseHandler):
         if user == host:
             self.response.out.write(json.dumps({
                 'error': True,
-                'message': 'cannot subscribe self'
+                'message': 'You can\'t subscribe to yourself.'
             }))
             return
 
-        l = len(user.subscriptions)
-        if host.key not in user.subscriptions:
-            if l >= 1000:
-                self.response.out.write(json.dumps({
-                    'error': True,
-                    'message': 'You have reached subscriptions limit.'
-                }))
-                return
-        
-            user.subscriptions.append(host.key)
-            user.put()
-            self.response.out.write(json.dumps({
-                'message': 'success'
-            }))
-            host.subscribers_counter += 1
-            host.put()
-        else:
+        if host.key in user.subscriptions:
             self.response.out.write(json.dumps({
                 'error': True,
-                'message': 'already subscribed'
+                'change': True,
+                'message': 'Already subscribed.'
             }))
+            return
+
+        if len(user.subscriptions) >= 1000:
+            self.response.out.write(json.dumps({
+                'error': True,
+                'message': 'You have reached the limit of subscriptions.'
+            }))
+            return
+    
+        user.subscriptions.append(host.key)
+        user.put()
+        
+        host.subscribers_counter += 1
+        host.put()
+
+        self.response.out.write(json.dumps({
+            'error': False
+        }))
+            
 
 class Unsubscribe(BaseHandler):
     @login_required
@@ -146,7 +150,7 @@ class Unsubscribe(BaseHandler):
         if not host:
             self.response.out.write(json.dumps({
                 'error': True,
-                'message': 'user not found'
+                'message': 'User not found.'
             }))
             return
 
@@ -154,20 +158,23 @@ class Unsubscribe(BaseHandler):
         if user == host:
             self.response.out.write(json.dumps({
                 'error': True,
-                'message': 'cannot unsubscribe self'
+                'message': 'You can\'t subscribe yourself.'
             }))
             return
 
         try:
             user.subscriptions.remove(host.key)
             user.put()
-            self.response.out.write(json.dumps({
-                'message': 'success'
-            }))
+            
             host.subscribers_counter -= 1
             host.put()
+
+            self.response.out.write(json.dumps({
+                'error': False
+            }))
         except ValueError:
             self.response.out.write(json.dumps({
                 'error': True,
-                'message': 'user not subscribed'
+                'change': True,
+                'message': 'You didn\'t subscribe to the user.'
             }))

@@ -1,19 +1,7 @@
 $(document).ready(function() {
-    var message_show = document.getElementById('message-contain-body');
-    if (message_show != null) {
-        message_show.scrollTop = message_show.scrollHeight;
+    if ($('#message-contain-body').length != 0) {
+        $('#message-contain-body').scrollTop($('#message-contain-body')[0].scrollHeight);
     }
-
-    $('a.notification-title').click(function(evt) {
-        var content = $(evt.target).parent().siblings('div.notification-detail');
-        if (content.hasClass('show')) {
-            content.height(0);
-            content.removeClass('show');
-        } else {
-            content.height(content[0].scrollHeight);
-            content.addClass('show');
-        }
-    });
 
     $('div.delete-button').click(function(evt) {
         if ($(evt.target).hasClass('delete')) {
@@ -61,42 +49,42 @@ $(document).ready(function() {
             update_page({'page': next_page});
         }
     });
-
-    function update_page(query) {
-        message_container.empty();
-        message_container.append('<div class="message-entry loading"></div>');
-        $.ajax({
-            type: "GET",
-            url: '/account/messages',
-            data: query,
-            success: function(result) {
-                if(result.error)
-                    pop_ajax_message(result.message, 'error');
-                else {
-                    message_container.empty();
-                    pagination_container.empty();
-                    cur_page = result.page;
-                    console.log(result.threads.length)
-                    if(result.threads.length == 0) {
-                        message_container.append('<div class="message-entry none">No messages found.</div>');
-                    } else {
-                        for(var i = 0; i < result.threads.length; i++) {
-                            var message_div = render_message_div(result.threads[i]);
-                            message_container.append(message_div);
-                        }
-                        var pagination = render_pagination(cur_page, result.total_pages);
-                        pagination_container.append(pagination);
-                    }
-                }
-            },
-            error: function (xhr, ajaxOptions, thrownError) {
-                console.log(xhr.status);
-                console.log(thrownError);
-                pop_ajax_message(xhr.status+' '+thrownError, 'error');
-            }
-        });
-    }
 });
+
+function update_page(query) {
+    message_container.empty();
+    message_container.append('<div class="message-entry loading"></div>');
+    $.ajax({
+        type: "GET",
+        url: '/account/messages',
+        data: query,
+        success: function(result) {
+            if(result.error)
+                pop_ajax_message(result.message, 'error');
+            else {
+                message_container.empty();
+                pagination_container.empty();
+                cur_page = result.page;
+                console.log(result.threads.length)
+                if(result.threads.length == 0) {
+                    message_container.append('<div class="message-entry none">No messages found.</div>');
+                } else {
+                    for(var i = 0; i < result.threads.length; i++) {
+                        var message_div = render_message_div(result.threads[i]);
+                        message_container.append(message_div);
+                    }
+                    var pagination = render_pagination(cur_page, result.total_pages);
+                    pagination_container.append(pagination);
+                }
+            }
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            console.log(xhr.status);
+            console.log(thrownError);
+            pop_ajax_message(xhr.status+' '+thrownError, 'error');
+        }
+    });
+}
 
 render_message_div = function(thread) {
     var div = '<div class="message-entry ';

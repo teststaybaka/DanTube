@@ -742,26 +742,6 @@ $(document).ready(function() {
 		$('div.more-episode').remove();
 	});
 
-	// $('#uploader-subscribe').click(function(e) {
-	// 	var uploader_id = $(this).attr('uid');
-	// 	$.ajax({
-	// 		type: "POST",
-	// 		url: "/user/" + uploader_id + "/subscribe",
-	// 		success: function(result) {
-	// 			if(!result.error) {
-	// 				alert('success!');
-	// 			} else {
-	// 				alert(result.message);
-	// 			}
-	// 		},
-	// 		error: function (xhr, ajaxOptions, thrownError) {
-	// 			console.log(xhr.status);
-	// 			console.log(thrownError);
-	// 			pop_ajax_message(xhr.status+' '+thrownError, 'error');
-	// 		}
-	// 	});
-	// })
-
 	$('#add-to-favorite').click(function() {
 		$.ajax({
 			type: "POST",

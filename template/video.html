@@ -76,7 +76,7 @@
         <div id="uploader-link">
           <a class="blue-link" href="{{ uploader.space_url}}" target="_blank">{{ uploader.nickname }}</a>
         </div>
-        <div class="inline-button" id="subscribe-button"><span class="subscribe-add-icon"></span>Subscribe</div>
+        <div class="inline-button subscribe-button {% if uploader.subscribed %}unsubscribe{% endif %}" data-id="{{ uploader.id }}"><span class="subscribe-icon"></span><span class="subscribe-text">{% if uploader.subscribed %}Subscribed{% else %}Subscribe{% endif %}</span></div>
       </div>
       <div id="uploader-intro">{{ uploader.intro }}</div>
     </div>

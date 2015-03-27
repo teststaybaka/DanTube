@@ -26,7 +26,7 @@ action="{{ uri_for('search_uper') }}"
         <img class="uper-img" src="{{ uper.avatar_url }}">
     </a>
     <div class="uper-info">
-        <a class="uploader" href="{{ uper.space_url }}">{{ uper.nickname }}</a>
+        <a class="uploader blue-link" href="{{ uper.space_url }}">{{ uper.nickname }}</a>
         <div class="uper-detail-line">
             <div class="uper-detail-info">Views: <span class="commas_number">{{ uper.videos_watched }}</span></div>
             <div class="uper-detail-info">Videos: <span class="commas_number">{{ uper.videos_submitted }}</span></div>
@@ -34,8 +34,8 @@ action="{{ uri_for('search_uper') }}"
         </div>
         <div class="uper-description">{{ uper.intro }}</div>
         <div class="uper-buttons">
-            <div class="inline-button uper-button">+ Subscribe</div>
-            <a class="inline-button uper-button">Send Message</a>
+            <a class="inline-button">Send Message</a>
+            <div class="inline-button subscribe-button {% if uper.subscribed %}unsubscribe{% endif %}" data-id="{{ uper.id }}"><span class="subscribe-icon"></span><span class="subscribe-text">{% if uper.subscribed %}Subscribed{% else %}Subscribe{% endif %}</span></div>
         </div>
     </div>
 </div>
