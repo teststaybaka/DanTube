@@ -14,10 +14,8 @@
   color: rgb(100,100,100);
 }
 
-#signup-header.loading, #signin-header.loading {
-  background-image: url("/static/img/ajax-loader.gif");
-  background-repeat: no-repeat;
-  background-position: 110px 12px;
+#signin_up-header.loading {
+  background-position: 105px 18px;
 }
 
 form[method='POST'] {

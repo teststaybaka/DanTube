@@ -12,7 +12,40 @@ indexes:
 
 - kind: ActivityRecord
   properties:
+  - name: activity_type
   - name: creator
+  - name: created
+    direction: desc
+
+- kind: ActivityRecord
+  properties:
+  - name: activity_type
+  - name: creator
+  - name: public
+  - name: created
+    direction: desc
+
+- kind: ActivityRecord
+  properties:
+  - name: creator
+  - name: created
+
+- kind: ActivityRecord
+  properties:
+  - name: creator
+  - name: created
+    direction: desc
+
+- kind: ActivityRecord
+  properties:
+  - name: creator
+  - name: public
+  - name: created
+
+- kind: ActivityRecord
+  properties:
+  - name: creator
+  - name: public
   - name: created
     direction: desc
 

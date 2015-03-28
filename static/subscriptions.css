@@ -22,12 +22,17 @@ div.no-subscription {
 }
 
 div.no-subscription.quick {
-  padding: 10px 38px 30px 0;
+  padding: 20px 34px 40px 0;
   font-size: 16px;
 }
 
+div.no-subscription.quick.loading {
+  padding-top: 30px;
+  padding-bottom: 50px;
+}
+
 #subs-user-list {
-  padding: 30px 0 0 30px;
+  padding: 20px 0 0 30px;
   border-top: 1px solid rgb(230,230,230);
 }
 
@@ -40,7 +45,7 @@ div.subscription-user-box {
   -webkit-border-radius: 5px;
   -moz-border-radius: 5px;
   border: 1px solid rgb(200,200,200);
-  margin-bottom: 30px;
+  margin-bottom: 20px;
   font-size: 0;
 }
 
@@ -88,13 +93,17 @@ a.user-nickname {
 }
 
 div.pagination-line {
-  padding: 15px;
   text-align: center;
   border-top: 1px solid rgb(230,230,230);
 }
 
+a.page-change, a.page-num {
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
 div.activity-entry {
-  padding: 25px;
+  padding: 15px 25px;
   border-top: 1px solid rgb(230,230,230);
   width: 100%;
   -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
@@ -103,11 +112,15 @@ div.activity-entry {
   display: inline-table;
 }
 
+div.activity-entry.loading {
+  padding: 50px;
+}
+
 div.activity-entry.none {
   text-align: center;
   font-size: 18px;
   padding: 100px 0 100px 0;
-  color: rgb(100,100,100);
+  color: rgb(150,150,150);
 }
 
 a.uploader-img {
@@ -133,7 +146,11 @@ div.uploader-name, div.activity-title {
   word-wrap: break-word;
 }
 
-a.uploader-name:hover, a.activity-title:hover {
+a.uploader-name, a.activity-title {
+  font-size: 14px;
+}
+
+a.activity-title:hover {
   color: rgb(0,140,255);
 }
 
@@ -151,30 +168,24 @@ div.activity-time {
 }
 
 div.activity-intro {
-  margin-top: 10px;
+  margin-top: 5px;
   color: rgb(100,100,100);
   font-size: 14px;
   word-wrap: break-word;
+  white-space: pre-wrap;
 }
 
 a.comment-check {
-  color: rgb(0,140,255);
-  margin-left: 5px;
-}
-
-a.comment-check:hover {
-  color: rgb(255,177,108);
-}
-
-a.comment-check:active {
-  color: rgb(0,50,200);
+  margin-top: 5px;
+  display: inline-block;
+  font-size: 14px;
 }
 
 a.video-img {
   width: 176px;
   height: 99px;
   display: block;
-  margin-top: 10px;
+  margin-top: 5px;
 }
 
 img.video-img {
@@ -185,12 +196,12 @@ img.video-img {
 
 div.upers-block {
   border-top: 1px solid rgb(230,230,230);
-  padding-left: 38px;
-  padding-top: 20px;
+  padding-left: 34px;
+  padding-top: 15px;
 }
 
 div.quick-uper {
-  margin-right: 38px;
-  margin-bottom: 20px;
+  margin-right: 34px;
+  margin-bottom: 15px;
   float: left;
 }

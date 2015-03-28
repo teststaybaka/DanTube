@@ -252,8 +252,7 @@ function search_video(page) {
                     video_container.append('<div class="video-entry none">No videos found.</div>');
                 } else {
                     for(var i = 0; i < result.videos.length; i++) {
-                        var video_div;
-                        video_div = render_popup_video_div(result.videos[i]);
+                        var video_div = render_popup_video_div(result.videos[i]);
                         video_container.append(video_div);
                     }
 

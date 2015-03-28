@@ -209,7 +209,7 @@ $(document).ready(function() {
     });
 });
 
-render_pagination = function(cur_page, total_pages) {
+function render_pagination(cur_page, total_pages) {
     var page_range = 10;
     cur_page = parseInt(cur_page);
     var max_page;

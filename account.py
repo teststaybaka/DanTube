@@ -66,13 +66,19 @@ class History(BaseHandler):
 
         total_pages = min(10, math.ceil(user.comments_num/float(page_size)))
         if page <= total_pages:
-            comment_keys = models.ActivityRecord.query(models.ActivityRecord.creator==user.key).order(-models.ActivityRecord.created).fetch(keys_only=True, offset=(page-1)*page_size, limit=page_size)
+            comment_keys = models.ActivityRecord.query(
+                ndb.AND(models.ActivityRecord.creator==user.key, 
+                    ndb.OR(models.ActivityRecord.activity_type=='comment', 
+                            models.ActivityRecord.activity_type=='inner_comment', 
+                            models.ActivityRecord.activity_type=='danmaku'))
+            ).order(-models.ActivityRecord.created).fetch(keys_only=True, offset=(page-1)*page_size, limit=page_size)
+
             comments = ndb.get_multi(comment_keys)
             for i in range(0, len(comments)):
                 comment = comments[i]
                 video = comment.video.get()
                 comment_info = {
-                    'type': comment.comment_type,
+                    'type': comment.activity_type,
                     'timestamp': comment.timestamp,
                     'floorth': comment.floorth,
                     'inner_floorth': comment.inner_floorth,
@@ -231,24 +237,165 @@ class Unfavor(BaseHandler):
 class Subscribed(BaseHandler):
     @login_required
     def get(self):
-        subscribed_users = ndb.get_multi(self.user.subscriptions)
-        context = {'subscribed_users': []}
-        for user in subscribed_users:
-            context['subscribed_users'].append(user.get_public_info())
+        user = self.user
+        page_size = 20
+        try:
+            page = int(self.request.get('page'))
+            if page < 1:
+                raise ValueError('Negative')
+        except ValueError:
+            page = 1
+
+        context = {}
+        context['upers'] = []
+
+        requested_upers = []
+        base = len(user.subscriptions) - 1 - (page - 1)*page_size;
+        for i in range(0, page_size):
+            if base - i < 0:
+                break
+            requested_upers.append(user.subscriptions[base - i])
+
+        upers = ndb.get_multi(requested_upers)
+        for i in range(0, len(upers)):
+            uper = upers[i]
+            uper_info = uper.get_public_info()
+            context['upers'].append(uper_info)
+
+        context['subscription_counter'] = len(user.subscriptions)
+        context['subscription_limit'] = 1000
+        context.update(self.get_page_range(page, math.ceil(len(user.subscriptions)/float(page_size))) )
         self.render('subscribed_users', context)
 
 class Subscriptions(BaseHandler):
     @login_required
-    def get(self):
+    def get_page(self):
+        user = self.user
+        # if len(user.subscriptions) > 1:
+        #     operation = ndb.OR(models.ActivityRecord.creator==user.subscriptions[0], models.ActivityRecord.creator==user.subscriptions[1])
+        #     for i in range(2, len(user.subscriptions)):
+        #         operation = ndb.OR(models.ActivityRecord.creator==user.subscriptions[i], operation)
+        #     new_activities = models.ActivityRecord.query(ndb.AND(operation, models.ActivityRecord.public==True, models.ActivityRecord.created > user.last_subscription_check)).count()
+        # elif len(user.subscriptions) == 1:
+        #     new_activities = models.ActivityRecord.query(ndb.AND(models.ActivityRecord.creator==user.subscriptions[0], models.ActivityRecord.public==True, models.ActivityRecord.created > user.last_subscription_check)).count()
+        # else:
+        #     new_activities = 0
+
+        user.last_subscription_check = datetime.now()
+        user.put()
         self.render('subscriptions')
 
     @login_required
-    def quick(self):
-        subscribed_users = ndb.get_multi(self.user.subscriptions)
-        context = {'subscribed_users': []}
-        for user in subscribed_users:
-            context['subscribed_users'].append(user.get_public_info())
-        self.render('subscriptions_quick', context)
+    def full_page(self):
+        user = self.user
+        user.last_subscription_check = datetime.now()
+        user.put()
+        self.render('subscriptions_quick')
+
+    @login_required
+    def load_activities(self):
+        self.response.headers['Content-Type'] = 'application/json'
+        user = self.user
+        page_size = models.DEFAULT_PAGE_SIZE
+
+        result = {'error': False}
+        result['activities'] = []
+
+        uploads_only = self.request.get('uploads')
+        if uploads_only == '1':
+            uploads_only = True
+        else:
+            uploads_only = False
+
+        cursor = models.Cursor(urlsafe=self.request.get('cursor'))
+        if len(user.subscriptions) > 1:
+            condition = ndb.OR(models.ActivityRecord.creator==user.subscriptions[0], models.ActivityRecord.creator==user.subscriptions[1])
+            for i in range(2, len(user.subscriptions)):
+                condition = ndb.OR(models.ActivityRecord.creator==user.subscriptions[i], condition)
+            if uploads_only:
+                records, cursor, more = models.ActivityRecord.query(
+                    ndb.AND(condition, 
+                        models.ActivityRecord.public==True, 
+                        ndb.OR(models.ActivityRecord.activity_type=='upload', 
+                            models.ActivityRecord.activity_type=='edit')
+                        )
+                    ).order(-models.ActivityRecord.created, models.ActivityRecord.key).fetch_page(page_size, start_cursor=cursor)
+            else:
+                records, cursor, more = models.ActivityRecord.query(
+                    ndb.AND(condition, 
+                        models.ActivityRecord.public==True)
+                    ).order(-models.ActivityRecord.created, models.ActivityRecord.key).fetch_page(page_size, start_cursor=cursor)
+        elif len(user.subscriptions) == 1:
+            if uploads_only:
+                records, cursor, more = models.ActivityRecord.query(
+                    ndb.AND(models.ActivityRecord.creator==user.subscriptions[0], 
+                        models.ActivityRecord.public==True,
+                        ndb.OR(models.ActivityRecord.activity_type=='upload', 
+                            models.ActivityRecord.activity_type=='edit')
+                        )
+                    ).order(-models.ActivityRecord.created, models.ActivityRecord.key).fetch_page(page_size, start_cursor=cursor)
+            else:
+                records, cursor, more = models.ActivityRecord.query(
+                    ndb.AND(models.ActivityRecord.creator==user.subscriptions[0], 
+                        models.ActivityRecord.public==True)
+                    ).order(-models.ActivityRecord.created, models.ActivityRecord.key).fetch_page(page_size, start_cursor=cursor)
+        else:
+            records = []
+            cursor = ''
+
+        for i in range(0, len(records)):
+            record = records[i]
+            video = record.video.get()
+            creator = record.creator.get()
+            record_info = {
+                'creator': creator.get_public_info(),
+                'type': record.activity_type,
+                'timestamp': record.timestamp,
+                'floorth': record.floorth,
+                'inner_floorth': record.inner_floorth,
+                'content': record.content,
+                'created': record.created.strftime("%Y-%m-%d %H:%M"),
+                'video': video.get_basic_info(),
+                'clip_index': record.clip_index,
+            }
+            result['activities'].append(record_info)
+        if not cursor:
+            result['cursor'] = ''
+        else:
+            result['cursor'] = cursor.urlsafe()
+        
+        self.response.out.write(json.dumps(result))
+
+    @login_required
+    def load_upers(self):
+        self.response.headers['Content-Type'] = 'application/json'
+        user = self.user
+        page_size = 10
+        try:
+            page = int(self.request.get('page'))
+            if page < 1:
+                raise ValueError('Negative')
+        except ValueError:
+            page = 1
+
+        result = {'error': False}
+        result['upers'] = []
+
+        requested_upers = []
+        base = len(user.subscriptions) - 1 - (page - 1)*page_size;
+        for i in range(0, page_size):
+            if base - i < 0:
+                break
+            requested_upers.append(user.subscriptions[base - i])
+
+        upers = ndb.get_multi(requested_upers)
+        for i in range(0, len(upers)):
+            uper = upers[i]
+            uper_info = uper.get_public_info()
+            result['upers'].append(uper_info)
+
+        result['total_pages'] = math.ceil(len(user.subscriptions)/float(page_size))
+        self.response.out.write(json.dumps(result))
 
 class Verification(BaseHandler):
     def get(self, *args, **kwargs):

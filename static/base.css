@@ -19,10 +19,6 @@ textarea, input, select, option {
     outline: none;
 }
 
-.hidden {
-    display: none;
-}
-
 textarea.normal-input, input.normal-input {
     padding: 4px;
     font-size: 14px;
@@ -63,6 +59,16 @@ a.blue-link:active {
     clear: both;
     display: table;
     content: "";
+}
+
+.loading {
+    background-image: url("/static/img/ajax-loader.gif");
+    background-repeat: no-repeat;
+    background-position: 50% 50%;
+}
+
+.hidden {
+    display: none;
 }
 
 #user-bar-background {

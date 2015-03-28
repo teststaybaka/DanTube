@@ -336,7 +336,7 @@ class Mentioned(BaseHandler):
         result['comments'] = []
 
         cursor = models.Cursor(urlsafe=self.request.get('cursor'))
-        comments, cursor, moge = models.MentionedComment.query(models.MentionedComment.receivers==user.key).order(-models.MentionedComment.created, models.MentionedComment.key).fetch_page(page_size, start_cursor=cursor)
+        comments, cursor, more = models.MentionedComment.query(models.MentionedComment.receivers==user.key).order(-models.MentionedComment.created, models.MentionedComment.key).fetch_page(page_size, start_cursor=cursor)
         for i in range(0, len(comments)):
             comment = comments[i]
             video = comment.video.get()
@@ -380,7 +380,7 @@ class Notifications(BaseHandler):
         result['notifications'] = []
 
         cursor = models.Cursor(urlsafe=self.request.get('cursor'))
-        notifications, cursor, moge = models.Notification.query(models.Notification.receiver==user.key).order(-models.Notification.created, models.Notification.key).fetch_page(page_size, start_cursor=cursor)
+        notifications, cursor, more = models.Notification.query(models.Notification.receiver==user.key).order(-models.Notification.created, models.Notification.key).fetch_page(page_size, start_cursor=cursor)
         for i in range(0, len(notifications)):
             notification = notifications[i]
             note_info = {

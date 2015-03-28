@@ -51,6 +51,7 @@ class User(webapp2_extras.appengine.auth.models.User):
   comments_num = ndb.IntegerProperty(required=True, default=0, indexed=False)
   last_mentioned_check = ndb.DateTimeProperty(auto_now_add=True, required=True, indexed=False)
   last_notification_check = ndb.DateTimeProperty(auto_now_add=True, required=True, indexed=False)
+  last_subscription_check = ndb.DateTimeProperty(auto_now_add=True, required=True, indexed=False)
 
   def delete_index(self):
     index = search.Index(name='upers_by_created')
@@ -872,11 +873,12 @@ class MentionedComment(ndb.Model):
 Activity_Types = Comment_Types + ['upload', 'edit']
 class ActivityRecord(ndb.Model):
   creator = ndb.KeyProperty(kind='User', required=True)
-  comment_type = ndb.StringProperty(required=True, choices=Activity_Types)
+  activity_type = ndb.StringProperty(required=True, choices=Activity_Types)
   timestamp = ndb.FloatProperty(indexed=False)
   floorth = ndb.IntegerProperty(indexed=False)
   inner_floorth = ndb.IntegerProperty(indexed=False)
-  content = ndb.TextProperty(required=True, indexed=False)
+  content = ndb.TextProperty(indexed=False)
   created = ndb.DateTimeProperty(auto_now_add=True)
   video = ndb.KeyProperty(kind='Video', required=True, indexed=False)
-  clip_index = ndb.IntegerProperty(required=True, default=0, indexed=False)
+  clip_index = ndb.IntegerProperty(indexed=False)
+  public = ndb.BooleanProperty(required=True, default=True)

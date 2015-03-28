@@ -487,12 +487,6 @@ div.preview-status {
     color: rgb(100,100,100);
 }
 
-div.preview-status.loading {
-    background-image: url("/static/img/ajax-loader.gif");
-    background-repeat: no-repeat;
-    background-position: 50% 50%;
-}
-
 a.ranking-video-entry {
     font-size: 14px;
     margin-bottom: 14px;

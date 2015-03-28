@@ -1176,9 +1176,6 @@ div.comment-entry.no-comment {
 }
 
 div.comment-entry.loading {
-	background-image: url("/static/img/ajax-loader.gif");
-    background-repeat: no-repeat;
-    background-position: 50% 50%;
     height: 100px;
     border-bottom: 0;
 }

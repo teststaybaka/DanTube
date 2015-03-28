@@ -90,12 +90,11 @@ $(document).ready(function() {
                 $('.message-entry.loading').remove();
                 if(!result.error) {
                     for (var i = 0; i < result.notifications.length; i++) {
-                        notification = result.notifications[i];
-                        var div = render_notification_div(notification);
+                        var div = render_notification_div(result.notifications[i]);
                         $('.messages-container').append(div);
                     }
                     if (result.notifications.length == 0 && !cursor) {
-                        $('.messages-container').append('<div class="message-entry none"> No notifications found. </div>');
+                        $('.messages-container').append('<div class="message-entry none"> No notifications found.</div>');
                     }
                     if (result.notifications.length < 20) {
                         isOver = true;

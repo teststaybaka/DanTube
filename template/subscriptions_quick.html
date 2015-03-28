@@ -10,13 +10,14 @@
     <div class="quick-title-line">
         <div class="quick-title-head"></div>
         <div class="quick-title">Subscriptions</div>
-        <div class="search-scope active">All Activity</div>
-        <div class="search-scope">Uploads Only</div>
+        <a class="search-scope active" href="?uploads=0">All Activity</a>
+        <a class="search-scope" href="?uploads=1">Uploads Only</a>
     </div>
+    <div class="activity-container">
     <!-- <div class="activity-entry none">
         No item found.
     </div> -->
-    <div class="activity-entry">
+    <!-- <div class="activity-entry">
         <a class="uploader-img" href="">
             <img class="uploader-img" src="">
         </a>
@@ -54,13 +55,7 @@
                 <a class="comment-check" href="">[Check it out]</a>
             </div>
         </div>
-    </div>
-    <div class="pagination-line">
-        <div class="page-change hide"><</div>
-        <div class="page-num active">1</div>
-        <div class="page-num hide">2</div>
-        <div class="page-num hide">3</div>
-        <div class="page-change hide">></div>
+    </div> -->
     </div>
 </div>
 <div id="subscription-upers">
@@ -81,11 +76,6 @@
         {% endfor %}
     </div>
     <div class="pagination-line">
-        <div class="page-change hide"><</div>
-        <div class="page-num active">1</div>
-        <div class="page-num hide">2</div>
-        <div class="page-num hide">3</div>
-        <div class="page-change hide">></div>
     </div>
 </div>
 {% endblock %}

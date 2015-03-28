@@ -70,10 +70,11 @@ class Video(BaseHandler):
         self.render('video', context)
 
 def assemble_link(temp, add_link, users):
-    if temp != '' and add_link:
+    if temp != '':
         user = models.User.query(models.User.nickname==temp[1:].strip()).get(keys_only=True)
         if user is not None:
-            temp = '<a class="blue-link" target="_blank" href="/user/' + str(user.id()) + '">' + temp + '</a>'
+            if add_link:
+                temp = '<a class="blue-link" target="_blank" href="/user/' + str(user.id()) + '">' + temp + '</a>'
             users.append(user)
 
     return temp
@@ -100,7 +101,7 @@ def comment_nickname_recognize(user, content, add_link):
     new_content += assemble_link(temp, add_link, users)
 
     seen = set()
-    return new_content, [ x for x in users if not (x == user.key or x in seen or seen.add(user))]
+    return new_content, [ x for x in users if not (x == user.key or x in seen or seen.add(x))]
 
 class Comment(BaseHandler):
     def get_comment(self, video_id):
@@ -244,7 +245,7 @@ class Comment(BaseHandler):
         video.last_updated = datetime.now()
         video.put()
 
-        comment_record = models.ActivityRecord(creator=user.key, comment_type='comment', floorth=comment.floorth, content=comment.content, video=video.key)
+        comment_record = models.ActivityRecord(creator=user.key, activity_type='comment', floorth=comment.floorth, content=comment.content, video=video.key)
         comment_record.put()
         user.comments_num += 1
         user.put()
@@ -304,7 +305,7 @@ class Comment(BaseHandler):
         video.last_updated = datetime.now()
         video.put()
 
-        comment_record = models.ActivityRecord(creator=user.key, comment_type='inner_comment', floorth=inner_comment.floorth, inner_floorth=inner_comment.inner_floorth, content=inner_comment.content, video=video.key)
+        comment_record = models.ActivityRecord(creator=user.key, activity_type='inner_comment', floorth=inner_comment.floorth, inner_floorth=inner_comment.inner_floorth, content=inner_comment.content, video=video.key)
         comment_record.put()
         user.comments_num += 1
         user.put()
@@ -454,7 +455,7 @@ class Danmaku(BaseHandler):
         video.last_updated = datetime.now()
         video.put()
 
-        danmaku_record = models.ActivityRecord(creator=user.key, comment_type='danmaku', timestamp=danmaku.timestamp, content=danmaku.content, video=video.key, clip_index=clip_index)
+        danmaku_record = models.ActivityRecord(creator=user.key, activity_type='danmaku', timestamp=danmaku.timestamp, content=danmaku.content, video=video.key, clip_index=clip_index)
         danmaku_record.put()
         user.comments_num += 1
         user.put()

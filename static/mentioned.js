@@ -20,12 +20,11 @@ $(document).ready(function() {
                 $('.message-entry.loading').remove();
                 if(!result.error) {
                     for (var i = 0; i < result.comments.length; i++) {
-                        comment = result.comments[i];
-                        var div = render_comment_div(comment);
+                        var div = render_comment_div(result.comments[i]);
                         $('.messages-container').append(div);
                     }
                     if (result.comments.length == 0 && !cursor) {
-                        $('.messages-container').append('<div class="message-entry none"> No messages found. </div>');
+                        $('.messages-container').append('<div class="message-entry none"> No messages found.</div>');
                     }
                     if (result.comments.length < 20) {
                         isOver = true;
@@ -70,7 +69,7 @@ function render_comment_div(comment) {
         div +=  'comment=' + comment.floorth;
     } else if (comment.type === 'inner_comment') {
         div +=  'comment=' + comment.floorth + '&reply=' + comment.inner_floorth;
-    } else {
+    } else { //danmaku
         div += 'index=' + comment.clip_index + '&timestamp=' + comment.timestamp;
     }
     div += '" target="_blank">[Check it out]</a>\

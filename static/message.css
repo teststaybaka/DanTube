@@ -23,9 +23,6 @@ div.message-entry.none {
 
 div.message-entry.loading {
     padding: 50px;
-    background-image: url("/static/img/ajax-loader.gif");
-    background-repeat: no-repeat;
-    background-position: 50% 50%;
     background-color: rgb(255,255,255);
 }
 

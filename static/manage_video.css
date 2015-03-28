@@ -17,9 +17,6 @@ div.video-entry.none {
 
 div.video-entry.loading {
     padding: 100px 50px;
-    background-image: url("/static/img/ajax-loader.gif");
-    background-repeat: no-repeat;
-    background-position: 50% 50%;
 }
 
 a.video-img {

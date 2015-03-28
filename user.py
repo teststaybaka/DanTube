@@ -15,6 +15,10 @@ class Space(BaseHandler):
         except ValueError:
             page = 1
 
+        if not self.user or int(user_id) != self.user.key.id():
+            host.space_visited += 1
+            host.put()
+
         context = {}
         context['videos'] = []
 
@@ -35,16 +39,9 @@ class Space(BaseHandler):
                 video_info['playlist_title'] = playlist.title
             context['videos'].append(video_info)
 
-        context['total_found'] = total_found
-        context.update(self.get_page_range(page, total_pages) )
-
-        if not self.user or int(user_id) != self.user.key.id():
-            host.space_visited += 1
-            host.put()
-
         context['host'] = host.get_public_info(self.user)
         context['host'].update(host.get_statistic_info())
-            
+        context.update(self.get_page_range(page, total_pages) )
         self.render('space', context)
 
 class SpacePlaylist(BaseHandler):
@@ -77,11 +74,9 @@ class SpacePlaylist(BaseHandler):
             info = playlist.get_basic_info()
             context['playlists'].append(info)
 
-        context['total_found'] = total_found
-        context.update(self.get_page_range(page, total_pages) )
-
-        context['host'] = host.get_public_info()
+        context['host'] = host.get_public_info(self.user)
         context['host'].update(host.get_statistic_info())
+        context.update(self.get_page_range(page, total_pages) )
         self.render('space_playlist', context)
 
 class SpaceBoard(BaseHandler):
@@ -140,7 +135,6 @@ class Subscribe(BaseHandler):
         self.response.out.write(json.dumps({
             'error': False
         }))
-            
 
 class Unsubscribe(BaseHandler):
     @login_required
@@ -155,13 +149,6 @@ class Unsubscribe(BaseHandler):
             return
 
         user = self.user
-        if user == host:
-            self.response.out.write(json.dumps({
-                'error': True,
-                'message': 'You can\'t subscribe yourself.'
-            }))
-            return
-
         try:
             user.subscriptions.remove(host.key)
             user.put()

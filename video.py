@@ -329,7 +329,6 @@ class VideoUpload(BaseHandler):
             self.response.out.write(json.dumps({
                 'error': True,
                 'message': str(e),
-                'index': i,
             }))
             return
 
@@ -357,6 +356,9 @@ class VideoUpload(BaseHandler):
                 'message': str(e),
             }))
             return
+
+        upload_record = models.ActivityRecord(creator=user.key, activity_type='upload', video=video.key)
+        upload_record.put()
 
         user.videos_submitted += 1
         user.put()
@@ -487,6 +489,9 @@ class VideoUpload(BaseHandler):
                 video.create_index('videos_by_hits', video.hits )
                 video.create_index('videos_by_favors', video.favors )
                 video.create_index('videos_by_user' + str(video.uploader.id()), models.time_to_seconds(video.created) )
+
+                edit_record = models.ActivityRecord(creator=user.key, activity_type='edit', video=video.key, content='Video edited.')
+                edit_record.put()
 
         self.response.out.write(json.dumps({
             'error': False,

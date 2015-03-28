@@ -892,7 +892,11 @@ $(document).ready(function() {
 	});
 
 	// Post Danmaku
-	$('#shooter').submit(function(){
+	$('#shooter').submit(function(evt){
+		if (!player) {
+			return false;
+		}
+		
 		var button = document.querySelector('#fire-button');
 		button.disabled = true;
 
