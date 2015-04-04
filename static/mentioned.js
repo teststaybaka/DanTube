@@ -4,7 +4,7 @@ $(document).ready(function() {
     var cursor = '';
 
     $(window).scroll(function() {
-        if(($(window).scrollTop() >= $(document).height() - $(window).height()) && !isLoading && !isOver) {
+        if(($(window).scrollTop() >= $('.message-entry:last-child').offset().top - 30 - $(window).height()) && !isLoading && !isOver) {
             update_mentioned_message(cursor);
         }
     });

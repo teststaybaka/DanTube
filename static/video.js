@@ -921,12 +921,12 @@ $(document).ready(function() {
 		$.ajax({
 			type: "POST",
 			url: '/video/danmaku/' + url_suffix,
-			data: {content: content, timestamp: (player.getCurrentTime()), color: danmaku_color, type: danmaku_type, size: danmaku_size},
+			data: {content: content, timestamp: player.getCurrentTime(), color: danmaku_color, type: danmaku_type, size: danmaku_size},
 			success: function(result) {
 				if(!result.error) {
 					$('#danmaku-input').val('');
 					pop_ajax_message('Danmaku sent!', 'success');
-					result.timestamp = player.getCurrentTime();
+					result.timestamp = player.getCurrentTime() + 0.05;
 					$('#danmaku-list').append('<div class="per-bullet container">\
 						<div class="bullet-time-value">' + secondsToTime(result.timestamp) + '</div>\
 						<div class="space-padding"></div>\
@@ -1099,6 +1099,7 @@ $(document).ready(function() {
 		if (!comment_id) {
 			error = true;
 		}
+		$('#comment-id-input').val(comment_id);
 
 		if (error) {
 			button.disabled = false;
@@ -1108,7 +1109,7 @@ $(document).ready(function() {
 		$.ajax({
 			type: "POST",
 			url: '/video/reply_post/dt'+video_id,
-			data: {content: content, comment_id: comment_id},
+			data: $(evt.target).serialize(),
 			success: function(result) {
 				if(!result.error) {
 					pop_ajax_message('Reply posted!', 'success');

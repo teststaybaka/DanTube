@@ -357,7 +357,7 @@ class VideoUpload(BaseHandler):
             }))
             return
 
-        upload_record = models.ActivityRecord(creator=user.key, activity_type='upload', video=video.key)
+        upload_record = models.ActivityRecord(creator=user.key, activity_type='upload', video=video.key, content=video.description)
         upload_record.put()
 
         user.videos_submitted += 1
@@ -385,6 +385,12 @@ class VideoUpload(BaseHandler):
             self.response.out.write(json.dumps(res))
             return
 
+        self.allowPost = self.request.get('allow-post')
+        if self.allowPost == 'on':
+            self.allowPost = True
+        else:
+            self.allowPost = False
+
         self.thumbnail_field = self.request.POST.get('thumbnail')
         self.thumbnail_key = None
         if self.thumbnail_field != '':
@@ -398,22 +404,27 @@ class VideoUpload(BaseHandler):
                 return
 
         try:
+            reindex = False
             changed = False
             if video.description != self.description:
                 video.description = self.description
                 changed = True
+                reindex = True
 
             if video.title != self.title:
                 video.title = self.title
                 changed = True
+                reindex = True
 
             if video.category != self.category:
                 video.category = self.category
                 changed = True
+                reindex = True
 
             if video.subcategory != self.subcategory:
                 video.subcategory = self.subcategory
                 changed = True
+                reindex = True
 
             if video.video_type != self.video_type:
                 video.video_type = self.video_type
@@ -421,18 +432,22 @@ class VideoUpload(BaseHandler):
             if video.tags != self.tags:
                 video.tags = self.tags
                 changed = True
+                reindex = True
 
             if video.allow_tag_add != self.allow_tag_add:
                 video.allow_tag_add = self.allow_tag_add
+                changed = True
 
             if self.thumbnail_key != None:
                 if video.thumbnail != None:
                     images.delete_serving_url(video.thumbnail)
                     models.blobstore.BlobInfo(video.thumbnail).delete()
                 video.thumbnail = self.thumbnail_key
+                changed = True
 
             if video.video_clip_titles != self.subtitles:
                 video.video_clip_titles = self.subtitles
+                changed = True
 
             new_clips = []
             ori_clips = ndb.get_multi(video.video_clips)
@@ -473,10 +488,8 @@ class VideoUpload(BaseHandler):
                     if not used_clips.get(i):
                         ori_clips[i].key.delete()
                 video.video_clips = new_clips
+                changed = True
 
-            # logging.info('put')
-            video.duration = video_duration
-            video.put()
         except Exception, e:
             self.response.out.write(json.dumps({
                 'error': True,
@@ -485,13 +498,16 @@ class VideoUpload(BaseHandler):
             return
         else:
             if changed:
+                video.duration = video_duration
+                video.put()
+                edit_record = models.ActivityRecord(creator=user.key, activity_type='edit', video=video.key, content=video.description, public=self.allowPost)
+                edit_record.put()
+
+            if reindex:
                 video.create_index('videos_by_created', models.time_to_seconds(video.created) )
                 video.create_index('videos_by_hits', video.hits )
                 video.create_index('videos_by_favors', video.favors )
                 video.create_index('videos_by_user' + str(video.uploader.id()), models.time_to_seconds(video.created) )
-
-                edit_record = models.ActivityRecord(creator=user.key, activity_type='edit', video=video.key, content='Video edited.')
-                edit_record.put()
 
         self.response.out.write(json.dumps({
             'error': False,

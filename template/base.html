@@ -22,7 +22,7 @@
     <div id="user-bar-background">
         <div id="user-bar" class="container">
             <a id="logo" class="left" href="{{ uri_for('home') }}">DanTube</a>
-            <div class="navi left link" id="feeling-lucky">I'm feeling lucky!</div>
+            <a class="navi left link" id="feeling-lucky" href="{{ uri_for('feeling_lucky') }}">I'm feeling lucky!</a>
             {% if user.is_auth %}
             <div id="portrait" class="right">
                 <a id="portrait-link" href="{{ uri_for('account') }}">

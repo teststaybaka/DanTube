@@ -189,6 +189,10 @@
       <textarea class="normal-input" name="content" id="comment-textarea" placeholder="{% if user.is_auth %}Share what you think{% else %}Please sign in{% endif %}"></textarea>
       <div class="container">
         <div class="emoticons-select"></div>
+        <label for="allow-post-comment" class="check-label">
+            <input type="checkbox" class="checkbox" id="allow-post-comment" name="allow-post-comment" tabindex="1" checked="checked">
+            <span class="checklabel">Share with subscribers.</span>
+        </label>
         <input class="inline-button special post" value="Post" type="submit">
       </div>
     </div>
@@ -196,9 +200,14 @@
   <form id="user-reply-form" class="hidden">
     <img class="comment-img" src="{% if user.is_auth %}{{ user.avatar_url_small }}{% else %}/static/emoticons_img/default_avatar1.png{% endif %}">
     <div class="write-comment-block">
-      <textarea class="normal-input" id="reply-textarea" placeholder="{% if user.is_auth %}Share what you think{% else %}Please sign in{% endif %}"></textarea>
+      <input type="text" class="hidden" id="comment-id-input" name="comment_id" value="">
+      <textarea class="normal-input" name="content" id="reply-textarea" placeholder="{% if user.is_auth %}Share what you think{% else %}Please sign in{% endif %}"></textarea>
       <div class="container">
         <div class="emoticons-select"></div>
+        <label for="allow-post-reply" class="check-label">
+            <input type="checkbox" class="checkbox" id="allow-post-reply" name="allow-post-reply" tabindex="1" checked="checked">
+            <span class="checklabel">Share with subscribers.</span>
+        </label>
         <input class="inline-button special post" value="Post" type="submit">
       </div>
     </div>

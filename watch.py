@@ -239,13 +239,19 @@ class Comment(BaseHandler):
             return
         content, users = comment_nickname_recognize(user, content, True)
 
+        allow_share = self.request.get('allow-post-comment')
+        if allow_share == 'on':
+            allow_share = True
+        else:
+            allow_share = False
+
         comment = models.Comment.Create(video, user, content)
         video.comment_counter = comment.floorth
         video.update_hot_score(HOT_SCORE_PER_COMMENT)
         video.last_updated = datetime.now()
         video.put()
 
-        comment_record = models.ActivityRecord(creator=user.key, activity_type='comment', floorth=comment.floorth, content=comment.content, video=video.key)
+        comment_record = models.ActivityRecord(creator=user.key, activity_type='comment', floorth=comment.floorth, content=comment.content, video=video.key, public=allow_share)
         comment_record.put()
         user.comments_num += 1
         user.put()
@@ -301,11 +307,18 @@ class Comment(BaseHandler):
             return
         content, users = comment_nickname_recognize(user, content, True)
 
+        allow_share = self.request.get('allow-post-reply')
+        logging.info(allow_share)
+        if allow_share == 'on':
+            allow_share = True
+        else:
+            allow_share = False
+
         inner_comment = models.InnerComment.Create(comment, user, content)
         video.last_updated = datetime.now()
         video.put()
 
-        comment_record = models.ActivityRecord(creator=user.key, activity_type='inner_comment', floorth=inner_comment.floorth, inner_floorth=inner_comment.inner_floorth, content=inner_comment.content, video=video.key)
+        comment_record = models.ActivityRecord(creator=user.key, activity_type='inner_comment', floorth=inner_comment.floorth, inner_floorth=inner_comment.inner_floorth, content=inner_comment.content, video=video.key, public=allow_share)
         comment_record.put()
         user.comments_num += 1
         user.put()

@@ -92,6 +92,7 @@ routes = [
 
     webapp2.Route(r'/video/category', views.CategoryVideo, name="category_video"),
     webapp2.Route(r'/video/random', views.RandomVideo, name="random_video"),
+    webapp2.Route(r'/feelinglucky', views.FeelingLucky, name="feeling_lucky"),
     webapp2.Route(r'/search', views.Search, name="search"),
     webapp2.Route(r'/search/playlist', views.SearchPlaylist, name="search_playlist"),
     webapp2.Route(r'/search/uper', views.SearchUPer, name="search_uper"),

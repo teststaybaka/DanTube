@@ -1373,3 +1373,22 @@ div.list-video-statistic.hits {
 div.list-video-statistic.comments {
 	width: 90px;
 }
+
+label.check-label {
+    font-size: 14px;
+    margin-top: 22px;
+    margin-left: 10px;
+    cursor: pointer;
+    display: inline-block;
+    float: left;
+}
+
+input.checkbox {
+    margin: 0;
+    cursor: pointer;
+    vertical-align: text-top;
+}
+
+span.checklabel {
+    vertical-align: top;
+}

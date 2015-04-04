@@ -295,6 +295,15 @@ class RandomVideo(BaseHandler):
                 'message': str(e)
             }))
 
+class FeelingLucky(BaseHandler):
+    def get(self):
+        max_id = models.Video.get_max_id()
+        video = None
+        while video is None:
+            random_id = random.randint(1, max_id)
+            video = models.Video.get_by_id('dt'+str(random_id))
+        self.redirect(self.uri_for('watch', video_id=random_id))
+
 class CategoryVideo(BaseHandler):
     def post(self):
         # models.Video.fetch_page()

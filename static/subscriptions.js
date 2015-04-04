@@ -63,7 +63,7 @@ $(document).ready(function() {
     var cursor = '';
 
     $(window).scroll(function() {
-        if(($(window).scrollTop() >= $(document).height() - $(window).height()) && !isLoading && !isOver) {
+        if(($(window).scrollTop() >= $('.activity-entry:last-child').offset().top - 30 - $(window).height()) && !isLoading && !isOver) {
             update_activities(cursor);
         }
     });
@@ -129,13 +129,7 @@ function render_activity_div(record) {
                     <a href="' + record.creator.space_url + '" class="uploader-name blue-link" target="_blank">' + record.creator.nickname + '</a>\
                     <div class="activity-time">' + record.created + '</div>\
                 </div>\
-                <div class="activity-intro">'
-        if (record.type === 'upload') {
-            div += record.video.description
-        } else {//edit
-            div += record.content
-        }
-         div += '</div>\
+                <div class="activity-intro">' + record.content + '</div>\
                 <a class="video-img" href="' + record.video.url + '" target="_blank">\
                     <img class="video-img" src="' + record.video.thumbnail_url + '">\
                 </a>\
