@@ -131,6 +131,9 @@ $(document).ready(function() {
 
     $('#add-videos-button').click(function(evt) {
         $('div.popup-window-container.add-to').addClass('show');
+        if ($('.popup-video-container').children().length == 0) {
+            search_video(1);
+        }
     });
 
     $('div.add-button').click(function(evt) {

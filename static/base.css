@@ -283,7 +283,7 @@ div.link:hover, a.link:hover {
     position: relative;
 }
 
-#user-at-new-num, #user-notification-new-num, #user-message-new-num {
+#user-at-new-num, #user-notification-new-num, #user-message-new-num, #user-subscriptions-new-num {
     position: absolute;
     top: -3px;
     left: 98%;
@@ -294,6 +294,14 @@ div.link:hover, a.link:hover {
     -moz-border-radius: 3px;
     background-color: rgba(246,96,255,0.8);
     color: white;
+}
+
+#user-subscriptions {
+    position: relative;
+}
+
+#user-subscriptions-new-num {
+    left: 88%;
 }
 
 #user-at {

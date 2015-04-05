@@ -268,28 +268,54 @@ class Subscribed(BaseHandler):
         self.render('subscribed_users', context)
 
 class Subscriptions(BaseHandler):
+    def new_subscription_count(self):
+        user = self.user
+        if len(user.subscriptions) > 1:
+            operation = ndb.OR(models.ActivityRecord.creator==user.subscriptions[0], models.ActivityRecord.creator==user.subscriptions[1])
+            for i in range(2, len(user.subscriptions)):
+                operation = ndb.OR(models.ActivityRecord.creator==user.subscriptions[i], operation)
+            new_activities = models.ActivityRecord.query(ndb.AND(operation, models.ActivityRecord.public==True, models.ActivityRecord.created > user.last_subscription_check)).count()
+        elif len(user.subscriptions) == 1:
+            new_activities = models.ActivityRecord.query(ndb.AND(models.ActivityRecord.creator==user.subscriptions[0], models.ActivityRecord.public==True, models.ActivityRecord.created > user.last_subscription_check)).count()
+        else:
+            new_activities = 0
+        return new_activities
+
+    @login_required
+    def get_count(self):
+        self.response.headers['Content-Type'] = 'application/json'
+        new_count = self.new_subscription_count()
+        self.response.out.write(json.dumps({
+            'error': False,
+            'count': new_count,
+        }))
+
     @login_required
     def get_page(self):
         user = self.user
-        # if len(user.subscriptions) > 1:
-        #     operation = ndb.OR(models.ActivityRecord.creator==user.subscriptions[0], models.ActivityRecord.creator==user.subscriptions[1])
-        #     for i in range(2, len(user.subscriptions)):
-        #         operation = ndb.OR(models.ActivityRecord.creator==user.subscriptions[i], operation)
-        #     new_activities = models.ActivityRecord.query(ndb.AND(operation, models.ActivityRecord.public==True, models.ActivityRecord.created > user.last_subscription_check)).count()
-        # elif len(user.subscriptions) == 1:
-        #     new_activities = models.ActivityRecord.query(ndb.AND(models.ActivityRecord.creator==user.subscriptions[0], models.ActivityRecord.public==True, models.ActivityRecord.created > user.last_subscription_check)).count()
-        # else:
-        #     new_activities = 0
-
+        new_count = self.new_subscription_count()
         user.last_subscription_check = datetime.now()
         user.put()
+        if new_count > 99:
+            self.response.set_cookie('new_subscriptions', '99+', path='/')
+        elif new_count == 0:
+            self.response.set_cookie('new_subscriptions', '', path='/')
+        else:
+            self.response.set_cookie('new_subscriptions', str(new_count), path='/')
         self.render('subscriptions')
 
     @login_required
     def full_page(self):
         user = self.user
+        new_count = self.new_subscription_count()
         user.last_subscription_check = datetime.now()
         user.put()
+        if new_count > 99:
+            self.response.set_cookie('new_subscriptions', '99+', path='/')
+        elif new_count == 0:
+            self.response.set_cookie('new_subscriptions', '', path='/')
+        else:
+            self.response.set_cookie('new_subscriptions', str(new_count), path='/')
         self.render('subscriptions_quick')
 
     @login_required
