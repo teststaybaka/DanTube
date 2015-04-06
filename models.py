@@ -47,6 +47,7 @@ class User(webapp2_extras.appengine.auth.models.User):
   subscribers_counter = ndb.IntegerProperty(required=True, default=0, indexed=False)
   threads_counter = ndb.IntegerProperty(required=True, default=0, indexed=False)
   new_messages = ndb.IntegerProperty(required=True, default=0, indexed=False)
+  recent_visitors = ndb.KeyProperty(kind='User', repeated=True, indexed=False)
 
   comments_num = ndb.IntegerProperty(required=True, default=0, indexed=False)
   last_mentioned_check = ndb.DateTimeProperty(auto_now_add=True, required=True, indexed=False)
@@ -122,6 +123,16 @@ class User(webapp2_extras.appengine.auth.models.User):
       'subscriptions_counter': len(self.subscriptions)
     }
     return statistic_info
+
+  def get_visitor_info(self):
+    visitor_info = {}
+    visitor_info['visitors'] = []
+    recent_visitors = ndb.get_multi(self.recent_visitors)
+    for i in list(reversed(range(0, len(recent_visitors)))):
+      visitor = recent_visitors[i]
+      info = visitor.get_public_info()
+      visitor_info['visitors'].append(info)
+    return visitor_info
 
   @classmethod
   def validate_nickname(cls, nickname):

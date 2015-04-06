@@ -100,8 +100,6 @@ $(document).ready(function() {
         num = getCookie('new_subscriptions');
         $('#user-subscriptions-new-num').text(num);
     }
-    console.log(document.cookie)
-    console.log(getCookie('testNot'))
 
     $('#portrait').mouseover(function() {
         $('#user-box').addClass('show');
@@ -354,10 +352,14 @@ function count_new_notifications() {
 
 // Modified from http://www.w3schools.com/js/js_cookies.asp
 function setCookie(cname, cvalue, extime) {
-    var d = new Date();
-    d.setTime(d.getTime() + extime);
-    var expires = "expires=" + d.toUTCString();
-    document.cookie = cname + "=" + cvalue + "; " + expires +';path=/';
+    if (extime == 0) {
+        document.cookie = cname + "=" + cvalue + ';path=/';
+    } else {
+        var d = new Date();
+        d.setTime(d.getTime() + extime);
+        var expires = "expires=" + d.toUTCString();
+        document.cookie = cname + "=" + cvalue + "; " + expires +';path=/';
+    }
 }
 
 function getCookie(cname) {

@@ -19,6 +19,17 @@ class Space(BaseHandler):
             host.space_visited += 1
             host.put()
 
+        if self.user and int(user_id) != self.user.key.id():
+            try:
+                idx = host.recent_visitors.index(self.user.key)
+                host.recent_visitors.pop(idx)
+            except ValueError:
+                logging.info('not found')
+            host.recent_visitors.append(self.user.key)
+            if len(host.recent_visitors) > 8:
+                host.recent_visitors.pop(0)
+            host.put()
+
         context = {}
         context['videos'] = []
 
@@ -41,6 +52,7 @@ class Space(BaseHandler):
 
         context['host'] = host.get_public_info(self.user)
         context['host'].update(host.get_statistic_info())
+        context['host'].update(host.get_visitor_info())
         context.update(self.get_page_range(page, total_pages) )
         self.render('space', context)
 
@@ -76,6 +88,7 @@ class SpacePlaylist(BaseHandler):
 
         context['host'] = host.get_public_info(self.user)
         context['host'].update(host.get_statistic_info())
+        context['host'].update(host.get_visitor_info())
         context.update(self.get_page_range(page, total_pages) )
         self.render('space_playlist', context)
 
@@ -89,6 +102,7 @@ class SpaceBoard(BaseHandler):
         context = {}
         context['host'] = host.get_public_info()
         context['host'].update(host.get_statistic_info())
+        context['host'].update(host.get_visitor_info())
         self.render('space_board', context)
 
 class Subscribe(BaseHandler):

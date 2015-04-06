@@ -86,6 +86,7 @@
   <div id="player-controller">
     <div id="player-canvas">
       <div id="player"></div>
+      <!-- <div id="player-mask"></div> -->
     </div>
     <div id="controller-background">
       <div id="controller" class="container">
@@ -101,9 +102,29 @@
           <div class="button-tip on">Loop on</div>
           <div class="button-tip off">Loop off</div>
         </div>
-        <div id="danmaku-switch" class="player-button on">
+        <div id="danmaku-controller" class="player-button on">
           <div class="button-tip on">Danmaku on</div>
           <div class="button-tip off">Danmaku off</div>
+          <div id="danmaku-switch"></div>
+          <div id="quick-block-box">
+            <div class="opacity-title">Danmaku opacity</div>
+            <div id="opacity-indicator" ondragstart="return false;" ondrop="return false;" onselectstart="return false;">
+              <div id="opacity-pointer" ondragstart="return false;" ondrop="return false;" onselectstart="return false;"></div>
+              <div id="opacity-line" ondragstart="return false;" ondrop="return false;" onselectstart="return false;"></div>
+            </div>
+            <label class="quick-block-checkbox-label">
+              <input type="checkbox" id="show-top-checkbox" class="checkbox" checked="checked"/>
+              <span>Show top danmaku</span>
+            </label>
+            <label class="quick-block-checkbox-label">
+              <input type="checkbox" id="show-bottom-checkbox" class="checkbox" checked="checked"/>
+              <span>Show bottom danmaku</span>
+            </label>
+            <label class="quick-block-checkbox-label">
+              <input type="checkbox" id="show-colored-checkbox" class="checkbox" checked="checked"/>
+              <span>Show colored danmaku</span>
+            </label>
+          </div>
         </div>
         <div id="volume-controller" class="player-button on">
           <div class="button-tip on">Volume on</div>
@@ -141,9 +162,15 @@
             <div class="danmaku-type-option normal active"><div class="danmaku-type-img normal"></div><div class="danmaku-type-text">Right to left</div></div>
             <input id="danmaku-type-input" type="text" value="RightToLeft" class="hidden">
           </div>
+          <div>
+            <label class="danmaku-share-checkbox-label">
+              <input type="checkbox" class="checkbox" id="allow-post-danmaku" name="allow-post-danmaku">
+              <span>Share with subscribers.</span>
+            </label>
+          </div>
         </div>
         <div class="danmaku-setting" id="danmaku-type-setting">
-          <div id="danmaku-type-tip">Danmaku size and type</div>
+          <div id="danmaku-type-tip">Danmaku options</div>
         </div>
         <div class="danmaku-setting" id="danmaku-color-setting">
           <div id="danmaku-color-tip">Danmaku color</div>
@@ -189,8 +216,8 @@
       <textarea class="normal-input" name="content" id="comment-textarea" placeholder="{% if user.is_auth %}Share what you think{% else %}Please sign in{% endif %}"></textarea>
       <div class="container">
         <div class="emoticons-select"></div>
-        <label for="allow-post-comment" class="check-label">
-            <input type="checkbox" class="checkbox" id="allow-post-comment" name="allow-post-comment" tabindex="1" checked="checked">
+        <label class="check-label">
+            <input type="checkbox" class="checkbox" name="allow-post-comment" tabindex="1" checked="checked">
             <span class="checklabel">Share with subscribers.</span>
         </label>
         <input class="inline-button special post" value="Post" type="submit">
@@ -204,8 +231,8 @@
       <textarea class="normal-input" name="content" id="reply-textarea" placeholder="{% if user.is_auth %}Share what you think{% else %}Please sign in{% endif %}"></textarea>
       <div class="container">
         <div class="emoticons-select"></div>
-        <label for="allow-post-reply" class="check-label">
-            <input type="checkbox" class="checkbox" id="allow-post-reply" name="allow-post-reply" tabindex="1" checked="checked">
+        <label class="check-label">
+            <input type="checkbox" class="checkbox" name="allow-post-reply" tabindex="1" checked="checked">
             <span class="checklabel">Share with subscribers.</span>
         </label>
         <input class="inline-button special post" value="Post" type="submit">
