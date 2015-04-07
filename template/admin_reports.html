@@ -1,0 +1,49 @@
+{% extends "template/admin.html" %}
+{% block head %}
+{{ super() }}
+<link href="/static/admin_reports.css" rel="stylesheet" type="text/css">
+{% endblock %}
+
+{% block body %}
+<h2> View video reports </h2>
+<div class="container">
+  <table id="report-table">
+    <thead>
+      <tr>
+        <th class="th-video-id">Video ID</th>
+        <th class="th-video-title">Video Title</th>
+        <th class="th-issue">Issue</th>
+        <th class="th-created">Reported time</th>
+        <th class="th-reporter">Reported by</th>
+        <th class="th-status">Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for report in reports %}
+      <tr class="title">
+        <td>
+          <a target="_blank" href="/video/{{ report.video_id }}">{{ report.video_id }}</a>
+        </td>
+        <td>
+          <a target="_blank" href="/video/{{ report.video_id }}">{{ report.video_title }}</a>
+        </td>
+        <td>
+          <a>{{ report.issue }}</a>
+        </td>
+        <td>{{ report.created_time }}</td>
+        <td>{{ report.reporter_nickname }}</td>
+        <td>{% if report.processed %}Processed{% else %}Pending{% endif %}</td>
+      </tr>
+      <tr class="detail">
+        <td colspan=6>
+          <div>
+            <b>Details: </b>
+            <span>{{ report.details }}</span>
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

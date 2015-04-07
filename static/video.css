@@ -1,0 +1,95 @@
+.popup-box {
+    position: absolute;
+    display: none;
+    background-color: rgb(255,255,255);
+    border: 1px solid rgb(200,200,200);
+    z-index: 1;
+    box-shadow: 0px 4px 4px rgb(200,200,200);
+    padding: 15px 30px 20px 15px;
+}
+
+.popup-box:before, .popup-box:after {
+    bottom: 100%;
+    left: 7%;
+    border: solid transparent;
+    content: " ";
+    height: 0;
+    width: 0;
+    position: absolute;
+    pointer-events: none;
+}
+
+.popup-box:after {
+    border-bottom-color: rgb(255, 255, 255);
+    border-width: 10px;
+    margin-left: -10px;
+}
+
+.popup-box:before {
+    border-bottom-color: rgb(200, 200, 200);
+    border-width: 11px;
+    margin-left: -11px;
+}
+
+.popup-box.show {
+    display: inline-block;
+}
+
+.popup-dismiss {
+    position: absolute;
+    top: 3px;
+    right: 3px;
+    background-image: url("/static/img/delete.png");
+    background-repeat: no-repeat;
+    background-position: 50% 50%;
+}
+
+div.popup-dismiss {
+    width: 16px;
+    height: 16px;
+    position: absolute;
+    right: 3px;
+    top: 3px;
+    background-image: url("/static/img/delete.png");
+    background-repeat: no-repeat;
+    cursor: pointer;
+    background-size: contain;
+}
+
+div.popup-dismiss:hover div.popup-dismiss {
+    display: inline-block;
+}
+
+div.popup-dismiss:hover {
+    background-image: url("/static/img/delete-hover.png");
+}
+
+div.popup-dismiss:active {
+    background-image: url("/static/img/delete-active.png");
+}
+
+form.change div.input-line {
+    padding-bottom: 15px;
+    position: relative;
+}
+
+.form-input {
+  margin-top: 10px;
+}
+
+#report-box {
+    margin-top: 10px;
+    width: 280px;
+}
+
+#report-details {
+    vertical-align: text-top;
+    min-height: 60px;
+    max-height: 140px;
+    min-width:  260px;
+    max-width: 260px;
+}
+
+#submit-report {
+  margin-right: 10px;
+}

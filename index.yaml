@@ -108,6 +108,13 @@ indexes:
 
 - kind: Video
   properties:
+  - name: category
+  - name: subcategory
+  - name: hits
+    direction: desc
+
+- kind: Video
+  properties:
   - name: uploader
   - name: created
     direction: desc

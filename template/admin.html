@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>{% block page_title %}Dantube Management System{% endblock %}</title>
+        {% block head %}
+        <script src="/static/jquery.min.js" language="JavaScript" type="text/javascript" ></script>
+        <link href="/static/base.css" rel="stylesheet" type="text/css">
+        <script src="/static/base.js" language="JavaScript" type="text/javascript"></script>
+        <link href="/static/admin.css" rel="stylesheet" type="text/css">
+        <script src="/static/admin.js" language="JavaScript" type="text/javascript"></script>
+        {% endblock %}
+    </head>
+    <body>
+    <noscript>
+        <style type="text/css">
+            #user-bar-background, #navigation-bar-background, #body-background { display:none; }
+        </style>
+        <div class="noscriptmsg">
+            You don't have javascript enabled.  Good luck with that.
+        </div>
+    </noscript>
+    
+    {% block navigation %}
+    <div id="user-bar-background">
+        <div id="user-bar" class="container">
+            <a id="logo" class="left" href="{{ uri_for('Admin_Home') }}">Dantube Management System</a>
+        </div>
+    </div>
+    <div id="navigation-bar-background">
+        <div id="navigation-bar" class="container">
+            <a id="home-link" href="{{ uri_for('Admin_Home') }}">Home</a>
+            <div class="navi-category">
+                <a class="navi-category-name" href="{{ uri_for('Admin_Reports') }}">Video Reports</a>
+            </div>
+            <div class="navi-category">
+                <a class="navi-category-name" href="{{ uri_for('Admin_Feedbacks') }}">User Feedbacks</a>
+            </div>
+            <div class="navi-category right">
+                <a class="navi-category-name" href="{{ uri_for('home') }}">Back to DanTube</a>
+            </div>
+        </div>
+    </div>
+    {% endblock %}
+
+    <div id="body-background">
+        <div id="body-container" class="container">
+        {% block body %}
+        {% endblock %}
+        </div>
+    </div>
+
+    {% block popup_window %}
+    {% endblock %}
+
+    <div id="ajax-message-box">
+    </div>
+    </body>
+</html>

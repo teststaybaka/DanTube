@@ -97,9 +97,16 @@ routes = [
     webapp2.Route(r'/search/playlist', views.SearchPlaylist, name="search_playlist"),
     webapp2.Route(r'/search/uper', views.SearchUPer, name="search_uper"),
 
+    webapp2.Route(r'/feedback', views.Feedback, name="feedback"),
+    webapp2.Route(r'/report', views.Report, name="report"),
+    webapp2.Route(r'/vid_check', video.VIDCheck, name="vid_check"),
+
+    webapp2.Route(r'/admin', admin.Home, name="Admin_Home"),
     webapp2.Route(r'/admin/video', admin.VideoPageTest, name="Admin_Video"),
     webapp2.Route(r'/admin/danmaku', admin.DanmakuTest, name="Admin_Danmaku"),
     webapp2.Route(r'/admin/notify', admin.Notify, name="Admin_Notify"),
+    webapp2.Route(r'/admin/feedbacks', admin.Feedbacks, name="Admin_Feedbacks"),
+    webapp2.Route(r'/admin/reports', admin.Reports, name="Admin_Reports"),
 ]
 for category in models.Video_Category:
     route = webapp2.Route(r'/%s' % models.URL_NAME_DICT[category][0], views.Category, name=category)

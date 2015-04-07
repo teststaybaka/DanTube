@@ -1200,6 +1200,46 @@ $(document).ready(function() {
 			update_comments(Math.ceil(rev/20), video_id);
 		}
 	}
+
+	$('#report-button').click(function() {
+		$('#report-box').addClass('show');
+	});
+	$('#report-dismiss').click(function() {
+		$('#report-box').removeClass('show');	
+	});
+	$('#report-submission-form').submit(function(evt) {
+    evt.preventDefault();
+
+    var button = document.querySelector('input#submit-report');
+    button.disabled = true;
+
+    $.ajax({
+      type: "POST",
+      url: evt.target.action,
+      data: $('#report-submission-form').serialize(),
+      success: function(result) {
+        console.log(result);
+        if(result.error) {
+          pop_ajax_message(result.message, 'error');
+          button.disabled = false;
+        } else {
+          pop_ajax_message(result.message, 'success');
+          $('#report-submission-form')[0].reset();
+          setTimeout(function(){
+            $('#report-box').removeClass('show');
+            button.disabled = false;
+          }, 3000);
+        }
+      },
+      error: function (xhr, ajaxOptions, thrownError) {
+        console.log(xhr.status);
+        console.log(thrownError);
+        button.disabled = false;
+        pop_ajax_message(xhr.status+' '+thrownError, 'error');
+      }
+    });
+    return false;
+  });
 });
 
 function update_comments(page, video_id) {

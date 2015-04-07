@@ -520,7 +520,7 @@ label.statistic-icon.visited {
     background-position: 0 -531px;
 }
 
-#change-password-form, #change-info-form, #video-submission-form, #change-space-form {
+#change-password-form, #change-info-form, #video-submission-form, #change-space-form, #feedback-submission-form, #report-submission-form {
     padding: 35px 25px 20px 25px;
 }
 

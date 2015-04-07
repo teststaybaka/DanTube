@@ -1,0 +1,19 @@
+th.th-category {
+  width: 14%;
+}
+
+th.th-subject {
+  width: 45%;
+}
+
+th.th-created {
+  width: 18%;
+}
+
+th.th-sender {
+  width: 13%;
+}
+
+th.th-status {
+  width: 10%;
+}

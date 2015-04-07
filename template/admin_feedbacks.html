@@ -1,0 +1,43 @@
+{% extends "template/admin.html" %}
+{% block head %}
+{{ super() }}
+<link href="/static/admin_feedbacks.css" rel="stylesheet" type="text/css">
+{% endblock %}
+
+{% block body %}
+<h2> View user feedbacks </h2>
+<div class="container">
+  <table id="feedback-table">
+    <thead>
+      <tr>
+        <th class="th-category">Category</th>
+        <th class="th-subject">Subject</th>
+        <th class="th-created">Created time</th>
+        <th class="th-sender">Author</th>
+        <th class="th-status">Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for feedback in feedbacks %}
+      <tr class="title">
+        <td>{{ feedback.category }}</td>
+        <td>
+          <a>{{ feedback.subject }}</a>
+        </td>
+        <td>{{ feedback.created_time }}</td>
+        <td>{% if feedback.anonymous %}Anonymous{% else %}{{ feedback.sender_nickname }}{% endif %}</td>
+        <td>{% if feedback.processed %}Processed{% else %}Pending{% endif %}</td>
+      </tr>
+      <tr class="detail">
+        <td colspan=6>
+          <div>
+            <b>Description: </b>
+            <span>{{ feedback.description }}</span>
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

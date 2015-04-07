@@ -684,3 +684,33 @@ class ManageVideo(BaseHandler):
         context['total_found'] = total_found
         context.update(self.get_page_range(page, total_pages) )
         self.render('manage_video', context)
+
+class VIDCheck(BaseHandler):
+    def get(self):
+        self.response.headers['Content-Type'] = 'application/json'
+
+        vid = self.request.get('vid').strip()
+        if not vid:
+            self.response.out.write(json.dumps({
+                'valid': False,
+                'message': 'Video ID must not be empty!'
+            }))
+            return
+        if re.match(r"^dt[1-9][0-9]*$", vid) is None:
+            self.response.out.write(json.dumps({
+                'valid': False,
+                'message': 'Invalid Video ID!'
+            }))
+            return
+        video = models.Video.get_by_id(vid)
+        if not video:
+            self.response.out.write(json.dumps({
+                'valid': False,
+                'message': 'Video ID does not exist!'
+            }))
+            return
+
+        self.response.out.write(json.dumps({
+            'valid': True,
+            'video': video.get_basic_info()
+        }))

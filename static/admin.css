@@ -1,0 +1,27 @@
+table {
+  width: 100%;
+  max-width: 100%;
+  margin-bottom: 20px;
+  text-align: left;
+  border-spacing: 0;
+  border-collapse: collapse;
+}
+
+tbody tr.title:hover {
+  background-color: #e3e3e3;
+  cursor: pointer;
+}
+
+tbody tr.detail {
+  display: none;
+}
+
+td, th {
+  border-bottom: 1px solid #999;
+  padding: 10px;
+  text-align: left;
+}
+
+tbody a:hover {
+  text-shadow:0 0 2px rgb(150,150,150);
+}

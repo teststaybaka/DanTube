@@ -49,3 +49,28 @@ class Notify(webapp2.RequestHandler):
 
         n = models.Notification(receiver=ndb.Key('User', 6681749341863936), note_type='warning', title='SDFsdf', content='XXXXXXXXXXXXXXXXXX')
         n.put()
+
+class Home(webapp2.RequestHandler):
+    def get(self):
+        template = env.get_template('template/admin.html')
+        self.response.write(template.render())
+
+class Feedbacks(webapp2.RequestHandler):
+    def get(self):
+        feedbacks = models.Feedback.query().fetch()
+        for feedback in feedbacks:
+            feedback.created_time = feedback.created.strftime("%Y-%m-%d %H:%M")
+
+        context = {'feedbacks': feedbacks}
+        template = env.get_template('template/admin_feedbacks.html')
+        self.response.write(template.render(context))
+
+class Reports(webapp2.RequestHandler):
+    def get(self):
+        reports = models.Report.query().fetch()
+        for report in reports:
+            report.created_time = report.created.strftime("%Y-%m-%d %H:%M")
+
+        context = {'reports': reports}
+        template = env.get_template('template/admin_reports.html')
+        self.response.write(template.render(context))

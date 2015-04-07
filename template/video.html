@@ -3,6 +3,7 @@
 {{ super() }}
 <link rel="stylesheet" href="/static/colpick.css" type="text/css"/>
 <script src="/static/colpick.js" type="text/javascript"></script>
+<link href="/static/video.css" rel="stylesheet" type="text/css">
 <link href="/static/player.css" rel="stylesheet" type="text/css">
 <script type="text/javascript">
   var tag = document.createElement('script');
@@ -49,6 +50,32 @@
       <div class="video-statistic" title="favors"><span class="statistic-icon favorites"></span><span class="commas_number">{{ video.favors }}</span></div>
       <div class="video-statistic" title="comments"><span class="statistic-icon comment"></span><span class="commas_number">{{ video.comment_counter }}</span></div>
       <div class="video-statistic" title="bullets"><span class="statistic-icon bullets"></span><span class="commas_number">{{ video.bullets }}</span></div>
+      <div class="right" id="report-video">
+        <div id="report-button" style="cursor:pointer">
+          <span>Report</span>
+        </div>
+        <div id="report-box" class="popup-box">
+          <form class="change" id="report-submission-form" method="post" action="{{ uri_for('report') }}">
+            <input type="hidden" name="vid" id="video-id" value="{{ video.id }}">
+            <div class="input-line">
+              <label for="report-issue" class="form-label">Why do you want to report this video?</label>
+              <select name="issue"  id="report-issue" class="form-input">
+                {% for key in report_issues %}
+                  <option value="{{ key }}">{{ key }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="input-line">
+                <label for="report-details" class="form-label">Details(optional):</label>
+                <textarea id="report-details" class="form-input" name="details" tabindex="1" placeholder="Optional details" maxlength="2000"></textarea>
+            </div>
+            <div class="container">
+              <input id="submit-report" class="inline-button special post" type="submit" value="Report" />
+            </div>
+          </form>
+          <div id="report-dismiss" class="popup-dismiss"></div>
+        </div>
+      </div>
     </div>
     <div id="video-parts-container" class="container">
       {% if video.clip_titles|length > 1 %}
