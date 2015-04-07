@@ -314,13 +314,33 @@ class DeleteMessage(BaseHandler):
         }))
 
 class Mentioned(BaseHandler):
+    def new_mentions_count(self):
+        user = self.user
+        new_count = models.MentionedComment.query(ndb.AND(models.MentionedComment.receivers==user.key, 
+                                                                models.MentionedComment.created > user.last_mentioned_check)).count()
+        return new_count
+
+    @login_required
+    def get_count(self):
+        self.response.headers['Content-Type'] = 'application/json'
+        new_messages = self.new_mentions_count()
+        self.response.out.write(json.dumps({
+            'error': False,
+            'count': new_messages,
+        }))
+
     @login_required
     def get(self):
         user = self.user
-        new_messages = models.MentionedComment.query(ndb.AND(models.MentionedComment.receivers==user.key, 
-                                                                models.MentionedComment.created > user.last_mentioned_check)).count()
+        new_messages = self.new_mentions_count()
         user.last_mentioned_check = datetime.now()
         user.put()
+        if new_messages > 99:
+            self.response.set_cookie('new_mentions', '99+', path='/')
+        elif new_messages == 0:
+            self.response.set_cookie('new_mentions', '', path='/')
+        else:
+            self.response.set_cookie('new_mentions', str(new_messages), path='/')
         self.render('mentioned_me', {'new_messages': new_messages})
 
     @login_required
@@ -361,13 +381,33 @@ class Mentioned(BaseHandler):
         self.response.out.write(json.dumps(result))
 
 class Notifications(BaseHandler):
+    def new_notifications_count(self):
+        user = self.user
+        new_count = models.Notification.query(ndb.AND(models.Notification.receiver==user.key, 
+                                                                models.Notification.created > user.last_notification_check)).count()
+        return new_count
+
+    @login_required
+    def get_count(self):
+        self.response.headers['Content-Type'] = 'application/json'
+        new_messages = self.new_notifications_count()
+        self.response.out.write(json.dumps({
+            'error': False,
+            'count': new_messages,
+        }))
+
     @login_required
     def get(self):
         user = self.user
-        new_notifications = models.Notification.query(ndb.AND(models.Notification.receiver==user.key, 
-                                                                models.Notification.created > user.last_notification_check)).count()
+        new_notifications = self.new_notifications_count()
         user.last_notification_check = datetime.now()
         user.put()
+        if new_notifications > 99:
+            self.response.set_cookie('new_notifications', '99+', path='/')
+        elif new_notifications == 0:
+            self.response.set_cookie('new_notifications', '', path='/')
+        else:
+            self.response.set_cookie('new_notifications', str(new_notifications), path='/')
         self.render('notifications', {'new_notifications': new_notifications})
 
     @login_required

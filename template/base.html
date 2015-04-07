@@ -24,7 +24,7 @@
             <a id="logo" class="left" href="{{ uri_for('home') }}">DanTube</a>
             <a class="navi left link" id="feeling-lucky" href="{{ uri_for('feeling_lucky') }}">I'm feeling lucky!</a>
             {% if user.is_auth %}
-            <div id="portrait" class="right">
+            <div id="portrait" class="right" data-id="{{ user.id }}">
                 <a id="portrait-link" href="{{ uri_for('account') }}">
                     <img id="portrait-img" src="{{ user.avatar_url_small }}">
                 </a>
@@ -32,10 +32,10 @@
                 <div id="user-box">
                     <div id="user-box-nickname">{{ user.nickname }}</div>
                     <div id="user-message-container" class="container">
-                        <a href="{{ uri_for('mentioned') }}" id="user-at">@Me<div id="user-at-new-num">99+</div></a>
+                        <a href="{{ uri_for('mentioned') }}" id="user-at">@Me<div id="user-at-new-num"></div></a>
 
-                        <a href="{{ uri_for('notifications') }}" id="user-notification">Notifications<div id="user-notification-new-num">6</div></a>
-                        <a href="{{ uri_for('message') }}" id="user-message">Messages<div id="user-message-new-num">23</div></a>
+                        <a href="{{ uri_for('notifications') }}" id="user-notification">Notifications<div id="user-notification-new-num"></div></a>
+                        <a href="{{ uri_for('message') }}" id="user-message">Messages<div id="user-message-new-num"></div></a>
                     </div>
                     <div id="user-box-bottom-line" class="container">
                         <a href="{{ uri_for('account') }}" id="user-config">
@@ -46,9 +46,9 @@
                     </div>
                 </div>
             </div>
+            <a href="{{ uri_for('subscriptions_quick') }}" id="user-subscriptions" class="navi right link">Subscriptions<div id="user-subscriptions-new-num"></div></a>
             <a href="{{ uri_for('favorites') }}" class="navi right link">Favorites</a>
             <a href="{{ uri_for('history') }}" class="navi right link">History</a>
-            <a href="{{ uri_for('subscriptions_quick') }}" class="navi right link">Subscriptions</a>
             <a href="{{ uri_for('submit') }}" class="navi right link">Submit</a>
             {% else %}
             <a href="{{ uri_for('signup') }}" id="signup-nav-button" class="navi right link">Sign up</a>

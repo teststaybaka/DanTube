@@ -82,6 +82,25 @@ function pop_ajax_message(content, type) {
 }
 
 $(document).ready(function() {
+    if ($('#portrait').length != 0) {
+        var uesr_id = $('#portrait').attr('data-id');
+        var cookie = getCookie(uesr_id+'_check');
+        if (!cookie) {
+            var now = new Date().toUTCString();
+            var extime = 10 * 60 *1000; // 10 mins wait
+            setCookie(uesr_id+'_check', now, extime);
+            count_new_mentions();
+            count_new_notifications();
+            count_new_subscriptions();
+        }
+        var num = getCookie('new_notifications');
+        $('#user-notification-new-num').text(num);
+        num = getCookie('new_mentions');
+        $('#user-at-new-num').text(num);
+        num = getCookie('new_subscriptions');
+        $('#user-subscriptions-new-num').text(num);
+    }
+
     $('#portrait').mouseover(function() {
         $('#user-box').addClass('show');
         $('#user-box').removeClass('hide');
@@ -250,12 +269,97 @@ function render_pagination(cur_page, total_pages) {
     return pagination;
 }
 
+function count_new_subscriptions() {
+    $.ajax({
+        type: "POST",
+        url: '/user/new_subscriptions',
+        success: function(result) {
+            if(!result.error) {
+                if (result.count > 99) {
+                    setCookie('new_subscriptions', '99+');
+                    $('#user-subscriptions-new-num').text('99+');
+                } else if (result.count == 0) {
+                    setCookie('new_subscriptions', '');
+                    $('#user-subscriptions-new-num').text('');
+                } else {
+                    setCookie('new_subscriptions', result.count);
+                    $('#user-subscriptions-new-num').text(result.count);
+                }
+            } else {
+                console.log(result.error);
+            }
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            console.log(xhr.status);
+            console.log(thrownError);
+        }
+    });
+}
+
+function count_new_mentions() {
+    $.ajax({
+        type: "POST",
+        url: '/user/new_mentions',
+        success: function(result) {
+            if(!result.error) {
+                if (result.count > 99) {
+                    setCookie('new_mentions', '99+');
+                    $('#user-at-new-num').text('99+');
+                } else if (result.count == 0) {
+                    setCookie('new_mentions', '');
+                    $('#user-at-new-num').text('');
+                } else {
+                    setCookie('new_mentions', result.count);
+                    $('#user-at-new-num').text(result.count);
+                }
+            } else {
+                console.log(result.error);
+            }
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            console.log(xhr.status);
+            console.log(thrownError);
+        }
+    });
+}
+
+function count_new_notifications() {
+    $.ajax({
+        type: "POST",
+        url: '/user/new_notifications',
+        success: function(result) {
+            if(!result.error) {
+                if (result.count > 99) {
+                    setCookie('new_notifications', '99+');
+                    $('#user-notification-new-num').text('99+');
+                } else if (result.count == 0) {
+                    setCookie('new_notifications', '');
+                    $('#user-notification-new-num').text('');
+                } else {
+                    setCookie('new_notifications', result.count);
+                    $('#user-notification-new-num').text(result.count);
+                }
+            } else {
+                console.log(result.error);
+            }
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            console.log(xhr.status);
+            console.log(thrownError);
+        }
+    });
+}
+
 // Modified from http://www.w3schools.com/js/js_cookies.asp
 function setCookie(cname, cvalue, extime) {
-    var d = new Date();
-    d.setTime(d.getTime() + extime);
-    var expires = "expires=" + d.toUTCString();
-    document.cookie = cname + "=" + cvalue + "; " + expires;
+    if (extime == 0) {
+        document.cookie = cname + "=" + cvalue + ';path=/';
+    } else {
+        var d = new Date();
+        d.setTime(d.getTime() + extime);
+        var expires = "expires=" + d.toUTCString();
+        document.cookie = cname + "=" + cvalue + "; " + expires +';path=/';
+    }
 }
 
 function getCookie(cname) {

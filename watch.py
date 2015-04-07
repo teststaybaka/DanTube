@@ -309,7 +309,6 @@ class Comment(BaseHandler):
         content, users = comment_nickname_recognize(user, content, True)
 
         allow_share = self.request.get('allow-post-reply')
-        logging.info(allow_share)
         if allow_share == 'on':
             allow_share = True
         else:
@@ -446,6 +445,12 @@ class Danmaku(BaseHandler):
             }))
             return
 
+        allow_share = self.request.get('allow_share')
+        if allow_share == 'true':
+            allow_share = True
+        else:
+            allow_share = False
+
         clip = video.video_clips[clip_index-1].get()
         if len(clip.danmaku_pools) == 0:
             danmaku_pool = models.DanmakuPool()
@@ -469,7 +474,7 @@ class Danmaku(BaseHandler):
         video.last_updated = datetime.now()
         video.put()
 
-        danmaku_record = models.ActivityRecord(creator=user.key, activity_type='danmaku', timestamp=danmaku.timestamp, content=danmaku.content, video=video.key, clip_index=clip_index)
+        danmaku_record = models.ActivityRecord(creator=user.key, activity_type='danmaku', timestamp=danmaku.timestamp, content=danmaku.content, video=video.key, clip_index=clip_index, public=allow_share)
         danmaku_record.put()
         user.comments_num += 1
         user.put()

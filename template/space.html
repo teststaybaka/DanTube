@@ -97,30 +97,11 @@
   <div id="recent-visiter-box">
     <div id="visiter-line">Recent visiters</div>
     <div id="recent-visiter-list" class="container">
-      <a class="visiter-img" href="" target="_blank">
-        <img class="visiter-img" src="sdf" title="sdfsdf">
+      {% for visitor in host.visitors %}
+      <a class="visiter-img" href="{{ visitor.space_url }}" target="_blank">
+        <img class="visiter-img" src="{{ visitor.avatar_url_small }}" title="{{ visitor.nickname }}">
       </a>
-      <a class="visiter-img" href="" target="_blank">
-        <img class="visiter-img" src="sdf" title="sdfsdf">
-      </a>
-      <a class="visiter-img" href="" target="_blank">
-        <img class="visiter-img" src="sdf" title="sdfsdf">
-      </a>
-      <a class="visiter-img" href="" target="_blank">
-        <img class="visiter-img" src="sdf" title="sdfsdf">
-      </a>
-      <a class="visiter-img" href="" target="_blank">
-        <img class="visiter-img" src="sdf" title="sdfsdf">
-      </a>
-      <a class="visiter-img" href="" target="_blank">
-        <img class="visiter-img" src="sdf" title="sdfsdf">
-      </a>
-      <a class="visiter-img" href="" target="_blank">
-        <img class="visiter-img" src="sdf" title="sdfsdf">
-      </a>
-      <a class="visiter-img" href="" target="_blank">
-        <img class="visiter-img" src="sdf" title="sdfsdf">
-      </a>
+      {% endfor %}
     </div>
   </div>
 </div>
