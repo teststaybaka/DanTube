@@ -226,6 +226,24 @@ $(document).ready(function() {
         var textarea = $(evt.target).parent().parent().parent().prev();
         textarea.val(textarea.val() + $(evt.target).text());
     });
+
+    $('label.check-label').click(function(evt) {
+        if ($(this).children('input[type="checkbox"]').is(':checked')) {
+            $(this).children('.pseudo-checkbox').addClass('checked');
+        } else {
+            $(this).children('.pseudo-checkbox').removeClass('checked');
+        }
+    });
+
+    $('.checkbox-selection').click(function() {
+        if ($(this).hasClass('off')) {
+            $(this).removeClass('off');
+            $(this).addClass('on');
+        } else {
+            $(this).addClass('off');
+            $(this).removeClass('on');
+        }
+    });
 });
 
 function render_pagination(cur_page, total_pages) {

@@ -43,15 +43,15 @@ a {
 	color: black;
 }
 
-a.blue-link {
+.blue-link {
     color: rgb(0,140,255);
 }
 
-a.blue-link:hover {
+.blue-link:hover {
     color: rgb(255,177,108);
 }
 
-a.blue-link:active {
+.blue-link:active {
     color: rgb(0,50,200);
 }
 
@@ -487,8 +487,8 @@ div.navi-dragdown-menu {
 	white-space:nowrap;
 	background-color: rgb(255,255,255);
 	/*border: 1px solid rgb(200,200,200);*/
-	box-shadow: 0px 4px 4px rgb(200,200,200);
-	z-index: 1;
+	box-shadow: -3px 3px 4px rgba(200,200,200, 0.5);
+	z-index: 2;
 }
 
 div.navi-category:hover a.navi-category-name {
@@ -602,6 +602,14 @@ a.page-num.active {
     background-color: white;
     position: relative;
     cursor: default;
+    width: 100px;
+    -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
+    -moz-box-sizing: border-box;    /* Firefox, other Gecko */
+    box-sizing: border-box;
+}
+
+#action-select div.selected {
+    width: 80px;
 }
 
 #view-method div.selected:after, #action-select div.selected:after {
@@ -621,10 +629,17 @@ a.page-num.active {
     margin-top: -1px;
     display: none;
     cursor: pointer;
-    min-width: 100px;
+    width: 100px;
     z-index: 1;
     background-color: white;
     box-shadow: 0px 4px 4px rgb(230,230,230);
+    -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
+    -moz-box-sizing: border-box;    /* Firefox, other Gecko */
+    box-sizing: border-box;
+}
+
+#action-select div.option {
+    width: 80px;
 }
 
 #view-method:hover div.option, #action-select:hover div.option {
@@ -632,7 +647,7 @@ a.page-num.active {
 }
 
 #view-method div.option-entry, #view-method a.option-entry, #action-select div.option-entry {
-    padding: 6px 15px 6px 8px;
+    padding: 6px 8px;
     display: block;
 }
 
@@ -642,7 +657,7 @@ a.page-num.active {
 }
 
 #view-method div.option-entry:hover, #view-method a.option-entry:hover, #action-select div.option-entry:hover {
-    background-color: rgb(245,245,245);
+    background-color: rgb(230,230,230);
 }
 
 .inline-button {
@@ -752,6 +767,7 @@ div.quick-title {
     position: fixed;
     bottom: 0;
     right: 0;
+    z-index: 2;
 }
 
 div.ajax-message {
@@ -952,4 +968,22 @@ span.subscribe-icon {
 
 .unsubscribe:active span.subscribe-icon {
     background-position: 0 -928px;
+}
+
+.pseudo-checkbox {
+    width: 13px;
+    height: 13px;
+    border: 1px solid rgb(200,200,200);
+    border-radius: 3px;
+    -webkit-border-radius: 3px;
+    -moz-border-radius: 3px;
+    background-repeat: no-repeat;
+    display: inline-block;
+    vertical-align: top;
+    background-color: white;
+}
+
+.pseudo-checkbox.checked {
+    background-position: -1px -193px;
+    background-image: url("/static/img/basic_icons.png");
 }

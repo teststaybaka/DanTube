@@ -1,5 +1,7 @@
 var player;
 var isPlaying;
+var player_width = 640;
+var player_height = 360;
 var danmakuVar = null;
 var progressVar = null;
 var progressHold = false;
@@ -23,53 +25,16 @@ var show_top = true;
 var show_bottom = true;
 var show_colored = true;
 var show_danmaku = true;
-
-function onPlayerReady(event) {
-	var progress_number = document.getElementById("progress-number");
-	progress_number.lastChild.nodeValue = "00:00"+"/"+secondsToTime(player.getDuration());
-	setInterval(buffer_update, 500);
-	buffer_update();
-	progress_update();
-
-	var arguments = document.URL.split('?')[1]
-	if (arguments) {
-		arguments = arguments.split('&');
-		for (var i = 0; i < arguments.length; i++) {
-			if (arguments[i].indexOf('timestamp') > -1) {
-				var timestamp = parseFloat(arguments[i].substr(10));
-				player.seekTo(timestamp, true);
-			}
-		}
-	}
-
-	var volume = getCookie('player_volume');
-	if (!volume) {
-		player.setVolume(50);
-		setCookie('player_volume', 50);
-	} else {
-		volume = parseInt(volume);
-		player.setVolume(volume);
-		// var volume_bar = document.getElementById("volume-bar");
-		var volume_magnitude = document.getElementById("volume-magnitude");
-		var len = 50*volume/100;
-		volume_magnitude.style.height = len + "px";
-		var volume_pointer = document.getElementById("volume-pointer");
-		volume_pointer.style.WebkitTransform = "translateY(-"+len+"px)";
-		volume_pointer.style.msTransform = "translateY(-"+len+"px)";
-		volume_pointer.style.transform = "translateY(-"+len+"px)";
-		var volume_tip = document.getElementById("volume-tip");
-		volume_tip.style.WebkitTransform = "translateY(-"+len+"px)";
-		volume_tip.style.msTransform = "translateY(-"+len+"px)";
-		volume_tip.style.transform = "translateY(-"+len+"px)";
-		var text;
-		if (Math.floor(len/50*100) < 10) {
-			text = "0"+Math.floor(len/50*100);
-		} else {
-			text = Math.floor(len/50*100);
-		}
-		volume_tip.lastChild.nodeValue = text;
-	}
-}
+var ori_danmaku_speed = 4;
+var danmaku_speed = 4;
+var ori_existing_time = 5;
+var existing_time = 5;
+var ori_max_danmaku = 60;
+var max_danmaku = 60;
+var ori_danmaku_scale = 3;
+var danmaku_scale = 3;
+var ori_danmaku_font = 'Times New Roman';
+var danmaku_font = 'Times New Roman';
 
 function onPlayerStateChange(event) {
 	if (event.data == YT.PlayerState.PLAYING) {
@@ -194,18 +159,6 @@ function danmaku_switch(evt) {
 	}
 }
 
-function loop_switch(evt) {
-	if ($(evt.target).hasClass('on')) {
-		$(evt.target).addClass('off');
-		$(evt.target).removeClass('on');
-		isLoop = false;
-	} else {//off
-		$(evt.target).addClass('on');
-		$(evt.target).removeClass('off');
-		isLoop = true;
-	}
-}
-
 function widescreen_switch(evt) {
 	if ($(evt.target).hasClass('on')) {
 		$(evt.target).removeClass('on');
@@ -220,12 +173,15 @@ function widescreen_switch(evt) {
 		var player_canvas = document.getElementById("player-canvas");
 		player_canvas.style.width = "640px";
 		player_canvas.style.height = "360px";
+		player_width = 640;
+		player_height = 360;
 		progress_update();
 
 		var list = document.querySelectorAll("div.danmaku");
 		for (var i = 0; i < list.length; ++i) {
 		   list[i].style.left = "650px";
 		}
+		$('.player-padding').removeClass('hidden');
 	} else {//off
 		$(evt.target).removeClass('off');
 		$(evt.target).addClass('on');
@@ -239,12 +195,15 @@ function widescreen_switch(evt) {
 		var player_canvas = document.getElementById("player-canvas");
 		player_canvas.style.width = "1024px";
 		player_canvas.style.height = "576px";
+		player_width = 1024;
+		player_height = 576;
 		progress_update();
 
 		var list = document.querySelectorAll("div.danmaku");
 		for (var i = 0; i < list.length; ++i) {
 		   list[i].style.left = "1034px";
 		}
+		$('.player-padding').addClass('hidden');
 	}
 }
 
@@ -262,7 +221,7 @@ function progress_tip_show(evt) {
 	var tip = document.getElementById("progress-tip");
 	tip.style.display = "inline-block";
 
-	var progress_bar = document.getElementById("progress-bar");
+	var progress_bar = document.getElementById("progress-bar-background");
 	var rect = progress_bar.getBoundingClientRect();
 	var offset = evt.clientX - rect.left;
 	if (offset < 0) {
@@ -294,7 +253,7 @@ function progress_bar_down(evt) {
 }
 
 function progress_bar_move(evt) {
-	var progress_bar = document.getElementById("progress-bar");
+	var progress_bar = document.getElementById("progress-bar-background");
 	var rect = progress_bar.getBoundingClientRect();
 	var progress_played = document.getElementById("progress-bar-played");
 	var offset = evt.clientX - rect.left;
@@ -316,7 +275,7 @@ function progress_bar_stop(evt) {
 	progressHold = false;
 	progress_bar_move(evt);
 
-	var progress_bar = document.getElementById("progress-bar");
+	var progress_bar = document.getElementById("progress-bar-background");
 	var rect = progress_bar.getBoundingClientRect();
 	var offset = evt.clientX - rect.left;
 	if (offset < 0) {
@@ -340,21 +299,21 @@ function progress_bar_stop(evt) {
 }
 
 function progress_resize() {
-	var progress_bar = document.getElementById("progress-bar");
-	var rect = progress_bar.getBoundingClientRect();
+	var progress_bar_background = document.getElementById("progress-bar-background");
+	var rect = progress_bar_background.getBoundingClientRect();
 	var progress_number = document.getElementById("progress-number");
 	var rectNum = progress_number.getBoundingClientRect();
-	progress_bar.style.width = (rectNum.left - rect.left - 9)+"px";
+	progress_bar_background.style.width = (rectNum.left - rect.left - 9)+"px";
 
-	var progress_bar_background = document.getElementById("progress-bar-background");
-	progress_bar_background.style.width = progress_bar.style.width;
+	var progress_bar = document.getElementById("progress-bar");
+	progress_bar.style.width = progress_bar_background.style.width;
 	// console.log('progress_resize');
 }
 
 function buffer_update() {
 	// console.log('buffer_update:'+player.getVideoLoadedFraction());
 	var buffered = player.getVideoLoadedFraction();
-	var progress_bar = document.getElementById("progress-bar");
+	var progress_bar = document.getElementById("progress-bar-background");
 	var progress_buffered = document.getElementById("progress-bar-buffered");
 	progress_buffered.style.width = progress_bar.offsetWidth*buffered + "px";
 	// console.log(buffered+" "+(-1000 + progress_bar.offsetWidth*buffered));
@@ -368,7 +327,7 @@ function progress_update() {
 	progress_resize();
 
 	if (!progressHold) {
-		var progress_bar = document.getElementById("progress-bar");
+		var progress_bar = document.getElementById("progress-bar-background");
 		var progress_played = document.getElementById("progress-bar-played");
 		progress_played.style.width = player.getCurrentTime()/player.getDuration()*progress_bar.offsetWidth + "px";
 		
@@ -377,22 +336,29 @@ function progress_update() {
 		progress_pointer.style.msTransform = "translateX("+player.getCurrentTime()/player.getDuration()*progress_bar.offsetWidth+"px)";
 		progress_pointer.style.transform = "translateX("+player.getCurrentTime()/player.getDuration()*progress_bar.offsetWidth+"px)";
 	}
+
+	var cur_quality = quality_youtube2local(player.getPlaybackQuality());
+	if (typeof cur_quality !== 'undefined') {
+		var quality = $('.list-selected.quality').text().replace(/ \(.*\)/g, '');
+		$('.list-selected.quality').text(quality+' ('+cur_quality+')');
+	}
 }
 
 function Danmaku_Animation(index) {
 	var player_canvas = document.getElementById("player-canvas");
 	var lTime = 0;
 	var ele = danmkau_elements[index];
-	var speed = (800 + ele['element'].offsetWidth)/10;
-	var existingTime = 5000;
+	var existingTime = existing_time*1000;
+	console.log(existing_time)
 	var type = ele['type'];
+	var offsetWidth = ele['element'].offsetWidth;
 
 	this.startAnimation = function() {
 		lTime = Date.now();
 		if (type === 'RightToLeft') {
 			requestAnimationFrame(float_update);
 		} else if (type === 'Top' || type === 'Bottom') {
-			ele['posX'] = (player_canvas.offsetWidth - ele['element'].offsetWidth)/2 + ele['element'].offsetWidth;
+			ele['posX'] = (player_width - offsetWidth)/2 + offsetWidth;
 			ele['element'].style.WebkitTransform = "translate(-"+ele['posX']+"px, "+ele['posY']+"px)";
 			ele['element'].style.msTransform = "translate(-"+ele['posX']+"px, "+ele['posY']+"px)";
 			ele['element'].style.transform = "translate(-"+ele['posX']+"px, "+ele['posY']+"px)";
@@ -404,6 +370,7 @@ function Danmaku_Animation(index) {
 	function float_update() {
 		var curTime = Date.now();
 		var deltaTime = curTime - lTime;
+		var speed = (100*danmaku_speed + 400 + offsetWidth)/10;
 		lTime = curTime;
 		if (isPlaying) {
 			ele['posX'] += speed*deltaTime/1000;
@@ -413,14 +380,14 @@ function Danmaku_Animation(index) {
 		}
 		
 		// console.log(index+' '+percent)
-		if (ele['generating'] && (ele['clear_request'] || ele['posX'] > ele['element'].offsetWidth + 20)) {
+		if (ele['generating'] && (ele['clear_request'] || ele['posX'] > offsetWidth + 20)) {
 			ele['generating'] = false;
 			for (var j = ele['posY']; j < ele['element'].offsetHeight + ele['posY']; j++) {
 				occupation_normal[j] -= 1;
 			}
 		}
 
-		if (!ele['clear_request'] && ele['posX'] < ele['element'].offsetWidth + player_canvas.offsetWidth + 10) {
+		if (!ele['clear_request'] && ele['posX'] < offsetWidth + player_width + 10) {
 			requestAnimationFrame(float_update);
 		} else {
 			ele['element'].style.WebkitTransform = "translate(-"+0+"px, "+ele['posY']+"px)";
@@ -466,16 +433,6 @@ function danmaku_clear_request() {
 		var ele = danmkau_elements[i];
 		if (!ele['idle']) {
 			ele['clear_request'] = true;
-		}
-	}
-}
-
-function change_danmaku_opacity(opacity) {
-	if (danmaku_opacity != opacity) {
-		danmaku_opacity = opacity;
-		for (var i = 0; i < danmkau_elements.length; i++) {
-			var ele = danmkau_elements[i];
-			ele['element'].style.opacity = opacity;
 		}
 	}
 }
@@ -546,7 +503,7 @@ function danmaku_update() {
 		}
 	}
 	
-	for (var i = 0; i < danmkau_elements.length; i++) {
+	for (var i = 0; i < max_danmaku; i++) {
 		var ele = danmkau_elements[i];
 		if (!ele['idle']) continue;
 
@@ -558,7 +515,19 @@ function danmaku_update() {
 		ele['element'].lastChild.nodeValue = danmaku[danmaku_pointer].content;
 		ele['color'] = '#'+('000000'+danmaku[danmaku_pointer].color.toString(16)).substr(-6);
 		ele['element'].style.color = ele['color'];
-		ele['element'].style.fontSize = danmaku[danmaku_pointer].size+'px';
+		var b = danmaku[danmaku_pointer].color%256;
+		var g = Math.floor(danmaku[danmaku_pointer].color/256)%256;
+		var r = Math.floor(danmaku[danmaku_pointer].color/256/256)%256;
+		var grey = Math.floor((r+g+b)/3);
+		var reverse_color = 0;
+		if (grey < 50) {
+			reverse_color = 'rgb(255, 255, 255)';
+		} else {
+			reverse_color = 'rgb(0, 0, 0)';
+		}
+		ele['element'].style.textShadow = '1px 0 1px '+reverse_color+', -1px 0 1px '+reverse_color+', 0 1px 1px '+reverse_color+', 0 -1px 1px '+reverse_color;
+		ele['element'].style.fontSize = danmaku[danmaku_pointer].size*danmaku_scale/3+'px';
+		ele['element'].style.fontFamily = danmaku_font;
 		ele['type'] = danmaku[danmaku_pointer].type;
 		danmaku_pointer++;
 		// ele['element'].lastChild.nodeValue = secondsToTime(danmaku[danmaku_pointer].timestamp);
@@ -577,10 +546,10 @@ function danmaku_update() {
 			occupation = occupation_top;
 		} 
 		accumulate[0] = 0;
-		for (var z = 0; z < ele['element'].offsetHeight && z < player_canvas.offsetHeight; z++) {
+		for (var z = 0; z < ele['element'].offsetHeight && z < player_height; z++) {
 			accumulate[0] += occupation[z];
 		}
-		for (var j = 1; j < player_canvas.offsetHeight - ele['element'].offsetHeight + 1; j++) {
+		for (var j = 1; j < player_height - ele['element'].offsetHeight + 1; j++) {
 			accumulate[j] = accumulate[j-1];
 			accumulate[j] -= occupation[j-1];
 			accumulate[j] += occupation[j+ele['element'].offsetHeight-1];
@@ -588,7 +557,7 @@ function danmaku_update() {
 
 		var min_value = 2000000;
 		var min_line = 0;
-		for (var j = 0; j < player_canvas.offsetHeight - ele['element'].offsetHeight + 1; j++) {
+		for (var j = 0; j < player_height - ele['element'].offsetHeight + 1; j++) {
 			if ((ele['type'] === 'Bottom' && accumulate[j] <= min_value)
 				|| (ele['type'] != 'Bottom' && accumulate[j] < min_value)) {
 				min_value = accumulate[j];
@@ -607,10 +576,54 @@ function danmaku_update() {
 	lastTime = curTime;
 }
 
-$(document).ready(function() {
-	var max = 60;
+function onPlayerReady(event) {
+	var progress_number = document.getElementById("progress-number");
+	progress_number.lastChild.nodeValue = "00:00"+"/"+secondsToTime(player.getDuration());
+	setInterval(buffer_update, 500);
+	buffer_update();
+	progress_update();
+
+	var arguments = document.URL.split('?')[1]
+	if (arguments) {
+		arguments = arguments.split('&');
+		for (var i = 0; i < arguments.length; i++) {
+			if (arguments[i].indexOf('timestamp') > -1) {
+				var timestamp = parseFloat(arguments[i].substr(10));
+				player.seekTo(timestamp, true);
+			}
+		}
+	}
+
+	var volume = getCookie('player_volume');
+	if (!volume) {
+		player.setVolume(50);
+		setCookie('player_volume', 50);
+	} else {
+		volume = parseInt(volume);
+		player.setVolume(volume);
+		// var volume_bar = document.getElementById("volume-bar");
+		var volume_magnitude = document.getElementById("volume-magnitude");
+		var len = 50*volume/100;
+		volume_magnitude.style.height = len + "px";
+		var volume_pointer = document.getElementById("volume-pointer");
+		volume_pointer.style.WebkitTransform = "translateY(-"+len+"px)";
+		volume_pointer.style.msTransform = "translateY(-"+len+"px)";
+		volume_pointer.style.transform = "translateY(-"+len+"px)";
+		var volume_tip = document.getElementById("volume-tip");
+		volume_tip.style.WebkitTransform = "translateY(-"+len+"px)";
+		volume_tip.style.msTransform = "translateY(-"+len+"px)";
+		volume_tip.style.transform = "translateY(-"+len+"px)";
+		var text;
+		if (Math.floor(len/50*100) < 10) {
+			text = "0"+Math.floor(len/50*100);
+		} else {
+			text = Math.floor(len/50*100);
+		}
+		volume_tip.lastChild.nodeValue = text;
+	}
+
 	var player_canvas = document.getElementById("player-canvas");
-	for (var i = 0; i < max; i++) {
+	for (var i = 0; i < 120; i++) {
 		var bul = document.createElement('div');
 		bul.setAttribute('class', 'danmaku');
 		var text = document.createTextNode('sdfsdfs');
@@ -652,9 +665,6 @@ $(document).ready(function() {
 	var danmaku_button = document.getElementById("danmaku-switch");
 	danmaku_button.addEventListener("click", danmaku_switch);
 
-	var loop_button = document.getElementById("loop-switch");
-	loop_button.addEventListener("click", loop_switch);
-
 	var wide_button = document.getElementById("wide-screen");
 	wide_button.addEventListener("click", widescreen_switch);
 
@@ -691,7 +701,9 @@ $(document).ready(function() {
 			pointer.style.WebkitTransform = "translateX(-"+offset+"px)";
 			pointer.style.msTransform = "translateX(-"+offset+"px)";
 			pointer.style.transform = "translateX(-"+offset+"px)";
-			change_danmaku_opacity(opacity);
+			if (danmaku_opacity != opacity) {
+				$('div.danmaku').css('opacity', opacity);
+			}
 		}
 	}
 	$('#opacity-indicator').mousedown(function(evt) {
@@ -710,7 +722,9 @@ $(document).ready(function() {
 			pointer.style.msTransform = "translateX(-"+offset+"px)";
 			pointer.style.transform = "translateX(-"+offset+"px)";
 			var opacity = 1 - offset/indicator.offsetWidth;
-			change_danmaku_opacity(opacity);
+			if (danmaku_opacity != opacity) {
+				$('div.danmaku').css('opacity', opacity);
+			}
 			setCookie('danmaku_opacity', opacity, 0);
 		}
 		var stop_move = function() {
@@ -744,7 +758,219 @@ $(document).ready(function() {
 			change_show_colored_danmaku(false);
 		}
 	});
-});
+
+	$('#loop-switch').click(function() {
+		if (isLoop == false) {
+			isLoop = true;
+		} else {
+			isLoop = false;
+		}
+	});
+
+	{
+		var cookie_str = getCookie('danmaku_font');
+		if (cookie_str) danmaku_font = cookie_str;
+		$('.list-option.font.active').removeClass('active');
+		var font_list = $('.list-option.font');
+		for (var i = 0; i < font_list.length; i++) {
+			if ($(font_list[i]).text() === danmaku_font) {
+				$(font_list[i]).addClass('active');
+				break;
+			}
+		}
+		$('.list-selected.font').text(danmaku_font);
+	}
+	$('.setting-reset-button.font').click(function() {
+		danmaku_font = ori_danmaku_font;
+		setCookie('danmaku_font', danmaku_font, 0);
+		$('.list-option.font.active').removeClass('active');
+		var font_list = $('.list-option.font');
+		for (var i = 0; i < font_list.length; i++) {
+			if ($(font_list[i]).text() === danmaku_font) {
+				$(font_list[i]).addClass('active');
+				break;
+			}
+		}
+		$('.list-selected.font').text(danmaku_font);
+	});
+
+	$(document).click(function() {
+		$('.list-selection').addClass('hidden');
+	});
+	$('.list-selected').click(function(evt) {
+		evt.stopPropagation();
+        var list = $(this).siblings('.list-selection');
+        if (list.hasClass('hidden')) {
+        	$('.list-selection').addClass('hidden');
+            list.removeClass('hidden');
+        } else {
+            list.addClass('hidden');
+        }
+    });
+    $('.list-option').click(function(evt) {
+    	evt.stopPropagation();
+    	if ($(this).hasClass('quality')) {
+    		player.setPlaybackQuality(quality_local2youtube($(this).text()));
+    	} else if ($(this).hasClass('speed')) {
+    		player.setPlaybackRate(parseFloat($(this).text()));
+    	} else if ($(this).hasClass('font')) {
+    		danmaku_font = $(this).text();
+    		setCookie('danmaku_font', danmaku_font, 0);
+    	}
+
+        var selection = $(this).parent();
+        selection.siblings('.list-selected').text($(this).text());
+        $(this).siblings().removeClass('active');
+        $(this).addClass('active');
+        selection.addClass('hidden');
+    });
+
+    $('.danmaku-pool-setting').click(function() {
+    	if ($(this).hasClass('player')) {
+    		$('.player-full-setting.player').removeClass('hidden');
+    	} else if ($(this).hasClass('block')) {
+    		$('.player-full-setting.block').removeClass('hidden');
+    	} else if ($(this).hasClass('advanced')) {
+    		$('.player-full-setting.advanced').removeClass('hidden');
+    	}
+    });
+    $('.player-setting-go-back').click(function() {
+    	$(this).parent().parent().addClass('hidden');
+    });
+
+    $('.number-adjust-bar').each(function() {
+    	var bar = $(this)[0];
+    	var offset = 0;
+    	if ($(bar).hasClass('speed')) {
+    		var cookie_str = getCookie('danmaku_speed');
+    		if (cookie_str) danmaku_speed = parseInt(cookie_str);
+			$(bar).prev().text(danmaku_speed);
+			offset = (1 - (danmaku_speed - 1)/7)*300;
+		} else if ($(bar).hasClass('danmaku-num')) {
+			var cookie_str = getCookie('max_danmaku');
+    		if (cookie_str) max_danmaku = parseInt(cookie_str);
+			$(bar).prev().text(max_danmaku);
+			offset = (1 - (max_danmaku - 10)/110)*300;
+		} else if ($(bar).hasClass('scale')) {
+			var cookie_str = getCookie('danmaku_scale');
+    		if (cookie_str) danmaku_scale = parseInt(cookie_str);
+			$(bar).prev().text(danmaku_scale);
+			offset = (1 - (danmaku_scale - 1)/4)*300;
+		} else if ($(bar).hasClass('time')) {
+			var cookie_str = getCookie('existing_time');
+    		if (cookie_str) existing_time = parseInt(cookie_str);
+			$(bar).prev().text(existing_time);
+			offset = (1 - (existing_time - 3)/5)*300;
+		}
+		var pointer = $(bar).children('.number-adjust-pointer')[0];
+		pointer.style.WebkitTransform = "translateX(-"+offset+"px)";
+		pointer.style.msTransform = "translateX(-"+offset+"px)";
+		pointer.style.transform = "translateX(-"+offset+"px)";
+    });
+    $('.number-adjust-bar').mousedown(function() {
+    	var bar = $(this)[0];
+    	var move_pointer = function(evt) {
+			var rect = bar.getBoundingClientRect();
+			var offset = rect.right - evt.clientX;
+			if (offset < 0) {
+				offset = 0;
+			}
+			if (offset > bar.offsetWidth) {
+				offset = bar.offsetWidth;
+			}
+			var pointer = $(bar).children('.number-adjust-pointer')[0];
+			pointer.style.WebkitTransform = "translateX(-"+offset+"px)";
+			pointer.style.msTransform = "translateX(-"+offset+"px)";
+			pointer.style.transform = "translateX(-"+offset+"px)";
+			if ($(bar).hasClass('speed')) {
+				danmaku_speed = Math.round((1 - offset/bar.offsetWidth)*7 + 1);
+				$(bar).prev().text(danmaku_speed);
+				setCookie('danmaku_speed', danmaku_speed, 0);
+			} else if ($(bar).hasClass('danmaku-num')) {
+				max_danmaku = Math.round((1 - offset/bar.offsetWidth)*110 + 10);
+				$(bar).prev().text(max_danmaku);
+				setCookie('max_danmaku', max_danmaku, 0);
+			} else if ($(bar).hasClass('scale')) {
+				danmaku_scale = Math.round((1 - offset/bar.offsetWidth)*4 + 1);
+				$(bar).prev().text(danmaku_scale);
+				setCookie('danmaku_scale', danmaku_scale, 0);
+			} else if ($(bar).hasClass('time')) {
+				existing_time = Math.round((1 - offset/bar.offsetWidth)*5 + 3);
+				$(bar).prev().text(existing_time);
+				setCookie('existing_time', existing_time, 0);
+			}
+		}
+    	var stop_move = function() {
+			$(document).off('mousemove', move_pointer);
+			$(document).off('mouseup', stop_move);
+			// $(document).off('mouseout', stop_move);
+		}
+		$(document).mousemove(move_pointer);
+		$(document).mouseup(stop_move);
+		// $(document).mouseout(stop_move);
+    });
+	$('.setting-reset-button.number').click(function() {
+		var bar = $(this).prev()[0];
+    	var offset = 0;
+    	if ($(bar).hasClass('speed')) {
+    		danmaku_speed = ori_danmaku_speed;
+			$(bar).prev().text(danmaku_speed);
+			offset = (1 - (danmaku_speed - 1)/7)*bar.offsetWidth;
+			setCookie('danmaku_speed', danmaku_speed, 0);
+		} else if ($(bar).hasClass('danmaku-num')) {
+			max_danmaku = ori_max_danmaku;
+			$(bar).prev().text(max_danmaku);
+			offset = (1 - (max_danmaku - 10)/110)*bar.offsetWidth;
+			setCookie('max_danmaku', max_danmaku, 0);
+		} else if ($(bar).hasClass('scale')) {
+			danmaku_scale = ori_danmaku_scale;
+			$(bar).prev().text(danmaku_scale);
+			offset = (1 - (danmaku_scale - 1)/4)*bar.offsetWidth;
+			setCookie('danmaku_scale', danmaku_scale, 0);
+		} else if ($(bar).hasClass('time')) {
+			existing_time = ori_existing_time;
+			$(bar).prev().text(existing_time);
+			offset = (1 - (existing_time - 3)/5)*bar.offsetWidth;
+			setCookie('existing_time', existing_time, 0);
+		}
+		var pointer = $(bar).children('.number-adjust-pointer')[0];
+		pointer.style.WebkitTransform = "translateX(-"+offset+"px)";
+		pointer.style.msTransform = "translateX(-"+offset+"px)";
+		pointer.style.transform = "translateX(-"+offset+"px)";
+	});
+}
+
+function quality_youtube2local(quality) {
+	if (quality === 'small') {
+		return '240p';
+	} else if (quality === 'medium') {
+		return '360p';
+	} else if (quality === 'large') {
+		return '480p';
+	} else if (quality === 'hd720') {
+		return '720p';
+	} else if (quality === 'hd1080') {
+		return '1080p';
+	} else if (quality === 'auto') {
+		return 'Auto';
+	}
+}
+
+function quality_local2youtube(quality) {
+	if (quality === '240p') {
+		return 'small';
+	} else if (quality === '360p') {
+		return 'medium';
+	} else if (quality === '480p') {
+		return 'large';
+	} else if (quality === '720p') {
+		return 'hd720';
+	} else if (quality === '1080p') {
+		return 'hd1080';
+	} else if (quality === 'Auto') {
+		return 'auto';
+	}
+}
 
 function time_order_change(evt) {
 	var time_title = document.getElementById("time");
@@ -811,11 +1037,7 @@ function secondsToTime(secs)
 	} else {
 		curTime = ""+Math.floor(secs/60);
 	}
-	if (Math.floor(secs%60) < 10) {
-		curTime += ":0"+Math.floor(secs%60);
-	} else {
-		curTime += ":"+Math.floor(secs%60);
-	}
+	curTime += ":"+("0"+Math.floor(secs%60)).substr(-2);
 	return curTime;
 }
 
@@ -855,27 +1077,21 @@ function generate_danmaku_pool_list() {
 
 	for (var i = 0; i < danmaku_list.length; i++) {
 		var per_container = document.createElement('div');
-		per_container.className = "per-bullet container";
+		per_container.className = "per-bullet";
 
 		var time_value = document.createElement('div');
 		time_value.className = "bullet-time-value";
 		time_value.appendChild(document.createTextNode(secondsToTime(danmaku_list[i].timestamp)));
-		var padding1 = document.createElement('div');
-		padding1.className = "space-padding";
 		var content_value = document.createElement('div');
 		content_value.className = "bullet-content-value";
 		content_value.title = danmaku_list[i].content;
 		content_value.appendChild(document.createTextNode(danmaku_list[i].content));
-		var padding2 = document.createElement('div');
-		padding2.className = "space-padding";
 		var date_value = document.createElement('div');
 		date_value.className = "bullet-date-value";
 		date_value.appendChild(document.createTextNode(danmaku_list[i].created));
 		
 		per_container.appendChild(time_value);
-		per_container.appendChild(padding1);
 		per_container.appendChild(content_value);
-		per_container.appendChild(padding2);
 		per_container.appendChild(date_value);
 		listNode.appendChild(per_container);
 	}
@@ -975,7 +1191,6 @@ $(document).ready(function() {
 		};
 		$(document).mousedown(hide_type_box);
 	});
-
 	$('#danmaku-type-box').mousedown(function(evt) {
 		evt.stopPropagation();
 	});
@@ -1046,7 +1261,7 @@ $(document).ready(function() {
 		if (!player) {
 			return false;
 		}
-		
+
 		var button = document.querySelector('#fire-button');
 		button.disabled = true;
 
@@ -1080,9 +1295,7 @@ $(document).ready(function() {
 					result.timestamp = player.getCurrentTime() + 0.05;
 					$('#danmaku-list').append('<div class="per-bullet container">\
 						<div class="bullet-time-value">' + secondsToTime(result.timestamp) + '</div>\
-						<div class="space-padding"></div>\
 						<div class="bullet-content-value" title="' + result.content + '">' + result.content + '</div>\
-						<div class="space-padding"></div>\
 						<div class="bullet-date-value">' + result.created + '</div></div>');
 					danmaku_list.push(result);
 					danmaku.push(result);
@@ -1351,6 +1564,33 @@ $(document).ready(function() {
 			update_comments(Math.ceil(rev/20), video_id);
 		}
 	}
+
+	$('#add-rule-form').submit(function(evt) {
+		var block_type = $('.list-selected.block').text();
+		var block_content = $('.block-condition-input').val();
+		if (!block_content) return false;
+
+		$('.block-list').append('<div class="block-rule-entry">\
+          <div class="block-rule rule-type">' + block_type + '</div>\
+          <div class="block-rule rule-content" title="' + block_content + '">' + block_content + '</div>\
+          <div class="block-rule rule-status">On</div>\
+          <div class="block-rule rule-delete"></div>\
+        </div>');
+        $('.block-condition-input').val('');
+		return false;
+	});
+	$('.block-list').on('click', '.block-rule.rule-status', function() {
+		if ($(this).hasClass('off')) {
+			$(this).removeClass('off');
+			$(this).text('On');
+		} else {
+			$(this).addClass('off');
+			$(this).text('Off');
+		}
+	});
+	$('.block-list').on('click', '.block-rule.rule-delete', function() {
+		$(this).parent().remove();
+	});
 });
 
 function update_comments(page, video_id) {

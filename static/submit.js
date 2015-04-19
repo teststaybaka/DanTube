@@ -1,14 +1,14 @@
 video_part_line_html = '<div class="video-part-line">\
             <div class="video-part-drag-wrapper" ondragstart="return false;" ondrop="return false;">\
                 <div class="video-part-error">Title too long.</div>\
-                <input type="text" class="title-input normal-input" placeholder="Optional title" name="sub-title[]">\
+                <input type="text" class="title-input normal-input" placeholder="Optional title" name="sub-title[]" tabindex="1">\
                 <div class="video-part-error">Title too long.</div>\
-                <textarea class="intro-input normal-input" placeholder="Optional sub-introduction" name="sub-intro[]"></textarea>\
-                <select class="source-select">\
+                <textarea class="intro-input normal-input" placeholder="Optional sub-introduction" name="sub-intro[]" tabindex="1"></textarea>\
+                <select class="source-select" tabindex="1">\
                     <option>YouTube</option>\
                 </select>\
                 <div class="video-part-error">Title too long.</div>\
-                <input type="text" class="url-input normal-input" name="video-url[]" placeholder="e,g., youtube.com/watch?v=8NNTvx5eoXE">\
+                <input type="text" class="url-input normal-input" name="video-url[]" placeholder="e,g., youtube.com/watch?v=8NNTvx5eoXE" tabindex="1">\
                 <div class="video-part-delete" title="Remove"></div>\
                 <input class="hidden" type="text" name="index[]" value="-1">\
             </div>\

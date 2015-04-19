@@ -40,13 +40,12 @@ input.checkbox {
   position: relative;
   top: 2px;
   cursor: pointer;
-  display: inline-block;
 }
 
 label.check-label {
   cursor: pointer;
-  width: 130px;
-  margin-bottom: 10px;
+  width: 110px;
+  font-size: 14px;
 }
 
 input.inputtext, input.inputpassword {
