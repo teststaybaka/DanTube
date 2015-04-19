@@ -116,6 +116,13 @@ indexes:
   properties:
   - name: category
   - name: subcategory
+  - name: hits
+    direction: desc
+
+- kind: Video
+  properties:
+  - name: category
+  - name: subcategory
   - name: hot_score
     direction: desc
 
@@ -124,13 +131,6 @@ indexes:
   - name: category
   - name: subcategory
   - name: last_updated
-    direction: desc
-
-- kind: Video
-  properties:
-  - name: category
-  - name: subcategory
-  - name: hits
     direction: desc
 
 - kind: Video

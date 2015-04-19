@@ -991,11 +991,14 @@ div.danmaku-order-title.down:after {
 div.per-bullet {
 	color: rgb(120,120,120);
 	text-align: left;
-	/*display: inline-block;*/
 	padding: 0;
 	margin: 0;
 	width: 100%;
 	font-size: 0;
+}
+
+div.per-bullet.blocked {
+	color: rgb(200,200,200);
 }
 
 div.per-bullet:hover {
