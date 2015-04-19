@@ -938,6 +938,33 @@ function onPlayerReady(event) {
 		pointer.style.msTransform = "translateX(-"+offset+"px)";
 		pointer.style.transform = "translateX(-"+offset+"px)";
 	});
+
+	$('#add-rule-form').submit(function(evt) {
+		var block_type = $('.list-selected.block').text();
+		var block_content = $('.block-condition-input').val();
+		if (!block_content) return false;
+
+		$('.block-list').append('<div class="block-rule-entry">\
+          <div class="block-rule rule-type">' + block_type + '</div>\
+          <div class="block-rule rule-content" title="' + block_content + '">' + block_content + '</div>\
+          <div class="block-rule rule-status">On</div>\
+          <div class="block-rule rule-delete"></div>\
+        </div>');
+        $('.block-condition-input').val('');
+		return false;
+	});
+	$('.block-list').on('click', '.block-rule.rule-status', function() {
+		if ($(this).hasClass('off')) {
+			$(this).removeClass('off');
+			$(this).text('On');
+		} else {
+			$(this).addClass('off');
+			$(this).text('Off');
+		}
+	});
+	$('.block-list').on('click', '.block-rule.rule-delete', function() {
+		$(this).parent().remove();
+	});
 }
 
 function quality_youtube2local(quality) {
@@ -1565,31 +1592,42 @@ $(document).ready(function() {
 		}
 	}
 
-	$('#add-rule-form').submit(function(evt) {
-		var block_type = $('.list-selected.block').text();
-		var block_content = $('.block-condition-input').val();
-		if (!block_content) return false;
+	$('#report-button').click(function() {
+		$('#report-box').addClass('show');
+	});
+	$('#report-dismiss').click(function() {
+		$('#report-box').removeClass('show');	
+	});
+	$('#report-submission-form').submit(function(evt) {
+		var button = document.querySelector('input#submit-report');
+		button.disabled = true;
 
-		$('.block-list').append('<div class="block-rule-entry">\
-          <div class="block-rule rule-type">' + block_type + '</div>\
-          <div class="block-rule rule-content" title="' + block_content + '">' + block_content + '</div>\
-          <div class="block-rule rule-status">On</div>\
-          <div class="block-rule rule-delete"></div>\
-        </div>');
-        $('.block-condition-input').val('');
+		$.ajax({
+		  type: "POST",
+		  url: evt.target.action,
+		  data: $('#report-submission-form').serialize(),
+		  success: function(result) {
+		    console.log(result);
+		    if(result.error) {
+		      pop_ajax_message(result.message, 'error');
+		    } else {
+		      pop_ajax_message(result.message, 'success');
+		      $('#report-submission-form')[0].reset();
+		      setTimeout(function(){
+		        $('#report-box').removeClass('show');
+		        button.disabled = false;
+		      }, 3000);
+		    }
+		    button.disabled = false;
+		  },
+		  error: function (xhr, ajaxOptions, thrownError) {
+		    console.log(xhr.status);
+		    console.log(thrownError);
+		    button.disabled = false;
+		    pop_ajax_message(xhr.status+' '+thrownError, 'error');
+		  }
+		});
 		return false;
-	});
-	$('.block-list').on('click', '.block-rule.rule-status', function() {
-		if ($(this).hasClass('off')) {
-			$(this).removeClass('off');
-			$(this).text('On');
-		} else {
-			$(this).addClass('off');
-			$(this).text('Off');
-		}
-	});
-	$('.block-list').on('click', '.block-rule.rule-delete', function() {
-		$(this).parent().remove();
 	});
 });
 

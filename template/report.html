@@ -1,0 +1,44 @@
+{% extends "template/account.html" %}
+{% block head %}
+{{ super() }}
+<link href="/static/report.css" rel="stylesheet" type="text/css">
+<script src="/static/report.js" language="JavaScript" type="text/javascript"></script>
+{% endblock %}
+
+{% block overview_active %}{% endblock %}
+{% block report_active %}active{% endblock %}
+
+{% block topTitle %}
+<a class="top-title active" href="{{ uri_for('report') }}">
+    <div class="top-title-dot"></div>
+    Report
+</a>
+{% endblock %}
+
+{% block detail %}
+<form class="change" id="report-submission-form" method="post" action="{{ uri_for('report') }}">
+    <div class="input-line">
+          <label for="video-id" class="form-label">Video ID:</label>
+          <input type="text" id="video-id" class="normal-input" name="vid" tabindex="1" placeholder="Video ID">
+          <div class="input-error" id="video-id-error">Please.</div>
+    </div>
+    <div id="video-detail"></div>
+    <div class="input-line">
+        <label class="form-label">Issue:</label>
+        <select name="issue"  id="report-issue">
+          {% for key in issues %}
+            <option value="{{ key }}">{{ key }}</option>
+          {% endfor %}
+        </select>
+    </div>
+    <div class="input-line">
+        <label for="report-details" class="form-label">Details(optional):</label>
+        <textarea class="normal normal-input" id="report-details" class="normal-input" name="details" tabindex="1" placeholder="Optional details" maxlength="2000"></textarea>
+        <div class="input-error" id="report-details-error">Please.</div>
+    </div>
+    <div>
+        <input class="save_change-button" type="submit" value="Report" />
+        <div id="change-applying"></div>
+    </div>
+</form>
+{% endblock %}

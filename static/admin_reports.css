@@ -1,0 +1,23 @@
+th.th-video-id {
+  width: 12%;
+}
+
+th.th-video-title {
+  width: 22%;
+}
+
+th.th-issue {
+  width: 25%;
+}
+
+th.th-created {
+  width: 18%;
+}
+
+th.th-reporter {
+  width: 13%;
+}
+
+th.th-status {
+  width: 10%;
+}

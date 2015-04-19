@@ -615,6 +615,7 @@ class Video(ndb.Model):
     basic_info = {
       'title': self.title,
       'url': '/video/'+ str(self.key.id()),
+      'id': str(self.key.id()),
       'id_num': self.key.id().replace('dt', ''),
       'thumbnail_url': thumbnail_url,
       'thumbnail_url_hq': thumbnail_url_hq,
@@ -893,3 +894,26 @@ class ActivityRecord(ndb.Model):
   video = ndb.KeyProperty(kind='Video', required=True, indexed=False)
   clip_index = ndb.IntegerProperty(indexed=False)
   public = ndb.BooleanProperty(required=True, default=True)
+
+Feedback_Category = ['bug', 'suggestion', 'other']
+class Feedback(ndb.Model):
+  category = ndb.StringProperty(required=True, choices=Feedback_Category)
+  subject = ndb.StringProperty(required=True, indexed=False)
+  description = ndb.TextProperty(required=True, indexed=False)
+  created = ndb.DateTimeProperty(auto_now_add=True)
+  processed = ndb.BooleanProperty(required=True, default=False)
+  anonymous = ndb.BooleanProperty(required=True, indexed=False)
+  sender_nickname = ndb.StringProperty(indexed=False)
+  sender = ndb.KeyProperty(kind='User', indexed=False)
+
+Report_Issues = ['Sexual content', 'Violent or repulsive content', 'Hateful or abusive content', 'Others']
+class Report(ndb.Model):
+  video = ndb.KeyProperty(kind='Video', required=True)
+  video_id = ndb.StringProperty(required=True)
+  video_title = ndb.StringProperty(required=True, indexed=False)
+  issue = ndb.StringProperty(required=True, choices=Report_Issues)
+  details = ndb.TextProperty(indexed=False)
+  created = ndb.DateTimeProperty(auto_now_add=True)
+  processed = ndb.BooleanProperty(required=True, default=False)
+  reporter_nickname = ndb.StringProperty(required=True, indexed=False)
+  reporter = ndb.KeyProperty(required=True, kind='User', indexed=False)

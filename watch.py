@@ -67,6 +67,7 @@ class Video(BaseHandler):
         
         uploader = video.uploader.get()
         context = {'video': video_info, 'uploader': uploader.get_public_info(user), 'playlist': playlist_info}
+        context['report_issues'] = models.Report_Issues
         self.render('video', context)
 
 def assemble_link(temp, add_link, users):
