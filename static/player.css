@@ -10,12 +10,6 @@ div.danmaku {
     text-shadow: 0 2px 6px rgb(50,50,50);
     white-space: nowrap;
     will-change: transform, -ms-transform, -webkit-transform, opacity;
-    /*pointer-events: none;*/
-}
-
-div.danmaku:active {
-	background-color: red;
-	/*transform: translateX(500px);*/
 }
 
 #player-container {
@@ -24,7 +18,7 @@ div.danmaku:active {
 }
 
 #player-controller {
-	display: inline-table;
+	display: inline-block;
 	float: left;
 	width: 640px;
 }
@@ -43,19 +37,25 @@ div.danmaku:active {
 	background-color: black;
 }
 
-#player-mask {
-	width: 100%;
-	height: 100%;
+#switch-count-down {
 	position: absolute;
-	top: 0;
 	left: 0;
+	bottom: 0;
+	z-index: 1;
+	color: white;
+	font-size: 14px;
+	border-radius: 3px;
+	padding: 7px 12px;
+	background-color: rgba(80,80,80,.5);
+}
+
+#switch-cancel {
+	margin-left: 10px;
 	cursor: pointer;
 }
 
-#top-padding, #bottom-padding {
-	width: 640px;
-	height: 108px;
-	background-color: black;
+#switch-cancel:hover {
+	color: rgb(0,140,255);
 }
 
 #controller-background {
@@ -66,6 +66,7 @@ div.danmaku:active {
 #controller {
 	height: 25px;
 	background-color: white;
+	font-size: 0;
 }
 
 #play-pause-button.play, #play-pause-button.pause {
@@ -441,6 +442,7 @@ div.danmaku:active {
 	display: inline-block;
 	text-align: right;
 	font-size: 14px;
+	vertical-align: middle;
 }
 
 .checkbox-selection {
@@ -451,6 +453,7 @@ div.danmaku:active {
 	-moz-border-radius: 3px;
 	border: 1px solid rgb(200,200,200);
 	cursor: pointer;
+	vertical-align: middle;
 }
 
 .checkbox-option {
@@ -491,10 +494,13 @@ div.danmaku:active {
 
 .list-option {
 	font-size: 12px;
-	width: 95px;
+	width: 85px;
 	line-height: 14px;
-	padding: 5px 0 5px 8px;
+	padding: 5px 8px 5px 8px;
 	cursor: pointer;
+	overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .list-option:hover {
@@ -509,12 +515,16 @@ div.danmaku:active {
 	font-size: 12px;
 	display: inline-block;
 	border: 1px solid rgb(200,200,200);
-	width: 95px;
+	width: 85px;
 	line-height: 14px;
-	padding: 4px 0 4px 8px;
+	padding: 4px 8px 4px 8px;
 	background-color: white;
 	cursor: pointer;
 	position: relative;
+	overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    vertical-align: middle;
 }
 
 .list-selected:hover {
@@ -644,6 +654,7 @@ div.player-button.off:hover div.button-tip.off {
 #shooter {
 	height: 25px;
 	border-top: 1px solid rgb(200, 200, 200);
+	font-size: 0;
 }
 
 #danmaku-form {
@@ -859,19 +870,30 @@ div.danmaku-type-text {
 	background-color: white;
 	color: rgb(80,80,80);
 	position: relative;
-	font-size: 14px;
+	font-size: 0;
 }
 
 .danmaku-pool-info {
 	border-bottom: 1px solid rgb(200,200,200);
-	display: table;
+}
+
+.video-source-icon {
+	width: 58px;
+	height: 58px;
+	display: inline-block;
+	vertical-align: top;
+	border-right: 1px solid rgb(200,200,200);
+	background-image: url("/static/img/video-source.png");
+	background-position: 0 0;
+	background-repeat: no-repeat;
 }
 
 .danmaku-info-box-left {
-	width: 180px;
+	width: 163px;
 	display: inline-block;
 	padding: 5px 0;
 	font-size: 16px;
+	line-height: 18px;
 	text-align: center;
 	border-right: 1px solid rgb(200,200,200);
 }
@@ -883,11 +905,12 @@ span.special-number {
 
 .dammaku-info-box-right {
 	display: inline-block;
-	width: 202px;
+	width: 160px;
 }
 
 .danmaku-pool-info-box {
 	padding: 5px;
+	font-size: 14px;
 }
 
 .danmaku-pool-info-box:last-child {
@@ -895,13 +918,16 @@ span.special-number {
 }
 
 span.info-title {
-	width: 89px;
+	width: 95px;
 	display: inline-block;
 }
 
 .video-full-settings {
-	display: table;
 	border-bottom: 2px solid rgb(200,200,200);
+}
+
+.danmaku-full-settings {
+	border-bottom: 1px solid rgb(200,200,200);
 }
 
 .danmaku-pool-setting {
@@ -911,6 +937,12 @@ span.info-title {
 	padding: 5px 0;
 	border-right: 1px solid rgb(200,200,200);
 	cursor: pointer;
+	font-size: 14px;
+	line-height: 16px;
+}
+
+.danmaku-pool-setting.unselected {
+	background-color: rgb(245,245,245);
 }
 
 .danmaku-pool-setting:last-child {
@@ -922,7 +954,6 @@ span.info-title {
 }
 
 .danmaku-orders {
-	display: table;
 	border-bottom: 1px solid rgb(220,220,220);
 }
 
@@ -962,6 +993,7 @@ div.danmaku-order-title.down:after {
 }
 
 #time {
+	font-size: 14px;
 	width: 60px;
 	-webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
 	-moz-box-sizing: border-box;    /* Firefox, other Gecko */
@@ -969,6 +1001,7 @@ div.danmaku-order-title.down:after {
 }
 
 #content {
+	font-size: 14px;
 	width: 204px;
 	-webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
 	-moz-box-sizing: border-box;    /* Firefox, other Gecko */
@@ -976,6 +1009,7 @@ div.danmaku-order-title.down:after {
 }
 
 #date {
+	font-size: 14px;
 	width: 119px;
 	-webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
 	-moz-box-sizing: border-box;    /* Firefox, other Gecko */
@@ -1056,6 +1090,11 @@ div.bullet-date-value {
     user-select: none;
 }
 
+.special-danmaku-setting {
+	position: absolute;
+	width: 100%;
+}
+
 .player-setting-title-line {
 	border-bottom: 2px solid rgb(200,200,200);
 }
@@ -1064,6 +1103,7 @@ div.bullet-date-value {
 	padding: 0 5px;
 	vertical-align: middle;
 	display: inline-block;
+	font-size: 14px;
 }
 
 .player-setting-go-back {
@@ -1092,6 +1132,11 @@ div.bullet-date-value {
 	margin: 10px 10px;
 }
 
+.player-setting-line.full label {
+	font-size: 14px;
+	vertical-align: middle;
+}
+
 .player-setting-label.full {
 	width: 100px;
 	text-align: left;
@@ -1108,6 +1153,7 @@ div.bullet-date-value {
 	width: 300px;
 	margin-right: 10px;
 	position: relative;
+	vertical-align: middle;
 }
 
 .number-adjust-pointer {
@@ -1148,6 +1194,7 @@ div.bullet-date-value {
 .block-condition-input {
 	margin-right: 5px;
 	width: 195px;
+	vertical-align: middle;
 }
 
 .inline-button.add-block {
@@ -1156,6 +1203,10 @@ div.bullet-date-value {
 	-moz-border-radius: 3px;
 	padding: 4px 11px;
 	margin: 0;
+	vertical-align: middle;
+	line-height: 16px;
+	width: 50px;
+	text-align: center;
 }
 
 .block-list-title-line {
@@ -1164,7 +1215,6 @@ div.bullet-date-value {
 	border-bottom: 1px solid rgb(220,220,220);
 	background-color: rgb(245,245,245);
 	width: 100%;
-	display: table;
 }
 
 .block-title {
@@ -1174,10 +1224,16 @@ div.bullet-date-value {
 
 .block-title.rule-type {
 	width: 66px;
+	font-size: 14px;
 }
 
 .block-title.rule-content {
 	width: 191px;
+	font-size: 14px;
+}
+
+.block-title.rule-status {
+	font-size: 14px;
 }
 
 .block-list {
@@ -1246,6 +1302,50 @@ div.bullet-date-value {
 .block-rule.rule-delete:hover {
 	background-position: 1px -930px;
 	background-color: rgb(255,122,91);
+}
+
+.css-customize-input {
+	resize: none;
+	width: 350px;
+	height: 200px;
+}
+
+.advanced-danmaku-label {
+	width: 85px;
+	display: inline-block;
+}
+
+.advanced-danmaku-label.long {
+	width: 95px;
+}
+
+.advanced-danmaku-input-box {
+	display: inline-block;
+	position: relative;
+	margin-right: 5px;
+	margin-left: 5px;
+	vertical-align: middle;
+}
+
+.advanced-danmaku-input {
+	padding: 0 15px 0 4px;
+	height: 20px;
+	border: 1px solid rgb(200,200,200);
+	box-shadow: inset 0px 1px 3px rgb(220,220,220);
+	width: 35px;
+	font-size: 12px;
+	margin-left: 5px;
+	vertical-align: middle;
+}
+
+.advanced-danmaku-input.long {
+	width: 55px;
+}
+
+.percentage-check.check-label {
+	margin: 0;
+	margin-left: 8px;
+	float: none;
 }
 
 #video-info-container {
@@ -1918,4 +2018,100 @@ input.checkbox {
 span.checklabel {
     vertical-align: top;
     color: rgb(100,100,100);
+}
+
+.special-danmaku-button.inline-button {
+	margin: 0;
+	width: 70px;
+	margin-top: 5px;
+	margin-left: 10px;
+	margin-right: 5px;
+	text-align: center;
+	font-weight: normal;
+	float: right;
+}
+
+input.subtitle-danmaku-input {
+	padding: 0 4px;
+	height: 22px;
+	width: 200px;
+	margin-left: 10px;
+	vertical-align: middle;
+}
+
+.subtitle-content-input {
+	resize: none;
+	width: 350px;
+	height: 300px;
+}
+
+.code-danmaku-output {
+	width: 350px;
+	height: 110px;
+	resize: none;
+}
+
+.code-danmaku-content-input {
+	width: 350px;
+	height: 180px;
+	resize: none;
+}
+
+.code-area-button {
+	margin-left: 20px;
+	cursor: pointer;
+}
+
+.number-input-arrow {
+	position: absolute;
+	right: 0;
+	width: 12px;
+	height: 9px;
+	border: 1px solid rgb(200,200,200);
+	background-color: white;
+}
+
+.number-input-arrow:after {
+	position: absolute;
+	content: "";
+	width: 0;
+	height: 0;
+	border-color: rgb(150,150,150);
+	border-style: solid;
+	border-right: 4px solid transparent;
+	border-left: 4px solid transparent;
+	right: 2px;
+	top: 3px;
+	pointer-events: none;
+}
+
+.number-input-arrow.up {
+	top: 0;
+}
+
+.number-input-arrow.down {
+	top: 50%;
+}
+
+.number-input-arrow.up:after {
+	border-top: 0;
+	border-bottom-width: 4px;
+}
+
+.number-input-arrow.down:after {
+	border-bottom: 0;
+	border-top-width: 4px;
+}
+
+.number-input-arrow:hover {
+	background-color: rgb(245,245,245);
+}
+
+.number-input-arrow:active {
+	background-color: rgb(100,100,100);
+}
+
+.number-input-arrow:active:after {
+	border-top-color: rgb(250,250,250);
+	border-bottom-color: rgb(250,250,250);
 }

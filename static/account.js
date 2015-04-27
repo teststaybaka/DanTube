@@ -101,10 +101,8 @@ $(document).ready(function() {
         var count = parseInt($(this).text());
         $(this).text(numberWithCommas(count));
         if (count == 0) count = 1;
-        var color = [220 - Math.log(count)/Math.log(100000000)*220, 9/10, 65/100];
-        if (color[0] < 0) color[0] = 0;
-        color = hsl2rgb(color);
-        $(this).css('color', 'rgb('+color[0]+','+color[1]+','+color[2]+ ')');
+        var color = [220 - Math.log(count)/Math.log(100000000)*220, 9*10, 65];
+        $(this).css('color', 'hsl('+color[0]+','+color[1]+'%,'+color[2]+ '%)');
     });
 
     $("#cur-password").focusout(function(evt) {

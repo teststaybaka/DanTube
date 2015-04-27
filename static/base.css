@@ -261,6 +261,7 @@ div.link:hover, a.link:hover {
 	box-sizing: border-box;
 	font-weight: bold;
 	font-size: 14px;
+    line-height: 16px;
 	word-wrap: break-word;
 }
 
@@ -273,6 +274,7 @@ div.link:hover, a.link:hover {
 #user-at, #user-notification, #user-message {
 	white-space: nowrap;
 	float: left;
+    line-height: 18px;
 	color: rgb(134,134,134);
 	padding-left: 22px;
 	margin-right: 18px;
@@ -412,6 +414,7 @@ a.navi-category-name {
 	padding: 10px 11px;
 	text-align: center;
 	cursor: pointer;
+    line-height: 18px;
 }
 
 #home-link {
@@ -422,6 +425,7 @@ a.navi-category-name {
 	display: inline-block;
 	padding-top: 10px;
 	padding-bottom: 10px;
+    line-height: 18px;
 }
 
 #home-link:hover {
@@ -430,7 +434,8 @@ a.navi-category-name {
 
 #search-form {
     float: right;
-    display: inline-table;
+    display: inline-block;
+    font-size: 0;
 }
 
 #search-input {
@@ -597,12 +602,12 @@ a.page-num.active {
 }
 
 #view-method div.selected, #action-select div.selected {
-    padding: 4px 22px 4px 8px;
+    padding: 4px 16px 4px 8px;
     border: 1px solid rgb(200,200,200);
     background-color: white;
     position: relative;
     cursor: default;
-    width: 100px;
+    width: 105px;
     -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
     -moz-box-sizing: border-box;    /* Firefox, other Gecko */
     box-sizing: border-box;
@@ -629,7 +634,7 @@ a.page-num.active {
     margin-top: -1px;
     display: none;
     cursor: pointer;
-    width: 100px;
+    width: 105px;
     z-index: 1;
     background-color: white;
     box-shadow: 0px 4px 4px rgb(230,230,230);
@@ -673,6 +678,7 @@ a.page-num.active {
     cursor: pointer;
     color: rgb(100,100,100);
     font-weight: bold;
+    background-color: white;
 }
 
 .inline-button:hover {
@@ -986,4 +992,26 @@ span.subscribe-icon {
 .pseudo-checkbox.checked {
     background-position: -1px -193px;
     background-image: url("/static/img/basic_icons.png");
+}
+
+.help-link {
+    border-radius: 12px;
+    -webkit-border-radius: 12px;
+    -moz-border-radius: 12px;
+    width: 12px;
+    height: 12px;
+    background-color: rgb(180,180,180);
+    background-image: url("/static/img/basic_icons.png");
+    background-position: 3px -1011px;
+    display: inline-block;
+    vertical-align: middle;
+    margin-left: 5px;
+}
+
+.help-link:hover {
+    background-color: rgb(120,120,120);
+}
+
+.input-number {
+
 }

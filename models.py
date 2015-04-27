@@ -379,7 +379,6 @@ class PlayList(ndb.Model):
     new_list.create_index('playlists_by_user' + str(new_list.creator.id()), time_to_seconds(new_list.modified) )
     return new_list
 
-
 class VideoClip(ndb.Model):
   subintro = ndb.TextProperty(default='', required=True, indexed=False)
   raw_url = ndb.StringProperty(indexed=False)

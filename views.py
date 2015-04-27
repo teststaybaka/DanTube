@@ -552,6 +552,8 @@ class SearchPlaylist(BaseHandler):
             context.update(self.get_page_range(page, total_pages) )
             self.render('search_playlist', context)
         except Exception, e:
+            logging.info("playlist search failed")
+            logging.info(e)
             self.notify('Playlist search error.');
         
 class SearchUPer(BaseHandler):

@@ -1,10 +1,11 @@
 var player;
-var isPlaying;
+var isPlaying = false;
 var player_width = 640;
 var player_height = 360;
 var danmakuVar = null;
 var progressVar = null;
 var progressHold = false;
+var autoSwitch = false;
 var isLoop = false;
 var danmaku = [];
 var danmaku_pointer = 0;
@@ -25,6 +26,7 @@ var show_top = true;
 var show_bottom = true;
 var show_colored = true;
 var show_danmaku = true;
+var switch_count_down;
 var ori_danmaku_speed = 4;
 var danmaku_speed = 4;
 var ori_existing_time = 5;
@@ -46,6 +48,9 @@ function onPlayerStateChange(event) {
 		if (progressVar == null) {
 			progressVar = setInterval(progress_update, 500);
 		}
+		if (switch_count_down != null) {
+			stop_switch_count_down();
+		}
 		var button = document.getElementById("play-pause-button");
 		button.setAttribute("class", "pause");
 	} else if (event.data == YT.PlayerState.PAUSED || event.data == YT.PlayerState.BUFFERING) {
@@ -58,17 +63,46 @@ function onPlayerStateChange(event) {
 		button.setAttribute("class", "play");
 	} else if (event.data == YT.PlayerState.ENDED) {
 		isPlaying = false;
-		clearInterval(danmakuVar);
-		clearInterval(progressVar);
-		danmakuVar == null;
-		progressVar == null;
 		var button = document.getElementById("play-pause-button");
 		button.setAttribute("class", "play");
 
-		if (isLoop) {
+		if (autoSwitch && $('a.episode-link.active').length != 0 && $('a.episode-link.active').next().length != 0) {
+			auto_switch_count_down();
+		} else if (isLoop) {
 			player.playVideo();
+		} else {
+			clearInterval(danmakuVar);
+			clearInterval(progressVar);
+			danmakuVar == null;
+			progressVar == null;
 		}
 	}
+}
+
+function auto_switch_count_down() {
+	var count_down = 5;
+	var one_down = function() {
+		console.log('one down '+count_down)
+		if (count_down > 0) {
+			$('#switch-count-span').text('Switch to the next part in '+count_down+' seconds.');
+	        count_down -= 1;
+	        switch_count_down = setTimeout(one_down, 1000);
+    	} else {
+    		setCookie('autoPlay', 1, 0);
+    		window.location.href = $('a.episode-link.active').next().attr('href');
+    	}
+	}
+
+	$('#switch-count-down').removeClass('hidden');
+	$('#switch-count-span').text('Switch to the next part in '+count_down+' seconds.');
+	count_down -= 1;
+	switch_count_down = setTimeout(one_down, 1000);
+}
+
+function stop_switch_count_down() {
+	clearTimeout(switch_count_down);
+	switch_count_down = null;
+	$('#switch-count-down').addClass('hidden');
 }
 
 function video_toggle(evt) {
@@ -326,7 +360,6 @@ function progress_update() {
 	var splits = progress_number.lastChild.nodeValue.split('/');
 	progress_number.lastChild.nodeValue = secondsToTime(player.getCurrentTime())+"/"+splits[1];
 	progress_resize();
-
 	if (!progressHold) {
 		var progress_bar = document.getElementById("progress-bar-background");
 		var progress_played = document.getElementById("progress-bar-played");
@@ -680,7 +713,7 @@ function onPlayerReady(event) {
 	buffer_update();
 	progress_update();
 
-	var arguments = document.URL.split('?')[1]
+	var arguments = document.URL.split('?')[1];
 	if (arguments) {
 		arguments = arguments.split('&');
 		for (var i = 0; i < arguments.length; i++) {
@@ -750,9 +783,10 @@ function onPlayerReady(event) {
 
 	var play_button = document.getElementById("play-pause-button");
 	play_button.addEventListener("click", video_toggle);
+	$('.player-padding').click(video_toggle);
+	$('div.danmaku').click(video_toggle);
 	// var player_mask = document.getElementById("player-mask");
 	// player_mask.addEventListener("click", video_toggle);
-	isPlaying = false;
 
 	var volume_button = document.getElementById("volume-switch");
 	volume_button.addEventListener("click", volume_switch);
@@ -787,6 +821,8 @@ function onPlayerReady(event) {
 	content_title.addEventListener("click", content_order_change);
 	var date_title = document.getElementById("date");
 	date_title.addEventListener("click", date_order_change);
+
+	$('#switch-cancel').click(stop_switch_count_down);
 
 	{
 		var opacity = getCookie('danmaku_opacity');
@@ -865,6 +901,25 @@ function onPlayerReady(event) {
 	});
 
 	{
+		var cookie_str = getCookie('autoSwitch');
+		if (cookie_str && cookie_str === 'true') {
+			autoSwitch = true;
+		}
+		if (autoSwitch) {
+			$('#auto-switch').removeClass('off');
+			$('#auto-switch').addClass('on');
+		}
+	}
+	$('#auto-switch').click(function() {
+		if (autoSwitch == false) {
+			autoSwitch = true;
+		} else {
+			autoSwitch = false;
+		}
+		setCookie('autoSwitch', autoSwitch, 0);
+	});
+
+	{
 		var cookie_str = getCookie('danmaku_font');
 		if (cookie_str) danmaku_font = cookie_str;
 		$('.list-option.font.active').removeClass('active');
@@ -927,8 +982,19 @@ function onPlayerReady(event) {
     		$('.player-full-setting.player').removeClass('hidden');
     	} else if ($(this).hasClass('block')) {
     		$('.player-full-setting.block').removeClass('hidden');
-    	} else if ($(this).hasClass('advanced')) {
-    		$('.player-full-setting.advanced').removeClass('hidden');
+    	} else if ($(this).hasClass('special')) {
+    		$('.player-full-setting.special').removeClass('hidden');
+    	} else if ($(this).hasClass('tab')) {
+    		$('.danmaku-pool-setting.tab.selected').addClass('unselected').removeClass('selected');
+    		$(this).addClass('selected').removeClass('unselected');
+    		$('.special-danmaku-setting').addClass('hidden');
+    		if ($(this).hasClass('advanced')) {
+    			$('.special-danmaku-setting.advanced').removeClass('hidden')
+    		} else if ($(this).hasClass('subtitle')) {
+    			$('.special-danmaku-setting.subtitle').removeClass('hidden')
+    		} else if ($(this).hasClass('code')) {
+    			$('.special-danmaku-setting.code').removeClass('hidden')
+    		}
     	}
     });
     $('.player-setting-go-back').click(function() {
@@ -1128,6 +1194,44 @@ function onPlayerReady(event) {
 		}
 		entry.remove();
 	});
+
+	$('.number-input').keydown(function(e) {
+		if (e.keyCode == 190 && $(this).val().indexOf('.') != -1) {
+			e.preventDefault();
+		}
+		// Allow: backspace, delete, tab, escape, enter and .
+        if ($.inArray(e.keyCode, [46, 8, 9, 27, 13, 110, 190]) !== -1 ||
+             // Allow: Ctrl+A
+            (e.keyCode == 65 && e.ctrlKey === true) || 
+             // Allow: home, end, left, right, down, up
+            (e.keyCode >= 35 && e.keyCode <= 40)) {
+                 // let it happen, don't do anything
+                 return;
+        }
+        // Ensure that it is a number and stop the keypress
+        if ((e.shiftKey || (e.keyCode < 48 || e.keyCode > 57)) && (e.keyCode < 96 || e.keyCode > 105)) {
+            e.preventDefault();
+        }
+	});
+	$('.number-input-arrow').click(function() {
+		var number_input = $(this).siblings('.number-input');
+		var num = number_input.val();
+		num = Math.round(num*100);
+		if ($(this).hasClass('up')) {
+			num += 10;
+		}
+		if ($(this).hasClass('down') && num >= 10) {
+			num -= 10;
+		}
+		num /= 100;
+		number_input.val(num);
+	});
+
+	{
+		var cookie_str = getCookie('autoPlay');
+		if (cookie_str) player.playVideo();
+		setCookie('autoPlay', 1, -1);
+	}
 }
 
 function quality_youtube2local(quality) {
@@ -1441,6 +1545,7 @@ $(document).ready(function() {
 		success: function(result) {
 			if(!result.error) {
 				console.log(result.length);
+				$('#total-danmaku-span').text(numberWithCommas(result.length));
 				for(var i = 0; i < result.length; i++) {
 					result[i].blocked = false;
 					danmaku_list.push(result[i]);
