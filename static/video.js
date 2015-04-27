@@ -195,60 +195,122 @@ function danmaku_switch(evt) {
 }
 
 function widescreen_switch(evt) {
+	if( (screen.availHeight || screen.height-10) <= window.innerHeight) {
+		return;
+	}
 	if ($(evt.target).hasClass('on')) {
 		$(evt.target).removeClass('on');
 		$(evt.target).addClass('off');
-		var danmaku_pool = document.getElementById("danmaku-pool");
-		danmaku_pool.style.display = "inline-table";
-		player.setSize(640, 360);
-		var player_controller = document.getElementById("player-controller");
-		player_controller.style.width = "640px";
-		var danmaku_input = document.getElementById("danmaku-input");
-		danmaku_input.style.width = "527px";
-		var player_canvas = document.getElementById("player-canvas");
-		player_canvas.style.width = "640px";
-		player_canvas.style.height = "360px";
-		player_width = 640;
-		player_height = 360;
-		progress_update();
-
-		var list = document.querySelectorAll("div.danmaku");
-		for (var i = 0; i < list.length; ++i) {
-		   list[i].style.left = "650px";
-		}
-		$('.player-padding').removeClass('hidden');
+		
 	} else {//off
 		$(evt.target).removeClass('off');
 		$(evt.target).addClass('on');
-		var danmaku_pool = document.getElementById("danmaku-pool");
-		danmaku_pool.style.display = "none";
-		player.setSize(1024, 576);
+	}
+	widescreen_change();
+}
+
+function widescreen_change() {
+	if ($('#wide-screen').hasClass('on')) {
+		$("#danmaku-pool").addClass('hidden');
+		player_width = 1024;
+		player_height = 576;
+		player.setSize(player_width, player_height);
+		$('.player-vertical-padding')[0].style.height = "576px";
 		var player_controller = document.getElementById("player-controller");
 		player_controller.style.width = "1024px";
 		var danmaku_input = document.getElementById("danmaku-input");
-		danmaku_input.style.width = "911px";
+		danmaku_input.style.width = "920px";
 		var player_canvas = document.getElementById("player-canvas");
-		player_canvas.style.width = "1024px";
-		player_canvas.style.height = "576px";
-		player_width = 1024;
-		player_height = 576;
+		player_canvas.style.width = player_width+"px";
+		player_canvas.style.height = player_height+"px";
 		progress_update();
 
 		var list = document.querySelectorAll("div.danmaku");
 		for (var i = 0; i < list.length; ++i) {
-		   list[i].style.left = "1034px";
+		   list[i].style.left = player_width+10+"px";
 		}
-		$('.player-padding').addClass('hidden');
+	} else {
+		$("#danmaku-pool").removeClass('hidden');
+		player_width = 640;
+		player_height = 360;
+		player.setSize(player_width, player_height);
+		$('.player-vertical-padding')[0].style.height = "446px";
+		var player_controller = document.getElementById("player-controller");
+		player_controller.style.width = "640px";
+		var danmaku_input = document.getElementById("danmaku-input");
+		danmaku_input.style.width = "536px";
+		var player_canvas = document.getElementById("player-canvas");
+		player_canvas.style.width = player_width+"px";
+		player_canvas.style.height = player_height+"px";
+		progress_update();
+
+		var list = document.querySelectorAll("div.danmaku");
+		for (var i = 0; i < list.length; ++i) {
+		   list[i].style.left = player_width+10+"px";
+		}
+	}
+}
+
+function fullscreen_change(evt) {
+	if ($('#full-screen').hasClass('on')) {
+		$('#full-screen').addClass('off');
+		$('#full-screen').removeClass('on');
+		widescreen_change();
+	} else {//off
+		$('#full-screen').addClass('on');
+		$('#full-screen').removeClass('off');
+		var full_width = screen.width;
+		var full_height = screen.height - 53;
+		$("#danmaku-pool").addClass('hidden');
+		player_width = full_width;
+		player_height = full_height;
+		if (player_height/9*16 < player_width) {
+			player_width = Math.round(player_height/9*16);
+		} else {
+			player_height = Math.round(player_width/16*9);
+		}
+		player.setSize(player_width, player_height);
+		$('.player-vertical-padding')[0].style.height = full_height+"px";
+		var player_controller = document.getElementById("player-controller");
+		player_controller.style.width = full_width+'px';
+		var danmaku_input = document.getElementById("danmaku-input");
+		danmaku_input.style.width = (full_width - 26*2 - 50 - 2) + 'px';
+		var player_canvas = document.getElementById("player-canvas");
+		player_canvas.style.width = player_width+"px";
+		player_canvas.style.height = player_height+"px";
+		progress_update();
+
+		var list = document.querySelectorAll("div.danmaku");
+		for (var i = 0; i < list.length; ++i) {
+		   list[i].style.left = player_width+10+"px";
+		}
 	}
 }
 
 function fullscreen_switch(evt) {
-	if ($(evt.target).hasClass('on')) {
-		$(evt.target).addClass('off');
-		$(evt.target).removeClass('on');
-	} else {//off
-		$(evt.target).addClass('on');
-		$(evt.target).removeClass('off');
+	// var isInFullScreen = document.fullScreenElement ||  document.mozFullScreen || document.webkitIsFullScreen || document.msIsFullScreen;
+	if( screen.height-10 <= window.innerHeight) {
+    	// browser is almost certainly fullscreen
+		var requestMethod = document.msExitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen || document.exitFullscreen || document.cancelFullScreen;
+        if (requestMethod) { // cancel full screen.
+            requestMethod.call(document);
+        } else if (typeof window.ActiveXObject !== "undefined") { // Older IE.
+            var wscript = new ActiveXObject("WScript.Shell");
+            if (wscript !== null) {
+                wscript.SendKeys("{F11}");
+            }
+        }
+	} else {
+		var player_container = document.getElementById('player-container');
+		var requestMethod = player_container.requestFullScreen || player_container.webkitRequestFullscreen || player_container.mozRequestFullScreen || player_container.msRequestFullscreen;
+	    if (requestMethod) { // Native full screen.
+	        requestMethod.call(player_container);
+	    } else if (typeof window.ActiveXObject !== "undefined") { // Older IE.
+	        var wscript = new ActiveXObject("WScript.Shell");
+	        if (wscript !== null) {
+	            wscript.SendKeys("{F11}");
+	        }
+	    }
 	}
 }
 
@@ -801,6 +863,10 @@ function onPlayerReady(event) {
 
 	var full_button = document.getElementById("full-screen");
 	full_button.addEventListener("click", fullscreen_switch);
+	document.addEventListener("fullscreenchange", fullscreen_change, false);      
+	document.addEventListener("webkitfullscreenchange", fullscreen_change, false);
+	document.addEventListener("mozfullscreenchange", fullscreen_change, false);
+	document.addEventListener("MSFullscreenChange", fullscreen_change, false);
 
 	var progress_bar = document.getElementById("progress-bar");
 	progress_bar.addEventListener("mousedown", progress_bar_down);

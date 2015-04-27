@@ -111,15 +111,16 @@
 </div>
 <div id="player-container" class="container">
   <div id="player-controller">
-    <div class="player-padding up"></div>
-    <div id="player-canvas">
-      <div id="player"></div>
-      <div id="switch-count-down" class="hidden">
-        <span id="switch-count-span">Switch to the next part in 5 seconds.</span>
-        <span id="switch-cancel">Cancel</span>
+    <div class="player-background">
+      <div class="player-vertical-padding"></div>
+      <div id="player-canvas">
+        <div id="player"></div>
+        <div id="switch-count-down" class="hidden">
+          <span id="switch-count-span">Switch to the next part in 5 seconds.</span>
+          <span id="switch-cancel">Cancel</span>
+        </div>
       </div>
     </div>
-    <div class="player-padding down"></div>
     <div id="controller-background">
       <div id="controller" class="container">
         <div id="full-screen" class="player-button off">
@@ -572,28 +573,30 @@
   </div>
   <div class="pagination-line all"></div>
 </div>
-{% if playlist %}
-<div id="right-video-list">
-  <div id="list-title">{{ playlist.title }}</div>
-  {% if playlist.intro %}
-  <div id="list-intro">{{ playlist.intro }}</div>
-  <div id="list-intro-display-button" class="display-button intro"><span class="intro-display-text">SHOW MORE</span><span class="display-arrow"></span></div>
-  {% endif %}
-  <div id="list-scroll-bar">
-    {% for list_video in playlist.videos %}
-    <a class="list-entry {% if loop.index == playlist.cur_index+1 %}active{% endif %}" {% if loop.index != playlist.cur_index+1 %}href="{{ list_video.url }}"{% endif %}>
-      <div class="list-entry-index {% if loop.index == playlist.cur_index+1 %}active{% endif %}">{{ loop.index }}</div>
-      <img class="list-video-img" src="{{ list_video.thumbnail_url }}">
-      <div class="list-entry-info">
-        <div class="list-video-title">{{ list_video.title }}</div>
-        <div>
-          <div class="list-video-statistic hits"><span class="statistic-icon views"></span><span class="commas_number">{{ list_video.hits }}</span></div>
-          <div class="list-video-statistic comments"><span class="statistic-icon comment"></span><span class="commas_number">{{ list_video.comment_counter }}</span></div>
+<div id="right-info-box">
+  {% if playlist %}
+  <div id="right-video-list">
+    <div id="list-title">{{ playlist.title }}</div>
+    {% if playlist.intro %}
+    <div id="list-intro">{{ playlist.intro }}</div>
+    <div id="list-intro-display-button" class="display-button intro"><span class="intro-display-text">SHOW MORE</span><span class="display-arrow"></span></div>
+    {% endif %}
+    <div id="list-scroll-bar">
+      {% for list_video in playlist.videos %}
+      <a class="list-entry {% if loop.index == playlist.cur_index+1 %}active{% endif %}" {% if loop.index != playlist.cur_index+1 %}href="{{ list_video.url }}"{% endif %}>
+        <div class="list-entry-index {% if loop.index == playlist.cur_index+1 %}active{% endif %}">{{ loop.index }}</div>
+        <img class="list-video-img" src="{{ list_video.thumbnail_url }}">
+        <div class="list-entry-info">
+          <div class="list-video-title">{{ list_video.title }}</div>
+          <div>
+            <div class="list-video-statistic hits"><span class="statistic-icon views"></span><span class="commas_number">{{ list_video.hits }}</span></div>
+            <div class="list-video-statistic comments"><span class="statistic-icon comment"></span><span class="commas_number">{{ list_video.comment_counter }}</span></div>
+          </div>
         </div>
-      </div>
-    </a>
-    {% endfor %}
+      </a>
+      {% endfor %}
+    </div>
   </div>
+  {% endif %}
 </div>
-{% endif %}
 {% endblock %}
