@@ -223,7 +223,7 @@ Video_SubCategory = {'Anime': ['Continuing Anime', 'Finished Anime', 'MAD/AMV/GM
                   , 'Dance': ['Dance']
                   , 'Game': ['Game Video', 'Game Guides/Commentary', 'Eletronic Sports', 'Mugen']
                   , 'Entertainment': ['Funny Video', 'Animal Planet', 'Tasty Food', 'Entertainment TV Show']
-                  , 'Techs': ['Documentary', 'Various Techs', 'Wild Techs', 'Funny Tech Intro']
+                  , 'Techs': ['Documentary', 'Various Techs', 'Tech Intro', 'Online Courses']
                   , 'Sports': ['Amazing Human', 'Sports Video', 'Tournament']
                   , 'Movie': ['Movie', 'Micro/Short Film', 'Trailer/Highlights']
                   , 'TV Series': ['Continuing Series', 'Finished Series', 'Tokusatsu', 'Trailer/Highlights']}
@@ -270,8 +270,8 @@ URL_NAME_DICT = {
     # Subcategories of Techs
     'Documentary': 'documentary',
     'Various Techs': 'various',
-    'Wild Techs': 'wild',
-    'Funny Tech Intro': 'fun',
+    'Tech Intro': 'intro',
+    'Online Courses': 'course',
   }],
   'Sports': ['sports', {
     # Subcategories of Sports

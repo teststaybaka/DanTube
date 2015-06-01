@@ -123,13 +123,19 @@
     </div>
     <div id="controller-background">
       <div id="controller" class="container">
-        <div id="full-screen" class="player-button off">
-          <div class="button-tip off">Full screen</div>
-          <div class="button-tip on">Exit full screen</div>
-        </div>
-        <div id="wide-screen" class="player-button off">
-          <div class="button-tip off">Wide screen</div>
-          <div class="button-tip on">Default view</div>
+        <div class="screen-size">
+          <div id="page-wide" class="player-button off">
+            <div class="button-tip off">Page-wide screen</div>
+            <div class="button-tip on">Restore</div>
+          </div>
+          <div id="wide-screen" class="player-button off">
+            <div class="button-tip off">Wide screen</div>
+            <div class="button-tip on">Default view</div>
+          </div>
+          <div id="full-screen" class="player-button off">
+            <div class="button-tip off">Fullscreen</div>
+            <div class="button-tip on">Exit fullscreen</div>
+          </div>
         </div>
         <div id="settings-controller" class="player-button on">
           <div class="button-tip on">Settings</div>
@@ -514,6 +520,19 @@
       <div class="danmaku-order-title" id="date">Date</div>
     </div>
     <div id="danmaku-list"></div>
+  </div>
+  <div class="danmaku-menu hidden">
+    <div class="right-click-entry">Copy content</div>
+    <div class="right-click-entry">Reply danmaku</div>
+    <div class="right-click-entry">Block sender</div>
+    <div class="right-click-separate-line"></div>
+    <div class="right-click-entry">Report</div>
+  </div>
+  <div class="danmaku-pool-menu hidden">
+    <div class="right-click-entry">Copy content</div>
+    <div class="right-click-entry">Block sender</div>
+    <div class="right-click-separate-line"></div>
+    <div class="right-click-entry">Report</div>
   </div>
 </div>
 <div id="left-info-box">

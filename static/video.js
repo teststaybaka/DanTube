@@ -195,9 +195,8 @@ function danmaku_switch(evt) {
 }
 
 function widescreen_switch(evt) {
-	if( (screen.availHeight || screen.height-10) <= window.innerHeight) {
-		return;
-	}
+	if($('#full-screen').hasClass('on') || $('#page-wide').hasClass('on')) return;
+
 	if ($(evt.target).hasClass('on')) {
 		$(evt.target).removeClass('on');
 		$(evt.target).addClass('off');
@@ -217,7 +216,7 @@ function widescreen_change() {
 		player.setSize(player_width, player_height);
 		$('.player-vertical-padding')[0].style.height = "576px";
 		var player_controller = document.getElementById("player-controller");
-		player_controller.style.width = "1024px";
+		player_controller.style.width = player_width+"px";
 		var danmaku_input = document.getElementById("danmaku-input");
 		danmaku_input.style.width = "920px";
 		var player_canvas = document.getElementById("player-canvas");
@@ -255,6 +254,13 @@ function fullscreen_change(evt) {
 	if ($('#full-screen').hasClass('on')) {
 		$('#full-screen').addClass('off');
 		$('#full-screen').removeClass('on');
+
+		$('#page-wide').removeClass('on');
+		$('#page-wide').addClass('off');
+		var player_container = document.getElementById('player-container');
+		player_container.style.position = 'relative';
+		$(window).off('resize', page_wide_player);
+		
 		widescreen_change();
 	} else {//off
 		$('#full-screen').addClass('on');
@@ -289,7 +295,7 @@ function fullscreen_change(evt) {
 
 function fullscreen_switch(evt) {
 	// var isInFullScreen = document.fullScreenElement ||  document.mozFullScreen || document.webkitIsFullScreen || document.msIsFullScreen;
-	if( screen.height-10 <= window.innerHeight) {
+	if($('#full-screen').hasClass('on')) {
     	// browser is almost certainly fullscreen
 		var requestMethod = document.msExitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen || document.exitFullscreen || document.cancelFullScreen;
         if (requestMethod) { // cancel full screen.
@@ -311,6 +317,34 @@ function fullscreen_switch(evt) {
 	            wscript.SendKeys("{F11}");
 	        }
 	    }
+	}
+}
+
+function page_wide_player() {
+	var full_width = $('body').innerWidth();
+	var full_height = window.innerHeight - 53;
+	$("#danmaku-pool").addClass('hidden');
+	player_width = full_width;
+	player_height = full_height;
+	if (player_height/9*16 < player_width) {
+		player_width = Math.round(player_height/9*16);
+	} else {
+		player_height = Math.round(player_width/16*9);
+	}
+	player.setSize(player_width, player_height);
+	$('.player-vertical-padding')[0].style.height = full_height+"px";
+	var player_controller = document.getElementById("player-controller");
+	player_controller.style.width = full_width+'px';
+	var danmaku_input = document.getElementById("danmaku-input");
+	danmaku_input.style.width = (full_width - 26*2 - 50 - 2) + 'px';
+	var player_canvas = document.getElementById("player-canvas");
+	player_canvas.style.width = player_width+"px";
+	player_canvas.style.height = player_height+"px";
+	progress_update();
+
+	var list = document.querySelectorAll("div.danmaku");
+	for (var i = 0; i < list.length; ++i) {
+	   list[i].style.left = player_width+10+"px";
 	}
 }
 
@@ -368,8 +402,6 @@ function progress_bar_move(evt) {
 }
 
 function progress_bar_stop(evt) {
-	// if (evt.target.id === "progress-bar") {
-	progressHold = false;
 	progress_bar_move(evt);
 
 	var progress_bar = document.getElementById("progress-bar-background");
@@ -392,7 +424,8 @@ function progress_bar_stop(evt) {
 	document.onmousemove = null;
 	document.onmouseup = null;
 	document.onmouseout = null;
-	// }
+
+	progressHold = false;
 }
 
 function progress_resize() {
@@ -845,10 +878,8 @@ function onPlayerReady(event) {
 
 	var play_button = document.getElementById("play-pause-button");
 	play_button.addEventListener("click", video_toggle);
-	$('.player-padding').click(video_toggle);
+	$('.player-background').click(video_toggle);
 	$('div.danmaku').click(video_toggle);
-	// var player_mask = document.getElementById("player-mask");
-	// player_mask.addEventListener("click", video_toggle);
 
 	var volume_button = document.getElementById("volume-switch");
 	volume_button.addEventListener("click", volume_switch);
@@ -858,11 +889,34 @@ function onPlayerReady(event) {
 	var danmaku_button = document.getElementById("danmaku-switch");
 	danmaku_button.addEventListener("click", danmaku_switch);
 
+	$('#page-wide').click(function() {
+		if ($('#full-screen').hasClass('on')) return;
+
+		if ($(this).hasClass('on')) {
+			$(this).removeClass('on');
+			$(this).addClass('off');
+			var player_container = document.getElementById('player-container');
+			player_container.style.position = 'relative';
+			$(window).off('resize', page_wide_player);
+
+			widescreen_change();
+		} else {
+			$(this).removeClass('off');
+			$(this).addClass('on');
+			var player_container = document.getElementById('player-container');
+			player_container.style.position = 'fixed';
+
+			$(window).resize(page_wide_player);
+			page_wide_player();
+		}
+	});
+
 	var wide_button = document.getElementById("wide-screen");
 	wide_button.addEventListener("click", widescreen_switch);
 
 	var full_button = document.getElementById("full-screen");
 	full_button.addEventListener("click", fullscreen_switch);
+	$('.player-background').dblclick(fullscreen_switch);
 	document.addEventListener("fullscreenchange", fullscreen_change, false);      
 	document.addEventListener("webkitfullscreenchange", fullscreen_change, false);
 	document.addEventListener("mozfullscreenchange", fullscreen_change, false);
@@ -1292,6 +1346,19 @@ function onPlayerReady(event) {
 		num /= 100;
 		number_input.val(num);
 	});
+	
+	$('div.danmaku').bind('contextmenu', function(evt) {
+		evt.preventDefault();
+
+		$('.danmaku-menu').removeClass('hidden');
+		$('.danmaku-menu')[0].style.left = evt.pageX+'px';
+		$('.danmaku-menu')[0].style.top = evt.pageY+'px';
+		var hide_menu = function() {
+			$('.danmaku-menu').addClass('hidden');
+			$(document).off('click', hide_menu);
+		}
+		$(document).click(hide_menu);
+	});
 
 	{
 		var cookie_str = getCookie('autoPlay');
@@ -1691,6 +1758,19 @@ $(document).ready(function() {
 			}
 		});
 		return false;
+	});
+
+	$('#danmaku-pool').on('contextmenu', 'div.per-bullet', function(evt) {
+		evt.originalEvent.preventDefault();
+
+		$('.danmaku-pool-menu').removeClass('hidden');
+		$('.danmaku-pool-menu')[0].style.left = evt.originalEvent.pageX+'px';
+		$('.danmaku-pool-menu')[0].style.top = evt.originalEvent.pageY+'px';
+		var hide_menu = function() {
+			$('.danmaku-pool-menu').addClass('hidden');
+			$(document).off('click', hide_menu);
+		}
+		$(document).click(hide_menu);
 	});
 
 	$('div.add-new-tag-button').click(function() {
