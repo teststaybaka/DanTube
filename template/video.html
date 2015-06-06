@@ -3,6 +3,7 @@
 {{ super() }}
 <link rel="stylesheet" href="/static/colpick.css" type="text/css"/>
 <script src="/static/colpick.js" type="text/javascript"></script>
+<script src="/static/ZeroClipboard.min.js" type="text/javascript"></script>
 <link href="/static/video.css" rel="stylesheet" type="text/css">
 <link href="/static/player.css" rel="stylesheet" type="text/css">
 <script type="text/javascript">
@@ -91,6 +92,7 @@
       {% endif %}
       {% if video.clip_titles|length > 3 %}
         <div class="inline-button more-episode" title="Expand">...</div>
+        <div class="inline-button less-episode hidden" title="Collapse"><<</div>
       {% endif %}
     </div>
   </div>
@@ -381,7 +383,7 @@
       </div>
       <div class="danmaku-full-settings">
         <div class="danmaku-pool-setting tab advanced selected">Advanced</div>
-        <div class="danmaku-pool-setting tab subtitle unselected">Subtitle</div>
+        <div class="danmaku-pool-setting tab subtitle unselected">Subtitles</div>
         <div class="danmaku-pool-setting tab code unselected">Code</div>
       </div>
       <form class="special-danmaku-setting advanced">
@@ -492,6 +494,13 @@
         </div>
       </form>
     </div>
+    <div class="player-full-setting check-all-sent hidden">
+      <div class="player-setting-title-line">
+        <div class="player-setting-go-back"></div>
+        <div class="player-setting-content-title">All danmaku sent by him/her</div>
+      </div>
+      <div id="danmaku-list-all"></div>
+    </div>
     <div class="danmaku-pool-info">
       <div class="video-source-icon"></div>
       <div class="danmaku-info-box-left">
@@ -522,17 +531,18 @@
     <div id="danmaku-list"></div>
   </div>
   <div class="danmaku-menu hidden">
-    <div class="right-click-entry">Copy content</div>
-    <div class="right-click-entry">Reply danmaku</div>
-    <div class="right-click-entry">Block sender</div>
+    <div class="right-click-entry">Reply to the sender</div>
+    <div class="right-click-entry" id="danmaku-locate-it">Locate the danmaku</div>
+    <div class="right-click-entry" id="danmaku-block-sender">Block the sender</div>
     <div class="right-click-separate-line"></div>
-    <div class="right-click-entry">Report</div>
+    <div class="right-click-entry">Report abuse</div>
   </div>
   <div class="danmaku-pool-menu hidden">
-    <div class="right-click-entry">Copy content</div>
-    <div class="right-click-entry">Block sender</div>
+    <div class="right-click-entry" id="danmaku-pool-copy-content">Copy content</div>
+    <div class="right-click-entry" id="danmaku-pool-check-all-sent">Check all his/her danmaku</div>
+    <div class="right-click-entry" id="danmaku-pool-block-sender">Block the sender</div>
     <div class="right-click-separate-line"></div>
-    <div class="right-click-entry">Report</div>
+    <div class="right-click-entry">Report abuse</div>
   </div>
 </div>
 <div id="left-info-box">

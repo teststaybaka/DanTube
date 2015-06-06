@@ -1081,10 +1081,14 @@ div.danmaku-order-title.down:after {
 #danmaku-list {
 	height: 383px;
 	overflow-y: auto;
-	display: block;
 }
 
-div.per-bullet {
+#danmaku-list-all {
+	height: 463px;
+	overflow-y: auto;
+}
+
+div.per-bullet, .check-per-bullet {
 	color: rgb(120,120,120);
 	text-align: left;
 	padding: 0;
@@ -1093,15 +1097,19 @@ div.per-bullet {
 	font-size: 0;
 }
 
-div.per-bullet.blocked {
+div.per-bullet.blocked, .check-per-bullet.blocked{
 	color: rgb(200,200,200);
 }
 
-div.per-bullet:hover {
-	background-color: rgb(189, 234, 255);
+div.per-bullet.selected, .check-per-bullet.selected{
+	background-color: rgb(220,243,255);
 }
 
-div.per-bullet:active {
+div.per-bullet:hover, .check-per-bullet:hover {
+	background-color: rgb(189,237,255);
+}
+
+div.per-bullet:active, .check-per-bullet:active {
 	background-color: rgb(129,206,243);
 }
 
@@ -1552,9 +1560,14 @@ a.inline-button.episode-link.active {
 	border: 1px solid rgb(85,178,255);
 }
 
-div.more-episode, div.less-epsidoe {
+div.more-episode, div.less-episode {
 	float: left;
 	color: rgb(100,100,100);
+	line-height: 16px;
+}
+
+div.less-episode {
+	font-family: "Trebuchet MS", Helvetica, sans-serif;
 }
 
 #left-info-box {
@@ -1845,6 +1858,10 @@ div.comment-entry {
 	padding: 15px 0;
 	font-size: 0;
 	border-bottom: 1px solid rgb(220,220,220);
+}
+
+div.comment-entry:last-child {
+	border-bottom: 0;
 }
 
 div.comment-entry.inner {
@@ -2181,10 +2198,14 @@ input.subtitle-danmaku-input {
 	position: absolute;
 	border: 1px solid rgb(200,200,200);
 	background-color: white;
-	box-shadow: 2px 2px 4px rgb(200,200,200);
+	box-shadow: 2px 2px 4px rgba(200,200,200, 0.5);
 	padding: 3px 0;
 	z-index: 1;
-	width: 130px;
+	width: 150px;
+}
+
+.danmaku-pool-menu {
+	width: 178px;
 }
 
 .right-click-entry {
@@ -2194,7 +2215,7 @@ input.subtitle-danmaku-input {
 	cursor: pointer;
 }
 
-.right-click-entry:hover {
+.right-click-entry:hover, .right-click-entry.zeroclipboard-is-hover {
 	color: white;
 	background-color: rgb(0,140,255);
 }

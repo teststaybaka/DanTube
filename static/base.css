@@ -692,6 +692,10 @@ a.page-num.active {
     color: rgb(255,255,255);
 }
 
+.inline-button.hidden {
+    display: none;
+}
+
 .inline-button:disabled {
     color: rgb(200,200,200);
     /*box-shadow: 0 0 0;*/
