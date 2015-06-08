@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from views import *
 import math
 
@@ -450,6 +451,13 @@ class Danmaku(BaseHandler):
             allow_share = True
         else:
             allow_share = False
+
+        reply_to = self.request.get('reply_to')
+        if reply_to:
+            content = u'←' + content
+            reply_to_key = ndb.Key('User', long(reply_to))
+            if reply_to_key not in users:
+                users.append(reply_to_key)
 
         clip = video.video_clips[clip_index-1].get()
         if len(clip.danmaku_pools) == 0:

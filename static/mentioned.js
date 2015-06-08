@@ -57,7 +57,13 @@ function render_comment_div(comment) {
                 <label class="time">' + comment.created + '</label>\
             </div>\
             <div class="info-line">\
-                <label>Mentioned you in </label>\
+                <label>Mentioned you in a '
+    if (comment.type === 'danmaku') {
+        div += 'danmaku'
+    } else {
+        div += 'comment'
+    }
+        div += ' in</label>\
                 <a class="message-title" href="' + comment.video.url + '" target="_blank">' + comment.video.title + '</a>\
             </div>\
             <div class="info-line">\
