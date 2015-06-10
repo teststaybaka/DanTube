@@ -113,15 +113,20 @@
 </div>
 <div id="player-container" class="container">
   <div id="player-controller">
-    <div class="player-background">
+    <div id="player-background">
       <div class="player-vertical-padding"></div>
       <div id="player-canvas">
         <div id="player"></div>
-        <div id="switch-count-down" class="hidden">
-          <span id="switch-count-span">Switch to the next part in 5 seconds.</span>
-          <span id="switch-cancel">Cancel</span>
-        </div>
       </div>
+      <div id="switch-count-down" class="hidden">
+        <span id="switch-count-span">Switch to the next part in 5 seconds.</span>
+        <span id="switch-cancel">Cancel</span>
+      </div>
+    </div>
+    <div id="progress-bar" ondragstart="return false;" ondrop="return false;" onselectstart="return false;">
+      <div id="progress-bar-buffered" ondragstart="return false;" ondrop="return false;" onselectstart="return false;"></div>
+      <div id="progress-bar-played" ondragstart="return false;" ondrop="return false;" onselectstart="return false;"></div>
+      <div id="progress-tip">--:--</div>
     </div>
     <div id="controller-background">
       <div id="controller" class="container">
@@ -221,14 +226,8 @@
             <div id="volume-tip">--</div>
           </div>
         </div>
-        <div id="progress-number">--/--</div>
+        <div id="progress-number">--:--/--:--</div>
         <div id="play-pause-button" class="play"></div>
-        <div id="progress-bar" ondragstart="return false;" ondrop="return false;" onselectstart="return false;"></div>
-        <div id="progress-bar-background" ondragstart="return false;" ondrop="return false;" onselectstart="return false;"></div>
-        <div id="progress-bar-buffered" ondragstart="return false;" ondrop="return false;" onselectstart="return false;"></div>
-        <div id="progress-bar-played" ondragstart="return false;" ondrop="return false;" onselectstart="return false;"></div>
-        <div id="progress-pointer" ondragstart="return false;" ondrop="return false;" onselectstart="return false;"></div>
-        <div id="progress-tip">--:--</div>
       </div>
       <form id="shooter">
         <div id="danmaku-type-box" class="hidden">

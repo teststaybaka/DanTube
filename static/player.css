@@ -43,9 +43,11 @@ div.danmaku {
 	font-size: 0;
 }
 
-.player-background {
+#player-background {
 	background-color: black;
 	text-align: center;
+	overflow: hidden;
+	position: relative;
 }
 
 .player-vertical-padding {
@@ -58,9 +60,6 @@ div.danmaku {
 #player-canvas {
 	width: 640px;
 	height: 360px;
-	overflow: hidden;
-	position: relative;
-	background-color: black;
 	vertical-align: middle;
 	display: inline-block;
 }
@@ -91,6 +90,7 @@ div.danmaku {
 #controller-background {
 	position: relative;
 	border: 1px solid rgb(200, 200, 200);
+	border-top: 0;
 }
 
 #controller {
@@ -100,13 +100,11 @@ div.danmaku {
 }
 
 #play-pause-button.play, #play-pause-button.pause {
-	/*display: inline-block;*/
 	float: left;
 	height: 100%;
 	width: 40px;
 	background-position: 0 -630px;
 	background-image: url("/static/img/player_icons.png");
-	border-right: 1px solid rgb(200, 200, 200);
 	cursor: pointer;
 }
 
@@ -131,40 +129,28 @@ div.danmaku {
 }
 
 #progress-bar {
-	position: absolute;
-	height: 25px;
-	margin-left: 4px;
-	padding: 0 5px;
-	display: inline-block;
-	cursor: pointer;
+	position: relative;
+	height: 6px;
+	background-color: rgb(200,200,200);
 }
 
-#progress-bar-background, #progress-bar-buffered, #progress-bar-played {
-	display: inline-block;
-	height: 7px;
-	border-radius: 10px;
-	-webkit-border-radius: 10px;
-    -moz-border-radius: 10px;
+#progress-bar-buffered, #progress-bar-played {
 	position: absolute;
-	margin-top: 9px;
-	margin-bottom: 9px;
-	margin-left: 9px;
+	display: inline-block;
+	height: 100%;
 	will-change: width;
-}
-
-#progress-bar-background {
-	background-color: rgb(220,220,220);
+	-webkit-transition: width .1s; /* For Safari 3.1 to 6.0 */
+    transition: width .1s;
 	pointer-events: none;
+	width: 0;
 }
 
 #progress-bar-buffered {
 	background-color: rgb(127,206,244);
-	pointer-events: none;
 }
 
 #progress-bar-played {
 	background-color: rgb(0,132,255);
-	pointer-events: none;
 }
 
 #progress-pointer {
@@ -190,13 +176,12 @@ div.danmaku {
 #progress-tip {
 	display: none;
 	position: absolute;
-	bottom: 53px;
+	bottom: 8px;
 	background-color: rgba(255,255,255,.5);
 	z-index: 1;
 	border-radius: 3px;
 	-webkit-border-radius: 3px;
     -moz-border-radius: 3px;
-	margin-left: 9px;
 	padding: 0 3px;
 	will-change: transform, -ms-transform, -webkit-transform;
 	font-size: 16px;
@@ -206,12 +191,13 @@ div.danmaku {
 #progress-number {
 	display: inline-block;
 	float: right;
-	height: 100%;
-	padding-top: 3px;
 	-webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
 	-moz-box-sizing: border-box;    /* Firefox, other Gecko */
 	box-sizing: border-box;
-	font-size: 16px;
+	font-size: 14px;
+	line-height: 25px;
+	width: 88px;
+	text-align: right;
 }
 
 #volume-controller {
@@ -1089,12 +1075,12 @@ div.danmaku-order-title.down:after {
 }
 
 #danmaku-list {
-	height: 383px;
+	height: 388px;
 	overflow-y: auto;
 }
 
 #danmaku-list-all {
-	height: 463px;
+	height: 468px;
 	overflow-y: auto;
 }
 
@@ -1314,7 +1300,7 @@ div.bullet-date-value {
 
 .block-list {
 	width: 100%;
-	height: 358px;
+	height: 363px;
 	overflow: auto;
 }
 

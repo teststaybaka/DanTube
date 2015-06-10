@@ -1,7 +1,7 @@
 var player;
 var isPlaying = false;
 var player_width = 640;
-var player_height = 360;
+var player_height = 446;
 var danmakuVar = null;
 var progressVar = null;
 var progressHold = false;
@@ -215,7 +215,7 @@ function widescreen_change() {
 		player_width = 1024;
 		player_height = 576;
 		player.setSize(player_width, player_height);
-		$('.player-vertical-padding')[0].style.height = "576px";
+		$('.player-vertical-padding')[0].style.height = player_height+"px";
 		var player_controller = document.getElementById("player-controller");
 		player_controller.style.width = player_width+"px";
 		var danmaku_input = document.getElementById("danmaku-input");
@@ -227,7 +227,6 @@ function widescreen_change() {
 		var player_canvas = document.getElementById("player-canvas");
 		player_canvas.style.width = player_width+"px";
 		player_canvas.style.height = player_height+"px";
-		progress_update();
 
 		var list = document.querySelectorAll("div.danmaku");
 		for (var i = 0; i < list.length; ++i) {
@@ -236,11 +235,13 @@ function widescreen_change() {
 	} else {
 		$("#danmaku-pool").removeClass('hidden');
 		player_width = 640;
-		player_height = 360;
-		player.setSize(player_width, player_height);
-		$('.player-vertical-padding')[0].style.height = "446px";
+		player_height = 446;
+		var player_inner_width = player_width;
+		var player_inner_height = 360;
+		player.setSize(player_inner_width, player_inner_height);
+		$('.player-vertical-padding')[0].style.height = player_height+"px";
 		var player_controller = document.getElementById("player-controller");
-		player_controller.style.width = "640px";
+		player_controller.style.width = player_width+"px";
 		var danmaku_input = document.getElementById("danmaku-input");
 		if ($('.input-layon-block').hasClass('hidden')) {
 			danmaku_input.style.width = "536px";
@@ -248,9 +249,8 @@ function widescreen_change() {
 			danmaku_input.style.width = "504px";
 		}
 		var player_canvas = document.getElementById("player-canvas");
-		player_canvas.style.width = player_width+"px";
-		player_canvas.style.height = player_height+"px";
-		progress_update();
+		player_canvas.style.width = player_inner_width+"px";
+		player_canvas.style.height = player_inner_height+"px";
 
 		var list = document.querySelectorAll("div.danmaku");
 		for (var i = 0; i < list.length; ++i) {
@@ -274,30 +274,29 @@ function fullscreen_change(evt) {
 	} else {//off
 		$('#full-screen').addClass('on');
 		$('#full-screen').removeClass('off');
-		var full_width = screen.width;
-		var full_height = screen.height - 53;
+		player_width = screen.width;
+		player_height = screen.height - 58;
 		$("#danmaku-pool").addClass('hidden');
-		player_width = full_width;
-		player_height = full_height;
-		if (player_height/9*16 < player_width) {
-			player_width = Math.round(player_height/9*16);
+		var player_inner_width = player_width;
+		var player_inner_height = player_height;
+		if (player_inner_height/9*16 < player_inner_width) {
+			player_inner_width = Math.round(player_inner_height/9*16);
 		} else {
-			player_height = Math.round(player_width/16*9);
+			player_inner_height = Math.round(player_inner_width/16*9);
 		}
-		player.setSize(player_width, player_height);
-		$('.player-vertical-padding')[0].style.height = full_height+"px";
+		player.setSize(player_inner_width, player_inner_height);
+		$('.player-vertical-padding')[0].style.height = player_height+"px";
 		var player_controller = document.getElementById("player-controller");
-		player_controller.style.width = full_width+'px';
+		player_controller.style.width = player_width+'px';
 		var danmaku_input = document.getElementById("danmaku-input");
 		if ($('.input-layon-block').hasClass('hidden')) {
-			danmaku_input.style.width = (full_width - 26*2 - 50 - 2) + 'px';
+			danmaku_input.style.width = (player_width - 26*2 - 50 - 2) + 'px';
 		} else {
-			danmaku_input.style.width = (full_width - 26*2 - 50 - 2 - 32) + 'px';
+			danmaku_input.style.width = (player_width - 26*2 - 50 - 2 - 32) + 'px';
 		}
 		var player_canvas = document.getElementById("player-canvas");
-		player_canvas.style.width = player_width+"px";
-		player_canvas.style.height = player_height+"px";
-		progress_update();
+		player_canvas.style.width = player_inner_width+"px";
+		player_canvas.style.height = player_inner_height+"px";
 
 		var list = document.querySelectorAll("div.danmaku");
 		for (var i = 0; i < list.length; ++i) {
@@ -334,30 +333,29 @@ function fullscreen_switch(evt) {
 }
 
 function page_wide_player() {
-	var full_width = $('body').innerWidth();
-	var full_height = window.innerHeight - 53;
+	player_width = $('body').innerWidth();
+	player_height = window.innerHeight - 58;
 	$("#danmaku-pool").addClass('hidden');
-	player_width = full_width;
-	player_height = full_height;
-	if (player_height/9*16 < player_width) {
-		player_width = Math.round(player_height/9*16);
+	var player_inner_width = player_width;
+	var player_inner_height = player_height;
+	if (player_inner_height/9*16 < player_inner_width) {
+		player_inner_width = Math.round(player_inner_height/9*16);
 	} else {
-		player_height = Math.round(player_width/16*9);
+		player_inner_height = Math.round(player_inner_width/16*9);
 	}
-	player.setSize(player_width, player_height);
-	$('.player-vertical-padding')[0].style.height = full_height+"px";
+	player.setSize(player_inner_width, player_inner_height);
+	$('.player-vertical-padding')[0].style.height = player_height+"px";
 	var player_controller = document.getElementById("player-controller");
-	player_controller.style.width = full_width+'px';
+	player_controller.style.width = player_width+'px';
 	var danmaku_input = document.getElementById("danmaku-input");
 	if ($('.input-layon-block').hasClass('hidden')) {
-		danmaku_input.style.width = (full_width - 26*2 - 50 - 2) + 'px';
+		danmaku_input.style.width = (player_width - 26*2 - 50 - 2) + 'px';
 	} else {
-		danmaku_input.style.width = (full_width - 26*2 - 50 - 2 - 32) + 'px';
+		danmaku_input.style.width = (player_width - 26*2 - 50 - 2 - 32) + 'px';
 	}
 	var player_canvas = document.getElementById("player-canvas");
-	player_canvas.style.width = player_width+"px";
-	player_canvas.style.height = player_height+"px";
-	progress_update();
+	player_canvas.style.width = player_inner_width+"px";
+	player_canvas.style.height = player_inner_height+"px";
 
 	var list = document.querySelectorAll("div.danmaku");
 	for (var i = 0; i < list.length; ++i) {
@@ -369,7 +367,7 @@ function progress_tip_show(evt) {
 	var tip = document.getElementById("progress-tip");
 	tip.style.display = "inline-block";
 
-	var progress_bar = document.getElementById("progress-bar-background");
+	var progress_bar = document.getElementById("progress-bar");
 	var rect = progress_bar.getBoundingClientRect();
 	var offset = evt.clientX - rect.left;
 	if (offset < 0) {
@@ -401,7 +399,7 @@ function progress_bar_down(evt) {
 }
 
 function progress_bar_move(evt) {
-	var progress_bar = document.getElementById("progress-bar-background");
+	var progress_bar = document.getElementById("progress-bar");
 	var rect = progress_bar.getBoundingClientRect();
 	var progress_played = document.getElementById("progress-bar-played");
 	var offset = evt.clientX - rect.left;
@@ -412,16 +410,12 @@ function progress_bar_move(evt) {
 		offset = progress_bar.offsetWidth;
 	}
 	progress_played.style.width = offset + "px";
-	var progress_pointer = document.getElementById("progress-pointer");
-	progress_pointer.style.WebkitTransform = "translateX("+offset+"px)";
-	progress_pointer.style.msTransform = "translateX("+offset+"px)";
-	progress_pointer.style.transform = "translateX("+offset+"px)";
 }
 
 function progress_bar_stop(evt) {
 	progress_bar_move(evt);
 
-	var progress_bar = document.getElementById("progress-bar-background");
+	var progress_bar = document.getElementById("progress-bar");
 	var rect = progress_bar.getBoundingClientRect();
 	var offset = evt.clientX - rect.left;
 	if (offset < 0) {
@@ -433,7 +427,6 @@ function progress_bar_stop(evt) {
 	var num = offset/progress_bar.offsetWidth*player.getDuration();
 	var progress_number = document.getElementById("progress-number");
 	progress_number.lastChild.nodeValue = secondsToTime(num)+"/"+progress_number.lastChild.nodeValue.split('/')[1];
-	progress_resize();
 
 	danmaku_all_clear();
 
@@ -445,25 +438,11 @@ function progress_bar_stop(evt) {
 	progressHold = false;
 }
 
-function progress_resize() {
-	var progress_bar_background = document.getElementById("progress-bar-background");
-	var rect = progress_bar_background.getBoundingClientRect();
-	var progress_number = document.getElementById("progress-number");
-	var rectNum = progress_number.getBoundingClientRect();
-	progress_bar_background.style.width = (rectNum.left - rect.left - 9)+"px";
-
-	var progress_bar = document.getElementById("progress-bar");
-	progress_bar.style.width = progress_bar_background.style.width;
-	// console.log('progress_resize');
-}
-
 function buffer_update() {
 	// console.log('buffer_update:'+player.getVideoLoadedFraction());
 	var buffered = player.getVideoLoadedFraction();
-	var progress_bar = document.getElementById("progress-bar-background");
 	var progress_buffered = document.getElementById("progress-bar-buffered");
-	progress_buffered.style.width = progress_bar.offsetWidth*buffered + "px";
-	// console.log(buffered+" "+(-1000 + progress_bar.offsetWidth*buffered));
+	progress_buffered.style.width = buffered*100+'%';
 }
 
 function progress_update() {
@@ -471,16 +450,9 @@ function progress_update() {
 	var progress_number = document.getElementById("progress-number");
 	var splits = progress_number.lastChild.nodeValue.split('/');
 	progress_number.lastChild.nodeValue = secondsToTime(player.getCurrentTime())+"/"+splits[1];
-	progress_resize();
 	if (!progressHold) {
-		var progress_bar = document.getElementById("progress-bar-background");
 		var progress_played = document.getElementById("progress-bar-played");
-		progress_played.style.width = player.getCurrentTime()/player.getDuration()*progress_bar.offsetWidth + "px";
-		
-		var progress_pointer = document.getElementById("progress-pointer");
-		progress_pointer.style.WebkitTransform = "translateX("+player.getCurrentTime()/player.getDuration()*progress_bar.offsetWidth+"px)";
-		progress_pointer.style.msTransform = "translateX("+player.getCurrentTime()/player.getDuration()*progress_bar.offsetWidth+"px)";
-		progress_pointer.style.transform = "translateX("+player.getCurrentTime()/player.getDuration()*progress_bar.offsetWidth+"px)";
+		progress_played.style.width = player.getCurrentTime()/player.getDuration()*100+'%';
 	}
 
 	var cur_quality = quality_youtube2local(player.getPlaybackQuality());
@@ -928,13 +900,13 @@ function onPlayerReady(event) {
 		volume_tip.lastChild.nodeValue = text;
 	}
 
-	var player_canvas = document.getElementById("player-canvas");
+	var player_background = document.getElementById("player-background");
 	for (var i = 0; i < 120; i++) {
 		var bul = document.createElement('div');
 		bul.setAttribute('class', 'danmaku');
 		var text = document.createTextNode('sdfsdfs');
 		bul.appendChild(text);
-		player_canvas.appendChild(bul);
+		player_background.appendChild(bul);
 		danmaku_elements.push({idle: true, generating: false, posX: 0, posY: 0, clear_request: false, element: bul, ref_danmaku: null});
 	}
 	for (var i = 0; i < 10000; i++) {
@@ -948,7 +920,7 @@ function onPlayerReady(event) {
 
 	var play_button = document.getElementById("play-pause-button");
 	play_button.addEventListener("click", video_toggle);
-	$('.player-background').click(video_toggle);
+	player_background.addEventListener("click", video_toggle);
 	$('div.danmaku').click(video_toggle);
 
 	var volume_button = document.getElementById("volume-switch");
@@ -964,7 +936,7 @@ function onPlayerReady(event) {
 
 	var full_button = document.getElementById("full-screen");
 	full_button.addEventListener("click", fullscreen_switch);
-	$('.player-background').dblclick(fullscreen_switch);
+	player_background.addEventListener("dblclick", fullscreen_switch);
 	document.addEventListener("fullscreenchange", fullscreen_change, false);      
 	document.addEventListener("webkitfullscreenchange", fullscreen_change, false);
 	document.addEventListener("mozfullscreenchange", fullscreen_change, false);
@@ -1000,10 +972,8 @@ function onPlayerReady(event) {
 
 	var progress_bar_played = document.getElementById("progress-bar-played");
 	progress_bar_played.style.width = "0";
-
 	var progress_buffered = document.getElementById("progress-bar-buffered");
 	progress_buffered.style.width = "0";
-	progress_resize();
 
 	var time_title = document.getElementById("time");
 	time_title.addEventListener("click", time_order_change);
@@ -1581,8 +1551,7 @@ function date_order_change(evt) {
 	time_title.className = "danmaku-order-title";
 }
 
-function secondsToTime(secs)
-{
+function secondsToTime(secs) {
 	var curTime;
 	if (Math.floor(secs/60) < 10) {
 		curTime = "0"+Math.floor(secs/60);
