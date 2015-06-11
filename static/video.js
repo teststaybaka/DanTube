@@ -923,6 +923,15 @@ function onPlayerReady(event) {
 	player_background.addEventListener("click", video_toggle);
 	$('div.danmaku').click(video_toggle);
 
+	$('#backward-button').click(function() {
+		var time = Math.max(player.getCurrentTime() - 3, 0);
+		player.seekTo(time, true);
+	});
+	$('#forward-button').click(function() {
+		var time = Math.min(player.getCurrentTime() + 3, player.getDuration());
+		player.seekTo(time, true);
+	});
+
 	var volume_button = document.getElementById("volume-switch");
 	volume_button.addEventListener("click", volume_switch);
 	var volume = document.getElementById("volume-background");

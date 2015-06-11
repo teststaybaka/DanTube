@@ -99,6 +99,38 @@ div.danmaku {
 	font-size: 0;
 }
 
+#backward-button, #forward-button {
+	float: left;
+	height: 100%;
+	width: 40px;
+	background-image: url("/static/img/player_icons.png");
+	cursor: pointer;
+}
+
+#backward-button {
+	background-position: 0 -1060px;
+}
+
+#backward-button:hover {
+	background-position: 0 -1110px;
+}
+
+#backward-button:active {
+	background-position: 0 -1162px;
+}
+
+#forward-button {
+	background-position: 0 -1035px;
+}
+
+#forward-button:hover {
+	background-position: 0 -1085px;
+}
+
+#forward-button:active {
+	background-position: 0 -1137px;
+}
+
 #play-pause-button.play, #play-pause-button.pause {
 	float: left;
 	height: 100%;
@@ -128,10 +160,17 @@ div.danmaku {
 	background-position: 0 -758px;
 }
 
-#progress-bar {
+#progress-bar-background {
 	position: relative;
-	height: 6px;
+	height: 3px;
 	background-color: rgb(200,200,200);
+}
+
+#progress-bar {
+	position: absolute;
+	height: 10px;
+	width: 100%;
+	bottom: 0;
 }
 
 #progress-bar-buffered, #progress-bar-played {
@@ -139,8 +178,6 @@ div.danmaku {
 	display: inline-block;
 	height: 100%;
 	will-change: width;
-	-webkit-transition: width .1s; /* For Safari 3.1 to 6.0 */
-    transition: width .1s;
 	pointer-events: none;
 	width: 0;
 }
@@ -176,9 +213,9 @@ div.danmaku {
 #progress-tip {
 	display: none;
 	position: absolute;
-	bottom: 8px;
+	bottom: 11px;
 	background-color: rgba(255,255,255,.5);
-	z-index: 1;
+	z-index: 2;
 	border-radius: 3px;
 	-webkit-border-radius: 3px;
     -moz-border-radius: 3px;
@@ -190,14 +227,14 @@ div.danmaku {
 
 #progress-number {
 	display: inline-block;
-	float: right;
+	float: left;
 	-webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
 	-moz-box-sizing: border-box;    /* Firefox, other Gecko */
 	box-sizing: border-box;
 	font-size: 14px;
 	line-height: 25px;
-	width: 88px;
-	text-align: right;
+	text-align: left;
+	margin-left: 10px;
 }
 
 #volume-controller {
@@ -1075,12 +1112,12 @@ div.danmaku-order-title.down:after {
 }
 
 #danmaku-list {
-	height: 388px;
+	height: 385px;
 	overflow-y: auto;
 }
 
 #danmaku-list-all {
-	height: 468px;
+	height: 465px;
 	overflow-y: auto;
 }
 
@@ -1300,7 +1337,7 @@ div.bullet-date-value {
 
 .block-list {
 	width: 100%;
-	height: 363px;
+	height: 360px;
 	overflow: auto;
 }
 
