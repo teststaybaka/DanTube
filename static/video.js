@@ -36,6 +36,7 @@ var max_danmaku = 60;
 var ori_danmaku_scale = 3;
 var danmaku_scale = 3;
 var has_text_outline = 1;
+var hide_controls = 1;
 var ori_danmaku_font = 'Times New Roman';
 var danmaku_font = 'Times New Roman';
 var block_rules = [];
@@ -67,10 +68,10 @@ function onPlayerStateChange(event) {
 		var button = document.getElementById("play-pause-button");
 		button.setAttribute("class", "play");
 
-		if (autoSwitch && $('a.episode-link.active').length != 0 && $('a.episode-link.active').next().length != 0) {
-			auto_switch_count_down();
-		} else if (isLoop) {
+		if (isLoop) {
 			player.playVideo();
+		} else if (autoSwitch && $('a.episode-link.active').length != 0 && $('a.episode-link.active').next().length != 0) {
+			auto_switch_count_down();
 		} else {
 			clearInterval(danmakuVar);
 			clearInterval(progressVar);
@@ -89,8 +90,7 @@ function auto_switch_count_down() {
 	        count_down -= 1;
 	        switch_count_down = setTimeout(one_down, 1000);
     	} else {
-    		setCookie('autoPlay', 1, 0);
-    		window.location.href = $('a.episode-link.active').next().attr('href');
+    		window.location.href = $('a.episode-link.active').next().attr('href')+"&autoplay=1";
     	}
 	}
 
@@ -275,7 +275,11 @@ function fullscreen_change(evt) {
 		$('#full-screen').addClass('on');
 		$('#full-screen').removeClass('off');
 		player_width = screen.width;
-		player_height = screen.height - 58;
+		if (!hide_controls) {
+			player_height = screen.height - $('#controller-background').outerHeight() - $('#progress-bar-background').outerHeight();
+		} else {
+			player_height = screen.height - $('#progress-bar-background').outerHeight();
+		}
 		$("#danmaku-pool").addClass('hidden');
 		var player_inner_width = player_width;
 		var player_inner_height = player_height;
@@ -334,7 +338,7 @@ function fullscreen_switch(evt) {
 
 function page_wide_player() {
 	player_width = $('body').innerWidth();
-	player_height = window.innerHeight - 58;
+	player_height = window.innerHeight - $('#controller-background').outerHeight() - $('#progress-bar-background').outerHeight();
 	$("#danmaku-pool").addClass('hidden');
 	var player_inner_width = player_width;
 	var player_inner_height = player_height;
@@ -850,15 +854,9 @@ function onPlayerReady(event) {
 	buffer_update();
 	progress_update();
 
-	var arguments = document.URL.split('?')[1];
-	if (arguments) {
-		arguments = arguments.split('&');
-		for (var i = 0; i < arguments.length; i++) {
-			if (arguments[i].indexOf('timestamp') > -1) {
-				var timestamp = parseFloat(arguments[i].substr(10));
-				player.seekTo(timestamp, true);
-			}
-		}
+	var timestamp = parseFloat(getParameterByName('timestamp'));
+	if (!isNaN(timestamp)) {
+		player.seekTo(timestamp, true);
 	}
 
 	var volume = getCookie('player_volume');
@@ -1280,16 +1278,32 @@ function onPlayerReady(event) {
     			$(this).removeClass('on');
     			$(this).addClass('off');
     		}
+		} else if ($(this).hasClass('hide-controls')) {
+			var cookie_str = getCookie('hide_controls');
+    		if (cookie_str) hide_controls = parseInt(cookie_str);
+    		if (hide_controls) {
+    			$(this).removeClass('off');
+    			$(this).addClass('on');
+    		}
 		}
 	});
-	$('.checkbox-selection.text-outline').click(function() {
-		if ($(this).hasClass('off')) {
-			has_text_outline = 0;
-		} else {
-			has_text_outline = 1;
+	$('.checkbox-selection').click(function() {
+		if ($(this).hasClass('text-outline')) {
+			if ($(this).hasClass('off')) {
+				has_text_outline = 0;
+			} else {
+				has_text_outline = 1;
+			}
+			setCookie('text_outline', has_text_outline, 0);
+			change_danmaku_outline();
+		} else if ($(this).hasClass('hide-controls')) {
+			if ($(this).hasClass('off')) {
+				hide_controls = 0;
+			} else {
+				hide_controls = 1;
+			}
+			setCookie('hide_controls', hide_controls, 0);
 		}
-		setCookie('text_outline', has_text_outline, 0);
-		change_danmaku_outline();
 	});
 	
 	{
@@ -1464,10 +1478,10 @@ function onPlayerReady(event) {
 			}
 		}
 	});
-	{
-		var cookie_str = getCookie('autoPlay');
-		if (cookie_str) player.playVideo();
-		setCookie('autoPlay', 1, -1);
+
+	var autoplay = getParameterByName('autoplay');
+	if (autoplay === '1') {
+		player.playVideo();
 	}
 }
 
@@ -1653,10 +1667,8 @@ function isCookieExisted(cname) {
 }
 
 $(document).ready(function() {
-	var url = document.URL;
-	var urls = document.URL.split('/');
-	var url_suffix = urls[urls.length-1];
-	var video_id = url.split('?')[0].substr(url.lastIndexOf('/dt') + 3);
+	var url_suffix = window.location.href.split('/').last();
+	var video_id = window.location.pathname.substr(window.location.pathname.lastIndexOf('/dt') + 3);
 
 	$('div.more-episode').click(function() {
 		$('a.episode-link.hidden').removeClass('hidden');
@@ -2163,23 +2175,13 @@ $(document).ready(function() {
 		$('#reply-textarea').val('@' + user_name + ': ');
 	});
 
-	var arguments = url.split('?')[1]
-	if (arguments) {
-		arguments = arguments.split('&');
-		for (var i = 0; i < arguments.length; i++) {
-			if (arguments[i].indexOf('comment') > -1) {
-				floorth = parseInt(arguments[i].substr(8));
-			}
-			if (arguments[i].indexOf('reply') > -1) {
-				inner_floorth = parseInt(arguments[i].substr(6));
-			}
-		}
-		if (floorth != 0) {
-			var total = parseInt($('#comments-block-title span').text());
-			var rev = total - floorth + 1;
-			update_comments(Math.ceil(rev/20), video_id);
-		}
+	floorth = parseInt(getParameterByName('comment'));
+	if (!isNaN(floorth)) {
+		var total = parseInt($('#comments-block-title span').text());
+		var rev = total - floorth + 1;
+		update_comments(Math.ceil(rev/20), video_id);
 	}
+	inner_floorth = parseInt(getParameterByName('reply'));
 
 	$('#report-button').click(function() {
 		$('#report-box').addClass('show');
@@ -2260,7 +2262,7 @@ function update_comments(page, video_id) {
 	                    	$(window).scrollTop(cur_div.offset().top);
 	                    	console.log(cur_div.offset().top)
 	                    	floorth = 0;
-	                    	if (inner_floorth != 0) {
+	                    	if (!isNaN(inner_floorth)) {
 		                    	update_inner_comments(Math.ceil(inner_floorth/10), video_id, cur_div.children('div.inner-comment-container'))
 		                    }
 	                    }
