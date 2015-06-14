@@ -242,7 +242,7 @@ For usage and examples: colpick.com/plugin
 				if (left + calW > viewPort.l + viewPort.w) {
 					left -= calW;
 				}
-				cal.css({left: left + 'px', top: top + 'px'});
+				// cal.css({left: left + 'px', top: top + 'px'});
 				if (cal.data('colpick').onShow.apply(this, [cal.get(0)]) != false) {
 					cal.show();
 				}
@@ -380,7 +380,7 @@ For usage and examples: colpick.com/plugin
 								display: 'block'
 							});
 						} else {
-							cal.appendTo(document.body);
+							$(this).before(cal);
 							$(this).on(options.showEvent, show);
 							cal.css({
 								position:'absolute'

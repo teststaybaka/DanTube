@@ -20,7 +20,6 @@ div.danmaku {
     -ms-user-select: none;
     user-select: none;
     box-shadow: 0 0 8px rgb(200,200,200);
-    position: relative;
     z-index: 1;
     top: 0;
     left: 0;
@@ -41,6 +40,7 @@ div.danmaku {
 	float: left;
 	width: 640px;
 	font-size: 0;
+	position: relative;
 }
 
 #player-background {
@@ -158,6 +158,11 @@ div.danmaku {
 
 #play-pause-button.pause:active {
 	background-position: 0 -758px;
+}
+
+#progress-controller-wrap {
+	-webkit-transition: bottom .15s; /* For Safari 3.1 to 6.0 */
+    transition: bottom .15s;
 }
 
 #progress-bar-background {
