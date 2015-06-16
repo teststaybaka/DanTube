@@ -7,7 +7,6 @@ div.danmaku {
     left: 650px;
     top: 0;
     color: white;
-    text-shadow: 0 2px 6px rgb(50,50,50);
     white-space: nowrap;
     will-change: transform, -ms-transform, -webkit-transform, opacity;
 }
@@ -23,6 +22,7 @@ div.danmaku {
     z-index: 1;
     top: 0;
     left: 0;
+    position: relative;
 }
 
 #player-container:-webkit-full-screen {
@@ -40,7 +40,6 @@ div.danmaku {
 	float: left;
 	width: 640px;
 	font-size: 0;
-	position: relative;
 }
 
 #player-background {
@@ -1233,7 +1232,7 @@ div.bullet-date-value {
 }
 
 .player-setting-line.full {
-	margin: 10px 10px;
+	margin: 7px 10px;
 }
 
 .player-setting-line.full label {
@@ -1342,7 +1341,7 @@ div.bullet-date-value {
 
 .block-list {
 	width: 100%;
-	height: 360px;
+	height: 366px;
 	overflow: auto;
 }
 
@@ -1411,16 +1410,12 @@ div.bullet-date-value {
 .css-customize-input {
 	resize: none;
 	width: 350px;
-	height: 200px;
+	height: 175px;
 }
 
 .advanced-danmaku-label {
-	width: 85px;
+	width: 100px;
 	display: inline-block;
-}
-
-.advanced-danmaku-label.long {
-	width: 95px;
 }
 
 .advanced-danmaku-input-box {
@@ -1434,16 +1429,14 @@ div.bullet-date-value {
 .advanced-danmaku-input {
 	padding: 0 15px 0 4px;
 	height: 20px;
-	border: 1px solid rgb(200,200,200);
-	box-shadow: inset 0px 1px 3px rgb(220,220,220);
-	width: 35px;
+	width: 55px;
 	font-size: 12px;
 	margin-left: 5px;
 	vertical-align: middle;
 }
 
-.advanced-danmaku-input.long {
-	width: 55px;
+.advanced-danmaku-input.long-long {
+	width: 280px;
 }
 
 .percentage-check.check-label {
@@ -2141,7 +2134,7 @@ span.checklabel {
 .special-danmaku-button.inline-button {
 	margin: 0;
 	width: 70px;
-	margin-top: 5px;
+	margin-top: 3px;
 	margin-left: 10px;
 	margin-right: 5px;
 	text-align: center;
@@ -2160,18 +2153,18 @@ input.subtitle-danmaku-input {
 .subtitle-content-input {
 	resize: none;
 	width: 350px;
-	height: 300px;
+	height: 320px;
 }
 
 .code-danmaku-output {
 	width: 350px;
-	height: 110px;
+	height: 120px;
 	resize: none;
 }
 
 .code-danmaku-content-input {
 	width: 350px;
-	height: 180px;
+	height: 185px;
 	resize: none;
 }
 

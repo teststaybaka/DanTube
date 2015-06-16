@@ -386,6 +386,7 @@ class VideoClip(ndb.Model):
   duration = ndb.IntegerProperty(required=True, indexed=False, default=0)
   source = ndb.StringProperty(required=True, choices=['youtube'])
   danmaku_pools = ndb.KeyProperty(kind='DanmakuPool', repeated=True, indexed=False)
+  advanced_danmaku_pools = ndb.KeyProperty(kind='AdvancedDanmakuPool', repeated=True, indexed=False)
 
   @staticmethod
   def parse_url(raw_url):
@@ -788,8 +789,25 @@ class Danmaku(ndb.Model):
   creator = ndb.KeyProperty(kind='User', required=True, indexed=False)
   created = ndb.DateTimeProperty(auto_now_add=True, indexed=False)
 
+class AdvancedDanmaku(ndb.Model):
+  timestamp = ndb.FloatProperty(required=True, indexed=False)
+  content = ndb.StringProperty(required=True, indexed=False)
+  birth_x = ndb.FloatProperty(required=True, indexed=False)
+  birth_y = ndb.FloatProperty(required=True, indexed=False)
+  death_x = ndb.FloatProperty(required=True, indexed=False)
+  death_y = ndb.FloatProperty(required=True, indexed=False)
+  speed_x = ndb.FloatProperty(required=True, indexed=False)
+  speed_y = ndb.FloatProperty(required=True, indexed=False)
+  longevity = ndb.FloatProperty(required=True, indexed=False)
+  css = ndb.TextProperty(required=True, indexed=False)
+  creator = ndb.KeyProperty(kind='User', required=True, indexed=False)
+  created = ndb.DateTimeProperty(auto_now_add=True, indexed=False)
+
 class DanmakuPool(ndb.Model):
   danmaku_list = ndb.StructuredProperty(Danmaku, repeated=True, indexed=False)
+
+class AdvancedDanmakuPool(ndb.Model):
+  advanced_danmaku_list = ndb.StructuredProperty(AdvancedDanmaku, repeated=True, indexed=False)
 
 class Comment(ndb.Model):
   creator = ndb.KeyProperty(kind='User', required=True, indexed=False) # add an Activity class to record it

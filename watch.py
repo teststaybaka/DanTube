@@ -372,6 +372,28 @@ class Danmaku(BaseHandler):
                     'color': danmaku.color,
                 })
 
+        advanced_danmaku_pools = ndb.get_multi(clip.advanced_danmaku_pools)
+        for i in range(0, len(advanced_danmaku_pools)):
+            advanced_danmaku_pool = advanced_danmaku_pools[i]
+            for j in range(0, len(advanced_danmaku_pool.advanced_danmaku_list)):
+                advanced_danmaku = advanced_danmaku_pool.advanced_danmaku_list[j]
+                danmaku_list.append({
+                    'content': advanced_danmaku.content,
+                    'timestamp': advanced_danmaku.timestamp,
+                    'created': advanced_danmaku.created.strftime("%m-%d %H:%M"),
+                    'created_seconds': models.time_to_seconds(advanced_danmaku.created),
+                    'creator': advanced_danmaku.creator.id(),
+                    'birth_x': advanced_danmaku.birth_x,
+                    'birth_y': advanced_danmaku.birth_y,
+                    'death_x': advanced_danmaku.death_x,
+                    'death_y': advanced_danmaku.death_y,
+                    'speed_x': advanced_danmaku.speed_x,
+                    'speed_y': advanced_danmaku.speed_y,
+                    'longevity': advanced_danmaku.longevity,
+                    'css': advanced_danmaku.css,
+                    'type': 'Advanced',
+                })
+
         self.response.out.write(json.dumps(danmaku_list))
 
     @login_required
@@ -446,13 +468,13 @@ class Danmaku(BaseHandler):
             }))
             return
 
-        allow_share = self.request.get('allow_share')
-        if allow_share == 'true':
+        allow_share = self.request.get('allow-share')
+        if allow_share == 'on':
             allow_share = True
         else:
             allow_share = False
 
-        reply_to = self.request.get('reply_to')
+        reply_to = self.request.get('reply-to')
         if reply_to:
             content = u'←' + content
             reply_to_key = ndb.Key('User', long(reply_to))
@@ -500,6 +522,152 @@ class Danmaku(BaseHandler):
             'type': danmaku.position,
             'size': danmaku.size,
             'color': danmaku.color,
+        }))
+
+    @login_required
+    def post_advanced(self, video_id):
+        self.response.headers['Content-Type'] = 'application/json'
+        user = self.user
+        video = models.Video.get_by_id('dt'+video_id)
+        if not video:
+            self.response.out.write(json.dumps({
+                'error': True,
+                'message': 'Video not found.',
+            }))
+
+        try:
+            clip_index = int(self.request.get('index'))
+        except ValueError:
+            clip_index = 1
+        if clip_index < 1 or clip_index > len(video.video_clips):
+            self.response.out.write(json.dumps({
+                'error': True,
+                'message': 'Video not found.',
+            }))
+            return
+
+        content = self.request.get('content').strip()
+        if not content:
+            self.response.out.write(json.dumps({
+                'error': True,
+                'message': 'Can not be empty.',
+            }))
+            return
+        elif len(content) > 350:
+            self.response.out.write(json.dumps({
+                'error': True,
+                'message': 'Comment is too long.',
+            }))
+            return
+
+        try:
+            birth_pos = (float(self.request.get('birth-position-X')), float(self.request.get('birth-position-Y')))
+        except Exception, e:
+            self.response.out.write(json.dumps({
+                'error': True,
+                'message': 'Invalid birth position.',
+            }))
+            return
+
+        try:
+            death_pos = (float(self.request.get('death-position-X')), float(self.request.get('death-position-Y')))
+        except Exception, e:
+            self.response.out.write(json.dumps({
+                'error': True,
+                'message': 'Invalid death position.',
+            }))
+            return
+
+        try:
+            speed = (float(self.request.get('speed-X')), float(self.request.get('speed-Y')))
+            if speed[0] < 0 or speed[1] < 0:
+                raise ValueError('Negative speed')
+        except Exception, e:
+            self.response.out.write(json.dumps({
+                'error': True,
+                'message': 'Invalid speed.',
+            }))
+            return
+
+        try:
+            longevity = float(self.request.get('longevity'))
+            if longevity < 0:
+                raise ValueError('Negative longevity')
+        except Exception, e:
+            longevity = 0
+
+        if birth_pos[0] == death_pos[0] and birth_pos[1] == death_pos[1] and longevity == 0:
+            self.response.out.write(json.dumps({
+                'error': True,
+                'message': 'Please specify longevity for static danmaku.',
+            }))
+            return
+        if (birth_pos[0] != death_pos[0] and speed[0] == 0) or (birth_pos[1] != death_pos[1] and speed[1] == 0):
+            self.response.out.write(json.dumps({
+                'error': True,
+                'message': 'Please specify speed for moving danmaku.',
+            }))
+            return
+
+        try:
+            timestamp = float(self.request.get('timestamp'))
+        except Exception, e:
+            self.response.out.write(json.dumps({
+                'error': True,
+                'message': 'Invalid timestamp.',
+            }))
+
+        custom_css = self.request.get('danmaku-css').strip()
+        if not custom_css:
+            self.response.out.write(json.dumps({
+                'error': True,
+                'message': 'Empty CSS.',
+            }))
+            return
+
+        clip = video.video_clips[clip_index-1].get()
+        if len(clip.advanced_danmaku_pools) == 0:
+            advanced_danmaku_pool = models.AdvancedDanmakuPool()
+            advanced_danmaku_pool.put()
+            clip.advanced_danmaku_pools.append(advanced_danmaku_pool.key)
+            clip.put()
+        else:
+            advanced_danmaku_pool = clip.advanced_danmaku_pools[-1].get()
+            if len(advanced_danmaku_pool.advanced_danmaku_list) >= 200:
+                advanced_danmaku_pool = models.AdvancedDanmakuPool()
+                advanced_danmaku_pool.put()
+                clip.advanced_danmaku_pools.append(advanced_danmaku_pool.key)
+                if len(clip.advanced_danmaku_pools) > 20:
+                    clip.advanced_danmaku_pools.pop(0).delete()
+                clip.put()
+
+        advanced_danmaku = models.AdvancedDanmaku(timestamp=timestamp, content=content, birth_x=birth_pos[0], birth_y=birth_pos[1], death_x=death_pos[0], death_y=death_pos[1], speed_x=speed[0], speed_y=speed[1], longevity=longevity, css=custom_css, creator=user.key)
+        advanced_danmaku_pool.advanced_danmaku_list.append(advanced_danmaku)
+        advanced_danmaku_pool.put()
+        video.update_hot_score(HOT_SCORE_PER_DANMAKU)
+        video.last_updated = datetime.now()
+        video.put()
+
+        danmaku_record = models.ActivityRecord(creator=user.key, activity_type='danmaku', timestamp=advanced_danmaku.timestamp, content=advanced_danmaku.content, video=video.key, clip_index=clip_index, public=False)
+        danmaku_record.put()
+        user.comments_num += 1
+        user.put()
+        
+        self.response.out.write(json.dumps({
+            'content': advanced_danmaku.content,
+            'timestamp': advanced_danmaku.timestamp,
+            'created': advanced_danmaku.created.strftime("%m-%d %H:%M"),
+            'created_seconds': models.time_to_seconds(advanced_danmaku.created),
+            'creator': advanced_danmaku.creator.id(),
+            'birth_x': advanced_danmaku.birth_x,
+            'birth_y': advanced_danmaku.birth_y,
+            'death_x': advanced_danmaku.death_x,
+            'death_y': advanced_danmaku.death_y,
+            'speed_x': advanced_danmaku.speed_x,
+            'speed_y': advanced_danmaku.speed_y,
+            'longevity': advanced_danmaku.longevity,
+            'css': advanced_danmaku.css,
+            'type': 'Advanced',
         }))
         
 class Like(BaseHandler):

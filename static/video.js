@@ -40,6 +40,8 @@ var hide_controls = 1;
 var ori_danmaku_font = 'Times New Roman';
 var danmaku_font = 'Times New Roman';
 var block_rules = [];
+var url_suffix = window.location.href.split('/').last();
+var video_id = window.location.pathname.substr(window.location.pathname.lastIndexOf('/dt') + 3);
 
 function onPlayerStateChange(event) {
 	if (event.data == YT.PlayerState.PLAYING) {
@@ -267,7 +269,7 @@ function fullscreen_change(evt) {
 		$('#page-wide').removeClass('on');
 		$('#page-wide').addClass('off');
 		var player_container = document.getElementById('player-container');
-		player_container.style.position = 'static';
+		player_container.style.position = 'relative';
 		$('#progress-controller-wrap')[0].style.position = 'static';
 		$('#progress-controller-wrap').off('mouseenter mouseleave');
 		$(window).off('resize', page_wide_player);
@@ -476,24 +478,52 @@ function progress_update() {
 	}
 }
 
-function Danmaku_Animation(index) {
-	var player_canvas = document.getElementById("player-canvas");
+function Danmaku_Animation(ele) {
 	var lTime = 0;
-	var ele = danmaku_elements[index];
 	var existingTime = existing_time*1000;
 	var type = ele.ref_danmaku.type;
 	var offsetWidth = ele.element.offsetWidth;
+	var offsetHeight = ele.element.offsetHeight;
+	var direct_x, direct_y;
+
+	function get_positionX(x) {
+		if (x < 0) return offsetWidth + player_width + x;
+		else return x;
+	}
+
+	function get_positionY(y) {
+		if (y < 0) return offsetHeight + player_width + y;
+		else return y;
+	}
 
 	this.startAnimation = function() {
 		lTime = Date.now();
 		if (type === 'RightToLeft') {
 			requestAnimationFrame(float_update);
 		} else if (type === 'Top' || type === 'Bottom') {
-			ele.posX = (player_width - offsetWidth)/2 + offsetWidth;
+			ele.posX = (player_width + offsetWidth)/2;
 			ele.element.style.WebkitTransform = "translate(-"+ele.posX+"px, "+ele.posY+"px)";
 			ele.element.style.msTransform = "translate(-"+ele.posX+"px, "+ele.posY+"px)";
 			ele.element.style.transform = "translate(-"+ele.posX+"px, "+ele.posY+"px)";
 			requestAnimationFrame(staying_update);
+		} else if (type === 'Advanced') {
+			ele.posX = get_positionX(ele.ref_danmaku.birth_x);
+			ele.posY = get_positionY(ele.ref_danmaku.birth_y);
+			var death_x = get_positionX(ele.ref_danmaku.death_x);
+			var death_y = get_positionY(ele.ref_danmaku.death_y);
+
+			if (death_x > ele.posX) direct_x = 1;
+			else if (death_x < ele.posX) direct_x = -1;
+			else direct_x = 0;
+
+			if (death_y > ele.posY) direct_y = 1;
+			else if (death_y < ele.posY) direct_y = -1;
+			else direct_y = 0;
+
+			if (ele.ref_danmaku.longevity != 0) {
+				existingTime = ele.ref_danmaku.longevity*1000;
+			}
+			requestAnimationFrame(advanced_update);
 		}
 	}
 
@@ -548,6 +578,38 @@ function Danmaku_Animation(index) {
 			for (var j = ele.posY; j < ele.element.offsetHeight + ele.posY; j++) {
 				occupation[j] -= 1;
 			}
+			// console.log(type+': '+occupation)
+			ele.element.style.WebkitTransform = "translate(-"+0+"px, "+ele.posY+"px)";
+			ele.element.style.msTransform = "translate(-"+0+"px, "+ele.posY+"px)";
+			ele.element.style.transform = "translate(-"+0+"px, "+ele.posY+"px)";
+			ele.idle = true;
+			ele.posX = 0;
+		}
+	}
+
+	function advanced_update() {
+		var curTime = Date.now();
+		var deltaTime = curTime - lTime;
+		var speed = ele.ref_danmaku.speed;
+		lTime = curTime;
+
+		var death_x = get_positionX(ele.ref_danmaku.death_x);
+		var death_y = get_positionY(ele.ref_danmaku.death_y);
+		if (isPlaying) {
+			existingTime -= deltaTime;
+			ele.posX += direct_x*ele.ref_danmaku.speed_x*deltaTime/1000;
+			ele.posY += direct_y*ele.ref_danmaku.speed_y*deltaTime/1000;
+			ele.element.style.WebkitTransform = "translate(-"+ele.posX+"px, "+ele.posY+"px)";
+			ele.element.style.msTransform = "translate(-"+ele.posX+"px, "+ele.posY+"px)";
+			ele.element.style.transform = "translate(-"+ele.posX+"px, "+ele.posY+"px)";
+		}
+
+		if (!ele.clear_request 
+			&& (ele.ref_danmaku.longevity == 0 || (ele.ref_danmaku.longevity != 0 && existingTime > 0))
+			&& ele.posX*direct_x <= death_x*direct_x 
+			&& ele.posY*direct_y <= death_y*direct_y) {
+			requestAnimationFrame(advanced_update);
+		} else {
 			// console.log(type+': '+occupation)
 			ele.element.style.WebkitTransform = "translate(-"+0+"px, "+ele.posY+"px)";
 			ele.element.style.msTransform = "translate(-"+0+"px, "+ele.posY+"px)";
@@ -620,18 +682,18 @@ function change_show_colored_danmaku(show) {
 	if (!show_colored) {
 		for (var i = 0; i < danmaku_elements.length; i++) {
 			var ele = danmaku_elements[i];
-			if (!ele.idle && ele.ref_danmaku.color.toString(16) !== 'ffffff') {
+			if (!ele.idle && ele.ref_danmaku.type !== 'Advanced' && ele.ref_danmaku.color.toString(16) !== 'ffffff') {
 				ele.clear_request = true;
 			}
 		}
 		for (var i = 0; i < danmaku.length; i++) {
-			if (danmaku[i].color.toString(16) !== 'ffffff') {
+			if (danmaku[i].type !== 'Advanced' && danmaku[i].color.toString(16) !== 'ffffff') {
 				danmaku[i].blocked = true;
 			}
 		}
 	} else {
 		for (var i = 0; i < danmaku.length; i++) {
-			if (danmaku[i].color.toString(16) !== 'ffffff' && !danmaku_filter(i)) {
+			if (danmaku[i].type !== 'Advanced' && danmaku[i].color.toString(16) !== 'ffffff' && !danmaku_filter(i)) {
 				danmaku[i].blocked = false;
 			}
 		}
@@ -706,7 +768,7 @@ function change_block_rule(index) {
 function danmaku_filter(danmaku_pointer) {// return true to filter.
 	if ((danmaku[danmaku_pointer].type === 'Top' && !show_top) || 
 		(danmaku[danmaku_pointer].type === 'Bottom' && !show_bottom) ||
-		(danmaku[danmaku_pointer].color.toString(16) != 'ffffff'  && !show_colored)) {
+		(danmaku[danmaku_pointer].type !== 'Advanced' && !show_colored && danmaku[danmaku_pointer].color.toString(16) != 'ffffff' )) {
 		return true;
 	} else {
 		for (var i = 0; i < block_rules.length; i++) {
@@ -802,56 +864,63 @@ function danmaku_update() {
 		ele.ref_danmaku = danmaku[danmaku_pointer];
 		danmaku_pointer++;
 
-		ele.element.setAttribute('data-index', i);
-		ele.element.lastChild.nodeValue = ele.ref_danmaku.content;
-		ele.element.style.color = '#'+('000000'+ele.ref_danmaku.color.toString(16)).substr(-6);
-		if (has_text_outline) {
-			var outline_color = reverse_color(ele.ref_danmaku.color);
-			ele.element.style.textShadow = '1px 0 1px '+outline_color+', -1px 0 1px '+outline_color+', 0 1px 1px '+outline_color+', 0 -1px 1px '+outline_color;
-		}
-		ele.element.style.fontSize = ele.ref_danmaku.size*danmaku_scale/3+'px';
-		ele.element.style.fontFamily = danmaku_font;
-		// ele.element.lastChild.nodeValue = secondsToTime(ele.ref_danmaku.timestamp);
-		ele.generating = true;
 		ele.idle = false;
 		ele.clear_request = false;
+		if (ele.ref_danmaku.type === 'Advanced') {
+			ele.element.setAttribute('data-index', i);
+			ele.element.lastChild.nodeValue = ele.ref_danmaku.content;
+			ele.element.setAttribute('style', ele.ref_danmaku.css);
+		} else {
+			ele.element.setAttribute('data-index', i);
+			ele.element.lastChild.nodeValue = ele.ref_danmaku.content;
+			ele.element.setAttribute('style', '');
+			ele.element.style.opacity = danmaku_opacity;
+			ele.element.style.color = '#'+('000000'+ele.ref_danmaku.color.toString(16)).substr(-6);
+			if (has_text_outline) {
+				var outline_color = reverse_color(ele.ref_danmaku.color);
+				ele.element.style.textShadow = '1px 0 1px '+outline_color+', -1px 0 1px '+outline_color+', 0 1px 1px '+outline_color+', 0 -1px 1px '+outline_color;
+			}
+			ele.element.style.fontSize = ele.ref_danmaku.size*danmaku_scale/3+'px';
+			ele.element.style.fontFamily = danmaku_font;
+			// ele.element.lastChild.nodeValue = secondsToTime(ele.ref_danmaku.timestamp);
+			ele.generating = true;
 
-		if (ele.ref_danmaku.type === 'RightToLeft') {
-			accumulate = accumulate_normal;
-			occupation = occupation_normal;
-		} else if (ele.ref_danmaku.type === 'Bottom') {
-			accumulate = accumulate_bottom;
-			occupation = occupation_bottom;
-		} else if (ele.ref_danmaku.type === 'Top') {
-			accumulate = accumulate_top;
-			occupation = occupation_top;
-		} 
-		accumulate[0] = 0;
-		for (var z = 0; z < ele.element.offsetHeight && z < player_height; z++) {
-			accumulate[0] += occupation[z];
-		}
-		for (var j = 1; j < player_height - ele.element.offsetHeight + 1; j++) {
-			accumulate[j] = accumulate[j-1];
-			accumulate[j] -= occupation[j-1];
-			accumulate[j] += occupation[j+ele.element.offsetHeight-1];
-		}
+			if (ele.ref_danmaku.type === 'RightToLeft') {
+				accumulate = accumulate_normal;
+				occupation = occupation_normal;
+			} else if (ele.ref_danmaku.type === 'Bottom') {
+				accumulate = accumulate_bottom;
+				occupation = occupation_bottom;
+			} else if (ele.ref_danmaku.type === 'Top') {
+				accumulate = accumulate_top;
+				occupation = occupation_top;
+			}
+			accumulate[0] = 0;
+			for (var z = 0; z < ele.element.offsetHeight && z < player_height; z++) {
+				accumulate[0] += occupation[z];
+			}
+			for (var j = 1; j < player_height - ele.element.offsetHeight + 1; j++) {
+				accumulate[j] = accumulate[j-1];
+				accumulate[j] -= occupation[j-1];
+				accumulate[j] += occupation[j+ele.element.offsetHeight-1];
+			}
 
-		var min_value = 2000000;
-		var min_line = 0;
-		for (var j = 0; j < player_height - ele.element.offsetHeight + 1; j++) {
-			if ((ele.ref_danmaku.type === 'Bottom' && accumulate[j] <= min_value)
-				|| (ele.ref_danmaku.type != 'Bottom' && accumulate[j] < min_value)) {
-				min_value = accumulate[j];
-				min_line = j;
+			var min_value = 2000000;
+			var min_line = 0;
+			for (var j = 0; j < player_height - ele.element.offsetHeight + 1; j++) {
+				if ((ele.ref_danmaku.type === 'Bottom' && accumulate[j] <= min_value)
+					|| (ele.ref_danmaku.type != 'Bottom' && accumulate[j] < min_value)) {
+					min_value = accumulate[j];
+					min_line = j;
+				}
+			}
+
+			ele.posY = min_line;
+			for (var j = ele.posY; j < ele.element.offsetHeight + ele.posY; j++) {
+				occupation[j] += 1;
 			}
 		}
-
-		ele.posY = min_line;
-		for (var j = ele.posY; j < ele.element.offsetHeight + ele.posY; j++) {
-			occupation[j] += 1;
-		}
-		
-		var danmaku_Animation = new Danmaku_Animation(i);
+		var danmaku_Animation = new Danmaku_Animation(ele);
 		danmaku_Animation.startAnimation();
 	}
 	lastTime = curTime;
@@ -863,11 +932,6 @@ function onPlayerReady(event) {
 	setInterval(buffer_update, 500);
 	buffer_update();
 	progress_update();
-
-	var timestamp = parseFloat(getParameterByName('timestamp'));
-	if (!isNaN(timestamp)) {
-		player.seekTo(timestamp, true);
-	}
 
 	var volume = getCookie('player_volume');
 	if (!volume) {
@@ -966,7 +1030,7 @@ function onPlayerReady(event) {
 			$(this).removeClass('on');
 			$(this).addClass('off');
 			var player_container = document.getElementById('player-container');
-			player_container.style.position = 'static';
+			player_container.style.position = 'relative';
 			$(window).off('resize', page_wide_player);
 
 			widescreen_change();
@@ -1011,9 +1075,8 @@ function onPlayerReady(event) {
 			pointer.style.WebkitTransform = "translateX(-"+offset+"px)";
 			pointer.style.msTransform = "translateX(-"+offset+"px)";
 			pointer.style.transform = "translateX(-"+offset+"px)";
-			if (danmaku_opacity != opacity) {
-				$('div.danmaku').css('opacity', opacity);
-			}
+			$('div.danmaku').css('opacity', opacity);
+			danmaku_opacity = opacity;
 		}
 	}
 	$('#opacity-indicator').mousedown(function(evt) {
@@ -1391,33 +1454,25 @@ function onPlayerReady(event) {
 		}
 		entry.remove();
 	});
-
-	$('.number-input').keydown(function(e) {
-		if (e.keyCode == 190 && $(this).val().indexOf('.') != -1) {
-			e.preventDefault();
+	
+	$('.number-input').on('input propertychange paste', function (e) {
+		if (($(this).hasClass('negative') && /^[-]?\d*[.]?\d*$/.test($(this).val()))
+			|| (!$(this).hasClass('negative') && /^\d*[.]?\d*$/.test($(this).val()))) { // is a number
+			$(this).attr('data-old', $(this).val());
+		} else { // not a number, preserve original value
+			$(this).val($(this).attr('data-old'));
 		}
-		// Allow: backspace, delete, tab, escape, enter and .
-        if ($.inArray(e.keyCode, [46, 8, 9, 27, 13, 110, 190]) !== -1 ||
-             // Allow: Ctrl+A
-            (e.keyCode == 65 && e.ctrlKey === true) || 
-             // Allow: home, end, left, right, down, up
-            (e.keyCode >= 35 && e.keyCode <= 40)) {
-                 // let it happen, don't do anything
-                 return;
-        }
-        // Ensure that it is a number and stop the keypress
-        if ((e.shiftKey || (e.keyCode < 48 || e.keyCode > 57)) && (e.keyCode < 96 || e.keyCode > 105)) {
-            e.preventDefault();
-        }
-	});
+    });
 	$('.number-input-arrow').click(function() {
 		var number_input = $(this).siblings('.number-input');
-		var num = number_input.val();
+		var num = parseFloat(number_input.val());
+		if (isNaN(num)) num = 0;
+
 		num = Math.round(num*100);
 		if ($(this).hasClass('up')) {
 			num += 10;
 		}
-		if ($(this).hasClass('down') && num >= 10) {
+		if ($(this).hasClass('down') && (number_input.hasClass('negative') || num >= 10)) {
 			num -= 10;
 		}
 		num /= 100;
@@ -1428,9 +1483,8 @@ function onPlayerReady(event) {
 		evt.preventDefault();
 
 		var ele = danmaku_elements[$(this).attr('data-index')];
-		var index = danmaku_list.indexOf(ele.ref_danmaku);
 		$('.danmaku-menu').attr('data-creator', ele.ref_danmaku.creator)
-						.attr('data-danmaku-pool-index', index);
+						.attr('data-index', $(this).attr('data-index'));
 
 		var rect = $('#player-container').offset();
 		$('.danmaku-menu').removeClass('hidden');
@@ -1448,7 +1502,8 @@ function onPlayerReady(event) {
 		add_block_rule(block_type, block_content);
 	});
 	$('#danmaku-locate-it').click(function(e) {
-		var danmaku_pool_index = $('.danmaku-menu').attr('data-danmaku-pool-index');
+		var ele = danmaku_elements[$('.danmaku-menu').attr('data-index')];
+		var danmaku_pool_index = danmaku_list.indexOf(ele.ref_danmaku);
 		$('.per-bullet.selected').removeClass('selected');
 		var target = $('.per-bullet')[danmaku_pool_index];
 		target.classList.add('selected');
@@ -1473,6 +1528,84 @@ function onPlayerReady(event) {
 		$('#danmaku-reply-input').val('');
 	});
 
+	$('#advanced-danmaku-form input[type="button"]').click(function() {
+		var error = advanced_danmaku_form_check();
+		if (error) return;
+
+		var preview_danmaku = {
+			content: $('#advanced-danmaku-content').val().trim(),
+			birth_x: parseFloat($('input[name="birth-position-X"]').val()),
+			birth_y: parseFloat($('input[name="birth-position-Y"]').val()),
+			death_x: parseFloat($('input[name="death-position-X"]').val()),
+			death_y: parseFloat($('input[name="death-position-Y"]').val()),
+			speed_x: parseFloat($('input[name="speed-X"]').val()),
+			speed_y: parseFloat($('input[name="speed-Y"]').val()),
+			longevity: parseFloat($('input[name="longevity"]').val()),
+			css: $('textarea[name="danmaku-css"]').val().trim(),
+			type: 'Advanced',
+		}
+		var bul = document.createElement('div');
+		bul.setAttribute('class', 'danmaku');
+		bul.setAttribute('style', preview_danmaku.css);
+		var text = document.createTextNode(preview_danmaku.content);
+		bul.appendChild(text);
+		player_background.appendChild(bul);
+
+		var new_danmaku_element = {idle: false, generating: false, posX: 0, posY: 0, clear_request: false, element: bul, ref_danmaku: preview_danmaku};
+		var danmaku_Animation = new Danmaku_Animation(new_danmaku_element);
+		danmaku_Animation.startAnimation();
+		pop_ajax_message('Previewing!', 'success');
+	});
+	$('#advanced-danmaku-form').submit(function(evt) {
+		var button = document.querySelector('#advanced-danmaku-form .special-danmaku-button.special');
+		button.disabled = true;
+
+        var error = advanced_danmaku_form_check();
+		if (error) {
+			button.disabled = false;
+			return false;
+		}
+
+		var data = $(this).serialize();
+		if ($('#use-cur-timestamp').is(':checked')) {
+			data += '&'+$.param({timestamp: player.getCurrentTime()});
+		} else {
+			data += '&'+$.param({timestamp: $('#new-timestamp').val()});
+		}
+
+		$.ajax({
+			type: "POST",
+			url: '/video/advanced_danmaku/' + url_suffix,
+			data: data,
+			success: function(result) {
+				if(!result.error) {
+					$('#danmaku-input').val('');
+					pop_ajax_message('Danmaku sent!', 'success');
+					result.timestamp = player.getCurrentTime() + 0.05;
+					result.blocked = false;
+					$('#danmaku-list').append('<div class="per-bullet container">\
+						<div class="bullet-time-value">' + secondsToTime(result.timestamp) + '</div>\
+						<div class="bullet-content-value" title="' + result.content + '">' + result.content + '</div>\
+						<div class="bullet-date-value">' + result.created + '</div></div>');
+					danmaku_list.push(result);
+					danmaku.push(result);
+					quick_sort(danmaku, 0, danmaku.length-1, danmaku_timestamp_lower_compare);
+				} else {
+					pop_ajax_message(result.message, 'error');
+				}
+				button.disabled = false;
+			},
+			error: function (xhr, ajaxOptions, thrownError) {
+				console.log(xhr.status);
+				console.log(thrownError);
+				pop_ajax_message(xhr.status+' '+thrownError, 'error');
+				button.disabled = false;
+			}
+		});
+
+		return false;
+	});
+
 	$(document).keydown(function(e) {
 		// console.log(e.keyCode)
 		if (e.keyCode == 27) {
@@ -1481,7 +1614,7 @@ function onPlayerReady(event) {
 			if ($('#page-wide').hasClass('on')) {
 				$('#page-wide').removeClass('on').addClass('off');
 				var player_container = document.getElementById('player-container');
-				player_container.style.position = 'static';
+				player_container.style.position = 'relative';
 				$(window).off('resize', page_wide_player);
 
 				widescreen_change();
@@ -1489,10 +1622,44 @@ function onPlayerReady(event) {
 		}
 	});
 
+	var timestamp = parseFloat(getParameterByName('timestamp'));
+	if (!isNaN(timestamp)) {
+		player.seekTo(timestamp - 0.05, true);
+	}
 	var autoplay = getParameterByName('autoplay');
 	if (autoplay === '1') {
 		player.playVideo();
 	}
+}
+
+function advanced_danmaku_form_check() {
+	var error = false;
+	var content = $('#advanced-danmaku-content').val().trim();
+	if (!content) {
+		pop_ajax_message('You can\'t post empty comment.', 'error');
+		error = true;
+	} else if (content.length > 350) {
+		pop_ajax_message('Comment is too long (less than 350 characters).', 'error');
+		error = true;
+	}
+
+	if ($('input[name="birth-position-X"]').val() === $('input[name="death-position-X"]').val()
+		&& $('input[name="birth-position-Y"]').val() === $('input[name="death-position-Y"]').val()
+		&& $('input[name="longevity"]').val() === '0') {
+		pop_ajax_message('Longevity must be specified for static danmaku.', 'error');
+		error = true;
+	}
+	if (($('input[name="birth-position-X"]').val() !== $('input[name="death-position-X"]').val() && $('input[name="speed-X"]').val() === '0')
+		|| ($('input[name="birth-position-Y"]').val() !== $('input[name="death-position-Y"]').val() && $('input[name="speed-Y"]').val() === '0')) {
+		pop_ajax_message('Speed must be specified for moving danmaku.', 'error');
+		error = true;
+	}
+
+	if (!$('textarea[name="danmaku-css"]').val().trim()) {
+		pop_ajax_message('CSS must be specified.', 'error');
+		error = true;
+	}
+	return error;
 }
 
 function quality_youtube2local(quality) {
@@ -1677,9 +1844,6 @@ function isCookieExisted(cname) {
 }
 
 $(document).ready(function() {
-	var url_suffix = window.location.href.split('/').last();
-	var video_id = window.location.pathname.substr(window.location.pathname.lastIndexOf('/dt') + 3);
-
 	$('div.more-episode').click(function() {
 		$('a.episode-link.hidden').removeClass('hidden');
 		$('div.more-episode').addClass('hidden');
@@ -1868,15 +2032,10 @@ $(document).ready(function() {
 			return false;
 		}
 
-		var danmaku_color = $('#danmaku-color-input').val();
-		var danmaku_type = $('#danmaku-type-input').val();
-		var danmaku_size = $('#danmaku-size-input').val();
-		var allow_share = $('#allow-post-danmaku').is(':checked');
-		var reply_to = $('#danmaku-reply-input').val();
 		$.ajax({
 			type: "POST",
 			url: '/video/danmaku/' + url_suffix,
-			data: {content: content, timestamp: player.getCurrentTime(), color: danmaku_color, type: danmaku_type, size: danmaku_size, allow_share: allow_share, reply_to: reply_to},
+			data: $(this).serialize()+'&'+$.param({timestamp: player.getCurrentTime()}),
 			success: function(result) {
 				if(!result.error) {
 					$('#danmaku-input').val('');

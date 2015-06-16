@@ -19,18 +19,18 @@ textarea, input, select, option {
     outline: none;
 }
 
-textarea.normal-input, input.normal-input {
+.normal-input {
     padding: 4px;
     font-size: 14px;
     border: 1px solid rgb(200,200,200);
     box-shadow: inset 0px 1px 3px rgb(220,220,220);
 }
 
-textarea.normal-input:focus, input.normal-input:focus {
+.normal-input:focus {
     border: 1px solid rgb(81,203,238);
 }
 
-textarea.normal-input.error, input.normal-input.error {
+.normal-input.error {
     border: 1px solid rgb(232,0,0);
 }
 
