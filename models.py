@@ -387,6 +387,8 @@ class VideoClip(ndb.Model):
   source = ndb.StringProperty(required=True, choices=['youtube'])
   danmaku_pools = ndb.KeyProperty(kind='DanmakuPool', repeated=True, indexed=False)
   advanced_danmaku_pools = ndb.KeyProperty(kind='AdvancedDanmakuPool', repeated=True, indexed=False)
+  subtitle_names = ndb.StringProperty(repeated=True, indexed=False)
+  subtitle_danmaku_pools = ndb.KeyProperty(kind='SubtitleDanmakuPool', repeated=True, indexed=False)
 
   @staticmethod
   def parse_url(raw_url):
@@ -808,6 +810,12 @@ class DanmakuPool(ndb.Model):
 
 class AdvancedDanmakuPool(ndb.Model):
   advanced_danmaku_list = ndb.StructuredProperty(AdvancedDanmaku, repeated=True, indexed=False)
+
+class SubtitleDanmakuPool(ndb.Model):
+  memo = ndb.StringProperty(required=True, indexed=False)
+  subtitles = ndb.TextProperty(required=True, indexed=False)
+  creator = ndb.KeyProperty(kind='User', required=True, indexed=False)
+  created = ndb.DateTimeProperty(auto_now_add=True, indexed=False)
 
 class Comment(ndb.Model):
   creator = ndb.KeyProperty(kind='User', required=True, indexed=False) # add an Activity class to record it

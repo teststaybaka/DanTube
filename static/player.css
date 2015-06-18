@@ -607,11 +607,6 @@ div.danmaku {
 	margin-right: 10px;
 }
 
-.list-option.subtitle, .list-selected.subtitle {
-	width: 180px;
-	font-size: 14px;
-}
-
 .list-option.block, .list-selected.block {
 	width: 80px;
 	font-size: 14px;
@@ -622,7 +617,7 @@ div.danmaku {
 	margin-right: 5px;
 }
 
-.list-selection.font, .list-selection.subtitle, .list-selection.block {
+.list-selection.font, .list-selection.block {
 	top: 23px;
 	bottom: auto;
 	z-index: 2;
@@ -1435,8 +1430,10 @@ div.bullet-date-value {
 	vertical-align: middle;
 }
 
-.advanced-danmaku-input.long-long {
+.normal-input.long-long {
 	width: 280px;
+	margin-left: 5px;
+	padding: 2px 4px;
 }
 
 .percentage-check.check-label {
@@ -2142,10 +2139,15 @@ span.checklabel {
 	float: right;
 }
 
+.subtitle-danmaku-label {
+	width: 120px;
+	display: inline-block;
+}
+
 input.subtitle-danmaku-input {
 	padding: 0 4px;
 	height: 22px;
-	width: 200px;
+	width: 215px;
 	margin-left: 10px;
 	vertical-align: middle;
 }
@@ -2153,7 +2155,7 @@ input.subtitle-danmaku-input {
 .subtitle-content-input {
 	resize: none;
 	width: 350px;
-	height: 320px;
+	height: 290px;
 }
 
 .code-danmaku-output {
@@ -2164,7 +2166,7 @@ input.subtitle-danmaku-input {
 
 .code-danmaku-content-input {
 	width: 350px;
-	height: 185px;
+	height: 190px;
 	resize: none;
 }
 
@@ -2301,4 +2303,10 @@ input.subtitle-danmaku-input {
 
 .layon-close:hover {
 	background-position: -24px -1009px;
+}
+
+label.check-label.subtitle {
+	margin-top: 3px;
+	margin-right: 5px;
+	margin-bottom: 7px;
 }

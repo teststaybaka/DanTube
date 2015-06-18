@@ -487,12 +487,12 @@ function Danmaku_Animation(ele) {
 	var direct_x, direct_y;
 
 	function get_positionX(x) {
-		if (x < 0) return offsetWidth + player_width + x;
+		if (x < 0) return offsetWidth + player_width + 10 + x;
 		else return x;
 	}
 
 	function get_positionY(y) {
-		if (y < 0) return offsetHeight + player_width + y;
+		if (y < 0) return offsetHeight + player_height + y;
 		else return y;
 	}
 
@@ -803,7 +803,7 @@ function change_danmaku_outline() {
 	if (has_text_outline) {
 		for (var i = 0; i < danmaku_elements.length; i++) {
 			var ele = danmaku_elements[i];
-			if (!ele.idle) {
+			if (!ele.idle && ele.ref_danmaku.type !== 'Advanced') {
 				var outline_color = reverse_color(ele.ref_danmaku.color);
 				ele.element.style.textShadow = '1px 0 1px '+outline_color+', -1px 0 1px '+outline_color+', 0 1px 1px '+outline_color+', 0 -1px 1px '+outline_color;
 			}
@@ -811,9 +811,18 @@ function change_danmaku_outline() {
 	} else {
 		for (var i = 0; i < danmaku_elements.length; i++) {
 			var ele = danmaku_elements[i];
-			if (!ele.idle) {
+			if (!ele.idle && ele.ref_danmaku.type !== 'Advanced') {
 				ele.element.style.textShadow = '0 0 0';
 			}
+		}
+	}
+}
+
+function change_danmaku_opacity() {
+	for (var i = 0; i < danmaku_elements.length; i++) {
+		var ele = danmaku_elements[i];
+		if (!ele.idle && ele.ref_danmaku.type !== 'Advanced') {
+			ele.element.style.opacity = danmaku_opacity;
 		}
 	}
 }
@@ -836,7 +845,6 @@ function danmaku_update() {
 	// console.log('danmaku_update:'+player.getCurrentTime());
 	if (danmaku.length == 0 || !show_danmaku) return;
 
-	var player_canvas = document.getElementById("player-canvas");
 	var curTime = player.getCurrentTime();
 	// console.log('before:'+danmaku_pointer);
 	if (danmaku_pointer < danmaku.length && danmaku[danmaku_pointer].timestamp <= curTime) {
@@ -857,7 +865,7 @@ function danmaku_update() {
 		if (!ele.idle) continue;
 
 		while (danmaku_pointer < danmaku.length && danmaku[danmaku_pointer].timestamp <= curTime && danmaku[danmaku_pointer].blocked) {
-			danmaku_pointer++;
+			danmaku_pointer += 1;
 		}
 		if (danmaku_pointer >= danmaku.length || danmaku[danmaku_pointer].timestamp > curTime) break;
 
@@ -993,7 +1001,7 @@ function onPlayerReady(event) {
 	var play_button = document.getElementById("play-pause-button");
 	play_button.addEventListener("click", video_toggle);
 	player_background.addEventListener("click", video_toggle);
-	$('div.danmaku').click(video_toggle);
+	$('#player-background').on('click', 'div.danmaku', video_toggle);
 
 	$('#backward-button').click(function() {
 		var time = Math.max(player.getCurrentTime() - 3, 0);
@@ -1075,7 +1083,6 @@ function onPlayerReady(event) {
 			pointer.style.WebkitTransform = "translateX(-"+offset+"px)";
 			pointer.style.msTransform = "translateX(-"+offset+"px)";
 			pointer.style.transform = "translateX(-"+offset+"px)";
-			$('div.danmaku').css('opacity', opacity);
 			danmaku_opacity = opacity;
 		}
 	}
@@ -1096,9 +1103,10 @@ function onPlayerReady(event) {
 			pointer.style.transform = "translateX(-"+offset+"px)";
 			var opacity = 1 - offset/indicator.offsetWidth;
 			if (danmaku_opacity != opacity) {
-				$('div.danmaku').css('opacity', opacity);
+				danmaku_opacity = opacity;
+				change_danmaku_opacity();
+				setCookie('danmaku_opacity', opacity, 0);
 			}
-			setCookie('danmaku_opacity', opacity, 0);
 		}
 		var stop_move = function() {
 			$(document).off('mousemove', move_pointer);
@@ -1376,6 +1384,12 @@ function onPlayerReady(event) {
 				hide_controls = 1;
 			}
 			setCookie('hide_controls', hide_controls, 0);
+		} else if ($(this).hasClass('subtitles')) {
+			if ($(this).hasClass('off')) {
+				$('.subtitles-list').addClass('hidden');
+			} else {
+				$('.subtitles-list').removeClass('hidden');
+			}
 		}
 	});
 	
@@ -1606,6 +1620,40 @@ function onPlayerReady(event) {
 		return false;
 	});
 
+	$('#subtitles-danmaku-form').submit(function(evt) {
+		evt.preventDefault();
+		var button = document.querySelector('#subtitles-danmaku-form .special-danmaku-button.special');
+		button.disabled = true;
+
+		var error = subtitles_danmaku_form_check();
+		if (error) {
+			button.disabled = false;
+			return false;
+		}
+
+		$.ajax({
+			type: "POST",
+			url: '/video/subtitles_danmaku/' + url_suffix,
+			data: $(this).serialize(),
+			success: function(result) {
+				if(!result.error) {
+					pop_ajax_message('Subtitles have been submitted. Please wait for approval by the UPer.', 'success');
+				} else {
+					pop_ajax_message(result.message, 'error');
+				}
+				button.disabled = false;
+			},
+			error: function (xhr, ajaxOptions, thrownError) {
+				console.log(xhr.status);
+				console.log(thrownError);
+				pop_ajax_message(xhr.status+' '+thrownError, 'error');
+				button.disabled = false;
+			}
+		});
+
+		return false;
+	});
+
 	$(document).keydown(function(e) {
 		// console.log(e.keyCode)
 		if (e.keyCode == 27) {
@@ -1630,6 +1678,31 @@ function onPlayerReady(event) {
 	if (autoplay === '1') {
 		player.playVideo();
 	}
+}
+
+function subtitles_danmaku_form_check() {
+	var error = false;
+	var name = $('input[name="name"]').val().trim();
+	if (!name) {
+		pop_ajax_message('Please fill in a description', 'error');
+		error = true;
+	} else if (name.length > 350) {
+		pop_ajax_message('Description is too long (less than 350 characters).', 'error');
+		error = true;
+	}
+
+	var memo = $('input[name="memo"]').val().trim();
+	if (memo.length > 350) {
+		pop_ajax_message('Comment is too long (less than 350 characters).', 'error');
+		error = true;
+	}
+
+	var subtitle_content = $('textarea[name="subtitles"]').val().trim();
+	if (!subtitle_content) {
+		pop_ajax_message('Please fill in subtitles.', 'error');
+		error = true;
+	}
+	return error;
 }
 
 function advanced_danmaku_form_check() {
@@ -2068,7 +2141,6 @@ $(document).ready(function() {
 		$('div.per-bullet.selected').removeClass('selected');
 		$(this).addClass('selected');
 	});
-
 	$('#danmaku-pool').on('contextmenu', 'div.per-bullet', function(evt) {
 		evt.originalEvent.preventDefault();
 		$('div.per-bullet.selected').removeClass('selected');

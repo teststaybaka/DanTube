@@ -16,7 +16,7 @@
   function onYouTubeIframeAPIReady() {
     player = new YT.Player('player', {
       height: '360',
-      width: '100%',
+      width: '640',
       videoId: '{{ video.cur_vid }}',
       playerVars: {
         autoplay: 0,
@@ -363,12 +363,17 @@
       </div> -->
       <div class="player-setting-line full">
         <label class="player-setting-label full">Subtitles/CC</label>
-        <div class="list-selection subtitle hidden">
-          <div class="list-option subtitle active">Off</div>
-          <div class="list-option subtitle">English</div>
-          <div class="list-option subtitle">中文</div>
+        <div class="checkbox-selection subtitles off">
+          <div class="checkbox-option off">Off</div>
+          <div class="checkbox-option on">On</div>
         </div>
-        <div class="list-selected subtitle">Off</div>
+      </div>
+      <div class="subtitles-list container hidden">
+        <label class="check-label subtitle">
+          <div class="pseudo-checkbox"></div>
+          <input type="checkbox" id="show-colored-checkbox" class="checkbox hidden">
+          <span>English (by sdvsdfsdfcsdvsdvsdf)</span>
+        </label>
       </div>
     </div>
     <div class="player-full-setting block hidden">
@@ -408,7 +413,7 @@
         <div class="player-setting-line full">
           <label>Content</label>
           <div class="advanced-danmaku-input-box">
-            <input class="normal-input advanced-danmaku-input long-long" id="advanced-danmaku-content" type="text" name="content">
+            <input class="normal-input long-long" id="advanced-danmaku-content" type="text" name="content">
           </div>
         </div>
         <div class="player-setting-line full">
@@ -484,16 +489,21 @@
           <input class="inline-button special-danmaku-button" type="button" value="Preview">
         </div>
       </form>
-      <form class="special-danmaku-setting subtitle hidden">
+      <form class="special-danmaku-setting subtitle hidden" id="subtitles-danmaku-form">
         <div class="player-setting-line full">
-          <label>Language & description</label>
-          <input class="subtitle-danmaku-input normal-input" type="text" placeholder="e.g., English (by John Peter)">
+          <label class="subtitle-danmaku-label">Language & author</label>
+          <input class="subtitle-danmaku-input normal-input" name="name" type="text" placeholder="e.g., English (by John Peter)">
         </div>
         <div class="player-setting-line full">
-          <label>Copy all your subtitles/captions here.<a class="help-link" title="Subtitle format."></a></label>
+          <label class="subtitle-danmaku-label">Description</label>
+          <input class="subtitle-danmaku-input normal-input" name="memo" type="text" placeholder="Optional, what are the features?">
         </div>
         <div class="player-setting-line full">
-          <textarea class="subtitle-content-input normal-input" name="subtitle-content" placeholder="e.g., [10:23.08] This is a subtitle."></textarea>
+          <label>Copy all your subtitles/captions here.</label>
+          <a class="help-link" title="Subtitle format."></a>
+        </div>
+        <div class="player-setting-line full">
+          <textarea class="subtitle-content-input normal-input" name="subtitles" placeholder="e.g., [10:23.08] This is a subtitle."></textarea>
         </div>
         <div class="player-setting-line full container">
           <input class="inline-button special special-danmaku-button" type="submit" value="Send">
