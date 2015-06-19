@@ -814,6 +814,7 @@ class AdvancedDanmakuPool(ndb.Model):
 class SubtitleDanmakuPool(ndb.Model):
   memo = ndb.StringProperty(required=True, indexed=False)
   subtitles = ndb.TextProperty(required=True, indexed=False)
+  status = ndb.StringProperty(required=True, indexed=False, default='Pending', choices=['Pending', 'Approved'])
   creator = ndb.KeyProperty(kind='User', required=True, indexed=False)
   created = ndb.DateTimeProperty(auto_now_add=True, indexed=False)
 

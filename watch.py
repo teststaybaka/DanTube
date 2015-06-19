@@ -358,7 +358,15 @@ class Danmaku(BaseHandler):
                 advanced_danmaku = advanced_danmaku_pool.advanced_danmaku_list[j]
                 danmaku_list.append(self.format_advanced_danmaku(advanced_danmaku))
 
-        self.response.out.write(json.dumps(danmaku_list))
+        subtitle_names = []
+        for i in range(0, len(clip.subtitle_names)):
+            subtitle_names.append(clip.subtitle_names[i])
+
+        self.response.out.write(json.dumps({
+            'error': False,
+            'danmaku_list': danmaku_list,
+            'subtitle_names': subtitle_names,
+        }))
 
     @login_required
     @video_clip_exist_required_ajax

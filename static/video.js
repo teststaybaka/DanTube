@@ -2058,18 +2058,26 @@ $(document).ready(function() {
 		url: '/video/danmaku/' + url_suffix,
 		success: function(result) {
 			if(!result.error) {
-				console.log(result.length);
-				$('#total-danmaku-span').text(numberWithCommas(result.length));
-				for(var i = 0; i < result.length; i++) {
-					result[i].blocked = false;
-					danmaku_list.push(result[i]);
+				console.log(result.danmaku_list.length);
+				$('#total-danmaku-span').text(numberWithCommas(result.danmaku_list.length));
+				for(var i = 0; i < result.danmaku_list.length; i++) {
+					result.danmaku_list[i].blocked = false;
+					danmaku_list.push(result.danmaku_list[i]);
 				}
 				// quick_sort(danmaku_list, 0, danmaku_list.length - 1, danmaku_timestamp_lower_compare);
 				quick_sort(danmaku_list, 0, danmaku_list.length - 1, danmaku_date_lower_compare);
 				generate_danmaku_pool_list();
-
-				danmaku = result;
+				danmaku = result.danmaku_list;
 				quick_sort(danmaku, 0, danmaku.length-1, danmaku_timestamp_lower_compare);
+
+				for (var i = 0; i < result.subtitle_names.length; i++) {
+					// console.log(result.subtitle_names[i])
+					$('.subtitles-list').append('<label class="check-label subtitle">\
+			          <div class="pseudo-checkbox"></div>\
+			          <input type="checkbox" id="show-colored-checkbox" class="checkbox hidden">\
+			          <span>'+result.subtitle_names[i]+'</span>\
+			        </label>');
+				}
 			} else {
 				pop_ajax_message(result.message, 'error');
 			}

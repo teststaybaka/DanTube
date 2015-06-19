@@ -2310,3 +2310,8 @@ label.check-label.subtitle {
 	margin-right: 5px;
 	margin-bottom: 7px;
 }
+
+.player-full-setting-lower-box {
+	height: 465px;
+	overflow-y: auto;
+}
