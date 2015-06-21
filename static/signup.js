@@ -1,10 +1,11 @@
+(function(dt, $) {
+var puncts = /[@.,?!;:/\\"'<>]/;
 $(document).ready(function() {
     $('#signupform input[name="nickname"]').focusout(function(evt) {
         var nickname = evt.target.value.trim();
-        var puncts = /[@.,?!;:/\\"']/;
         if (!nickname || puncts.test(nickname)) {
             $('#nickname-error').addClass('show');
-            $('#nickname-error').text('Your nickname can\'t contain: @ . , ? ! ; : / \\ \" \'');
+            $('#nickname-error').text('Your nickname can\'t contain: @ . , ? ! ; : / \\ \" \' < >');
             $(evt.target).addClass('error');
         } else if (nickname.length > 50) {
             $('#nickname-error').addClass('show');
@@ -130,10 +131,9 @@ $(document).ready(function() {
         }
 
         var nickname = $('#signupform input[name="nickname"]')[0].value.trim();
-        var puncts = /[@.,?!;:/\\"']/;
         if (!nickname || puncts.test(nickname)) {
             $('#nickname-error').addClass('show');
-            $('#nickname-error').text('Your nickname can\'t contain: @ . , ? ! ; : / \\ \" \'');
+            $('#nickname-error').text('Your nickname can\'t contain: @ . , ? ! ; : / \\ \" \' < >');
             $('#signupform input[name="nickname"]').addClass('error');
             error = true;
         } else if (nickname.length > 50) {
@@ -156,7 +156,7 @@ $(document).ready(function() {
             success: function(result) {
                 console.log(result);
                 if(!result.error) {
-                    pop_ajax_message('Sign up successfully! Check your email to activate your account.', 'success');
+                    dt.pop_ajax_message('Sign up successfully! Check your email to activate your account.', 'success');
                     setTimeout(function(){
                         window.location.replace('/'); 
                     }, 3000);
@@ -170,9 +170,11 @@ $(document).ready(function() {
                 console.log(xhr.status);
                 console.log(thrownError);
                 button.disabled = false;
-                pop_ajax_message(xhr.status+' '+thrownError, 'error');
+                dt.pop_ajax_message(xhr.status+' '+thrownError, 'error');
             }
         });
         return false;
     });
 });
+//end of the file
+} (dt, jQuery));

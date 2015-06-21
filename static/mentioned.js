@@ -1,3 +1,4 @@
+(function(dt, $) {
 $(document).ready(function() {
     var isLoading = false;
     var isOver = false;
@@ -31,7 +32,7 @@ $(document).ready(function() {
                     }
                     cursor = result.cursor;
                 } else {
-                    pop_ajax_message(result.message, 'error');
+                    dt.pop_ajax_message(result.message, 'error');
                 }
                 isLoading = false;
             },
@@ -40,7 +41,7 @@ $(document).ready(function() {
                 $('.message-entry.loading').remove();
                 console.log(xhr.status);
                 console.log(thrownError);
-                pop_ajax_message(xhr.status+' '+thrownError, 'error');
+                dt.pop_ajax_message(xhr.status+' '+thrownError, 'error');
             }
         });
     }
@@ -84,3 +85,5 @@ function render_comment_div(comment) {
     </div>'
     return div;
 }
+//end of the file
+} (dt, jQuery));

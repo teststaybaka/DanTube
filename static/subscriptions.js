@@ -1,3 +1,4 @@
+(function(dt, $) {
 function update_upers(page) {
     var uper_container = $('.upers-block');
     var pagination_container = uper_container.next();
@@ -20,7 +21,7 @@ function update_upers(page) {
                         uper_container.append(div);
                     }
 
-                    var pagination = render_pagination(page, result.total_pages);
+                    var pagination = dt.render_pagination(page, result.total_pages);
                     pagination_container.append(pagination);
                 }
             } else {
@@ -92,7 +93,7 @@ $(document).ready(function() {
                     }
                     cursor = result.cursor;
                 } else {
-                    pop_ajax_message(result.message, 'error');
+                    dt.pop_ajax_message(result.message, 'error');
                 }
                 isLoading = false;
             },
@@ -101,7 +102,7 @@ $(document).ready(function() {
                 $('.activity-entry.loading').remove();
                 console.log(xhr.status);
                 console.log(thrownError);
-                pop_ajax_message(xhr.status+' '+thrownError, 'error');
+                dt.pop_ajax_message(xhr.status+' '+thrownError, 'error');
             }
         });
     }
@@ -177,3 +178,5 @@ function render_uper_div(uper) {
         </div>'
     return div;
 }
+//end of the file
+} (dt, jQuery));

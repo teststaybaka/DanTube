@@ -1,3 +1,4 @@
+(function(dt, $) {
 $(document).ready(function() {
     if ($('#message-contain-body').length != 0) {
         $('#message-contain-body').scrollTop($('#message-contain-body')[0].scrollHeight);
@@ -14,16 +15,16 @@ $(document).ready(function() {
                 success: function(result) {
                     console.log(result);
                     if (!result.error) {
-                        pop_ajax_message('Message deleted!', 'success');
+                        dt.pop_ajax_message('Message deleted!', 'success');
                         $('#'+id).slideUp(function(){ $(this).remove(); });
                     } else {
-                        pop_ajax_message(result.message, 'error');
+                        dt.pop_ajax_message(result.message, 'error');
                     }
                 },
                 error: function (xhr, ajaxOptions, thrownError) {
                     console.log(xhr.status);
                     console.log(thrownError);
-                    pop_ajax_message(xhr.status+' '+thrownError, 'error');
+                    dt.pop_ajax_message(xhr.status+' '+thrownError, 'error');
                 }
             });
         }
@@ -60,7 +61,7 @@ function update_page(query) {
         data: query,
         success: function(result) {
             if(result.error)
-                pop_ajax_message(result.message, 'error');
+                dt.pop_ajax_message(result.message, 'error');
             else {
                 message_container.empty();
                 pagination_container.empty();
@@ -73,7 +74,7 @@ function update_page(query) {
                         var message_div = render_message_div(result.threads[i]);
                         message_container.append(message_div);
                     }
-                    var pagination = render_pagination(cur_page, result.total_pages);
+                    var pagination = dt.render_pagination(cur_page, result.total_pages);
                     pagination_container.append(pagination);
                 }
             }
@@ -81,7 +82,7 @@ function update_page(query) {
         error: function (xhr, ajaxOptions, thrownError) {
             console.log(xhr.status);
             console.log(thrownError);
-            pop_ajax_message(xhr.status+' '+thrownError, 'error');
+            dt.pop_ajax_message(xhr.status+' '+thrownError, 'error');
         }
     });
 }
@@ -113,3 +114,5 @@ render_message_div = function(thread) {
       '</div>';
     return div;
 }
+//end of the file
+} (dt, jQuery));

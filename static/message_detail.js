@@ -1,3 +1,4 @@
+(function(dt, $) {
 $(document).ready(function() {
     var user_avatar_url = $('#self-img').attr('src');
     $('.send-button').click(function() {
@@ -7,7 +8,7 @@ $(document).ready(function() {
             data: $('#reply-form').serialize(),
             success: function(result) {
                 if(result.error)
-                    pop_ajax_message(result.message, 'error');
+                    dt.pop_ajax_message(result.message, 'error');
                 else {
                     $('#send-message').val('');
                     $('#message-contain-body').append(
@@ -22,8 +23,10 @@ $(document).ready(function() {
             error: function (xhr, ajaxOptions, thrownError) {
                 console.log(xhr.status);
                 console.log(thrownError);
-                pop_ajax_message(xhr.status+' '+thrownError, 'error');
+                dt.pop_ajax_message(xhr.status+' '+thrownError, 'error');
             }
         });
     });
 });
+//end of the file
+} (dt, jQuery));

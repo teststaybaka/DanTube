@@ -1,7 +1,8 @@
+(function(dt, $) {
 $(document).ready(function() {
     $('input.delete-button').click(function(evt) {
         var ids= $(evt.target).attr('data-id').split(';');
-        pop_ajax_message('Deleting...', 'info');
+        dt.pop_ajax_message('Deleting...', 'info');
         $(evt.target).prop('disabled', true);
         $.ajax({
             type: "POST",
@@ -10,13 +11,13 @@ $(document).ready(function() {
             success: function(result) {
                 console.log(result);
                 if (!result.error) {
-                    pop_ajax_message('Playlists deleted!', 'success');
+                    dt.pop_ajax_message('Playlists deleted!', 'success');
                     ids = result.message;
                     for (var i = 0; i < ids.length; i++) {
                         $('div.video-entry.'+ids[i]).remove();
                     }
                 } else {
-                    pop_ajax_message(result.message, 'error');
+                    dt.pop_ajax_message(result.message, 'error');
                 }
                 $(evt.target).prop('disabled', false);
             },
@@ -24,7 +25,7 @@ $(document).ready(function() {
                 console.log(xhr.status);
                 console.log(thrownError);
                 $(evt.target).prop('disabled', false);
-                pop_ajax_message(xhr.status+' '+thrownError, 'error');
+                dt.pop_ajax_message(xhr.status+' '+thrownError, 'error');
             }
         });
         $('div.popup-window-container').removeClass('show');
@@ -73,11 +74,11 @@ $(document).ready(function() {
         var error = false;
         var title = $('#playlist-title-input').val();
         if (!title) {
-            pop_ajax_message('Title can not be empty.', 'error');
+            dt.pop_ajax_message('Title can not be empty.', 'error');
             $('#playlist-title-input').addClass('error');
             error = true;
         } else if (title.length > 400) {
-            pop_ajax_message('Title can not be longer than 400 characters.', 'error');
+            dt.pop_ajax_message('Title can not be longer than 400 characters.', 'error');
             $('#playlist-title-input').addClass('error');
             error = true;
         } else {
@@ -86,7 +87,7 @@ $(document).ready(function() {
 
         var intro = $('#playlist-intro-input').val();
         if (intro.length > 2000) {
-            pop_ajax_message('Introduction can not be longer than 2000 characters.', 'error');
+            dt.pop_ajax_message('Introduction can not be longer than 2000 characters.', 'error');
             $('#playlist-intro-input').addClass('error');
             error = true;
         } else {
@@ -105,13 +106,13 @@ $(document).ready(function() {
             success: function(result) {
                 console.log(result);
                 if (!result.error) {
-                    pop_ajax_message('A new playlist is created!', 'success');
+                    dt.pop_ajax_message('A new playlist is created!', 'success');
                     $('#playlist-create-dropdown').removeClass('show');
                     setTimeout(function(){
                         window.location.reload();
                     }, 3000);
                 } else {
-                    pop_ajax_message(result.message, 'error');
+                    dt.pop_ajax_message(result.message, 'error');
                     $("input.create-button").prop('disabled', false);
                 }
             },
@@ -119,9 +120,11 @@ $(document).ready(function() {
                 console.log(xhr.status);
                 console.log(thrownError);
                 $("input.create-button").prop('disabled', false);
-                pop_ajax_message(xhr.status+' '+thrownError, 'error');
+                dt.pop_ajax_message(xhr.status+' '+thrownError, 'error');
             }
         });
         return false;
     });
 });
+//end of the file
+} (dt, jQuery));

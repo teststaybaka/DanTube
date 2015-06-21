@@ -1,3 +1,4 @@
+(function(dt, $) {
 function space_name_check(ori_name) {
     var space_name = $('#space-name-change').val();
     if (!space_name) {
@@ -75,12 +76,12 @@ $(document).ready(function() {
             success: function(result) {
                 console.log(result);
                 if(!result.error) {
-                    pop_ajax_message('Space settings have been reset!', 'success');
+                    dt.pop_ajax_message('Space settings have been reset!', 'success');
                     setTimeout(function(){
                         window.location.reload();
                     }, 3000);
                 } else {
-                    pop_ajax_message(result.message, 'error');
+                    dt.pop_ajax_message(result.message, 'error');
                     for (var i = 0; i < buttons.length; i++) {
                         buttons[i].disabled = false;
                     }
@@ -94,7 +95,7 @@ $(document).ready(function() {
                     buttons[i].disabled = false;
                 }
                 $('#change-applying').removeClass('show');
-                pop_ajax_message(xhr.status+' '+thrownError, 'error');
+                dt.pop_ajax_message(xhr.status+' '+thrownError, 'error');
             }
         });
     });
@@ -133,12 +134,12 @@ $(document).ready(function() {
             success: function(result) {
                 console.log(result);
                 if(result.error) {
-                    pop_ajax_message(result.message, 'error');
+                    dt.pop_ajax_message(result.message, 'error');
                     for (var i = 0; i < buttons.length; i++) {
                         buttons[i].disabled = false;
                     }
                 } else {
-                    pop_ajax_message('Change applied successfully!', 'success');
+                    dt.pop_ajax_message('Change applied successfully!', 'success');
                     setTimeout(function(){
                         window.location.reload();
                     }, 3000);
@@ -152,9 +153,11 @@ $(document).ready(function() {
                     buttons[i].disabled = false;
                 }
                 $('#change-applying').removeClass('show');
-                pop_ajax_message(xhr.status+' '+thrownError, 'error');
+                dt.pop_ajax_message(xhr.status+' '+thrownError, 'error');
             }
         });
         return false;
     });
 });
+//end of the file
+} (dt, jQuery));

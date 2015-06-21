@@ -1,3 +1,6 @@
+(function(dt, $) {
+var url_suffix = window.location.href.split('/').last();
+var video_id = window.location.pathname.substr(window.location.pathname.lastIndexOf('/dt') + 3);
 var player;
 var isPlaying = false;
 var player_width = 640;
@@ -7,11 +10,11 @@ var progressVar = null;
 var progressHold = false;
 var autoSwitch = false;
 var isLoop = false;
-var danmaku = [];
 var danmaku_pointer = 0;
-var danmaku_list = [];
+var danmaku_pool_list = [];
 var danmaku_elements = [];
 var danmaku_check_interval = 1/4;
+var curTime = 0;
 var lastTime = 0;
 var occupation_normal = [];
 var accumulate_normal = [];
@@ -40,10 +43,51 @@ var hide_controls = 1;
 var ori_danmaku_font = 'Times New Roman';
 var danmaku_font = 'Times New Roman';
 var block_rules = [];
-var url_suffix = window.location.href.split('/').last();
-var video_id = window.location.pathname.substr(window.location.pathname.lastIndexOf('/dt') + 3);
+var normal_danmaku_sequence;
+var subtitle_format = /^\[(\d+):(\d{1,2}).(\d{1,2})\](.*)$/;
+var show_subtitles = 0;
+var linked_elements = new dt.LinkedList();
+var subtitle_danmaku_container = {};
 
-function onPlayerStateChange(event) {
+function DanmakuTimeSequence(danmaku_list) {
+	this.danmaku_list = danmaku_list;
+	this.danmaku_pointer = 0;
+	dt.quick_sort(this.danmaku_list, 0, this.danmaku_list.length-1, danmaku_timestamp_lower_compare);
+}
+DanmakuTimeSequence.prototype.addOne = function(danmaku) {
+	this.danmaku_list.push(danmaku);
+	dt.quick_sort(this.danmaku_list, 0, this.danmaku_list.length-1, danmaku_timestamp_lower_compare);
+}
+DanmakuTimeSequence.prototype.locate = function() {
+	if (this.danmaku_pointer < this.danmaku_list.length && this.danmaku_list[this.danmaku_pointer].timestamp <= curTime) {
+		while (this.danmaku_pointer < this.danmaku_list.length
+			&& (this.danmaku_list[this.danmaku_pointer].timestamp < curTime - 1 || this.danmaku_list[this.danmaku_pointer].timestamp < lastTime)) {
+			this.danmaku_pointer += 1;
+		}
+	} else {
+		while(this.danmaku_pointer > 0 && this.danmaku_list[this.danmaku_pointer - 1].timestamp >= curTime) {
+			this.danmaku_pointer -= 1;
+		}
+	}
+}
+DanmakuTimeSequence.prototype.next = function() {
+	while (this.danmaku_pointer < this.danmaku_list.length
+		&&  this.danmaku_list[this.danmaku_pointer].blocked
+		&& this.danmaku_list[this.danmaku_pointer].timestamp <= curTime) {
+		this.danmaku_pointer += 1;
+	}
+	if (this.danmaku_pointer >= this.danmaku_list.length 
+		|| this.danmaku_list[this.danmaku_pointer].timestamp > curTime) {
+		return null;
+	} else {
+		return this.danmaku_list[this.danmaku_pointer];
+	}
+}
+DanmakuTimeSequence.prototype.consume = function() {
+	this.danmaku_pointer += 1;
+}
+
+dt.onPlayerStateChange = function(event) {
 	if (event.data == YT.PlayerState.PLAYING) {
 		isPlaying = true;
 		if (danmakuVar == null) {
@@ -170,7 +214,7 @@ function volume_move(evt) {
 	volume_tip.lastChild.nodeValue = text;
 
 	player.setVolume(len/volume.offsetHeight*100);
-	setCookie('player_volume', len/volume.offsetHeight*100);
+	dt.setCookie('player_volume', len/volume.offsetHeight*100);
 }
 
 function volume_end(evt) {
@@ -443,15 +487,15 @@ function progress_bar_stop(evt) {
 	var num = offset/progress_bar.offsetWidth*player.getDuration();
 	var progress_number = document.getElementById("progress-number");
 	progress_number.lastChild.nodeValue = secondsToTime(num)+"/"+progress_number.lastChild.nodeValue.split('/')[1];
-
-	danmaku_all_clear();
-
 	player.seekTo(num, true);
 	document.onmousemove = null;
 	document.onmouseup = null;
 	document.onmouseout = null;
 
 	progressHold = false;
+
+	danmaku_all_clear();
+	subtitles_all_clear();
 }
 
 function buffer_update() {
@@ -524,6 +568,12 @@ function Danmaku_Animation(ele) {
 				existingTime = ele.ref_danmaku.longevity*1000;
 			}
 			requestAnimationFrame(advanced_update);
+		} else if (type === 'Subtitles') {
+			ele.posX = (player_width + offsetWidth)/2;
+			ele.element.style.WebkitTransform = "translate(-"+ele.posX+"px, "+ele.posY+"px)";
+			ele.element.style.msTransform = "translate(-"+ele.posX+"px, "+ele.posY+"px)";
+			ele.element.style.transform = "translate(-"+ele.posX+"px, "+ele.posY+"px)";
+			requestAnimationFrame(subtitles_update);
 		}
 	}
 
@@ -618,6 +668,26 @@ function Danmaku_Animation(ele) {
 			ele.posX = 0;
 		}
 	}
+
+	function subtitles_update() {
+		var curTime = Date.now();
+		var deltaTime = curTime - lTime;
+		lTime = curTime;
+		if (isPlaying) {
+			existingTime -= deltaTime;
+		}
+
+		if (!ele.clear_request && existingTime > 0) {
+			requestAnimationFrame(subtitles_update);
+		} else {
+			occupation = occupation_bottom;
+			for (var j = ele.posY; j < ele.element.offsetHeight + ele.posY; j++) {
+				occupation[j] -= 1;
+			}
+			ele.element.parentNode.removeChild(ele.element);
+			linked_elements.remove(ele);
+		}
+	}
 }
 
 function danmaku_all_clear() {
@@ -626,6 +696,24 @@ function danmaku_all_clear() {
 		if (!ele.idle) {
 			ele.clear_request = true;
 		}
+	}
+}
+
+function subtitles_all_clear() {
+	var curNode = linked_elements.head;
+	while (curNode) {
+		curNode.clear_request = true;
+		curNode = curNode.next;
+	}
+}
+
+function subtitles_one_clear(key) {
+	var curNode = linked_elements.head;
+	while (curNode) {
+		if (curNode.belong_to === key) {
+			curNode.clear_request = true;
+		}
+		curNode = curNode.next;
 	}
 }
 
@@ -638,15 +726,15 @@ function change_show_top_danmaku(show) {
 				ele.clear_request = true;
 			}
 		}
-		for (var i = 0; i < danmaku.length; i++) {
-			if (danmaku[i].type === 'Top') {
-				danmaku[i].blocked = true;
+		for (var i = 0; i < danmaku_pool_list.length; i++) {
+			if (danmaku_pool_list[i].type === 'Top') {
+				danmaku_pool_list[i].blocked = true;
 			}
 		}
 	} else {
-		for (var i = 0; i < danmaku.length; i++) {
-			if (danmaku[i].type === 'Top' && !danmaku_filter(i)) {
-				danmaku[i].blocked = false;
+		for (var i = 0; i < danmaku_pool_list.length; i++) {
+			if (danmaku_pool_list[i].type === 'Top' && !danmaku_filter(i)) {
+				danmaku_pool_list[i].blocked = false;
 			}
 		}
 	}
@@ -662,15 +750,15 @@ function change_show_bottom_danmaku(show) {
 				ele.clear_request = true;
 			}
 		}
-		for (var i = 0; i < danmaku.length; i++) {
-			if (danmaku[i].type === 'Bottom') {
-				danmaku[i].blocked = true;
+		for (var i = 0; i < danmaku_pool_list.length; i++) {
+			if (danmaku_pool_list[i].type === 'Bottom') {
+				danmaku_pool_list[i].blocked = true;
 			}
 		}
 	} else {
-		for (var i = 0; i < danmaku.length; i++) {
-			if (danmaku[i].type === 'Bottom' && !danmaku_filter(i)) {
-				danmaku[i].blocked = false;
+		for (var i = 0; i < danmaku_pool_list.length; i++) {
+			if (danmaku_pool_list[i].type === 'Bottom' && !danmaku_filter(i)) {
+				danmaku_pool_list[i].blocked = false;
 			}
 		}
 	}
@@ -686,15 +774,15 @@ function change_show_colored_danmaku(show) {
 				ele.clear_request = true;
 			}
 		}
-		for (var i = 0; i < danmaku.length; i++) {
-			if (danmaku[i].type !== 'Advanced' && danmaku[i].color.toString(16) !== 'ffffff') {
-				danmaku[i].blocked = true;
+		for (var i = 0; i < danmaku_pool_list.length; i++) {
+			if (danmaku_pool_list[i].type !== 'Advanced' && danmaku_pool_list[i].color.toString(16) !== 'ffffff') {
+				danmaku_pool_list[i].blocked = true;
 			}
 		}
 	} else {
-		for (var i = 0; i < danmaku.length; i++) {
-			if (danmaku[i].type !== 'Advanced' && danmaku[i].color.toString(16) !== 'ffffff' && !danmaku_filter(i)) {
-				danmaku[i].blocked = false;
+		for (var i = 0; i < danmaku_pool_list.length; i++) {
+			if (danmaku_pool_list[i].type !== 'Advanced' && danmaku_pool_list[i].color.toString(16) !== 'ffffff' && !danmaku_filter(i)) {
+				danmaku_pool_list[i].blocked = false;
 			}
 		}
 	}
@@ -710,7 +798,7 @@ function add_block_rule(block_type, block_content) {
 			if (!block_rules[i].isOn) {
 				block_rules[i].isOn = true;
 				change_block_rule(i);
-				setCookie('block-rules', JSON.stringify(block_rules), 0);
+				dt.setCookie('block-rules', JSON.stringify(block_rules), 0);
 				$('.block-rule-entry:nth-child('+(i+1)+') .rule-status').removeClass('off').text('On');
 			}
 			return false;
@@ -725,7 +813,7 @@ function add_block_rule(block_type, block_content) {
     </div>');
     block_rules.push({type: block_type, content: block_content, isOn: true});
 	change_block_rule(block_rules.length-1);
-    setCookie('block-rules', JSON.stringify(block_rules), 0);
+    dt.setCookie('block-rules', JSON.stringify(block_rules), 0);
 	return false;
 }
 
@@ -750,30 +838,30 @@ function change_block_rule(index) {
 				}
 			}
 		}
-		for (var j = 0; j < danmaku.length; j++) {
+		for (var j = 0; j < danmaku_pool_list.length; j++) {
 			if (single_rule_filter(j, index)) {
-				danmaku[j].blocked = true;
+				danmaku_pool_list[j].blocked = true;
 			}
 		}
 	} else {
-		for (var j = 0; j < danmaku.length; j++) {
+		for (var j = 0; j < danmaku_pool_list.length; j++) {
 			if (single_rule_filter(j, index) && !danmaku_filter(j)) {
-				danmaku[j].blocked = false;
+				danmaku_pool_list[j].blocked = false;
 			}
 		}
 	}
 	refresh_danmaku_pool();
 }
 
-function danmaku_filter(danmaku_pointer) {// return true to filter.
-	if ((danmaku[danmaku_pointer].type === 'Top' && !show_top) || 
-		(danmaku[danmaku_pointer].type === 'Bottom' && !show_bottom) ||
-		(danmaku[danmaku_pointer].type !== 'Advanced' && !show_colored && danmaku[danmaku_pointer].color.toString(16) != 'ffffff' )) {
+function danmaku_filter(index) {// return true to filter.
+	if ((danmaku_pool_list[index].type === 'Top' && !show_top) || 
+		(danmaku_pool_list[index].type === 'Bottom' && !show_bottom) ||
+		(danmaku_pool_list[index].type !== 'Advanced' && !show_colored && danmaku_pool_list[index].color.toString(16) != 'ffffff' )) {
 		return true;
 	} else {
 		for (var i = 0; i < block_rules.length; i++) {
 			if (!block_rules[i].isOn) continue;
-			if (single_rule_filter(danmaku_pointer, i)) {
+			if (single_rule_filter(index, i)) {
 				return true;
 			}
 		}
@@ -781,18 +869,18 @@ function danmaku_filter(danmaku_pointer) {// return true to filter.
 	}
 }
 
-function single_rule_filter(danmaku_pointer, i) {
+function single_rule_filter(index, i) {
 	if (block_rules[i].type === 'Keywords') {
-		if (danmaku[danmaku_pointer].content.indexOf(block_rules[i].content) > -1) {
+		if (danmaku_pool_list[index].content.indexOf(block_rules[i].content) > -1) {
 			return true;
 		}
 	} else if (block_rules[i].type === 'RegExp') {
 		var regex = new RegExp(block_rules[i].content);
-		if (regex.test(danmaku[danmaku_pointer].content)) {
+		if (regex.test(danmaku_pool_list[index].content)) {
 			return true;
 		}
 	} else if (block_rules[i].type === 'User') {
-		if (danmaku[danmaku_pointer].creator.toString() === block_rules[i].content) {
+		if (danmaku_pool_list[index].creator.toString() === block_rules[i].content) {
 			return true;
 		}
 	}
@@ -842,109 +930,150 @@ function reverse_color(color) {
 }
 
 function danmaku_update() {
-	// console.log('danmaku_update:'+player.getCurrentTime());
-	if (danmaku.length == 0 || !show_danmaku) return;
+	curTime = player.getCurrentTime();
 
-	var curTime = player.getCurrentTime();
-	// console.log('before:'+danmaku_pointer);
-	if (danmaku_pointer < danmaku.length && danmaku[danmaku_pointer].timestamp <= curTime) {
-		// console.log('out:'+danmaku[danmaku_pointer].timestamp);
-		while (danmaku_pointer < danmaku.length
-			&& (danmaku[danmaku_pointer].timestamp < curTime - 1 || danmaku[danmaku_pointer].timestamp < lastTime)) {
-			danmaku_pointer += 1;
-			// console.log(danmaku[danmaku_pointer].timestamp);
-		}
-	} else {
-		while(danmaku_pointer > 0 && danmaku[danmaku_pointer - 1].timestamp >= curTime) {
-			danmaku_pointer -= 1;
-		}
-	}
-	
-	for (var i = 0; i < max_danmaku; i++) {
-		var ele = danmaku_elements[i];
-		if (!ele.idle) continue;
-
-		while (danmaku_pointer < danmaku.length && danmaku[danmaku_pointer].timestamp <= curTime && danmaku[danmaku_pointer].blocked) {
-			danmaku_pointer += 1;
-		}
-		if (danmaku_pointer >= danmaku.length || danmaku[danmaku_pointer].timestamp > curTime) break;
-
-		ele.ref_danmaku = danmaku[danmaku_pointer];
-		danmaku_pointer++;
-
-		ele.idle = false;
-		ele.clear_request = false;
-		if (ele.ref_danmaku.type === 'Advanced') {
-			ele.element.setAttribute('data-index', i);
-			ele.element.lastChild.nodeValue = ele.ref_danmaku.content;
-			ele.element.setAttribute('style', ele.ref_danmaku.css);
-		} else {
-			ele.element.setAttribute('data-index', i);
-			ele.element.lastChild.nodeValue = ele.ref_danmaku.content;
-			ele.element.setAttribute('style', '');
-			ele.element.style.opacity = danmaku_opacity;
-			ele.element.style.color = '#'+('000000'+ele.ref_danmaku.color.toString(16)).substr(-6);
-			if (has_text_outline) {
-				var outline_color = reverse_color(ele.ref_danmaku.color);
-				ele.element.style.textShadow = '1px 0 1px '+outline_color+', -1px 0 1px '+outline_color+', 0 1px 1px '+outline_color+', 0 -1px 1px '+outline_color;
+	if (show_danmaku) {
+		normal_danmaku_sequence.locate();
+		var i = 0;
+		var ref_danmaku;
+		while (ref_danmaku = normal_danmaku_sequence.next()) {
+			while (!danmaku_elements[i].idle && i < max_danmaku) {
+				i++;
 			}
-			ele.element.style.fontSize = ele.ref_danmaku.size*danmaku_scale/3+'px';
-			ele.element.style.fontFamily = danmaku_font;
-			// ele.element.lastChild.nodeValue = secondsToTime(ele.ref_danmaku.timestamp);
-			ele.generating = true;
+			if (i >= max_danmaku) break;
 
-			if (ele.ref_danmaku.type === 'RightToLeft') {
-				accumulate = accumulate_normal;
-				occupation = occupation_normal;
-			} else if (ele.ref_danmaku.type === 'Bottom') {
-				accumulate = accumulate_bottom;
-				occupation = occupation_bottom;
-			} else if (ele.ref_danmaku.type === 'Top') {
-				accumulate = accumulate_top;
-				occupation = occupation_top;
-			}
-			accumulate[0] = 0;
-			for (var z = 0; z < ele.element.offsetHeight && z < player_height; z++) {
-				accumulate[0] += occupation[z];
-			}
-			for (var j = 1; j < player_height - ele.element.offsetHeight + 1; j++) {
-				accumulate[j] = accumulate[j-1];
-				accumulate[j] -= occupation[j-1];
-				accumulate[j] += occupation[j+ele.element.offsetHeight-1];
-			}
+			var ele = danmaku_elements[i];
+			ele.ref_danmaku = ref_danmaku;
+			normal_danmaku_sequence.consume();
 
-			var min_value = 2000000;
-			var min_line = 0;
-			for (var j = 0; j < player_height - ele.element.offsetHeight + 1; j++) {
-				if ((ele.ref_danmaku.type === 'Bottom' && accumulate[j] <= min_value)
-					|| (ele.ref_danmaku.type != 'Bottom' && accumulate[j] < min_value)) {
-					min_value = accumulate[j];
-					min_line = j;
+			ele.idle = false;
+			ele.clear_request = false;
+			if (ele.ref_danmaku.type === 'Advanced') {
+				ele.element.setAttribute('data-index', i);
+				ele.element.lastChild.nodeValue = ele.ref_danmaku.content;
+				ele.element.setAttribute('style', ele.ref_danmaku.css);
+				ele.element.style.left = player_width + 10+'px';
+			} else {
+				ele.element.setAttribute('data-index', i);
+				ele.element.lastChild.nodeValue = ele.ref_danmaku.content;
+				ele.element.setAttribute('style', '');
+				ele.element.style.left = player_width + 10+'px';
+				ele.element.style.opacity = danmaku_opacity;
+				ele.element.style.color = '#'+('000000'+ele.ref_danmaku.color.toString(16)).substr(-6);
+				if (has_text_outline) {
+					var outline_color = reverse_color(ele.ref_danmaku.color);
+					ele.element.style.textShadow = '1px 0 1px '+outline_color+', -1px 0 1px '+outline_color+', 0 1px 1px '+outline_color+', 0 -1px 1px '+outline_color;
+				}
+				ele.element.style.fontSize = ele.ref_danmaku.size*danmaku_scale/3+'px';
+				ele.element.style.fontFamily = danmaku_font;
+				// ele.element.lastChild.nodeValue = secondsToTime(ele.ref_danmaku.timestamp);
+				ele.generating = true;
+
+				if (ele.ref_danmaku.type === 'RightToLeft') {
+					accumulate = accumulate_normal;
+					occupation = occupation_normal;
+				} else if (ele.ref_danmaku.type === 'Bottom') {
+					accumulate = accumulate_bottom;
+					occupation = occupation_bottom;
+				} else if (ele.ref_danmaku.type === 'Top') {
+					accumulate = accumulate_top;
+					occupation = occupation_top;
+				}
+				accumulate[0] = 0;
+				var offsetHeight = ele.element.offsetHeight;
+				for (var z = 0; z < offsetHeight && z < player_height; z++) {
+					accumulate[0] += occupation[z];
+				}
+				for (var j = 1; j < player_height - offsetHeight + 1; j++) {
+					accumulate[j] = accumulate[j-1];
+					accumulate[j] -= occupation[j-1];
+					accumulate[j] += occupation[j+offsetHeight-1];
+				}
+
+				var min_value = 2000000;
+				var min_line = 0;
+				for (var j = 0; j < player_height - offsetHeight + 1; j++) {
+					if ((ele.ref_danmaku.type === 'Bottom' && accumulate[j] <= min_value)
+						|| (ele.ref_danmaku.type != 'Bottom' && accumulate[j] < min_value)) {
+						min_value = accumulate[j];
+						min_line = j;
+					}
+				}
+
+				ele.posY = min_line;
+				for (var j = ele.posY; j < offsetHeight + ele.posY; j++) {
+					occupation[j] += 1;
 				}
 			}
+			var danmaku_Animation = new Danmaku_Animation(ele);
+			danmaku_Animation.startAnimation();
+		}
+	}
 
-			ele.posY = min_line;
-			for (var j = ele.posY; j < ele.element.offsetHeight + ele.posY; j++) {
-				occupation[j] += 1;
+	if (show_subtitles) {
+		var player_background = document.getElementById('player-background');
+		for(var key in subtitle_danmaku_container) {
+			var subtitle_danmaku_list = subtitle_danmaku_container[key];
+			subtitle_danmaku_list.locate();
+			var ref_danmaku;
+			while (ref_danmaku = subtitle_danmaku_list.next()) {
+				var bul = document.createElement('div');
+				bul.setAttribute('class', 'danmaku');
+				var text = document.createTextNode(ref_danmaku.content);
+				bul.appendChild(text);
+				bul.style.left = player_width + 10 + 'px';
+				player_background.appendChild(bul);
+				var ele = {prev: null, next: null, posX: 0, posY: 0, clear_request: false, element: bul, ref_danmaku: ref_danmaku, belong_to: key};
+				linked_elements.push(ele);
+				subtitle_danmaku_list.consume();
+
+				accumulate = accumulate_bottom;
+				occupation = occupation_bottom;
+				accumulate[0] = 0;
+				var offsetHeight = ele.element.offsetHeight;
+				for (var z = 0; z < offsetHeight && z < player_height; z++) {
+					accumulate[0] += occupation[z];
+				}
+				for (var j = 1; j < player_height - offsetHeight + 1; j++) {
+					accumulate[j] = accumulate[j-1];
+					accumulate[j] -= occupation[j-1];
+					accumulate[j] += occupation[j+offsetHeight-1];
+				}
+
+				var min_value = 2000000;
+				var min_line = 0;
+				for (var j = 0; j < player_height - offsetHeight + 1; j++) {
+					if (accumulate[j] <= min_value) {
+						min_value = accumulate[j];
+						min_line = j;
+					}
+				}
+
+				ele.posY = min_line;
+				for (var j = ele.posY; j < offsetHeight + ele.posY; j++) {
+					occupation[j] += 1;
+				}
+
+				var danmaku_Animation = new Danmaku_Animation(ele);
+				danmaku_Animation.startAnimation();
 			}
 		}
-		var danmaku_Animation = new Danmaku_Animation(ele);
-		danmaku_Animation.startAnimation();
 	}
 	lastTime = curTime;
 }
 
-function onPlayerReady(event) {
+dt.onPlayerReady = function(event) {
+	player = dt.player;
 	var progress_number = document.getElementById("progress-number");
 	progress_number.lastChild.nodeValue = "00:00"+"/"+secondsToTime(player.getDuration());
 	setInterval(buffer_update, 500);
 	buffer_update();
 	progress_update();
 
-	var volume = getCookie('player_volume');
+	var volume = dt.getCookie('player_volume');
 	if (!volume) {
 		player.setVolume(50);
-		setCookie('player_volume', 50);
+		dt.setCookie('player_volume', 50);
 		var volume_magnitude = document.getElementById("volume-magnitude");
 		volume_magnitude.style.height = 25 + "px";
 		var volume_pointer = document.getElementById("volume-pointer");
@@ -1006,10 +1135,14 @@ function onPlayerReady(event) {
 	$('#backward-button').click(function() {
 		var time = Math.max(player.getCurrentTime() - 3, 0);
 		player.seekTo(time, true);
+		danmaku_all_clear();
+		subtitles_all_clear();
 	});
 	$('#forward-button').click(function() {
 		var time = Math.min(player.getCurrentTime() + 3, player.getDuration());
 		player.seekTo(time, true);
+		danmaku_all_clear();
+		subtitles_all_clear();
 	});
 
 	var volume_button = document.getElementById("volume-switch");
@@ -1074,7 +1207,7 @@ function onPlayerReady(event) {
 	$('#switch-cancel').click(stop_switch_count_down);
 
 	{
-		var opacity = getCookie('danmaku_opacity');
+		var opacity = dt.getCookie('danmaku_opacity');
 		if (opacity) {
 			opacity = parseFloat(opacity);
 			// var indicator = document.getElementById("opacity-indicator");
@@ -1105,7 +1238,7 @@ function onPlayerReady(event) {
 			if (danmaku_opacity != opacity) {
 				danmaku_opacity = opacity;
 				change_danmaku_opacity();
-				setCookie('danmaku_opacity', opacity, 0);
+				dt.setCookie('danmaku_opacity', opacity, 0);
 			}
 		}
 		var stop_move = function() {
@@ -1149,7 +1282,7 @@ function onPlayerReady(event) {
 	});
 
 	{
-		var cookie_str = getCookie('autoSwitch');
+		var cookie_str = dt.getCookie('autoSwitch');
 		if (cookie_str && cookie_str === 'true') {
 			autoSwitch = true;
 		}
@@ -1164,11 +1297,11 @@ function onPlayerReady(event) {
 		} else {
 			autoSwitch = false;
 		}
-		setCookie('autoSwitch', autoSwitch, 0);
+		dt.setCookie('autoSwitch', autoSwitch, 0);
 	});
 
 	{
-		var cookie_str = getCookie('danmaku_font');
+		var cookie_str = dt.getCookie('danmaku_font');
 		if (cookie_str) danmaku_font = cookie_str;
 		$('.list-option.font.active').removeClass('active');
 		var font_list = $('.list-option.font');
@@ -1182,7 +1315,7 @@ function onPlayerReady(event) {
 	}
 	$('.setting-reset-button.font').click(function() {
 		danmaku_font = ori_danmaku_font;
-		setCookie('danmaku_font', danmaku_font, 0);
+		dt.setCookie('danmaku_font', danmaku_font, 0);
 		$('.list-option.font.active').removeClass('active');
 		var font_list = $('.list-option.font');
 		for (var i = 0; i < font_list.length; i++) {
@@ -1215,7 +1348,7 @@ function onPlayerReady(event) {
     		player.setPlaybackRate(parseFloat($(this).text()));
     	} else if ($(this).hasClass('font')) {
     		danmaku_font = $(this).text();
-    		setCookie('danmaku_font', danmaku_font, 0);
+    		dt.setCookie('danmaku_font', danmaku_font, 0);
     	}
 
         var selection = $(this).parent();
@@ -1253,22 +1386,22 @@ function onPlayerReady(event) {
     	var bar = $(this)[0];
     	var offset = 0;
     	if ($(bar).hasClass('speed')) {
-    		var cookie_str = getCookie('danmaku_speed');
+    		var cookie_str = dt.getCookie('danmaku_speed');
     		if (cookie_str) danmaku_speed = parseInt(cookie_str);
 			$(bar).prev().text(danmaku_speed);
 			offset = (1 - (danmaku_speed - 1)/7)*300;
 		} else if ($(bar).hasClass('danmaku-num')) {
-			var cookie_str = getCookie('max_danmaku');
+			var cookie_str = dt.getCookie('max_danmaku');
     		if (cookie_str) max_danmaku = parseInt(cookie_str);
 			$(bar).prev().text(max_danmaku);
 			offset = (1 - (max_danmaku - 10)/110)*300;
 		} else if ($(bar).hasClass('scale')) {
-			var cookie_str = getCookie('danmaku_scale');
+			var cookie_str = dt.getCookie('danmaku_scale');
     		if (cookie_str) danmaku_scale = parseInt(cookie_str);
 			$(bar).prev().text(danmaku_scale);
 			offset = (1 - (danmaku_scale - 1)/4)*300;
 		} else if ($(bar).hasClass('time')) {
-			var cookie_str = getCookie('existing_time');
+			var cookie_str = dt.getCookie('existing_time');
     		if (cookie_str) existing_time = parseInt(cookie_str);
 			$(bar).prev().text(existing_time);
 			offset = (1 - (existing_time - 3)/5)*300;
@@ -1296,19 +1429,19 @@ function onPlayerReady(event) {
 			if ($(bar).hasClass('speed')) {
 				danmaku_speed = Math.round((1 - offset/bar.offsetWidth)*7 + 1);
 				$(bar).prev().text(danmaku_speed);
-				setCookie('danmaku_speed', danmaku_speed, 0);
+				dt.setCookie('danmaku_speed', danmaku_speed, 0);
 			} else if ($(bar).hasClass('danmaku-num')) {
 				max_danmaku = Math.round((1 - offset/bar.offsetWidth)*110 + 10);
 				$(bar).prev().text(max_danmaku);
-				setCookie('max_danmaku', max_danmaku, 0);
+				dt.setCookie('max_danmaku', max_danmaku, 0);
 			} else if ($(bar).hasClass('scale')) {
 				danmaku_scale = Math.round((1 - offset/bar.offsetWidth)*4 + 1);
 				$(bar).prev().text(danmaku_scale);
-				setCookie('danmaku_scale', danmaku_scale, 0);
+				dt.setCookie('danmaku_scale', danmaku_scale, 0);
 			} else if ($(bar).hasClass('time')) {
 				existing_time = Math.round((1 - offset/bar.offsetWidth)*5 + 3);
 				$(bar).prev().text(existing_time);
-				setCookie('existing_time', existing_time, 0);
+				dt.setCookie('existing_time', existing_time, 0);
 			}
 		}
 		move_pointer(evt);
@@ -1328,22 +1461,22 @@ function onPlayerReady(event) {
     		danmaku_speed = ori_danmaku_speed;
 			$(bar).prev().text(danmaku_speed);
 			offset = (1 - (danmaku_speed - 1)/7)*bar.offsetWidth;
-			setCookie('danmaku_speed', danmaku_speed, 0);
+			dt.setCookie('danmaku_speed', danmaku_speed, 0);
 		} else if ($(bar).hasClass('danmaku-num')) {
 			max_danmaku = ori_max_danmaku;
 			$(bar).prev().text(max_danmaku);
 			offset = (1 - (max_danmaku - 10)/110)*bar.offsetWidth;
-			setCookie('max_danmaku', max_danmaku, 0);
+			dt.setCookie('max_danmaku', max_danmaku, 0);
 		} else if ($(bar).hasClass('scale')) {
 			danmaku_scale = ori_danmaku_scale;
 			$(bar).prev().text(danmaku_scale);
 			offset = (1 - (danmaku_scale - 1)/4)*bar.offsetWidth;
-			setCookie('danmaku_scale', danmaku_scale, 0);
+			dt.setCookie('danmaku_scale', danmaku_scale, 0);
 		} else if ($(bar).hasClass('time')) {
 			existing_time = ori_existing_time;
 			$(bar).prev().text(existing_time);
 			offset = (1 - (existing_time - 3)/5)*bar.offsetWidth;
-			setCookie('existing_time', existing_time, 0);
+			dt.setCookie('existing_time', existing_time, 0);
 		}
 		var pointer = $(bar).children('.number-adjust-pointer')[0];
 		pointer.style.WebkitTransform = "translateX(-"+offset+"px)";
@@ -1353,14 +1486,14 @@ function onPlayerReady(event) {
 
 	$('.checkbox-selection').each(function() {
 		if ($(this).hasClass('text-outline')) {
-			var cookie_str = getCookie('text_outline');
+			var cookie_str = dt.getCookie('text_outline');
     		if (cookie_str) has_text_outline = parseInt(cookie_str);
     		if (!has_text_outline) {
     			$(this).removeClass('on');
     			$(this).addClass('off');
     		}
 		} else if ($(this).hasClass('hide-controls')) {
-			var cookie_str = getCookie('hide_controls');
+			var cookie_str = dt.getCookie('hide_controls');
     		if (cookie_str) hide_controls = parseInt(cookie_str);
     		if (hide_controls) {
     			$(this).removeClass('off');
@@ -1375,7 +1508,7 @@ function onPlayerReady(event) {
 			} else {
 				has_text_outline = 1;
 			}
-			setCookie('text_outline', has_text_outline, 0);
+			dt.setCookie('text_outline', has_text_outline, 0);
 			change_danmaku_outline();
 		} else if ($(this).hasClass('hide-controls')) {
 			if ($(this).hasClass('off')) {
@@ -1383,18 +1516,21 @@ function onPlayerReady(event) {
 			} else {
 				hide_controls = 1;
 			}
-			setCookie('hide_controls', hide_controls, 0);
+			dt.setCookie('hide_controls', hide_controls, 0);
 		} else if ($(this).hasClass('subtitles')) {
 			if ($(this).hasClass('off')) {
 				$('.subtitles-list').addClass('hidden');
+				show_subtitles = 0;
+				subtitles_all_clear();
 			} else {
 				$('.subtitles-list').removeClass('hidden');
+				show_subtitles = 1;
 			}
 		}
 	});
 	
 	{
-		var cookie_str = getCookie('block-rules');
+		var cookie_str = dt.getCookie('block-rules');
 		if (cookie_str) {
 			block_rules = JSON.parse(cookie_str);
 		}
@@ -1411,9 +1547,9 @@ function onPlayerReady(event) {
 	        </div>'
 			$('.block-list').append(div);
 		}
-		for (var j = 0; j < danmaku.length; j++) {
+		for (var j = 0; j < danmaku_pool_list.length; j++) {
         	if (danmaku_filter(j)) {
-        		danmaku[j].blocked = true;
+        		danmaku_pool_list[j].blocked = true;
         	}
         }
         refresh_danmaku_pool();
@@ -1434,7 +1570,7 @@ function onPlayerReady(event) {
 				if (block_type === block_rules[i].type && block_content === block_rules[i].content) {
 					block_rules[i].isOn = true;
 					change_block_rule(i);
-					setCookie('block-rules', JSON.stringify(block_rules), 0);
+					dt.setCookie('block-rules', JSON.stringify(block_rules), 0);
 					break;
 				}
 			}
@@ -1445,7 +1581,7 @@ function onPlayerReady(event) {
 				if (block_type === block_rules[i].type && block_content === block_rules[i].content) {
 					block_rules[i].isOn = false;
 					change_block_rule(i);
-					setCookie('block-rules', JSON.stringify(block_rules), 0);
+					dt.setCookie('block-rules', JSON.stringify(block_rules), 0);
 					break;
 				}
 			}
@@ -1462,7 +1598,7 @@ function onPlayerReady(event) {
 					change_block_rule(i);
 				}
 				block_rules.splice(i, 1);
-				setCookie('block-rules', JSON.stringify(block_rules), 0);
+				dt.setCookie('block-rules', JSON.stringify(block_rules), 0);
 				break;
 			}
 		}
@@ -1517,7 +1653,7 @@ function onPlayerReady(event) {
 	});
 	$('#danmaku-locate-it').click(function(e) {
 		var ele = danmaku_elements[$('.danmaku-menu').attr('data-index')];
-		var danmaku_pool_index = danmaku_list.indexOf(ele.ref_danmaku);
+		var danmaku_pool_index = danmaku_pool_list.indexOf(ele.ref_danmaku);
 		$('.per-bullet.selected').removeClass('selected');
 		var target = $('.per-bullet')[danmaku_pool_index];
 		target.classList.add('selected');
@@ -1542,6 +1678,56 @@ function onPlayerReady(event) {
 		$('#danmaku-reply-input').val('');
 	});
 
+	$('#shooter').submit(function(evt){
+		var button = document.querySelector('#fire-button');
+		button.disabled = true;
+
+		var error = false;
+		var content = $('#danmaku-input').val().trim();
+		if (!content) {
+			dt.pop_ajax_message('You can\'t post empty comment.', 'error');
+			error = true;
+		} else if (content.length > 350) {
+			dt.pop_ajax_message('Comment is too long (less than 350 characters).', 'error');
+			error = true;
+		}
+
+		if (error) {
+			button.disabled = false;
+			return false;
+		}
+
+		$.ajax({
+			type: "POST",
+			url: '/video/danmaku/' + url_suffix,
+			data: $(this).serialize()+'&'+$.param({timestamp: player.getCurrentTime()}),
+			success: function(result) {
+				if(!result.error) {
+					$('#danmaku-input').val('');
+					dt.pop_ajax_message('Danmaku sent!', 'success');
+					result.timestamp = player.getCurrentTime() + 0.05;
+					result.blocked = false;
+					$('#danmaku-list').append('<div class="per-bullet container">\
+						<div class="bullet-time-value">' + secondsToTime(result.timestamp) + '</div>\
+						<div class="bullet-content-value" title="' + result.content + '">' + result.content + '</div>\
+						<div class="bullet-date-value">' + result.created + '</div></div>');
+					danmaku_pool_list.push(result);
+					normal_danmaku_sequence.addOne(result);
+				} else {
+					dt.pop_ajax_message(result.message, 'error');
+				}
+				button.disabled = false;
+			},
+			error: function (xhr, ajaxOptions, thrownError) {
+				console.log(xhr.status);
+				console.log(thrownError);
+				dt.pop_ajax_message(xhr.status+' '+thrownError, 'error');
+				button.disabled = false;
+			}
+		});
+		return false;
+	});
+
 	$('#advanced-danmaku-form input[type="button"]').click(function() {
 		var error = advanced_danmaku_form_check();
 		if (error) return;
@@ -1561,6 +1747,7 @@ function onPlayerReady(event) {
 		var bul = document.createElement('div');
 		bul.setAttribute('class', 'danmaku');
 		bul.setAttribute('style', preview_danmaku.css);
+		bul.style.left = player_width + 10+'px';
 		var text = document.createTextNode(preview_danmaku.content);
 		bul.appendChild(text);
 		player_background.appendChild(bul);
@@ -1568,7 +1755,7 @@ function onPlayerReady(event) {
 		var new_danmaku_element = {idle: false, generating: false, posX: 0, posY: 0, clear_request: false, element: bul, ref_danmaku: preview_danmaku};
 		var danmaku_Animation = new Danmaku_Animation(new_danmaku_element);
 		danmaku_Animation.startAnimation();
-		pop_ajax_message('Previewing!', 'success');
+		dt.pop_ajax_message('Previewing!', 'success');
 	});
 	$('#advanced-danmaku-form').submit(function(evt) {
 		var button = document.querySelector('#advanced-danmaku-form .special-danmaku-button.special');
@@ -1594,25 +1781,24 @@ function onPlayerReady(event) {
 			success: function(result) {
 				if(!result.error) {
 					$('#danmaku-input').val('');
-					pop_ajax_message('Danmaku sent!', 'success');
+					dt.pop_ajax_message('Danmaku sent!', 'success');
 					result.timestamp = player.getCurrentTime() + 0.05;
 					result.blocked = false;
 					$('#danmaku-list').append('<div class="per-bullet container">\
 						<div class="bullet-time-value">' + secondsToTime(result.timestamp) + '</div>\
 						<div class="bullet-content-value" title="' + result.content + '">' + result.content + '</div>\
 						<div class="bullet-date-value">' + result.created + '</div></div>');
-					danmaku_list.push(result);
-					danmaku.push(result);
-					quick_sort(danmaku, 0, danmaku.length-1, danmaku_timestamp_lower_compare);
+					danmaku_pool_list.push(result);
+					normal_danmaku_sequence.addOne(result);
 				} else {
-					pop_ajax_message(result.message, 'error');
+					dt.pop_ajax_message(result.message, 'error');
 				}
 				button.disabled = false;
 			},
 			error: function (xhr, ajaxOptions, thrownError) {
 				console.log(xhr.status);
 				console.log(thrownError);
-				pop_ajax_message(xhr.status+' '+thrownError, 'error');
+				dt.pop_ajax_message(xhr.status+' '+thrownError, 'error');
 				button.disabled = false;
 			}
 		});
@@ -1620,8 +1806,34 @@ function onPlayerReady(event) {
 		return false;
 	});
 
+	$('#subtitles-danmaku-form input[type="button"]').click(function() {
+		var error = subtitles_danmaku_form_check();
+		if (error) return;
+
+		var subtitles_list = [];
+		var lines = $('textarea[name="subtitles"]').val().replace(/\r/g, '').split('\n');
+		for (var i = 0; i < lines.length; i++) {
+			var line = lines[i].trim();
+			if (line) {
+				var result = line.match(subtitle_format);
+				if (result[4]) {
+					subtitles_list.push({
+						'timestamp': parseInt(result[1])*60+parseInt(result[2])+parseInt(result[3])/100,
+						'content': result[4],
+						'type': 'Subtitles',
+					});
+				}
+			}
+		}
+		var subtitle_danmaku_list = new DanmakuTimeSequence(subtitles_list);
+		subtitle_danmaku_container[-1] = subtitle_danmaku_list;
+		var checkbox = $('.checkbox-selection.subtitles');
+		if (checkbox.hasClass('off')) {
+			checkbox.trigger('click');
+		}
+		dt.pop_ajax_message('Previewing', 'success');
+	});
 	$('#subtitles-danmaku-form').submit(function(evt) {
-		evt.preventDefault();
 		var button = document.querySelector('#subtitles-danmaku-form .special-danmaku-button.special');
 		button.disabled = true;
 
@@ -1637,21 +1849,75 @@ function onPlayerReady(event) {
 			data: $(this).serialize(),
 			success: function(result) {
 				if(!result.error) {
-					pop_ajax_message('Subtitles have been submitted. Please wait for approval by the UPer.', 'success');
+					dt.pop_ajax_message('Subtitles have been submitted. Please wait for approval by the UPer.', 'success');
 				} else {
-					pop_ajax_message(result.message, 'error');
+					dt.pop_ajax_message(result.message, 'error');
 				}
 				button.disabled = false;
 			},
 			error: function (xhr, ajaxOptions, thrownError) {
 				console.log(xhr.status);
 				console.log(thrownError);
-				pop_ajax_message(xhr.status+' '+thrownError, 'error');
+				dt.pop_ajax_message(xhr.status+' '+thrownError, 'error');
 				button.disabled = false;
 			}
 		});
 
 		return false;
+	});
+	$('.subtitles-list').on('change', 'input[type="checkbox"]', function() {
+		var subtitle_index = $(this).attr('data-index');
+		if ($(this).is(':checked')) {
+            $(this).prev().addClass('checked');
+            $.ajax({
+				type: "GET",
+				url: '/video/subtitles_danmaku/'+url_suffix,
+				data: {subtitle_index: subtitle_index},
+				success: function(result) {
+					if(!result.error) {
+						var entity = result;
+						var subtitles_list = [];
+						var error = false;
+						var lines = entity.subtitles.replace(/\r/g, '').split('\n');
+						for (var i = 0; i < lines.length; i++) {
+							var line = lines[i].trim();
+							if (line) {
+								var result = line.match(subtitle_format);
+								if (!result || parseInt(result[2]) >= 60) {
+									error = true;
+									break;
+								}
+								if (result[4]) {
+									subtitles_list.push({
+										'timestamp': parseInt(result[1])*60+parseInt(result[2])+parseInt(result[3])/100,
+										'content': result[4],
+										'type': 'Subtitles',
+									});
+								}
+							}
+						}
+
+						if (error) {
+							dt.pop_ajax_message('There is an error in the subtitles.', 'error');
+						} else {
+							var subtitle_danmaku_list = new DanmakuTimeSequence(subtitles_list);
+							subtitle_danmaku_container[subtitle_index] = subtitle_danmaku_list;
+						}
+					} else {
+						dt.pop_ajax_message(result.message, 'error');
+					}
+				},
+				error: function (xhr, ajaxOptions, thrownError) {
+					console.log(xhr.status);
+					console.log(thrownError);
+					dt.pop_ajax_message(xhr.status+' '+thrownError, 'error');
+				}
+			});
+        } else {
+            $(this).prev().removeClass('checked');
+            delete subtitle_danmaku_container[subtitle_index];
+            subtitles_one_clear(subtitle_index);
+        }
 	});
 
 	$(document).keydown(function(e) {
@@ -1670,11 +1936,11 @@ function onPlayerReady(event) {
 		}
 	});
 
-	var timestamp = parseFloat(getParameterByName('timestamp'));
+	var timestamp = parseFloat(dt.getParameterByName('timestamp'));
 	if (!isNaN(timestamp)) {
 		player.seekTo(timestamp - 0.05, true);
 	}
-	var autoplay = getParameterByName('autoplay');
+	var autoplay = dt.getParameterByName('autoplay');
 	if (autoplay === '1') {
 		player.playVideo();
 	}
@@ -1684,23 +1950,40 @@ function subtitles_danmaku_form_check() {
 	var error = false;
 	var name = $('input[name="name"]').val().trim();
 	if (!name) {
-		pop_ajax_message('Please fill in a description', 'error');
+		dt.pop_ajax_message('Please fill in a description', 'error');
 		error = true;
 	} else if (name.length > 350) {
-		pop_ajax_message('Description is too long (less than 350 characters).', 'error');
+		dt.pop_ajax_message('Description is too long (less than 350 characters).', 'error');
 		error = true;
 	}
 
 	var memo = $('input[name="memo"]').val().trim();
 	if (memo.length > 350) {
-		pop_ajax_message('Comment is too long (less than 350 characters).', 'error');
+		dt.pop_ajax_message('Comment is too long (less than 350 characters).', 'error');
 		error = true;
 	}
 
-	var subtitle_content = $('textarea[name="subtitles"]').val().trim();
+	var subtitle_content = $('textarea[name="subtitles"]').val().replace(/\r/g, '').trim();
 	if (!subtitle_content) {
-		pop_ajax_message('Please fill in subtitles.', 'error');
+		dt.pop_ajax_message('Please fill in subtitles.', 'error');
 		error = true;
+	} else {
+		var lines = subtitle_content.split('\n');
+		var pos = 0;
+		for (var i = 0; i < lines.length; i++) {
+			var line = lines[i].trim();
+			if (line) {
+				var result = line.match(subtitle_format);
+				if (!result || parseInt(result[2]) >= 60) {
+					dt.pop_ajax_message('Format error at line '+(i+1), 'error');
+					$('textarea[name="subtitles"]')[0].focus();
+					$('textarea[name="subtitles"]')[0].setSelectionRange(pos, pos);
+					error = true;
+					break;
+				}
+			}
+			pos +=  lines[i].length+1;
+		}
 	}
 	return error;
 }
@@ -1709,27 +1992,27 @@ function advanced_danmaku_form_check() {
 	var error = false;
 	var content = $('#advanced-danmaku-content').val().trim();
 	if (!content) {
-		pop_ajax_message('You can\'t post empty comment.', 'error');
+		dt.pop_ajax_message('You can\'t post empty comment.', 'error');
 		error = true;
 	} else if (content.length > 350) {
-		pop_ajax_message('Comment is too long (less than 350 characters).', 'error');
+		dt.pop_ajax_message('Comment is too long (less than 350 characters).', 'error');
 		error = true;
 	}
 
 	if ($('input[name="birth-position-X"]').val() === $('input[name="death-position-X"]').val()
 		&& $('input[name="birth-position-Y"]').val() === $('input[name="death-position-Y"]').val()
 		&& $('input[name="longevity"]').val() === '0') {
-		pop_ajax_message('Longevity must be specified for static danmaku.', 'error');
+		dt.pop_ajax_message('Longevity must be specified for static danmaku.', 'error');
 		error = true;
 	}
 	if (($('input[name="birth-position-X"]').val() !== $('input[name="death-position-X"]').val() && $('input[name="speed-X"]').val() === '0')
 		|| ($('input[name="birth-position-Y"]').val() !== $('input[name="death-position-Y"]').val() && $('input[name="speed-Y"]').val() === '0')) {
-		pop_ajax_message('Speed must be specified for moving danmaku.', 'error');
+		dt.pop_ajax_message('Speed must be specified for moving danmaku.', 'error');
 		error = true;
 	}
 
 	if (!$('textarea[name="danmaku-css"]').val().trim()) {
-		pop_ajax_message('CSS must be specified.', 'error');
+		dt.pop_ajax_message('CSS must be specified.', 'error');
 		error = true;
 	}
 	return error;
@@ -1771,13 +2054,13 @@ function time_order_change(evt) {
 	var time_title = document.getElementById("time");
 	if (time_title.className === "danmaku-order-title") {
 		time_title.className = "danmaku-order-title up";
-		quick_sort(danmaku_list, 0, danmaku_list.length - 1, danmaku_timestamp_lower_compare);
+		dt.quick_sort(danmaku_pool_list, 0, danmaku_pool_list.length - 1, danmaku_timestamp_lower_compare);
 	} else if (time_title.className === "danmaku-order-title up") {
 		time_title.className = "danmaku-order-title down"
-		quick_sort(danmaku_list, 0, danmaku_list.length - 1, danmaku_timestamp_upper_compare);
+		dt.quick_sort(danmaku_pool_list, 0, danmaku_pool_list.length - 1, danmaku_timestamp_upper_compare);
 	} else {//equal "danmaku-order-title down"
 		time_title.className = "danmaku-order-title up"
-		quick_sort(danmaku_list, 0, danmaku_list.length - 1, danmaku_timestamp_lower_compare);
+		dt.quick_sort(danmaku_pool_list, 0, danmaku_pool_list.length - 1, danmaku_timestamp_lower_compare);
 	}
 	generate_danmaku_pool_list();
 	var content_title = document.getElementById("content");
@@ -1790,13 +2073,13 @@ function content_order_change(evt) {
 	var content_title = document.getElementById("content");
 	if (content_title.className === "danmaku-order-title") {
 		content_title.className = "danmaku-order-title up";
-		quick_sort(danmaku_list, 0, danmaku_list.length - 1, danmaku_content_lower_compare);
+		dt.quick_sort(danmaku_pool_list, 0, danmaku_pool_list.length - 1, danmaku_content_lower_compare);
 	} else if (content_title.className === "danmaku-order-title up") {
 		content_title.className = "danmaku-order-title down"
-		quick_sort(danmaku_list, 0, danmaku_list.length - 1, danmaku_content_upper_compare);
+		dt.quick_sort(danmaku_pool_list, 0, danmaku_pool_list.length - 1, danmaku_content_upper_compare);
 	} else {//equal "danmaku-order-title down"
 		content_title.className = "danmaku-order-title up"
-		quick_sort(danmaku_list, 0, danmaku_list.length - 1, danmaku_content_lower_compare);
+		dt.quick_sort(danmaku_pool_list, 0, danmaku_pool_list.length - 1, danmaku_content_lower_compare);
 	}
 	generate_danmaku_pool_list();
 	var time_title = document.getElementById("time");
@@ -1809,13 +2092,13 @@ function date_order_change(evt) {
 	var date_title = document.getElementById("date");
 	if (date_title.className === "danmaku-order-title") {
 		date_title.className = "danmaku-order-title up";
-		quick_sort(danmaku_list, 0, danmaku_list.length - 1, danmaku_date_lower_compare);
+		dt.quick_sort(danmaku_pool_list, 0, danmaku_pool_list.length - 1, danmaku_date_lower_compare);
 	} else if (date_title.className === "danmaku-order-title up") {
 		date_title.className = "danmaku-order-title down"
-		quick_sort(danmaku_list, 0, danmaku_list.length - 1, danmaku_date_upper_compare);
+		dt.quick_sort(danmaku_pool_list, 0, danmaku_pool_list.length - 1, danmaku_date_upper_compare);
 	} else {//equal "danmaku-order-title down"
 		date_title.className = "danmaku-order-title up"
-		quick_sort(danmaku_list, 0, danmaku_list.length - 1, danmaku_date_lower_compare);
+		dt.quick_sort(danmaku_pool_list, 0, danmaku_pool_list.length - 1, danmaku_date_lower_compare);
 	}
 	generate_danmaku_pool_list();
 	var content_title = document.getElementById("content");
@@ -1869,25 +2152,25 @@ function generate_danmaku_pool_list() {
 		listNode.removeChild(listNode.lastChild);
 	}
 
-	for (var i = 0; i < danmaku_list.length; i++) {
+	for (var i = 0; i < danmaku_pool_list.length; i++) {
 		var per_container = document.createElement('div');
-		if (danmaku_list[i].blocked) {
+		if (danmaku_pool_list[i].blocked) {
 			per_container.className = "per-bullet blocked";
 		} else {
 			per_container.className = "per-bullet";
 		}
-		per_container.setAttribute('data-creator', danmaku_list[i].creator);
+		per_container.setAttribute('data-creator', danmaku_pool_list[i].creator);
 
 		var time_value = document.createElement('div');
 		time_value.className = "bullet-time-value";
-		time_value.appendChild(document.createTextNode(secondsToTime(danmaku_list[i].timestamp)));
+		time_value.appendChild(document.createTextNode(secondsToTime(danmaku_pool_list[i].timestamp)));
 		var content_value = document.createElement('div');
 		content_value.className = "bullet-content-value";
-		content_value.title = danmaku_list[i].content;
-		content_value.appendChild(document.createTextNode(danmaku_list[i].content));
+		content_value.title = danmaku_pool_list[i].content;
+		content_value.appendChild(document.createTextNode(danmaku_pool_list[i].content));
 		var date_value = document.createElement('div');
 		date_value.className = "bullet-date-value";
-		date_value.appendChild(document.createTextNode(danmaku_list[i].created));
+		date_value.appendChild(document.createTextNode(danmaku_pool_list[i].created));
 		
 		per_container.appendChild(time_value);
 		per_container.appendChild(content_value);
@@ -1898,8 +2181,8 @@ function generate_danmaku_pool_list() {
 
 function refresh_danmaku_pool() {
 	var pool_list = document.querySelectorAll('.per-bullet')
-	for (var i = 0; i < danmaku_list.length; i++) {
-		if (danmaku_list[i].blocked) {
+	for (var i = 0; i < danmaku_pool_list.length; i++) {
+		if (danmaku_pool_list[i].blocked) {
 			pool_list[i].classList.add('blocked');
 		} else {
 			pool_list[i].classList.remove('blocked');
@@ -1908,11 +2191,11 @@ function refresh_danmaku_pool() {
 }
 
 function isCookieExisted(cname) {
-	var cookie = getCookie(cname);
+	var cookie = dt.getCookie(cname);
 	var res = (cookie != "");
 	var now = new Date().toUTCString();
 	var extime = 60 * 60 *1000; // 60 mins window to block next operation
-	setCookie(cname, now, extime);
+	dt.setCookie(cname, now, extime);
 	return res;
 }
 
@@ -1967,16 +2250,16 @@ $(document).ready(function() {
 			url: '/account/favor/dt'+video_id,
 			success: function(result) {
 				if(!result.error) {
-					pop_ajax_message('You have successfully added it to your favorites.', 'success');
-					$('#add-to-favorite').children('span.commas_number').text(numberWithCommas(result.favors));
+					dt.pop_ajax_message('You have successfully added it to your favorites.', 'success');
+					$('#add-to-favorite').children('span.commas_number').text(dt.numberWithCommas(result.favors));
 				} else {
-					pop_ajax_message(result.message, 'error');
+					dt.pop_ajax_message(result.message, 'error');
 				}
 			},
 			error: function (xhr, ajaxOptions, thrownError) {
 				console.log(xhr.status);
 				console.log(thrownError);
-				pop_ajax_message(xhr.status+' '+thrownError, 'error');
+				dt.pop_ajax_message(xhr.status+' '+thrownError, 'error');
 			}
 		});
 	});
@@ -1989,20 +2272,20 @@ $(document).ready(function() {
 				url: '/video/like/dt' + video_id,
 				success: function(result) {
 					if(!result.error) {
-						pop_ajax_message('You liked it!', 'success');
-						$('#like-this').children('span.commas_number').text(numberWithCommas(result.likes));
+						dt.pop_ajax_message('You liked it!', 'success');
+						$('#like-this').children('span.commas_number').text(dt.numberWithCommas(result.likes));
 					} else {
-						pop_ajax_message(result.message, 'error');
+						dt.pop_ajax_message(result.message, 'error');
 					}
 				},
 				error: function (xhr, ajaxOptions, thrownError) {
 					console.log(xhr.status);
 					console.log(thrownError);
-					pop_ajax_message(xhr.status+' '+thrownError, 'error');
+					dt.pop_ajax_message(xhr.status+' '+thrownError, 'error');
 				}
 			});
 		} else {
-			pop_ajax_message('You already liked it.', 'error');
+			dt.pop_ajax_message('You already liked it.', 'error');
 		}
 	});
 
@@ -2059,90 +2342,33 @@ $(document).ready(function() {
 		success: function(result) {
 			if(!result.error) {
 				console.log(result.danmaku_list.length);
-				$('#total-danmaku-span').text(numberWithCommas(result.danmaku_list.length));
+				$('#total-danmaku-span').text(dt.numberWithCommas(result.danmaku_list.length));
 				for(var i = 0; i < result.danmaku_list.length; i++) {
 					result.danmaku_list[i].blocked = false;
-					danmaku_list.push(result.danmaku_list[i]);
+					danmaku_pool_list.push(result.danmaku_list[i]);
 				}
-				// quick_sort(danmaku_list, 0, danmaku_list.length - 1, danmaku_timestamp_lower_compare);
-				quick_sort(danmaku_list, 0, danmaku_list.length - 1, danmaku_date_lower_compare);
+				// dt.quick_sort(danmaku_pool_list, 0, danmaku_pool_list.length - 1, danmaku_timestamp_lower_compare);
+				dt.quick_sort(danmaku_pool_list, 0, danmaku_pool_list.length - 1, danmaku_date_lower_compare);
 				generate_danmaku_pool_list();
-				danmaku = result.danmaku_list;
-				quick_sort(danmaku, 0, danmaku.length-1, danmaku_timestamp_lower_compare);
+				normal_danmaku_sequence = new DanmakuTimeSequence(result.danmaku_list);
 
 				for (var i = 0; i < result.subtitle_names.length; i++) {
 					// console.log(result.subtitle_names[i])
 					$('.subtitles-list').append('<label class="check-label subtitle">\
 			          <div class="pseudo-checkbox"></div>\
-			          <input type="checkbox" id="show-colored-checkbox" class="checkbox hidden">\
+			          <input type="checkbox" id="show-colored-checkbox" class="checkbox hidden" data-index="'+(i+1)+'">\
 			          <span>'+result.subtitle_names[i]+'</span>\
 			        </label>');
 				}
 			} else {
-				pop_ajax_message(result.message, 'error');
+				dt.pop_ajax_message(result.message, 'error');
 			}
 		},
 		error: function (xhr, ajaxOptions, thrownError) {
 			console.log(xhr.status);
 			console.log(thrownError);
-			pop_ajax_message(xhr.status+' '+thrownError, 'error');
+			dt.pop_ajax_message(xhr.status+' '+thrownError, 'error');
 		}
-	});
-
-	// Post Danmaku
-	$('#shooter').submit(function(evt){
-		if (!player) {
-			return false;
-		}
-
-		var button = document.querySelector('#fire-button');
-		button.disabled = true;
-
-		var error = false;
-		var content = $('#danmaku-input').val().trim();
-		if (!content) {
-			pop_ajax_message('You can\'t post empty comment.', 'error');
-			error = true;
-		} else if (content.length > 350) {
-			pop_ajax_message('Comment is too long (less than 350 characters).', 'error');
-			error = true;
-		}
-
-		if (error) {
-			button.disabled = false;
-			return false;
-		}
-
-		$.ajax({
-			type: "POST",
-			url: '/video/danmaku/' + url_suffix,
-			data: $(this).serialize()+'&'+$.param({timestamp: player.getCurrentTime()}),
-			success: function(result) {
-				if(!result.error) {
-					$('#danmaku-input').val('');
-					pop_ajax_message('Danmaku sent!', 'success');
-					result.timestamp = player.getCurrentTime() + 0.05;
-					result.blocked = false;
-					$('#danmaku-list').append('<div class="per-bullet container">\
-						<div class="bullet-time-value">' + secondsToTime(result.timestamp) + '</div>\
-						<div class="bullet-content-value" title="' + result.content + '">' + result.content + '</div>\
-						<div class="bullet-date-value">' + result.created + '</div></div>');
-					danmaku_list.push(result);
-					danmaku.push(result);
-					quick_sort(danmaku, 0, danmaku.length-1, danmaku_timestamp_lower_compare);
-				} else {
-					pop_ajax_message(result.message, 'error');
-				}
-				button.disabled = false;
-			},
-			error: function (xhr, ajaxOptions, thrownError) {
-				console.log(xhr.status);
-				console.log(thrownError);
-				pop_ajax_message(xhr.status+' '+thrownError, 'error');
-				button.disabled = false;
-			}
-		});
-		return false;
 	});
 
 	$('#danmaku-pool').on('click', 'div.per-bullet', function(evt) {
@@ -2178,12 +2404,12 @@ $(document).ready(function() {
 	$('#danmaku-pool-check-all-sent').click(function() {
 		var block = '';
 		var user = $('.danmaku-pool-menu').attr('data-creator');
-		for (var i = 0; i < danmaku_list.length; i++) {
-			if (danmaku_list[i].creator.toString() === user) {
+		for (var i = 0; i < danmaku_pool_list.length; i++) {
+			if (danmaku_pool_list[i].creator.toString() === user) {
 				block += '<div class="check-per-bullet">\
-						<div class="bullet-time-value">'+secondsToTime(danmaku_list[i].timestamp)+'</div>\
-						<div class="bullet-content-value" title="'+danmaku_list[i].content+'">'+danmaku_list[i].content+'</div>\
-						<div class="bullet-date-value">'+danmaku_list[i].created+'</div>\
+						<div class="bullet-time-value">'+secondsToTime(danmaku_pool_list[i].timestamp)+'</div>\
+						<div class="bullet-content-value" title="'+danmaku_pool_list[i].content+'">'+danmaku_pool_list[i].content+'</div>\
+						<div class="bullet-date-value">'+danmaku_pool_list[i].created+'</div>\
 					</div>';
 			}
 		}
@@ -2205,13 +2431,13 @@ $(document).ready(function() {
 		var error = false;
 		var new_tag = $('input.add-new-tag-input').val().trim();
 		if (!new_tag) {
-			pop_ajax_message('You can\'t add an empty tag.', 'error');
+			dt.pop_ajax_message('You can\'t add an empty tag.', 'error');
 			error = true;
 		} else if (new_tag.length > 100) {
-			pop_ajax_message('Tag is too long (less than 100 characters).', 'error');
+			dt.pop_ajax_message('Tag is too long (less than 100 characters).', 'error');
 			error = true;
 		} else if (new_tag.indexOf(',') > -1) {
-			pop_ajax_message('Can not contain ",".', 'error');
+			dt.pop_ajax_message('Can not contain ",".', 'error');
 			error = true;
 		}
 
@@ -2225,18 +2451,18 @@ $(document).ready(function() {
 			data: $(evt.target).serialize(),
 			success: function(result) {
 				if(!result.error) {
-					pop_ajax_message('A new tag has been added!', 'success');
+					dt.pop_ajax_message('A new tag has been added!', 'success');
 					$('input.add-new-tag-input').val('');
 					$('input.add-new-tag-input').focusout();
 				} else {
 					$('input.add-new-tag-input').val('');
-					pop_ajax_message(result.message, 'error');
+					dt.pop_ajax_message(result.message, 'error');
 				}
 			},
 			error: function (xhr, ajaxOptions, thrownError) {
 				console.log(xhr.status);
 				console.log(thrownError);
-				pop_ajax_message(xhr.status+' '+thrownError, 'error');
+				dt.pop_ajax_message(xhr.status+' '+thrownError, 'error');
 			}
 		});
 		return false;
@@ -2287,10 +2513,10 @@ $(document).ready(function() {
 		var error = false;
 		var content = $('#comment-textarea').val().trim();
 		if (!content) {
-			pop_ajax_message('You can\'t post empty comment.', 'error');
+			dt.pop_ajax_message('You can\'t post empty comment.', 'error');
 			error = true;
 		} else if (content.length > 2000) {
-			pop_ajax_message('Your comment is too long (less than 2000 characters).', 'error');
+			dt.pop_ajax_message('Your comment is too long (less than 2000 characters).', 'error');
 			error = true;
 		}
 
@@ -2305,18 +2531,18 @@ $(document).ready(function() {
 			data: $(evt.target).serialize(),
 			success: function(result) {
 				if(!result.error) {
-					pop_ajax_message('Comment posted!', 'success');
+					dt.pop_ajax_message('Comment posted!', 'success');
 					$('#comment-textarea').val('');
 					update_comments(1, video_id);
 				} else {
-					pop_ajax_message(result.message, 'error');
+					dt.pop_ajax_message(result.message, 'error');
 				}
 				button.disabled = false;
 			},
 			error: function (xhr, ajaxOptions, thrownError) {
 				console.log(xhr.status);
 				console.log(thrownError);
-				pop_ajax_message(xhr.status+' '+thrownError, 'error');
+				dt.pop_ajax_message(xhr.status+' '+thrownError, 'error');
 				button.disabled = false;
 			}
 		});
@@ -2330,10 +2556,10 @@ $(document).ready(function() {
 		var error = false;
 		var content = $('#reply-textarea').val().trim();
 		if (!content) {
-			pop_ajax_message('You can\'t post empty comment.', 'error');
+			dt.pop_ajax_message('You can\'t post empty comment.', 'error');
 			error = true;
 		} else if (content.length > 2000) {
-			pop_ajax_message('Your comment is too long (less than 2000 characters).', 'error');
+			dt.pop_ajax_message('Your comment is too long (less than 2000 characters).', 'error');
 			error = true;
 		}
 		var comment_id = $(evt.target).parent().parent().attr('data-id');
@@ -2353,18 +2579,18 @@ $(document).ready(function() {
 			data: $(evt.target).serialize(),
 			success: function(result) {
 				if(!result.error) {
-					pop_ajax_message('Reply posted!', 'success');
+					dt.pop_ajax_message('Reply posted!', 'success');
 					$('#reply-textarea').val('');
 					update_inner_comments(result.total_pages, video_id, $(evt.target).parent());
 				} else {
-					pop_ajax_message(result.message, 'error');
+					dt.pop_ajax_message(result.message, 'error');
 				}
 				button.disabled = false;
 			},
 			error: function (xhr, ajaxOptions, thrownError) {
 				console.log(xhr.status);
 				console.log(thrownError);
-				pop_ajax_message(xhr.status+' '+thrownError, 'error');
+				dt.pop_ajax_message(xhr.status+' '+thrownError, 'error');
 				button.disabled = false;
 			}
 		});
@@ -2424,13 +2650,13 @@ $(document).ready(function() {
 		$('#reply-textarea').val('@' + user_name + ': ');
 	});
 
-	floorth = parseInt(getParameterByName('comment'));
+	floorth = parseInt(dt.getParameterByName('comment'));
 	if (!isNaN(floorth)) {
 		var total = parseInt($('#comments-block-title span').text());
 		var rev = total - floorth + 1;
 		update_comments(Math.ceil(rev/20), video_id);
 	}
-	inner_floorth = parseInt(getParameterByName('reply'));
+	inner_floorth = parseInt(dt.getParameterByName('reply'));
 
 	$('#report-button').click(function() {
 		$('#report-box').addClass('show');
@@ -2449,9 +2675,9 @@ $(document).ready(function() {
 		  success: function(result) {
 		    console.log(result);
 		    if(result.error) {
-		      pop_ajax_message(result.message, 'error');
+		      dt.pop_ajax_message(result.message, 'error');
 		    } else {
-		      pop_ajax_message(result.message, 'success');
+		      dt.pop_ajax_message(result.message, 'success');
 		      $('#report-submission-form')[0].reset();
 		      setTimeout(function(){
 		        $('#report-box').removeClass('show');
@@ -2464,7 +2690,7 @@ $(document).ready(function() {
 		    console.log(xhr.status);
 		    console.log(thrownError);
 		    button.disabled = false;
-		    pop_ajax_message(xhr.status+' '+thrownError, 'error');
+		    dt.pop_ajax_message(xhr.status+' '+thrownError, 'error');
 		  }
 		});
 		return false;
@@ -2485,7 +2711,7 @@ function update_comments(page, video_id) {
 			comment_container.empty();
 			pagination_container.empty();
 			if(!result.error) {
-				$('#comments-block-title').children('span.commas_number').text(numberWithCommas(result.total_comments));
+				$('#comments-block-title').children('span.commas_number').text(dt.numberWithCommas(result.total_comments));
 				if (result.total_pages == 0) {
 					comment_container.append('<div class="comment-entry no-comment">Be the first one to comment!</div>');
 				} else {
@@ -2502,7 +2728,7 @@ function update_comments(page, video_id) {
                     	}
                     }
 
-                    var pagination = render_pagination(page, result.total_pages);
+                    var pagination = dt.render_pagination(page, result.total_pages);
                     pagination_container.append(pagination);
 
                     for(var i = 0; i < result.comments.length; i++) {
@@ -2518,7 +2744,7 @@ function update_comments(page, video_id) {
                     }
 				}
 			} else {
-				pop_ajax_message(result.message, 'error');
+				dt.pop_ajax_message(result.message, 'error');
 				comment_container.append('<div class="comment-entry no-comment error" data-page="'+page+'">Load error.</div>');
 			}
 		},
@@ -2527,7 +2753,7 @@ function update_comments(page, video_id) {
 			console.log(thrownError);
 			comment_container.empty();
 			pagination_container.empty();
-			pop_ajax_message(xhr.status+' '+thrownError, 'error');
+			dt.pop_ajax_message(xhr.status+' '+thrownError, 'error');
 			comment_container.append('<div class="comment-entry no-comment error" data-page="'+page+'">Load error.</div>');
 		}
 	});
@@ -2565,7 +2791,7 @@ function update_inner_comments(page, video_id, inner_comment_container) {
                     }
 
                     if (result.total_pages > 1) {
-		                var pagination = render_pagination(page, result.total_pages);
+		                var pagination = dt.render_pagination(page, result.total_pages);
 	                    pagination_container.append(pagination);
 	                } else {
 	                	pagination_container.remove();
@@ -2580,7 +2806,7 @@ function update_inner_comments(page, video_id, inner_comment_container) {
                     }
 				}
 			} else {
-				pop_ajax_message(result.message, 'error');
+				dt.pop_ajax_message(result.message, 'error');
 				inner_comment_container.prepend('<div class="comment-entry no-comment inner error" data-page="'+page+'">Load error.</div>');
 			}
 		},
@@ -2588,7 +2814,7 @@ function update_inner_comments(page, video_id, inner_comment_container) {
 			console.log(xhr.status);
 			console.log(thrownError);
 			inner_comment_container.empty();
-			pop_ajax_message(xhr.status+' '+thrownError, 'error');
+			dt.pop_ajax_message(xhr.status+' '+thrownError, 'error');
 			inner_comment_container.append('<div class="comment-entry no-comment inner error" data-page="'+page+'">Load error.</div>');
 		}
 	});
@@ -2645,3 +2871,5 @@ function render_inner_comment_div(inner_comment) {
 		        </div>'
 	return div;
 }
+//end of the file
+} (dt, jQuery));

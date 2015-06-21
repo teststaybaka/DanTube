@@ -1,7 +1,8 @@
+(function(dt, $) {
 $(document).ready(function() {
     $('input.delete-button').click(function(evt) {
         var ids= $(evt.target).attr('data-id').split(';');
-        pop_ajax_message('Deleting...', 'info');
+        dt.pop_ajax_message('Deleting...', 'info');
         $(evt.target).prop('disabled', true);
         var urls = window.location.href.split('/');
         $.ajax({
@@ -11,13 +12,13 @@ $(document).ready(function() {
             success: function(result) {
                 console.log(result);
                 if (!result.error) {
-                    pop_ajax_message('Videos removed from the list!', 'success');
+                    dt.pop_ajax_message('Videos removed from the list!', 'success');
                     ids = result.message;
                     for (var i = 0; i < ids.length; i++) {
                         $('div.video-entry.dt'+ids[i]).remove();
                     }
                 } else {
-                    pop_ajax_message(result.message, 'error');
+                    dt.pop_ajax_message(result.message, 'error');
                 }
                 $(evt.target).prop('disabled', false);
             },
@@ -25,7 +26,7 @@ $(document).ready(function() {
                 console.log(xhr.status);
                 console.log(thrownError);
                 $(evt.target).prop('disabled', false);
-                pop_ajax_message(xhr.status+' '+thrownError, 'error');
+                dt.pop_ajax_message(xhr.status+' '+thrownError, 'error');
             }
         });
         $('div.popup-window-container.remove').removeClass('show');
@@ -78,11 +79,11 @@ $(document).ready(function() {
         var error = false;
         var title = $('#playlist-title-change').val();
         if (!title) {
-            pop_ajax_message('Title can not be empty.', 'error');
+            dt.pop_ajax_message('Title can not be empty.', 'error');
             $('#playlist-title-change').addClass('error');
             error = true;
         } else if (title.length > 400) {
-            pop_ajax_message('Title can not be longer than 400 characters.', 'error');
+            dt.pop_ajax_message('Title can not be longer than 400 characters.', 'error');
             $('#playlist-title-change').addClass('error');
             error = true;
         } else {
@@ -91,7 +92,7 @@ $(document).ready(function() {
 
         var intro = $('#playlist-intro-change').val();
         if (intro.length > 2000) {
-            pop_ajax_message('Introduction can not be longer than 2000 characters.', 'error');
+            dt.pop_ajax_message('Introduction can not be longer than 2000 characters.', 'error');
             $('#playlist-intro-change').addClass('error');
             error = true;
         } else {
@@ -110,12 +111,12 @@ $(document).ready(function() {
             success: function(result) {
                 console.log(result);
                 if (!result.error) {
-                    pop_ajax_message('Playlist updated!', 'success');
+                    dt.pop_ajax_message('Playlist updated!', 'success');
                     $('#playlist-title-change-form').removeClass('show');
                     $('#sub-title').removeClass('hidden');
                     $('#sub-title a.sub-title-link').text(title);
                 } else {
-                    pop_ajax_message(result.message, 'error');
+                    dt.pop_ajax_message(result.message, 'error');
                 }
                 $("input.create-button").prop('disabled', false);
             },
@@ -123,7 +124,7 @@ $(document).ready(function() {
                 console.log(xhr.status);
                 console.log(thrownError);
                 $("input.create-button").prop('disabled', false);
-                pop_ajax_message(xhr.status+' '+thrownError, 'error');
+                dt.pop_ajax_message(xhr.status+' '+thrownError, 'error');
             }
         });
         return false;
@@ -145,7 +146,7 @@ $(document).ready(function() {
         if (entries.length == 0) return;
 
         $(evt.target).prop('disabled', true);
-        pop_ajax_message('Adding videos to playlist...', 'info');
+        dt.pop_ajax_message('Adding videos to playlist...', 'info');
         ids = [];
         for (var i = 0; i < entries.length; i++) {
             ids.push($(entries[i]).attr('data-id'));
@@ -157,13 +158,13 @@ $(document).ready(function() {
             data: {ids: ids},
             success: function(result) {
                 if (!result.error) {
-                    pop_ajax_message('Videos have been added to the playlist.', 'success');
+                    dt.pop_ajax_message('Videos have been added to the playlist.', 'success');
                     setTimeout(function(){
                         window.location.reload();
                     }, 3000);
                     $('div.popup-window-container.add-to').removeClass('show');
                 } else {
-                    pop_ajax_message(result.message, 'error');
+                    dt.pop_ajax_message(result.message, 'error');
                     $(evt.target).prop('disabled', false);
                 }
             },
@@ -171,7 +172,7 @@ $(document).ready(function() {
                 console.log(xhr.status);
                 console.log(thrownError);
                 $(evt.target).prop('disabled', false);
-                pop_ajax_message(xhr.status+' '+thrownError, 'error');
+                dt.pop_ajax_message(xhr.status+' '+thrownError, 'error');
             }
         });
     });
@@ -218,13 +219,13 @@ $(document).ready(function() {
                     if (!result.error) {
                         window.location.reload();
                     } else {
-                        pop_ajax_message(result.message, 'error');
+                        dt.pop_ajax_message(result.message, 'error');
                     }
                 },
                 error: function (xhr, ajaxOptions, thrownError) {
                     console.log(xhr.status);
                     console.log(thrownError);
-                    pop_ajax_message(xhr.status+' '+thrownError, 'error');
+                    dt.pop_ajax_message(xhr.status+' '+thrownError, 'error');
                 }
             });
             $(evt.target).val('')
@@ -259,7 +260,7 @@ function search_video(page) {
                         video_container.append(video_div);
                     }
 
-                    var pagination = render_pagination(page, result.total_pages);
+                    var pagination = dt.render_pagination(page, result.total_pages);
                     pagination_container.append(pagination);
                 }
             } else {
@@ -292,3 +293,5 @@ function render_popup_video_div(video) {
 
     return div;
 }
+//end of the file
+} (dt, jQuery));

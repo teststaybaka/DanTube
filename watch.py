@@ -617,7 +617,7 @@ class Subtitles(BaseHandler):
     def get(self, video, clip_index):
         clip = video.video_clips[clip_index-1].get()
         try:
-            s_index = int(self.request.get('subtitle-index'))
+            s_index = int(self.request.get('subtitle_index'))
             if s_index < 1 or s_index > len(clip.subtitle_danmaku_pools):
                 raise ValueError('Negative')
         except ValueError:
@@ -627,7 +627,7 @@ class Subtitles(BaseHandler):
             }))
             return
 
-        subtitle_danmaku_pool = clip.subtitle_danmaku_pools[s_index].get()
+        subtitle_danmaku_pool = clip.subtitle_danmaku_pools[s_index-1].get()
         self.response.out.write(json.dumps({
             'subtitles': subtitle_danmaku_pool.subtitles,
             'creator': subtitle_danmaku_pool.creator.id(),
@@ -661,13 +661,23 @@ class Subtitles(BaseHandler):
             }))
             return
 
-        subtitles = self.request.get('subtitles').strip()
+        subtitles = self.request.get('subtitles').replace('\r', '').strip()
         if not subtitles:
             self.response.out.write(json.dumps({
                 'error': True,
                 'message': 'Subtitles can not be empty.',
             }))
             return
+
+        reg = re.compile(r'^\[\d+:\d{1,2}.\d{1,2}\].*$')
+        lines = subtitles.split('\n')
+        for i in range(0, len(lines)):
+            if not (lines[i] and reg.match(lines[i])):
+                self.response.out.write(json.dumps({
+                    'error': True,
+                    'message': 'Subtitles format error.',
+                }))
+                return
 
         clip = video.video_clips[clip_index-1].get()
         subtitle_danmaku_pool = models.SubtitleDanmakuPool(memo=memo, subtitles=subtitles, creator=user.key)

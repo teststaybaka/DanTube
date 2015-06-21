@@ -1,7 +1,8 @@
+(function(dt, $) {
 $(document).ready(function() {
     $('input.delete-button').click(function(evt) {
         var ids= $(evt.target).attr('data-id').split(';');
-        pop_ajax_message('Deleting...', 'info');
+        dt.pop_ajax_message('Deleting...', 'info');
         $(evt.target).prop('disabled', true);
         $.ajax({
             type: "POST",
@@ -10,13 +11,13 @@ $(document).ready(function() {
             success: function(result) {
                 console.log(result);
                 if (!result.error) {
-                    pop_ajax_message('Videos deleted!', 'success');
+                    dt.pop_ajax_message('Videos deleted!', 'success');
                     ids = result.message;
                     for (var i = 0; i < ids.length; i++) {
                         $('div.video-entry.dt'+ids[i]).remove();
                     }
                 } else {
-                    pop_ajax_message(result.message, 'error');
+                    dt.pop_ajax_message(result.message, 'error');
                 }
                 $(evt.target).prop('disabled', false);
             },
@@ -24,7 +25,7 @@ $(document).ready(function() {
                 console.log(xhr.status);
                 console.log(thrownError);
                 $(evt.target).prop('disabled', false);
-                pop_ajax_message(xhr.status+' '+thrownError, 'error');
+                dt.pop_ajax_message(xhr.status+' '+thrownError, 'error');
             }
         });
         $('div.popup-window-container').removeClass('show');
@@ -59,3 +60,5 @@ $(document).ready(function() {
         }
     });
 });
+//end of the file
+} (dt, jQuery));

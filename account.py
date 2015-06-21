@@ -575,10 +575,17 @@ class ChangeAvatar(BaseHandler):
         user = self.user
         self.response.headers['Content-Type'] = 'application/json'
 
-        x0 = int(round(float(self.request.get('x0'))))
-        y0 = int(round(float(self.request.get('y0'))))
-        width = int(round(float(self.request.get('width'))))
-        height = int(round(float(self.request.get('height'))))
+        try:
+            x0 = int(round(float(self.request.get('x0'))))
+            y0 = int(round(float(self.request.get('y0'))))
+            width = int(round(float(self.request.get('width'))))
+            height = int(round(float(self.request.get('height'))))
+        except Exception, e:
+            self.response.out.write(json.dumps({
+                'error': True,
+                'message': 'Crop coordinate error.',
+            }))
+            return
 
         avatar_field = self.request.POST.get('upload-avatar')
         if avatar_field != '':

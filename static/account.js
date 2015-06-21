@@ -1,3 +1,4 @@
+(function(dt, $) {
 function cur_password_check(cur_pw) {
     if (!cur_pw) {
         $('#cur-password-error').addClass('show');
@@ -79,10 +80,10 @@ $(document).ready(function() {
             success: function(result) {
                 console.log(result);
                 if(!result.error) {
-                    pop_ajax_message('Please check your email to activate your account.', 'success');
+                    dt.pop_ajax_message('Please check your email to activate your account.', 'success');
                     $(evt.target).text('An email has been sent.');
                 } else {
-                    pop_ajax_message(result.message, 'error');
+                    dt.pop_ajax_message(result.message, 'error');
                     $(evt.target).text(result.message);
                 }
             },
@@ -91,7 +92,7 @@ $(document).ready(function() {
                 console.log(thrownError);
                 $(evt.target).text('Resend email');
                 $(evt.target).removeClass('send');
-                pop_ajax_message(xhr.status+' '+thrownError, 'error');
+                dt.pop_ajax_message(xhr.status+' '+thrownError, 'error');
             }
         });
     });
@@ -99,7 +100,7 @@ $(document).ready(function() {
     $('div.statistic-entry span').each(function() {
         // var colors = [[163,163,163], [83,187,83], [39,143,250], [208,51,208], [255,138,34]]
         var count = parseInt($(this).text());
-        $(this).text(numberWithCommas(count));
+        $(this).text(dt.numberWithCommas(count));
         if (count == 0) count = 1;
         var color = [220 - Math.log(count)/Math.log(100000000)*220, 9*10, 65];
         $(this).css('color', 'hsl('+color[0]+','+color[1]+'%,'+color[2]+ '%)');
@@ -153,12 +154,12 @@ $(document).ready(function() {
             success: function(result) {
                 console.log(result);
                 if(!result.error) {
-                    pop_ajax_message('Change applied successfully!', 'success');
+                    dt.pop_ajax_message('Change applied successfully!', 'success');
                     setTimeout(function(){
                         window.location.replace('/account'); 
                     }, 3000);
                 } else {
-                    pop_ajax_message(result.message, 'error');
+                    dt.pop_ajax_message(result.message, 'error');
                     button.disabled = false;
                 }
                 $('#change-applying').removeClass('show');
@@ -168,7 +169,7 @@ $(document).ready(function() {
                 console.log(thrownError);
                 button.disabled = false;
                 $('#change-applying').removeClass('show');
-                pop_ajax_message(xhr.status+' '+thrownError, 'error');
+                dt.pop_ajax_message(xhr.status+' '+thrownError, 'error');
             }
         });
         return false;
@@ -260,12 +261,12 @@ $(document).ready(function() {
             success: function(result) {
                 console.log(result);
                 if(!result.error) {
-                    pop_ajax_message('Change applied successfully!', 'success');
+                    dt.pop_ajax_message('Change applied successfully!', 'success');
                     setTimeout(function(){
                         window.location.replace('/account'); 
                     }, 3000);
                 } else {
-                    pop_ajax_message(result.message, 'error');
+                    dt.pop_ajax_message(result.message, 'error');
                     button.disabled = false;
                 }
                 $('#change-applying').removeClass('show');
@@ -275,9 +276,11 @@ $(document).ready(function() {
                 console.log(thrownError);
                 button.disabled = false;
                 $('#change-applying').removeClass('show');
-                pop_ajax_message(xhr.status+' '+thrownError, 'error');
+                dt.pop_ajax_message(xhr.status+' '+thrownError, 'error');
             }
         });
         return false;
     });
 });
+//end of the file
+} (dt, jQuery));

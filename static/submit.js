@@ -1,3 +1,4 @@
+(function(dt, $) {
 video_part_line_html = '<div class="video-part-line">\
             <div class="video-part-drag-wrapper" ondragstart="return false;" ondrop="return false;">\
                 <div class="video-part-error">Title too long.</div>\
@@ -350,11 +351,11 @@ $(document).ready(function() {
                         error.text('Video url invalid.');
                         $('input.url-input:eq('+result.index+')').addClass('error');
                     } else {
-                        pop_ajax_message(result.message, 'error');
+                        dt.pop_ajax_message(result.message, 'error');
                     }
                     button.disabled = false;
                 } else {
-                    pop_ajax_message(result.message, 'success');
+                    dt.pop_ajax_message(result.message, 'success');
                     setTimeout(function(){
                         window.location.replace('/account/video'); 
                     }, 3000);
@@ -366,9 +367,11 @@ $(document).ready(function() {
                 console.log(thrownError);
                 button.disabled = false;
                 $('#change-applying').removeClass('show');
-                pop_ajax_message(xhr.status+' '+thrownError, 'error');
+                dt.pop_ajax_message(xhr.status+' '+thrownError, 'error');
             }
         });
         return false;
     });  
 });
+//end of the file
+} (dt, jQuery));

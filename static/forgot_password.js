@@ -1,3 +1,4 @@
+(function(dt, $) {
 $(document).ready(function() {
     $('#forgotpasswordform').submit(function(evt) {
         var button = document.querySelector('#forgotpasswordform input[type="submit"]');
@@ -10,12 +11,12 @@ $(document).ready(function() {
             success: function(result) {
                 console.log(result);
                 if(!result.error) {
-                    pop_ajax_message('An email has been sent to reset your password.', 'success');
+                    dt.pop_ajax_message('An email has been sent to reset your password.', 'success');
                     setTimeout(function(){
                         window.location.replace('/'); 
                     }, 3000);
                 } else {
-                    pop_ajax_message(result.message, 'error');
+                    dt.pop_ajax_message(result.message, 'error');
                     button.disabled = false;
                 }
                 $('#signin_up-header').removeClass('loading');
@@ -24,9 +25,11 @@ $(document).ready(function() {
                 console.log(xhr.status);
                 console.log(thrownError);
                 button.disabled = false;
-                pop_ajax_message(xhr.status+' '+thrownError, 'error');
+                dt.pop_ajax_message(xhr.status+' '+thrownError, 'error');
             }
         });
         return false;
     });
 });
+//end of the file
+} (dt, jQuery));

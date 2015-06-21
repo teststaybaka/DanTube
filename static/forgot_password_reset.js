@@ -1,3 +1,4 @@
+(function(dt, $) {
 function new_password_check(new_pw) {
     if (!new_pw) {
         $('#new-password-error').addClass('show');
@@ -77,12 +78,12 @@ $(document).ready(function() {
             success: function(result) {
                 console.log(result);
                 if(!result.error) {
-                    pop_ajax_message('Password has been reset. Please sign in with the new password.', 'success');
+                    dt.pop_ajax_message('Password has been reset. Please sign in with the new password.', 'success');
                     setTimeout(function(){
                         window.location.replace('/signin'); 
                     }, 3000);
                 } else {
-                    pop_ajax_message(result.message, 'error');
+                    dt.pop_ajax_message(result.message, 'error');
                     button.disabled = false;
                 }
             },
@@ -90,9 +91,11 @@ $(document).ready(function() {
                 console.log(xhr.status);
                 console.log(thrownError);
                 button.disabled = false;
-                pop_ajax_message(xhr.status+' '+thrownError, 'error');
+                dt.pop_ajax_message(xhr.status+' '+thrownError, 'error');
             }
         });
         return false;
     });
 });
+//end of the file
+} (dt, jQuery));

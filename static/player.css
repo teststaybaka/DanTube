@@ -8,7 +8,8 @@ div.danmaku {
     top: 0;
     color: white;
     white-space: nowrap;
-    will-change: transform, -ms-transform, -webkit-transform, opacity;
+    text-shadow: 1px 0 1px black, -1px 0 1px black, 0 1px 1px black, 0 -1px 1px black;
+    will-change: transform, -ms-transform, -webkit-transform, opacity, text-shadow, left, color, font-size, font-family;
 }
 
 #player-container {
@@ -172,7 +173,7 @@ div.danmaku {
 
 #progress-bar {
 	position: absolute;
-	height: 10px;
+	height: 8px;
 	width: 100%;
 	bottom: 0;
 }
@@ -217,7 +218,7 @@ div.danmaku {
 #progress-tip {
 	display: none;
 	position: absolute;
-	bottom: 11px;
+	bottom: 9px;
 	background-color: rgba(255,255,255,.5);
 	z-index: 2;
 	border-radius: 3px;
@@ -1433,7 +1434,8 @@ div.bullet-date-value {
 .normal-input.long-long {
 	width: 280px;
 	margin-left: 5px;
-	padding: 2px 4px;
+	height: 20px;
+	padding: 0 4px;
 }
 
 .percentage-check.check-label {
@@ -2075,18 +2077,12 @@ div.list-video-title {
 	overflow: hidden;
 }
 
-a.list-entry:hover {
-	/*background-color: rgb(240,240,240);*/
-	box-shadow: inset 0 0 4px rgb(180,180,180);
-}
-
 a.list-entry:hover div.list-entry-index, a.list-entry:hover div.list-video-title {
 	color: rgb(0,140,255);
 }
 
 a.list-entry.active {
-	background-color: rgb(240,240,240);
-	box-shadow: inset 0 0 4px rgb(180,180,180);
+	box-shadow: inset 0 0 6px rgb(200,200,200);
 }
 
 a.list-entry.active div.list-entry-index, a.list-entry.active div.list-video-title {

@@ -1,4 +1,6 @@
-function quick_sort(array, start, end, compare) {
+var dt = {};
+(function(dt, $) {
+dt.quick_sort = function (array, start, end, compare) {
     if (start < end) {
         var pivotValue = array[end];
         var storeIndex = start;
@@ -14,18 +16,18 @@ function quick_sort(array, start, end, compare) {
         array[storeIndex] = array[end];
         array[end] = temp;
 
-        quick_sort(array, start, storeIndex - 1, compare);
-        quick_sort(array, storeIndex + 1, end, compare);
+        dt.quick_sort(array, start, storeIndex - 1, compare);
+        dt.quick_sort(array, storeIndex + 1, end, compare);
     }
 }
 
-function numberWithCommas(x) {
+dt.numberWithCommas = function(x) {
     var parts = x.toString().split(".");
     parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
     return parts.join(".");
 }
 
-function hsl2rgb(hsl) {
+dt.hsl2rgb = function(hsl) {
     var h = hsl[0];
     var s = hsl[1];
     var l = hsl[2];
@@ -63,7 +65,7 @@ function hsl2rgb(hsl) {
     return [Math.round((r+m)*255), Math.round((g+m)*255), Math.round((b+m)*255)];
 }
 
-function pop_ajax_message(content, type) {
+dt.pop_ajax_message = function(content, type) {
      $('#ajax-message-box').append('<div class="ajax-message '+type+'"> \
             <div class="ajax-icon '+type+'"></div> \
             <div class="ajax-content">'+content+'</div> \
@@ -84,20 +86,20 @@ function pop_ajax_message(content, type) {
 $(document).ready(function() {
     if ($('#portrait').length != 0) {
         var uesr_id = $('#portrait').attr('data-id');
-        var cookie = getCookie(uesr_id+'_check');
+        var cookie = dt.getCookie(uesr_id+'_check');
         if (!cookie) {
             var now = new Date().toUTCString();
             var extime = 10 * 60 *1000; // 10 mins wait
-            setCookie(uesr_id+'_check', now, extime);
+            dt.setCookie(uesr_id+'_check', now, extime);
             count_new_mentions();
             count_new_notifications();
             count_new_subscriptions();
         }
-        var num = getCookie('new_notifications');
+        var num = dt.getCookie('new_notifications');
         $('#user-notification-new-num').text(num);
-        num = getCookie('new_mentions');
+        num = dt.getCookie('new_mentions');
         $('#user-at-new-num').text(num);
-        num = getCookie('new_subscriptions');
+        num = dt.getCookie('new_subscriptions');
         $('#user-subscriptions-new-num').text(num);
     }
 
@@ -144,16 +146,16 @@ $(document).ready(function() {
             success: function(result) {
                 if(!result.error) {
                     if (button.hasClass('unsubscribe')) {
-                        pop_ajax_message('Unsubscribed successfully.', 'success');
+                        dt.pop_ajax_message('Unsubscribed successfully.', 'success');
                         button.removeClass('unsubscribe');
                         button.children('.subscribe-text').text('Subscribe');
                     } else {
-                        pop_ajax_message('You have successfully subscribed to the UPer.', 'success');
+                        dt.pop_ajax_message('You have successfully subscribed to the UPer.', 'success');
                         button.addClass('unsubscribe');
                         button.children('.subscribe-text').text('Subscribed');
                     }
                 } else {
-                    pop_ajax_message(result.message, 'error');
+                    dt.pop_ajax_message(result.message, 'error');
                     if (result.change) {
                         if (button.hasClass('unsubscribe')) {
                             button.removeClass('unsubscribe');
@@ -168,13 +170,13 @@ $(document).ready(function() {
             error: function (xhr, ajaxOptions, thrownError) {
                 console.log(xhr.status);
                 console.log(thrownError);
-                pop_ajax_message(xhr.status+' '+thrownError, 'error');
+                dt.pop_ajax_message(xhr.status+' '+thrownError, 'error');
             }
         });
     });
 
     $('span.commas_number').each(function() {
-        $(this).text(numberWithCommas($(this).text()) )
+        $(this).text(dt.numberWithCommas($(this).text()) )
     });
 
     $('div.emoticons-select').append('<div class="emoticons-menu container">\
@@ -227,11 +229,11 @@ $(document).ready(function() {
         textarea.val(textarea.val() + $(evt.target).text());
     });
 
-    $('label.check-label').click(function(evt) {
-        if ($(this).children('input[type="checkbox"]').is(':checked')) {
-            $(this).children('.pseudo-checkbox').addClass('checked');
+    $('label.check-label input[type="checkbox"]').change(function(evt) {
+        if ($(this).is(':checked')) {
+            $(this).prev().addClass('checked');
         } else {
-            $(this).children('.pseudo-checkbox').removeClass('checked');
+            $(this).prev().removeClass('checked');
         }
     });
 
@@ -246,7 +248,7 @@ $(document).ready(function() {
     });
 });
 
-function render_pagination(cur_page, total_pages) {
+dt.render_pagination = function(cur_page, total_pages) {
     var page_range = 10;
     cur_page = parseInt(cur_page);
     var max_page;
@@ -294,13 +296,13 @@ function count_new_subscriptions() {
         success: function(result) {
             if(!result.error) {
                 if (result.count > 99) {
-                    setCookie('new_subscriptions', '99+');
+                    dt.setCookie('new_subscriptions', '99+');
                     $('#user-subscriptions-new-num').text('99+');
                 } else if (result.count == 0) {
-                    setCookie('new_subscriptions', '');
+                    dt.setCookie('new_subscriptions', '');
                     $('#user-subscriptions-new-num').text('');
                 } else {
-                    setCookie('new_subscriptions', result.count);
+                    dt.setCookie('new_subscriptions', result.count);
                     $('#user-subscriptions-new-num').text(result.count);
                 }
             } else {
@@ -321,13 +323,13 @@ function count_new_mentions() {
         success: function(result) {
             if(!result.error) {
                 if (result.count > 99) {
-                    setCookie('new_mentions', '99+');
+                    dt.setCookie('new_mentions', '99+');
                     $('#user-at-new-num').text('99+');
                 } else if (result.count == 0) {
-                    setCookie('new_mentions', '');
+                    dt.setCookie('new_mentions', '');
                     $('#user-at-new-num').text('');
                 } else {
-                    setCookie('new_mentions', result.count);
+                    dt.setCookie('new_mentions', result.count);
                     $('#user-at-new-num').text(result.count);
                 }
             } else {
@@ -348,13 +350,13 @@ function count_new_notifications() {
         success: function(result) {
             if(!result.error) {
                 if (result.count > 99) {
-                    setCookie('new_notifications', '99+');
+                    dt.setCookie('new_notifications', '99+');
                     $('#user-notification-new-num').text('99+');
                 } else if (result.count == 0) {
-                    setCookie('new_notifications', '');
+                    dt.setCookie('new_notifications', '');
                     $('#user-notification-new-num').text('');
                 } else {
-                    setCookie('new_notifications', result.count);
+                    dt.setCookie('new_notifications', result.count);
                     $('#user-notification-new-num').text(result.count);
                 }
             } else {
@@ -369,7 +371,7 @@ function count_new_notifications() {
 }
 
 // Modified from http://www.w3schools.com/js/js_cookies.asp
-function setCookie(cname, cvalue, extime) {
+dt.setCookie = function(cname, cvalue, extime) {
     if (extime == 0) {
         document.cookie = cname + "=" + cvalue + ';path=/';
     } else {
@@ -380,7 +382,7 @@ function setCookie(cname, cvalue, extime) {
     }
 }
 
-function getCookie(cname) {
+dt.getCookie = function(cname) {
     var name = cname + "=";
     var ca = document.cookie.split(';');
     for(var i=0; i<ca.length; i++) {
@@ -391,7 +393,7 @@ function getCookie(cname) {
     return "";
 }
 
-function getParameterByName(name) {
+dt.getParameterByName = function(name) {
    var match = RegExp('[?&]' + name + '=([^&]*)').exec(window.location.search);
    return match && decodeURIComponent(match[1].replace(/\+/g, ' '));
 };
@@ -399,3 +401,40 @@ function getParameterByName(name) {
 Array.prototype.last = function() {
     return this[this.length - 1];
 }
+
+dt.LinkedList = function() {
+    this.head = null;
+    this.tail = null;
+    this.length = 0;
+}
+dt.LinkedList.prototype.push = function(node) {
+    // var node = {
+    //     data: data,
+    //     prev: null,
+    //     next: null,
+    // }
+    if (this.head === null) {
+        this.head = node;
+        this.tail = node;
+    } else {
+        this.tail.next = node;
+        node.prev = this.tail;
+        this.tail = node;
+    }
+    this.length++;
+}
+dt.LinkedList.prototype.remove = function(node) {
+    if (node.prev !== null) {
+        node.prev.next = node.next;
+    } else {
+        this.head = node.next;
+    }
+    if (node.next !== null) {
+        node.next.prev = node.prev;
+    } else {
+        this.tail = node.prev;
+    }
+    this.length--;
+}
+//end of the file
+} (dt, jQuery));

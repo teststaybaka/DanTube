@@ -1,3 +1,4 @@
+(function(dt, $) {
 function slideMove(index) {
     var total_slides = $('div.slide-dot').length;
     var preIndex = total_slides - 1 - $('div.slide-dot').index($('div.slide-dot.active'));
@@ -77,7 +78,7 @@ function update_page(query, video_container, pagination_container, video_div_typ
                         video_container.append(video_div);
                     }
 
-                    var pagination = render_pagination(query.page, result.total_pages);
+                    var pagination = dt.render_pagination(query.page, result.total_pages);
                     pagination_container.append(pagination);
 
                     video_container.prev().children('a.refresh-video').attr('data-page', query.page);
@@ -221,16 +222,16 @@ function render_preview_video_div(video) {
                 </div>\
                 <div class="video-preview-statistic">\
                     <div class="video-preview-title">' + video.title + '</div>\
-                    <div class="video-preview-hits"><span class="preview-icon views"></span>' + numberWithCommas(video.hits) + '</div>\
-                    <div class="video-preview-comment-num"><span class="preview-icon comment"></span>' + numberWithCommas(video.comment_counter) + '</div>\
+                    <div class="video-preview-hits"><span class="preview-icon views"></span>' + dt.numberWithCommas(video.hits) + '</div>\
+                    <div class="video-preview-comment-num"><span class="preview-icon comment"></span>' + dt.numberWithCommas(video.comment_counter) + '</div>\
                 </div>\
                 <div class="video-preview-popup">\
                     <div class="popup-title">' + video.title + '</div>\
                     <div class="popup-statistic-line">\
-                        <div class="popup-statistic-entry"><span class="preview-icon views"></span>' + numberWithCommas(video.hits) + '</div>\
-                        <div class="popup-statistic-entry"><span class="preview-icon favorites"></span>' + numberWithCommas(video.favors) + '</div>\
-                        <div class="popup-statistic-entry"><span class="preview-icon comment"></span>' + numberWithCommas(video.comment_counter) + '</div>\
-                        <div class="popup-statistic-entry"><span class="preview-icon bullets"></span>' + numberWithCommas(video.bullets) + '</div>\
+                        <div class="popup-statistic-entry"><span class="preview-icon views"></span>' + dt.numberWithCommas(video.hits) + '</div>\
+                        <div class="popup-statistic-entry"><span class="preview-icon favorites"></span>' + dt.numberWithCommas(video.favors) + '</div>\
+                        <div class="popup-statistic-entry"><span class="preview-icon comment"></span>' + dt.numberWithCommas(video.comment_counter) + '</div>\
+                        <div class="popup-statistic-entry"><span class="preview-icon bullets"></span>' + dt.numberWithCommas(video.bullets) + '</div>\
                     </div>\
                     <div class="popup-intro">\
                         <div class="popup-thumbnail">\
@@ -257,8 +258,8 @@ function render_ranking_video_div(video, rank) {
                 <div class="top-No">' + (rank+1) + '</div>\
                 <div class="top-video-title">' + video.title + '</div>\
             </div>\
-            <div class="top-video-hits"><span class="preview-icon views"></span>' + numberWithCommas(video.hits) + '</div>\
-            <div class="top-video-comment-num"><span class="preview-icon comment"></span>' + numberWithCommas(video.comment_counter) + '</div>';
+            <div class="top-video-hits"><span class="preview-icon views"></span>' + dt.numberWithCommas(video.hits) + '</div>\
+            <div class="top-video-comment-num"><span class="preview-icon comment"></span>' + dt.numberWithCommas(video.comment_counter) + '</div>';
     } else {
         div = '<a class="ranking-video-entry" target="_blank" href="' + video.url + '">\
                 <div class="ranking-No">' + (rank+1) + '</div>\
@@ -268,10 +269,10 @@ function render_ranking_video_div(video, rank) {
     div += '<div class="video-preview-popup">\
                 <div class="popup-title">' + video.title + '</div>\
                 <div class="popup-statistic-line">\
-                    <div class="popup-statistic-entry"><span class="preview-icon views"></span>' + numberWithCommas(video.hits) + '</div>\
-                    <div class="popup-statistic-entry"><span class="preview-icon favorites"></span>' + numberWithCommas(video.favors) + '</div>\
-                    <div class="popup-statistic-entry"><span class="preview-icon comment"></span>' + numberWithCommas(video.comment_counter) + '</div>\
-                    <div class="popup-statistic-entry"><span class="preview-icon bullets"></span>' + numberWithCommas(video.bullets) + '</div>\
+                    <div class="popup-statistic-entry"><span class="preview-icon views"></span>' + dt.numberWithCommas(video.hits) + '</div>\
+                    <div class="popup-statistic-entry"><span class="preview-icon favorites"></span>' + dt.numberWithCommas(video.favors) + '</div>\
+                    <div class="popup-statistic-entry"><span class="preview-icon comment"></span>' + dt.numberWithCommas(video.comment_counter) + '</div>\
+                    <div class="popup-statistic-entry"><span class="preview-icon bullets"></span>' + dt.numberWithCommas(video.bullets) + '</div>\
                 </div>\
                 <div class="popup-intro">\
                     <div class="popup-thumbnail">\
@@ -287,3 +288,5 @@ function render_ranking_video_div(video, rank) {
         </a>';
     return div;
 }
+//end of the file
+} (dt, jQuery));

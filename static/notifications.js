@@ -1,3 +1,4 @@
+(function(dt, $) {
 $(document).ready(function() {
     $('#action-select div.option-entry.delete').click(function() {
         var checked_boxes = $('div.message-select-checkbox.checked');
@@ -18,13 +19,13 @@ $(document).ready(function() {
                             $('.message-entry[data-id="'+ids[i]+'"]').remove();
                         }
                     } else {
-                        pop_ajax_message(result.message, 'error');
+                        dt.pop_ajax_message(result.message, 'error');
                     }
                 },
                 error: function (xhr, ajaxOptions, thrownError) {
                     console.log(xhr.status);
                     console.log(thrownError);
-                    pop_ajax_message(xhr.status+' '+thrownError, 'error');
+                    dt.pop_ajax_message(xhr.status+' '+thrownError, 'error');
                 }
             });
         }
@@ -48,13 +49,13 @@ $(document).ready(function() {
                     if(!result.error) {
                         message_entry.removeClass('unread');
                     } else {
-                        pop_ajax_message(result.message, 'error');
+                        dt.pop_ajax_message(result.message, 'error');
                     }
                 },
                 error: function (xhr, ajaxOptions, thrownError) {
                     console.log(xhr.status);
                     console.log(thrownError);
-                    pop_ajax_message(xhr.status+' '+thrownError, 'error');
+                    dt.pop_ajax_message(xhr.status+' '+thrownError, 'error');
                 }
             });
         }
@@ -101,7 +102,7 @@ $(document).ready(function() {
                     }
                     cursor = result.cursor;
                 } else {
-                    pop_ajax_message(result.message, 'error');
+                    dt.pop_ajax_message(result.message, 'error');
                 }
                 isLoading = false;
             },
@@ -110,7 +111,7 @@ $(document).ready(function() {
                 $('.message-entry.loading').remove();
                 console.log(xhr.status);
                 console.log(thrownError);
-                pop_ajax_message(xhr.status+' '+thrownError, 'error');
+                dt.pop_ajax_message(xhr.status+' '+thrownError, 'error');
             }
         });
     }
@@ -136,3 +137,5 @@ function render_notification_div(notification) {
     </div>'
     return div;
 }
+//end of the file
+} (dt, jQuery));

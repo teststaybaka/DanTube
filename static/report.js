@@ -1,3 +1,4 @@
+(function(dt, $) {
 function render_video_div(video) {
     var div = '<div class="video-entry">\
                   <a class="video-img" href="' + video.url +'" target="_blank">\
@@ -89,10 +90,10 @@ $(document).ready(function() {
             success: function(result) {
                 console.log(result);
                 if(result.error) {
-                    pop_ajax_message(result.message, 'error');
+                    dt.pop_ajax_message(result.message, 'error');
                     button.disabled = false;
                 } else {
-                    pop_ajax_message(result.message, 'success');
+                    dt.pop_ajax_message(result.message, 'success');
                     setTimeout(function(){
                         window.location.reload(); 
                     }, 3000);
@@ -104,9 +105,11 @@ $(document).ready(function() {
                 console.log(thrownError);
                 button.disabled = false;
                 $('#change-applying').removeClass('show');
-                pop_ajax_message(xhr.status+' '+thrownError, 'error');
+                dt.pop_ajax_message(xhr.status+' '+thrownError, 'error');
             }
         });
         return false;
     });  
 });
+//end of the file
+} (dt, jQuery));
