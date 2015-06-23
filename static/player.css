@@ -1403,6 +1403,11 @@ div.bullet-date-value {
 	background-color: rgb(255,122,91);
 }
 
+.player-setting-number-input-box {
+	margin-left: 10px;
+	display: inline-block;
+}
+
 .css-customize-input {
 	resize: none;
 	width: 350px;
@@ -1635,6 +1640,7 @@ a.tags-link {
 	margin-right: 10px;
 	font-size: 14px;
 	color: rgb(100,100,100);
+	line-height: 16px;
 }
 
 a.tags-link:hover {
@@ -2018,6 +2024,9 @@ div.pagination-line.replies:empty {
 	padding: 10px;
 	border-bottom: 1px solid rgb(220,220,220);
 	background-color: rgb(250,250,250);
+	font-size: 14px;
+	line-height: 22px;
+	word-wrap: break-word;
 }
 
 #list-intro {
@@ -2035,11 +2044,10 @@ div.pagination-line.replies:empty {
 #list-scroll-bar {
 	max-height: 500px;
 	overflow: auto;
-	border-top: 1px solid rgb(220,220,220)
 }
 
 a.list-entry {
-	padding: 15px 0;
+	padding: 10px 0;
 	font-size: 0;
 	display: block;
 }
@@ -2063,13 +2071,14 @@ img.list-video-img {
 div.list-entry-info {
 	display: inline-block;
 	vertical-align: top;
-	margin-left: 5px;
+	margin-left: 7px;
 	width: 235px;
 	word-wrap: break-word;
 }
 
 div.list-video-title {
 	font-size: 14px;
+	line-height: 16px;
 	color: rgb(100,100,100);
 	display: inline-block;
 	max-width: 100%;
@@ -2085,14 +2094,27 @@ a.list-entry.active {
 	box-shadow: inset 0 0 6px rgb(200,200,200);
 }
 
-a.list-entry.active div.list-entry-index, a.list-entry.active div.list-video-title {
+div.list-entry-index.active, div.list-video-title.active {
 	color: rgb(0,140,255);
+	position: relative;
+}
+
+div.list-entry-index.active:after {
+	content: "";
+	display: inline-block;
+	position: absolute;
+	border-left: 7px solid rgb(0,140,255);
+	border-top: 5px solid transparent;
+	border-bottom: 5px solid transparent;
+	left: 35%;
+	top: -5px;
 }
 
 div.list-video-statistic {
 	display: inline-block;
 	font-size: 14px;
 	color: rgb(150,150,150);
+	line-height: 16px;
 }
 
 div.list-video-statistic.hits {
@@ -2249,6 +2271,11 @@ input.subtitle-danmaku-input {
 .right-click-entry:hover, .right-click-entry.zeroclipboard-is-hover {
 	color: white;
 	background-color: rgb(0,140,255);
+}
+
+.right-click-entry.disabled {
+	color: rgb(200,200,200);
+	background-color: white;
 }
 
 .right-click-separate-line {

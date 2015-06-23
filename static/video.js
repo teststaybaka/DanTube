@@ -46,6 +46,11 @@ var block_rules = [];
 var normal_danmaku_sequence;
 var subtitle_format = /^\[(\d+):(\d{1,2}).(\d{1,2})\](.*)$/;
 var show_subtitles = 0;
+var ori_subtitles_font_size = 16;
+var subtitles_font_size = 16;
+var ori_subtitles_longevity = 5;
+var subtitles_longevity = 5;
+var subtitles_opacity = 1;
 var linked_elements = new dt.LinkedList();
 var subtitle_danmaku_container = {};
 
@@ -524,8 +529,10 @@ function progress_update() {
 
 function Danmaku_Animation(ele) {
 	var lTime = 0;
-	var existingTime = existing_time*1000;
 	var type = ele.ref_danmaku.type;
+	var existingTime;
+	if (type !== 'Subtitles') existingTime = existing_time*1000;
+	else existingTime = subtitles_longevity*1000;
 	var offsetWidth = ele.element.offsetWidth;
 	var offsetHeight = ele.element.offsetHeight;
 	var direct_x, direct_y;
@@ -915,6 +922,14 @@ function change_danmaku_opacity() {
 	}
 }
 
+function change_subtitles_danmaku_opacity() {
+	var curNode = linked_elements.head;
+	while (curNode) {
+		curNode.element.style.opacity = subtitles_opacity;
+		curNode = curNode.next;
+	}
+}
+
 function reverse_color(color) {
 	var b = color%256;
 	var g = Math.floor(color/256)%256;
@@ -1022,6 +1037,8 @@ function danmaku_update() {
 				var text = document.createTextNode(ref_danmaku.content);
 				bul.appendChild(text);
 				bul.style.left = player_width + 10 + 'px';
+				bul.style.opacity = subtitles_opacity;
+				bul.style.fontSize = subtitles_font_size+'px';
 				player_background.appendChild(bul);
 				var ele = {prev: null, next: null, posX: 0, posY: 0, clear_request: false, element: bul, ref_danmaku: ref_danmaku, belong_to: key};
 				linked_elements.push(ele);
@@ -1387,7 +1404,7 @@ dt.onPlayerReady = function(event) {
     	var offset = 0;
     	if ($(bar).hasClass('speed')) {
     		var cookie_str = dt.getCookie('danmaku_speed');
-    		if (cookie_str) danmaku_speed = parseInt(cookie_str);
+    		if (cookie_str) danmaku_speed = parseFloat(cookie_str);
 			$(bar).prev().text(danmaku_speed);
 			offset = (1 - (danmaku_speed - 1)/7)*300;
 		} else if ($(bar).hasClass('danmaku-num')) {
@@ -1402,9 +1419,24 @@ dt.onPlayerReady = function(event) {
 			offset = (1 - (danmaku_scale - 1)/4)*300;
 		} else if ($(bar).hasClass('time')) {
 			var cookie_str = dt.getCookie('existing_time');
-    		if (cookie_str) existing_time = parseInt(cookie_str);
+    		if (cookie_str) existing_time = parseFloat(cookie_str);
 			$(bar).prev().text(existing_time);
 			offset = (1 - (existing_time - 3)/5)*300;
+		} else if ($(bar).hasClass('subtitles-size')) {
+			var cookie_str = dt.getCookie('subtitles_font_size');
+    		if (cookie_str) subtitles_font_size = parseInt(cookie_str);
+			offset = (1 - (subtitles_font_size - 8)/20)*300;
+			$(bar).prev().text(subtitles_font_size);
+		} else if ($(bar).hasClass('subtitles-longevity')) {
+			var cookie_str = dt.getCookie('subtitles_longevity');
+    		if (cookie_str) subtitles_longevity = parseFloat(cookie_str);
+			offset = (1 - (subtitles_longevity - 3)/5)*300;
+			$(bar).prev().text(subtitles_longevity);
+		} else if ($(bar).hasClass('subtitles-opacity')) {
+			var cookie_str = dt.getCookie('subtitles_opacity');
+    		if (cookie_str) subtitles_opacity = parseFloat(cookie_str);
+			offset = (1 - subtitles_opacity)*300;
+			$(bar).prev().text(subtitles_opacity);
 		}
 		var pointer = $(bar).children('.number-adjust-pointer')[0];
 		pointer.style.WebkitTransform = "translateX(-"+offset+"px)";
@@ -1427,7 +1459,7 @@ dt.onPlayerReady = function(event) {
 			pointer.style.msTransform = "translateX(-"+offset+"px)";
 			pointer.style.transform = "translateX(-"+offset+"px)";
 			if ($(bar).hasClass('speed')) {
-				danmaku_speed = Math.round((1 - offset/bar.offsetWidth)*7 + 1);
+				danmaku_speed = Math.round((1 - offset/bar.offsetWidth)*70 + 10)/10;
 				$(bar).prev().text(danmaku_speed);
 				dt.setCookie('danmaku_speed', danmaku_speed, 0);
 			} else if ($(bar).hasClass('danmaku-num')) {
@@ -1439,9 +1471,22 @@ dt.onPlayerReady = function(event) {
 				$(bar).prev().text(danmaku_scale);
 				dt.setCookie('danmaku_scale', danmaku_scale, 0);
 			} else if ($(bar).hasClass('time')) {
-				existing_time = Math.round((1 - offset/bar.offsetWidth)*5 + 3);
+				existing_time = Math.round((1 - offset/bar.offsetWidth)*50 + 30)/10;
 				$(bar).prev().text(existing_time);
 				dt.setCookie('existing_time', existing_time, 0);
+			} else if ($(bar).hasClass('subtitles-size')) {
+				subtitles_font_size = Math.round((1 - offset/bar.offsetWidth)*20 + 8);
+				$(bar).prev().text(subtitles_font_size);
+				dt.setCookie('subtitles_font_size', subtitles_font_size, 0);
+			} else if ($(bar).hasClass('subtitles-longevity')) {
+				subtitles_longevity = Math.round((1 - offset/bar.offsetWidth)*50 + 30)/10;
+				$(bar).prev().text(subtitles_longevity);
+				dt.setCookie('subtitles_longevity', subtitles_longevity, 0);
+			} else if ($(bar).hasClass('subtitles-opacity')) {
+				subtitles_opacity = Math.round((1 - offset/bar.offsetWidth)*100 + 0)/100;
+				$(bar).prev().text(subtitles_opacity);
+				dt.setCookie('subtitles_opacity', subtitles_opacity, 0);
+				change_subtitles_danmaku_opacity();
 			}
 		}
 		move_pointer(evt);
@@ -1460,23 +1505,39 @@ dt.onPlayerReady = function(event) {
     	if ($(bar).hasClass('speed')) {
     		danmaku_speed = ori_danmaku_speed;
 			$(bar).prev().text(danmaku_speed);
-			offset = (1 - (danmaku_speed - 1)/7)*bar.offsetWidth;
+			offset = (1 - (danmaku_speed - 1)/7)*300;
 			dt.setCookie('danmaku_speed', danmaku_speed, 0);
 		} else if ($(bar).hasClass('danmaku-num')) {
 			max_danmaku = ori_max_danmaku;
 			$(bar).prev().text(max_danmaku);
-			offset = (1 - (max_danmaku - 10)/110)*bar.offsetWidth;
+			offset = (1 - (max_danmaku - 10)/110)*300;
 			dt.setCookie('max_danmaku', max_danmaku, 0);
 		} else if ($(bar).hasClass('scale')) {
 			danmaku_scale = ori_danmaku_scale;
 			$(bar).prev().text(danmaku_scale);
-			offset = (1 - (danmaku_scale - 1)/4)*bar.offsetWidth;
+			offset = (1 - (danmaku_scale - 1)/4)*300;
 			dt.setCookie('danmaku_scale', danmaku_scale, 0);
 		} else if ($(bar).hasClass('time')) {
 			existing_time = ori_existing_time;
 			$(bar).prev().text(existing_time);
-			offset = (1 - (existing_time - 3)/5)*bar.offsetWidth;
+			offset = (1 - (existing_time - 3)/5)*300;
 			dt.setCookie('existing_time', existing_time, 0);
+		} else if ($(bar).hasClass('subtitles-size')) {
+			subtitles_font_size = ori_subtitles_font_size;
+			$(bar).prev().text(subtitles_font_size);
+			offset = (1 - (subtitles_font_size - 8)/20)*300;
+			dt.setCookie('subtitles_font_size', subtitles_font_size, 0);
+		} else if ($(bar).hasClass('subtitles-longevity')) {
+			subtitles_longevity = ori_subtitles_longevity;
+			$(bar).prev().text(subtitles_longevity);
+			offset = (1 - (subtitles_longevity - 3)/5)*300;
+			dt.setCookie('subtitles_longevity', subtitles_longevity, 0);
+		} else if ($(bar).hasClass('subtitles-opacity')) {
+			subtitles_opacity = 1;
+			$(bar).prev().text(subtitles_opacity);
+			offset = (1 - subtitles_opacity)*300;
+			dt.setCookie('subtitles_opacity', subtitles_opacity, 0);
+			change_subtitles_danmaku_opacity();
 		}
 		var pointer = $(bar).children('.number-adjust-pointer')[0];
 		pointer.style.WebkitTransform = "translateX(-"+offset+"px)";
@@ -1519,11 +1580,11 @@ dt.onPlayerReady = function(event) {
 			dt.setCookie('hide_controls', hide_controls, 0);
 		} else if ($(this).hasClass('subtitles')) {
 			if ($(this).hasClass('off')) {
-				$('.subtitles-list').addClass('hidden');
+				$('.subtitles-block').addClass('hidden');
 				show_subtitles = 0;
 				subtitles_all_clear();
 			} else {
-				$('.subtitles-list').removeClass('hidden');
+				$('.subtitles-block').removeClass('hidden');
 				show_subtitles = 1;
 			}
 		}
@@ -1633,8 +1694,9 @@ dt.onPlayerReady = function(event) {
 		evt.preventDefault();
 
 		var ele = danmaku_elements[$(this).attr('data-index')];
+		var danmaku_pool_index = danmaku_pool_list.indexOf(ele.ref_danmaku);
 		$('.danmaku-menu').attr('data-creator', ele.ref_danmaku.creator)
-						.attr('data-index', $(this).attr('data-index'));
+						.attr('data-index', danmaku_pool_index);
 
 		var rect = $('#player-container').offset();
 		$('.danmaku-menu').removeClass('hidden');
@@ -1647,19 +1709,21 @@ dt.onPlayerReady = function(event) {
 		$(document).click(hide_menu);
 	});
 	$('#danmaku-block-sender').click(function(e) {
+		if ($(this).hasClass('disabled')) return;
 		var block_type = 'User';
 		var block_content = $('.danmaku-menu').attr('data-creator');
 		add_block_rule(block_type, block_content);
 	});
 	$('#danmaku-locate-it').click(function(e) {
-		var ele = danmaku_elements[$('.danmaku-menu').attr('data-index')];
-		var danmaku_pool_index = danmaku_pool_list.indexOf(ele.ref_danmaku);
+		if ($(this).hasClass('disabled')) return;
+		var danmaku_pool_index = $('.danmaku-menu').attr('data-index');
 		$('.per-bullet.selected').removeClass('selected');
 		var target = $('.per-bullet')[danmaku_pool_index];
 		target.classList.add('selected');
 		$('#danmaku-list').scrollTop(target.offsetHeight*danmaku_pool_index);
 	});
 	$('#danmaku-reply').click(function(e) {
+		if ($(this).hasClass('disabled')) return;
 		if ($('.input-layon-block').hasClass('hidden')) {
 			$('.input-layon-block').removeClass('hidden');
 			var danmaku_input = document.getElementById('danmaku-input');
