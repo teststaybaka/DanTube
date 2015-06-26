@@ -93,7 +93,7 @@ a.sub-option.active {
 #account-top-title {
     border-bottom: 1px solid rgb(200,200,200);
     padding: 0 25px;
-    font-size: 23px;
+    font-size: 20px;
 }
 
 a.top-title {
@@ -180,8 +180,8 @@ a.top-title.active div.top-title-dot {
 #view-method-label {
     float: right;
     padding: 5px 0;
-    margin-right: 8px;
-    margin-left: 20px;
+    margin-right: 5px;
+    margin-left: 15px;
     font-size: 14px;
 }
 
@@ -189,7 +189,7 @@ form.sub-search-block {
     float: right;
     display: inline-table;
     border: 1px solid rgb(200,200,200);
-    margin-left: 25px;
+    margin-left: 15px;
 }
 
 input.sub-search-input {
@@ -527,6 +527,7 @@ label.statistic-icon.visited {
 form.change div.input-line {
     padding-bottom: 25px;
     position: relative;
+    white-space: nowrap;
 }
 
 #video-part-content {
@@ -719,6 +720,7 @@ form.change label.explain {
     margin-top: 25px;
     font-weight: normal;
     display: inline-block;
+    white-space: normal;
 }
 
 div.check-label-line {
@@ -840,7 +842,6 @@ form.change div.video-part-error.show {
     padding: 0;
     margin: 0;
     font-size: 0;
-    filter: alpha(opacity=0);
     z-index: 1;
 }
 
@@ -879,6 +880,7 @@ form.change div.video-part-error.show {
     text-align: center;
     margin-top: 25px;
     pointer-events: none;
+    white-space: normal;
 }
 
 img.thumbnail-preview-img {
@@ -1018,6 +1020,5 @@ div.delete-button, input.delete-button {
     padding: 0;
     margin: 0;
     font-size: 0;
-    filter: alpha(opacity=0);
     z-index: 1;
 }

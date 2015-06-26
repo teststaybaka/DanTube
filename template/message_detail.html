@@ -2,30 +2,39 @@
 {% block head %}
 {{ super() }}
 <link rel="stylesheet" href="/static/message.css" type="text/css" />
-<script src="/static/message.js" language="JavaScript" type="text/javascript"></script>
 <script src="/static/message_detail.js" language="JavaScript" type="text/javascript"></script>
 {% endblock %}
 
 {% block overview_active %}{% endblock %}
 {% block messages_active %}active{% endblock %}
 
+{% block topTitle %}
+<a class="top-title" href="{{ uri_for('message') }}">
+    <div class="top-title-dot"></div>
+    Messages
+</a>
+<a class="top-title active" href="{{ uri_for('message_detail', thread_id=thread_id) }}">
+    <div class="top-title-dot"></div>
+    Detail
+</a>
+{% endblock %}
+
 {% block detail %}
 <div id="sub-title-line" class="container">
-  <div id="sub-title">{{ subject }}</div>
-  <div class="inline-button sub" onclick="location.href='{{ uri_for('message') }}'">Back</div>
+    <div id="sub-title">{{ subject }}</div>
 </div>
 <div id="message-block">
     <div id="message-contain-body">
         {% for message in messages %}
         <div class="message-detail-entry container">
-            {% if message.is_sender_user %}
-                <div class="message-date receive">{{ message.when }}</div>
-                <a class="user-img receive"><img src="{{ user.avatar_url }}"></a>
-                <div class="message-content receive">{{ message.content }}</div>
-            {% else %}
+            {% if message.is_sender %}
                 <div class="message-date send">{{ message.when }}</div>
-                <a class="user-img send" href="{{ partner.space_url }}" target="_blank"><img src="{{ partner.avatar_url }}"></a>
+                <a class="user-img send"><img src="{{ user.avatar_url }}"></a>
                 <div class="message-content send">{{ message.content }}</div>
+            {% else %}
+                <div class="message-date receive">{{ message.when }}</div>
+                <a class="user-img receive" href="{{ partner.space_url }}" target="_blank"><img src="{{ partner.avatar_url }}"></a>
+                <div class="message-content receive">{{ message.content }}</div>
             {% endif %}
         </div>
         {% endfor %}
@@ -34,10 +43,10 @@
 <form id="reply-form" class="reply-block change" method="POST">
     <img id="self-img" src="{{ user.avatar_url }}">
     <div id="send-message-block">
-        <textarea id="send-message" name="content" placeholder="No longer than 1000 characters."></textarea>
+        <textarea id="send-message" class="normal-input" name="content"></textarea>
         <div class="container">
             <div class="emoticons-select"></div>
-            <div class="send-button">Send</div>
+            <input type="submit" class="inline-button special send" id="reply-message-send" value="Send">
         </div>
     </div>
 </form>

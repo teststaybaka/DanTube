@@ -106,6 +106,24 @@ class BaseHandler(webapp2.RequestHandler):
         self.response.set_status(status)
         self.render('notice', {'notice': notice, 'type': type})
 
+    def get_page_size(self):
+        try:
+            page_size = int(self.request.get('page_size'))
+            if page_size < 0 or page_size > 100:
+                raise ValueError('Page size invalid')
+        except ValueError:
+            page_size = models.DEFAULT_PAGE_SIZE
+        return page_size
+
+    def get_page_number(self):
+        try:
+            page = int(self.request.get('page'))
+            if page < 1:
+                raise ValueError('Negative')
+        except ValueError:
+            page = 1
+        return page
+
     def get_page_range(self, cur_page, total_pages, page_range=10):
         cur_page = int(cur_page)
         total_pages = int(total_pages)
@@ -146,6 +164,21 @@ def login_required(handler):
                 return
             else:
                 self.redirect(self.uri_for('signin'), abort=True)
+        else:
+            return handler(self, *args, **kwargs)
+ 
+    return check_login
+
+def login_required_json(handler):
+    def check_login(self, *args, **kwargs):
+        self.response.headers['Content-Type'] = 'application/json'
+        auth = self.auth
+        if not auth.get_user_by_session():
+            self.response.out.write(json.dumps({
+                'error': True,
+                'message': 'Please log in!'
+            }))
+            return
         else:
             return handler(self, *args, **kwargs)
  

@@ -1,42 +1,10 @@
 (function(dt, $) {
 $(document).ready(function() {
     $('#action-select div.option-entry.delete').click(function() {
-        var checked_boxes = $('div.message-select-checkbox.checked');
-        if (checked_boxes.length != 0) {
-            var ids = [];
-            for (var i = 0; i < checked_boxes.length; i++) {
-                ids.push($(checked_boxes[i]).attr('data-id'));
-            }
-            $.ajax({
-                type: "POST",
-                url: '/account/notifications/delete',
-                data: {ids: ids},
-                success: function(result) {
-                    console.log(result);
-                    if (!result.error) {
-                        ids = result.message;
-                        for (var i = 0; i < ids.length; i++) {
-                            $('.message-entry[data-id="'+ids[i]+'"]').remove();
-                        }
-                    } else {
-                        dt.pop_ajax_message(result.message, 'error');
-                    }
-                },
-                error: function (xhr, ajaxOptions, thrownError) {
-                    console.log(xhr.status);
-                    console.log(thrownError);
-                    dt.pop_ajax_message(xhr.status+' '+thrownError, 'error');
-                }
-            });
-        }
+        dt.delete_entries('/account/notifications/delete');
     });
-
     $('.messages-container').on('click', 'div.message-select-checkbox', function(evt) {
-        if ($(evt.target).hasClass('checked')) {
-            $(evt.target).removeClass('checked');
-        } else {
-            $(evt.target).addClass('checked');
-        }
+        $(this).toggleClass('checked');
     });
 
     $('.messages-container').on('click', 'a.notification-title', function() {
@@ -44,7 +12,8 @@ $(document).ready(function() {
         if (message_entry.hasClass('unread')) {
             $.ajax({
                 type: "POST",
-                url: '/account/notifications/read?id='+message_entry.attr('data-id'),
+                url: '/account/notifications/read',
+                data: {id: message_entry.attr('data-id')},
                 success: function(result) {
                     if(!result.error) {
                         message_entry.removeClass('unread');
@@ -68,53 +37,9 @@ $(document).ready(function() {
             content.height(content[0].scrollHeight);
             content.addClass('show');
         }
-    })
-
-    var isLoading = false;
-    var isOver = false;
-    var cursor = '';
-
-    $(window).scroll(function() {
-        if(($(window).scrollTop() >= $('.message-entry:last-child').offset().top - 30 - $(window).height()) && !isLoading && !isOver) {
-            update_notifications(cursor);
-        }
     });
-    update_notifications(cursor);
 
-    function update_notifications() {
-        isLoading = true;
-        $('.messages-container').append('<div class="message-entry loading"></div>');
-        $.ajax({
-            type: "POST",
-            url: '/account/notifications?cursor='+cursor,
-            success: function(result) {
-                $('.message-entry.loading').remove();
-                if(!result.error) {
-                    for (var i = 0; i < result.notifications.length; i++) {
-                        var div = render_notification_div(result.notifications[i]);
-                        $('.messages-container').append(div);
-                    }
-                    if (result.notifications.length == 0 && !cursor) {
-                        $('.messages-container').append('<div class="message-entry none"> No notifications found.</div>');
-                    }
-                    if (result.notifications.length < 20) {
-                        isOver = true;
-                    }
-                    cursor = result.cursor;
-                } else {
-                    dt.pop_ajax_message(result.message, 'error');
-                }
-                isLoading = false;
-            },
-            error: function (xhr, ajaxOptions, thrownError) {
-                isLoading = false;
-                $('.message-entry.loading').remove();
-                console.log(xhr.status);
-                console.log(thrownError);
-                dt.pop_ajax_message(xhr.status+' '+thrownError, 'error');
-            }
-        });
-    }
+    dt.scrollUpdateMessage('/account/notifications', render_notification_div);
 });
 
 function render_notification_div(notification) {
@@ -131,9 +56,9 @@ function render_notification_div(notification) {
             <div class="info-line">\
                 <label>' + notification.created + '</label>\
             </div>\
-            <div class="message-select-checkbox" data-id="' + notification.id + '"></div>\
             <div class="notification-detail">' + notification.content + '</div>\
         </div>\
+        <div class="message-select-checkbox" data-id="' + notification.id + '"></div>\
     </div>'
     return div;
 }

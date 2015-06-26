@@ -131,17 +131,7 @@ $(document).ready(function() {
         var new_pw = $("#new-password")[0].value;
         var confirm_pw = $("#confirm-password")[0].value;
 
-        var error = false;
-        if (!cur_password_check(cur_pw)) {
-            error = true;
-        }
-        if (!new_password_check(new_pw)) {
-            error = true;
-        }
-        if (!confirm_password_check(confirm_pw)) {
-            error = true;
-        }
-        if (error) {
+        if (!cur_password_check(cur_pw) | !new_password_check(new_pw) | !confirm_password_check(confirm_pw)) {
             $('#change-applying').removeClass('show');
             button.disabled = false;
             return false;
@@ -281,6 +271,88 @@ $(document).ready(function() {
         });
         return false;
     });
+
+    
 });
+
+dt.delete_entries = function(url) {
+    var checked_boxes = $('div.message-select-checkbox.checked');
+    if (checked_boxes.length != 0) {
+        var ids = [];
+        for (var i = 0; i < checked_boxes.length; i++) {
+            ids.push($(checked_boxes[i]).attr('data-id'));
+        }
+        $.ajax({
+            type: "POST",
+            url: url,
+            data: {ids: ids},
+            success: function(result) {
+                console.log(result);
+                if (!result.error) {
+                    ids = result.message;
+                    for (var i = 0; i < ids.length; i++) {
+                        $('.message-entry[data-id="'+ids[i]+'"]').remove();
+                    }
+                } else {
+                    dt.pop_ajax_message(result.message, 'error');
+                }
+            },
+            error: function (xhr, ajaxOptions, thrownError) {
+                console.log(xhr.status);
+                console.log(thrownError);
+                dt.pop_ajax_message(xhr.status+' '+thrownError, 'error');
+            }
+        });
+    }
+}
+
+dt.scrollUpdateMessage = function(url, render_func) {
+    var isLoading = false;
+    var isOver = false;
+    var cursor = '';
+
+    $(window).scroll(function() {
+        if(($(window).scrollTop() >= $('.message-entry:last-child').offset().top - 30 - $(window).height()) && !isLoading && !isOver) {
+            update_mentioned_message();
+        }
+    });
+    update_mentioned_message();
+
+    function update_mentioned_message() {
+        isLoading = true;
+        $('.messages-container').append('<div class="message-entry loading"></div>');
+        $.ajax({
+            type: "POST",
+            url: url,
+            data: {cursor: cursor},
+            success: function(result) {
+                $('.message-entry.loading').remove();
+                if(!result.error) {
+                    for (var i = 0; i < result.entries.length; i++) {
+                        var div = render_func(result.entries[i]);
+                        $('.messages-container').append(div);
+                    }
+                    if (result.entries.length == 0 && !cursor) {
+                        $('.messages-container').append('<div class="message-entry none"> No messages found.</div>');
+                    }
+                    if (result.entries.length < 20) {
+                        isOver = true;
+                    }
+                    cursor = result.cursor;
+                } else {
+                    dt.pop_ajax_message(result.message, 'error');
+                }
+                isLoading = false;
+            },
+            error: function (xhr, ajaxOptions, thrownError) {
+                isLoading = false;
+                $('.message-entry.loading').remove();
+                console.log(xhr.status);
+                console.log(thrownError);
+                dt.pop_ajax_message(xhr.status+' '+thrownError, 'error');
+            }
+        });
+    }
+}
 //end of the file
 } (dt, jQuery));

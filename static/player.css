@@ -1893,17 +1893,17 @@ div.inner-comment-container:empty {
 }
 
 div.comment-entry {
-	padding: 15px 0;
+	padding: 10px 0;
 	font-size: 0;
 	border-bottom: 1px solid rgb(220,220,220);
 }
 
-div.comment-entry:last-child {
-	border-bottom: 0;
-}
-
 div.comment-entry.inner {
 	margin-left: 10px;
+}
+
+div.comment-entry.inner:last-child {
+	border-bottom: 0;
 }
 
 div.comment-entry.no-comment {
@@ -1995,7 +1995,7 @@ div.comment-operation:hover {
 
 div.pagination-line {
 	text-align: center;
-	margin: 15px 0;
+	margin: 10px 0;
 }
 
 div.pagination-line.replies:empty {

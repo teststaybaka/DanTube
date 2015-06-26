@@ -84,25 +84,6 @@ dt.pop_ajax_message = function(content, type) {
 }
 
 $(document).ready(function() {
-    if ($('#portrait').length != 0) {
-        var uesr_id = $('#portrait').attr('data-id');
-        var cookie = dt.getCookie(uesr_id+'_check');
-        if (!cookie) {
-            var now = new Date().toUTCString();
-            var extime = 10 * 60 *1000; // 10 mins wait
-            dt.setCookie(uesr_id+'_check', now, extime);
-            count_new_mentions();
-            count_new_notifications();
-            count_new_subscriptions();
-        }
-        var num = dt.getCookie('new_notifications');
-        $('#user-notification-new-num').text(num);
-        num = dt.getCookie('new_mentions');
-        $('#user-at-new-num').text(num);
-        num = dt.getCookie('new_subscriptions');
-        $('#user-subscriptions-new-num').text(num);
-    }
-
     $('#portrait').mouseover(function() {
         $('#user-box').addClass('show');
         $('#user-box').removeClass('hide');
@@ -134,7 +115,7 @@ $(document).ready(function() {
     $('.subscribe-button').click(function(evt) {
         var button = $(this);
         var uploader_id = button.attr('data-id');
-        var action = ''
+        var action = '';
         if (button.hasClass('unsubscribe')) {
             action = "/user/unsubscribe/"+uploader_id;
         } else {
@@ -218,14 +199,10 @@ $(document).ready(function() {
             </div>\
             <div class="emoticons-label">Emoticons</div>');
     $('div.emoticons-select').click(function() {
-        if ($(this).hasClass('show')) {
-            $(this).removeClass('show');
-        } else {
-            $(this).addClass('show')
-        }
+        $(this).toggleClass('show');
     });
     $('div.emoticons-option').click(function(evt) {
-        var textarea = $(evt.target).parent().parent().parent().prev();
+        var textarea = $(evt.target).parent().parent().parent().siblings('textarea');
         textarea.val(textarea.val() + $(evt.target).text());
     });
 
@@ -238,13 +215,8 @@ $(document).ready(function() {
     });
 
     $('.checkbox-selection').click(function() {
-        if ($(this).hasClass('off')) {
-            $(this).removeClass('off');
-            $(this).addClass('on');
-        } else {
-            $(this).addClass('off');
-            $(this).removeClass('on');
-        }
+        $(this).toggleClass('off');
+        $(this).toggleClass('on');
     });
 });
 
@@ -287,87 +259,6 @@ dt.render_pagination = function(cur_page, total_pages) {
         pagination += '<a class="page-change" data-page="' + total_pages + '">>></a>';
     }
     return pagination;
-}
-
-function count_new_subscriptions() {
-    $.ajax({
-        type: "POST",
-        url: '/user/new_subscriptions',
-        success: function(result) {
-            if(!result.error) {
-                if (result.count > 99) {
-                    dt.setCookie('new_subscriptions', '99+');
-                    $('#user-subscriptions-new-num').text('99+');
-                } else if (result.count == 0) {
-                    dt.setCookie('new_subscriptions', '');
-                    $('#user-subscriptions-new-num').text('');
-                } else {
-                    dt.setCookie('new_subscriptions', result.count);
-                    $('#user-subscriptions-new-num').text(result.count);
-                }
-            } else {
-                console.log(result.error);
-            }
-        },
-        error: function (xhr, ajaxOptions, thrownError) {
-            console.log(xhr.status);
-            console.log(thrownError);
-        }
-    });
-}
-
-function count_new_mentions() {
-    $.ajax({
-        type: "POST",
-        url: '/user/new_mentions',
-        success: function(result) {
-            if(!result.error) {
-                if (result.count > 99) {
-                    dt.setCookie('new_mentions', '99+');
-                    $('#user-at-new-num').text('99+');
-                } else if (result.count == 0) {
-                    dt.setCookie('new_mentions', '');
-                    $('#user-at-new-num').text('');
-                } else {
-                    dt.setCookie('new_mentions', result.count);
-                    $('#user-at-new-num').text(result.count);
-                }
-            } else {
-                console.log(result.error);
-            }
-        },
-        error: function (xhr, ajaxOptions, thrownError) {
-            console.log(xhr.status);
-            console.log(thrownError);
-        }
-    });
-}
-
-function count_new_notifications() {
-    $.ajax({
-        type: "POST",
-        url: '/user/new_notifications',
-        success: function(result) {
-            if(!result.error) {
-                if (result.count > 99) {
-                    dt.setCookie('new_notifications', '99+');
-                    $('#user-notification-new-num').text('99+');
-                } else if (result.count == 0) {
-                    dt.setCookie('new_notifications', '');
-                    $('#user-notification-new-num').text('');
-                } else {
-                    dt.setCookie('new_notifications', result.count);
-                    $('#user-notification-new-num').text(result.count);
-                }
-            } else {
-                console.log(result.error);
-            }
-        },
-        error: function (xhr, ajaxOptions, thrownError) {
-            console.log(xhr.status);
-            console.log(thrownError);
-        }
-    });
 }
 
 // Modified from http://www.w3schools.com/js/js_cookies.asp

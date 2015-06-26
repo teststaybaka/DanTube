@@ -1,50 +1,6 @@
 (function(dt, $) {
 $(document).ready(function() {
-    var isLoading = false;
-    var isOver = false;
-    var cursor = '';
-
-    $(window).scroll(function() {
-        if(($(window).scrollTop() >= $('.message-entry:last-child').offset().top - 30 - $(window).height()) && !isLoading && !isOver) {
-            update_mentioned_message(cursor);
-        }
-    });
-    update_mentioned_message(cursor);
-
-    function update_mentioned_message() {
-        isLoading = true;
-        $('.messages-container').append('<div class="message-entry loading"></div>');
-        $.ajax({
-            type: "POST",
-            url: '/account/mentioned?cursor='+cursor,
-            success: function(result) {
-                $('.message-entry.loading').remove();
-                if(!result.error) {
-                    for (var i = 0; i < result.comments.length; i++) {
-                        var div = render_comment_div(result.comments[i]);
-                        $('.messages-container').append(div);
-                    }
-                    if (result.comments.length == 0 && !cursor) {
-                        $('.messages-container').append('<div class="message-entry none"> No messages found.</div>');
-                    }
-                    if (result.comments.length < 20) {
-                        isOver = true;
-                    }
-                    cursor = result.cursor;
-                } else {
-                    dt.pop_ajax_message(result.message, 'error');
-                }
-                isLoading = false;
-            },
-            error: function (xhr, ajaxOptions, thrownError) {
-                isLoading = false;
-                $('.message-entry.loading').remove();
-                console.log(xhr.status);
-                console.log(thrownError);
-                dt.pop_ajax_message(xhr.status+' '+thrownError, 'error');
-            }
-        });
-    }
+    dt.scrollUpdateMessage('/account/mentioned', render_comment_div);
 });
 
 function render_comment_div(comment) {

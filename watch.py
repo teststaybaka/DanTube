@@ -26,7 +26,7 @@ def video_clip_exist_required(handler):
 
     return check_exist
 
-def video_exist_required_ajax(handler):
+def video_exist_required_json(handler):
     def check_exist(self, video_id):
         self.response.headers['Content-Type'] = 'application/json'
         video = models.Video.get_by_id('dt'+video_id)
@@ -41,7 +41,7 @@ def video_exist_required_ajax(handler):
 
     return check_exist
 
-def video_clip_exist_required_ajax(handler):
+def video_clip_exist_required_json(handler):
     def check_exist(self, video_id):
         self.response.headers['Content-Type'] = 'application/json'
         video = models.Video.get_by_id('dt'+video_id)
@@ -154,7 +154,7 @@ def comment_nickname_recognize(user, content, add_link):
     return new_content, [ x for x in users if not (x == user.key or x in seen or seen.add(x))]
 
 class Comment(BaseHandler):
-    @video_exist_required_ajax
+    @video_exist_required_json
     def get_comment(self, video):
         page_size = 20
         try:
@@ -199,7 +199,7 @@ class Comment(BaseHandler):
         result['total_pages'] = math.ceil(video.comment_counter/float(page_size))
         self.response.out.write(json.dumps(result))
 
-    @video_exist_required_ajax
+    @video_exist_required_json
     def get_inner_comment(self, video):
         try:
             comment = models.Comment.get_by_id(int(self.request.get('comment_id')), video.key)
@@ -242,7 +242,7 @@ class Comment(BaseHandler):
         self.response.out.write(json.dumps(result))
 
     @login_required
-    @video_exist_required_ajax
+    @video_exist_required_json
     def comment_post(self, video):
         user = self.user
         content = self.request.get('content')
@@ -286,7 +286,7 @@ class Comment(BaseHandler):
         }))
 
     @login_required
-    @video_exist_required_ajax
+    @video_exist_required_json
     def reply_post(self, video):
         try:
             comment = models.Comment.get_by_id(int(self.request.get('comment_id')), video.key)
@@ -340,7 +340,7 @@ class Comment(BaseHandler):
         }))
 
 class Danmaku(BaseHandler):
-    @video_clip_exist_required_ajax
+    @video_clip_exist_required_json
     def get(self, video, clip_index):
         clip = video.video_clips[clip_index-1].get()
         danmaku_list = []
@@ -369,7 +369,7 @@ class Danmaku(BaseHandler):
         }))
 
     @login_required
-    @video_clip_exist_required_ajax
+    @video_clip_exist_required_json
     def post(self, video, clip_index):
         user = self.user
         try:
@@ -482,7 +482,7 @@ class Danmaku(BaseHandler):
                 }
 
     @login_required
-    @video_clip_exist_required_ajax
+    @video_clip_exist_required_json
     def post_advanced(self, video, clip_index):
         user = self.user
         content = self.request.get('content').strip()
@@ -613,7 +613,7 @@ class Danmaku(BaseHandler):
                 }
 
 class Subtitles(BaseHandler):
-    @video_clip_exist_required_ajax
+    @video_clip_exist_required_json
     def get(self, video, clip_index):
         clip = video.video_clips[clip_index-1].get()
         try:
@@ -636,7 +636,7 @@ class Subtitles(BaseHandler):
         }))
 
     @login_required
-    @video_clip_exist_required_ajax
+    @video_clip_exist_required_json
     def post(self, video, clip_index):
         user = self.user
         name = self.request.get('name').strip()
@@ -692,7 +692,7 @@ class Subtitles(BaseHandler):
 
 class Like(BaseHandler):
     @login_required
-    @video_exist_required_ajax
+    @video_exist_required_json
     def post(self, video):
         user = self.user
         video.likes += 1
@@ -706,7 +706,7 @@ class Like(BaseHandler):
 
 class Hit(BaseHandler):
     @login_required
-    @video_exist_required_ajax
+    @video_exist_required_json
     def post(self, video):
         video.hits += 1
         video.update_hot_score(HOT_SCORE_PER_HIT)

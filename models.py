@@ -879,13 +879,12 @@ class Message(ndb.Model):
 
 class MessageThread(ndb.Model):
   messages = ndb.LocalStructuredProperty(Message, repeated=True)
-  # messages = ndb.KeyProperty(kind='Message', repeated=True, indexed=False)
   subject = ndb.StringProperty(required=True, indexed=False)
   sender = ndb.KeyProperty(kind='User')
   receiver = ndb.KeyProperty(kind='User')
-  delete_user = ndb.KeyProperty(kind='User', default=None, indexed=False)
+  delete_user = ndb.KeyProperty(kind='User', default=None)
   updated = ndb.DateTimeProperty(required=True)#, indexed=False)
-  new_messages = ndb.IntegerProperty(required=True, default=1, indexed=False)
+  new_messages = ndb.IntegerProperty(required=True, indexed=False)
 
 class Notification(ndb.Model):
   receiver = ndb.KeyProperty(kind='User', required=True)

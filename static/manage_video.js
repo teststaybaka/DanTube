@@ -53,11 +53,7 @@ $(document).ready(function() {
     });
 
     $('div.submitted-video-container').on('click', 'div.video-select-checkbox', function(evt) {
-        if ($(evt.target).hasClass('checked')) {
-            $(evt.target).removeClass('checked');
-        } else {
-            $(evt.target).addClass('checked');
-        }
+        $(this).toggleClass('checked');
     });
 });
 //end of the file

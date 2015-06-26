@@ -601,7 +601,7 @@ a.page-num.active {
     color: white;
 }
 
-#view-method div.selected, #action-select div.selected {
+#view-method .selected, #action-select .selected {
     padding: 4px 16px 4px 8px;
     border: 1px solid rgb(200,200,200);
     background-color: white;
@@ -613,11 +613,11 @@ a.page-num.active {
     box-sizing: border-box;
 }
 
-#action-select div.selected {
-    width: 80px;
+#action-select .selected {
+    width: 90px;
 }
 
-#view-method div.selected:after, #action-select div.selected:after {
+#view-method .selected:after, #action-select .selected:after {
     width: 0;
     height: 0;
     position: absolute;
@@ -628,7 +628,7 @@ a.page-num.active {
     margin-top: 6px;
 }
 
-#view-method div.option, #action-select div.option {
+#view-method .option, #action-select .option {
     position: absolute;
     border: 1px solid rgb(200,200,200);
     margin-top: -1px;
@@ -643,26 +643,26 @@ a.page-num.active {
     box-sizing: border-box;
 }
 
-#action-select div.option {
-    width: 80px;
+#action-select .option {
+    width: 90px;
 }
 
-#view-method:hover div.option, #action-select:hover div.option {
+#view-method:hover .option, #action-select:hover .option {
     display: block;
 }
 
-#view-method div.option-entry, #view-method a.option-entry, #action-select div.option-entry {
+#view-method .option-entry, #action-select .option-entry {
     padding: 6px 8px;
     display: block;
 }
 
-#action-select div.option-entry.delete {
+#action-select .option-entry.delete {
     font-weight: bold;
     border-top: 1px solid rgb(200,200,200);
 }
 
-#view-method div.option-entry:hover, #view-method a.option-entry:hover, #action-select div.option-entry:hover {
-    background-color: rgb(230,230,230);
+#view-method .option-entry:hover, #action-select .option-entry:hover {
+    background-color: rgb(245,245,245);
 }
 
 .inline-button {

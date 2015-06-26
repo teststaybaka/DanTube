@@ -17,27 +17,17 @@
 
 {% block detail %}
 <div id="sub-title-line" class="container">
-  <div id="sub-title">{{ user.new_messages }} New Messages</div>
-  <a class="inline-button sub" href="{{ uri_for('compose') }}">Compose</a>
-</div>
-<div class="messages-container">
-</div>
-<div class="pagination-line">
-</div>
-{% endblock %}
-
-{% block popup_window %}
-<div class="popup-window-container">
-    <div class="popup-window-center">
-        <div class="popup-window-padding"></div>
-        <div class="popup-window-box">
-            <div class="ajax-icon warning"></div>
-            <div class="delete-confirm-message">Are you sure you want to delete the message?</div>
-            <div class="delete-buttons-line container">
-                <div class="inline-button delete-button delete">Delete</div>
-                <div class="inline-button delete-button">Cancel</div>
-            </div>
+    <div id="sub-title">{{ user.new_messages }} New Messages</div>
+    <div id="action-select">
+        <div class="selected">Actions</div>
+        <div class="option">
+            <div class="option-entry">Select all</div>
+            <div class="option-entry">Deselect all</div>
+            <div class="option-entry delete">Delete</div>
         </div>
     </div>
+    <a class="inline-button sub" href="{{ uri_for('compose') }}">Compose</a>
+</div>
+<div class="messages-container">
 </div>
 {% endblock %}

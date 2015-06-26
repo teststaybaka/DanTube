@@ -77,6 +77,20 @@ indexes:
   - name: created
     direction: desc
 
+- kind: MessageThread
+  properties:
+  - name: receiver
+  - name: delete_user
+  - name: updated
+    direction: desc
+
+- kind: MessageThread
+  properties:
+  - name: sender
+  - name: delete_user
+  - name: updated
+    direction: desc
+
 - kind: Notification
   properties:
   - name: receiver

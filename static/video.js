@@ -979,7 +979,7 @@ function danmaku_update() {
 					var outline_color = reverse_color(ele.ref_danmaku.color);
 					ele.element.style.textShadow = '1px 0 1px '+outline_color+', -1px 0 1px '+outline_color+', 0 1px 1px '+outline_color+', 0 -1px 1px '+outline_color;
 				}
-				ele.element.style.fontSize = ele.ref_danmaku.size*danmaku_scale/3+'px';
+				ele.element.style.fontSize = Math.round(ele.ref_danmaku.size*danmaku_scale/3)+'px';
 				ele.element.style.fontFamily = danmaku_font;
 				// ele.element.lastChild.nodeValue = secondsToTime(ele.ref_danmaku.timestamp);
 				ele.generating = true;
@@ -1414,7 +1414,7 @@ dt.onPlayerReady = function(event) {
 			offset = (1 - (max_danmaku - 10)/110)*300;
 		} else if ($(bar).hasClass('scale')) {
 			var cookie_str = dt.getCookie('danmaku_scale');
-    		if (cookie_str) danmaku_scale = parseInt(cookie_str);
+    		if (cookie_str) danmaku_scale = parseFloat(cookie_str);
 			$(bar).prev().text(danmaku_scale);
 			offset = (1 - (danmaku_scale - 1)/4)*300;
 		} else if ($(bar).hasClass('time')) {
@@ -1425,7 +1425,7 @@ dt.onPlayerReady = function(event) {
 		} else if ($(bar).hasClass('subtitles-size')) {
 			var cookie_str = dt.getCookie('subtitles_font_size');
     		if (cookie_str) subtitles_font_size = parseInt(cookie_str);
-			offset = (1 - (subtitles_font_size - 8)/20)*300;
+			offset = (1 - (subtitles_font_size - 8)/32)*300;
 			$(bar).prev().text(subtitles_font_size);
 		} else if ($(bar).hasClass('subtitles-longevity')) {
 			var cookie_str = dt.getCookie('subtitles_longevity');
@@ -1467,7 +1467,7 @@ dt.onPlayerReady = function(event) {
 				$(bar).prev().text(max_danmaku);
 				dt.setCookie('max_danmaku', max_danmaku, 0);
 			} else if ($(bar).hasClass('scale')) {
-				danmaku_scale = Math.round((1 - offset/bar.offsetWidth)*4 + 1);
+				danmaku_scale = Math.round((1 - offset/bar.offsetWidth)*40 + 10)/10;
 				$(bar).prev().text(danmaku_scale);
 				dt.setCookie('danmaku_scale', danmaku_scale, 0);
 			} else if ($(bar).hasClass('time')) {
@@ -1475,7 +1475,7 @@ dt.onPlayerReady = function(event) {
 				$(bar).prev().text(existing_time);
 				dt.setCookie('existing_time', existing_time, 0);
 			} else if ($(bar).hasClass('subtitles-size')) {
-				subtitles_font_size = Math.round((1 - offset/bar.offsetWidth)*20 + 8);
+				subtitles_font_size = Math.round((1 - offset/bar.offsetWidth)*32 + 8);
 				$(bar).prev().text(subtitles_font_size);
 				dt.setCookie('subtitles_font_size', subtitles_font_size, 0);
 			} else if ($(bar).hasClass('subtitles-longevity')) {
@@ -1525,7 +1525,7 @@ dt.onPlayerReady = function(event) {
 		} else if ($(bar).hasClass('subtitles-size')) {
 			subtitles_font_size = ori_subtitles_font_size;
 			$(bar).prev().text(subtitles_font_size);
-			offset = (1 - (subtitles_font_size - 8)/20)*300;
+			offset = (1 - (subtitles_font_size - 8)/32)*300;
 			dt.setCookie('subtitles_font_size', subtitles_font_size, 0);
 		} else if ($(bar).hasClass('subtitles-longevity')) {
 			subtitles_longevity = ori_subtitles_longevity;
