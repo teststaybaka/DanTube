@@ -1,6 +1,42 @@
 from views import *
 import re
 
+def playlist_author_required(handler):
+    def check_author(self, playlist_id):
+        user = self.user
+        playlist = models.PlayList.get_by_id(int(playlist_id))
+        if not playlist:
+            self.notify('Playlist not found.')
+            return
+        elif user.key != playlist.creator:
+            self.notify('You are not allowed to edit this list.')
+            return
+        
+        return handler(self, playlist)
+
+    return check_author
+
+def playlist_author_required_json(handler):
+    def check_author(self, playlist_id):
+        user = self.user
+        playlist = models.PlayList.get_by_id(int(playlist_id))
+        if not playlist:
+            self.response.out.write(json.dumps({
+                'error': True, 
+                'message': 'Playlist not found.'
+            }))
+            return
+        elif self.user.key != playlist.creator:
+            self.response.out.write(json.dumps({
+                'error': True,
+                'message': 'You are not allowed to edit this list.'
+            }))
+            return
+
+        return handler(self, playlist)
+
+    return check_author
+
 class ManagePlaylist(BaseHandler):
     @login_required
     def get(self):
@@ -13,6 +49,9 @@ class ManagePlaylist(BaseHandler):
 
         keywords = self.request.get('keywords').strip().lower()
         if keywords:
+            if models.ILLEGAL_REGEX.match(keywords):
+                self.notify('Keywords include illegal characters.');
+                return
             context['list_keywords'] = keywords
             query_string = 'content: ' + keywords
             page =  min(page, math.ceil(models.MAX_QUERY_RESULT/float(page_size)) )
@@ -24,11 +63,7 @@ class ManagePlaylist(BaseHandler):
                 result = index.search(query)                
                 total_found = min(result.number_found, models.MAX_QUERY_RESULT)
                 total_pages = math.ceil(total_found/float(page_size))
-
-                playlist_keys = []
-                for list_doc in result.results:
-                    playlist_keys.append(ndb.Key(urlsafe=list_doc.doc_id))
-                playlists = ndb.get_multi(playlist_keys)
+                playlists = ndb.get_multi([ndb.Key(urlsafe=list_doc.doc_id) for list_doc in result.results])
             except Exception, e:
                 self.notify('Search error.')
                 return
@@ -95,21 +130,8 @@ class PlaylistInfo(BaseHandler):
         }))
 
     @login_required_json
-    def edit(self, playlist_id):
-        playlist = models.PlayList.get_by_id(int(playlist_id))
-        if not playlist:
-            self.response.out.write(json.dumps({
-                'error': True, 
-                'message': 'Playlist not found.'
-            }))
-            return
-        elif self.user.key.id() != playlist.creator.id():
-            self.response.out.write(json.dumps({
-                'error': True,
-                'message': 'You are not allowed to edit this list.'
-            }))
-            return
-
+    @playlist_author_required_json
+    def edit(self, playlist):
         res = self.check_params()
         if res['error']:
             self.response.out.write(json.dumps(res))
@@ -135,8 +157,11 @@ class DeletePlaylist(BaseHandler):
         ids = self.request.POST.getall('ids[]')
         deleted_ids = []
         for i in range(0, len(ids)):
-            playlist = models.PlayList.get_by_id(int(ids[i]))
-            if (not playlist) or user.key.id() != playlist.creator.id():
+            try:
+                playlist = models.PlayList.get_by_id(int(ids[i]))
+                if (not playlist) or user.key != playlist.creator:
+                    raise Exception('Error')
+            except Exception, e:
                 continue
 
             playlist.Delete()
@@ -158,16 +183,9 @@ class DeletePlaylist(BaseHandler):
 
 class EditPlaylist(BaseHandler):
     @login_required
-    def get(self, playlist_id):
-        playlist = models.PlayList.get_by_id(int(playlist_id))
+    @playlist_author_required
+    def get(self, playlist):
         user = self.user
-        if not playlist:
-            self.notify('Playlist not found.')
-            return
-        elif user.key.id() != playlist.creator.id():
-            self.notify('You are not allowed to edit this list.')
-            return
-
         page_size = models.DEFAULT_PAGE_SIZE
         page = self.get_page_number()
 
@@ -204,7 +222,7 @@ class SearchVideo(BaseHandler):
         context['videos'] = []
 
         keywords = self.request.get('keywords').strip().lower()
-        res = re.search(r'dt(\d+)', keywords)
+        res = re.match(r'dt(\d+)', keywords)
         if res:
             video_id = res.group(1)
             video = models.Video.get_by_id('dt' + str(video_id))
@@ -213,6 +231,9 @@ class SearchVideo(BaseHandler):
                 videos = [video]
             total_pages = 1
         elif keywords:
+            if models.ILLEGAL_REGEX.match(keywords):
+                self.notify('Keywords include illegal characters.');
+                return
             query_string = 'content: ' + keywords
             page =  min(page, math.ceil(models.MAX_QUERY_RESULT/float(page_size)) )
             offset = (page - 1)*page_size
@@ -223,11 +244,7 @@ class SearchVideo(BaseHandler):
                 result = index.search(query)                
                 total_found = min(result.number_found, models.MAX_QUERY_RESULT)
                 total_pages = math.ceil(total_found/float(page_size))
-
-                video_keys = []
-                for video_doc in result.results:
-                    video_keys.append(ndb.Key(urlsafe=video_doc.doc_id))
-                videos = ndb.get_multi(video_keys)
+                videos = ndb.get_multi([ndb.Key(urlsafe=video_doc.doc_id) for video_doc in result.results])
             except Exception, e:
                 self.response.out.write(json.dumps({
                     'error': True, 
@@ -259,29 +276,16 @@ class SearchVideo(BaseHandler):
 
 class AddVideo(BaseHandler):
     @login_required_json
-    def post(self, playlist_id):
-        playlist = models.PlayList.get_by_id(int(playlist_id))
+    @playlist_author_required_json
+    def post(self, playlist):
         user = self.user
-        if not playlist:
-            self.response.out.write(json.dumps({
-                'error': True, 
-                'message': 'Playlist not found.'
-            }))
-            return
-        elif user.key.id() != playlist.creator.id():
-            self.response.out.write(json.dumps({
-                'error': True, 
-                'message': 'You are not allowed to edit this video.'
-            }))
-            return
-
         ids = self.request.POST.getall('ids[]')
         added_ids = []
         put_list = []
         for i in range(0, len(ids)):
             video_id = ids[i]
             video = models.Video.get_by_id('dt'+video_id)
-            if (not video) or video.playlist_belonged != None or video.uploader.id() != user.key.id() or len(playlist.videos) > 2000:
+            if (not video) or video.playlist_belonged != None or video.uploader != user.key or len(playlist.videos) > 2000:
                 continue
 
             video.playlist_belonged = playlist.key
@@ -305,22 +309,9 @@ class AddVideo(BaseHandler):
 
 class RemoveVideo(BaseHandler):
     @login_required_json
-    def post(self, playlist_id):
-        playlist = models.PlayList.get_by_id(int(playlist_id))
+    @playlist_author_required_json
+    def post(self, playlist):
         user = self.user
-        if not playlist:
-            self.response.out.write(json.dumps({
-                'error': True, 
-                'message': 'Playlist not found.'
-            }))
-            return
-        elif user.key.id() != playlist.creator.id():
-            self.response.out.write(json.dumps({
-                'error': True, 
-                'message': 'You are not allowed to edit this video.'
-            }))
-            return
-
         ids = self.request.POST.getall('ids[]')
         deleted_ids = []
         put_list = []
@@ -355,22 +346,9 @@ class RemoveVideo(BaseHandler):
 
 class MoveVideo(BaseHandler):
     @login_required_json
-    def post(self, playlist_id):
-        playlist = models.PlayList.get_by_id(int(playlist_id))
+    @playlist_author_required_json
+    def post(self, playlist):
         user = self.user
-        if not playlist:
-            self.response.out.write(json.dumps({
-                'error': True, 
-                'message': 'Playlist not found.'
-            }))
-            return
-        elif user.key.id() != playlist.creator.id():
-            self.response.out.write(json.dumps({
-                'error': True, 
-                'message': 'You are not allowed to edit this video.'
-            }))
-            return
-
         try:
             ori_idx = int(self.request.get('ori_idx')) - 1
             target_idx = int(self.request.get('target_idx')) - 1

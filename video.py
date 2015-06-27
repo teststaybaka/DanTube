@@ -626,6 +626,9 @@ class ManageVideo(BaseHandler):
         keywords = self.request.get('keywords').strip().lower()
         order = self.request.get('order').strip()
         if keywords:
+            if models.ILLEGAL_REGEX.match(keywords):
+                self.notify('Keywords include illegal characters.');
+                return
             context['order'] = 'created'
             context['video_keywords'] = keywords
             query_string = 'content: ' + keywords
@@ -638,11 +641,7 @@ class ManageVideo(BaseHandler):
                 result = index.search(query)                
                 total_found = min(result.number_found, models.MAX_QUERY_RESULT)
                 total_pages = math.ceil(total_found/float(page_size))
-
-                video_keys = []
-                for video_doc in result.results:
-                    video_keys.append(ndb.Key(urlsafe=video_doc.doc_id))
-                videos = ndb.get_multi(video_keys)
+                videos = ndb.get_multi([ndb.Key(urlsafe=video_doc.doc_id) for video_doc in result.results])
             except Exception, e:
                 self.notify('Search error.')
                 return

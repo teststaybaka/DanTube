@@ -191,9 +191,8 @@ class ForgotPasswordReset(BaseHandler):
 
         return {'error':False}, user
 
-    def get(self, *args, **kwargs):
-        user_id = int(kwargs['user_id'])
-        pwdreset_token = kwargs['pwdreset_token']
+    def get(self, user_id, pwdreset_token):
+        user_id = int(user_id)
         res, user = self.validateToken(user_id, pwdreset_token)
         if not res['error']:
             self.render('forgot_password_reset');
@@ -201,10 +200,9 @@ class ForgotPasswordReset(BaseHandler):
             self.notify(res['message']);
 
 
-    def post(self, *args, **kwargs):
+    def post(self, user_id, pwdreset_token):
         self.response.headers['Content-Type'] = 'application/json'
-        user_id = int(kwargs['user_id'])
-        pwdreset_token = kwargs['pwdreset_token']
+        user_id = int(user_id)
         res, user = self.validateToken(user_id, pwdreset_token)
         if not res['error']:
             new_password = self.user_model.validate_password(self.request.get('new_password'))

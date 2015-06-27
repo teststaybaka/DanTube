@@ -84,8 +84,8 @@ class Video(BaseHandler):
                 user.history.pop(0)
             user.put()
 
+        cur_clip, uploader = ndb.get_multi([video.video_clips[clip_index-1], video.uploader])
         video_info = video.get_basic_info()
-        cur_clip = video.video_clips[clip_index-1].get()
         video_info['cur_vid'] = cur_clip.vid
         video_info['cur_subintro'] = cur_clip.subintro
         video_info['cur_index'] = clip_index
@@ -111,8 +111,6 @@ class Video(BaseHandler):
             videos = ndb.get_multi(playlist.videos)
             for i in range(0, len(videos)):
                 playlist_info['videos'].append(videos[i].get_basic_info())
-        
-        uploader = video.uploader.get()
         context = {'video': video_info, 'uploader': uploader.get_public_info(user), 'playlist': playlist_info}
         context['report_issues'] = models.Report_Issues
         self.render('video', context)
@@ -160,10 +158,11 @@ class Comment(BaseHandler):
         offset = (page-1)*page_size
         comments = models.Comment.query(ancestor=video.key).order(-models.Comment.created).fetch(offset=offset, limit=page_size)
         result = {'error': False, 'comments':[], 'total_comments': video.comment_counter}
+        creators = ndb.get_multi([comment.creator for comment in comments])
         for i in range(0, len(comments)):
             comment = comments[i]
             info = {
-                'creator': comment.creator.get().get_public_info(),
+                'creator': creators[i].get_public_info(),
                 'content': comment.content,
                 'created': comment.created.strftime("%Y-%m-%d %H:%M"),
                 'deleted': comment.deleted,
@@ -173,10 +172,11 @@ class Comment(BaseHandler):
                 'inner_comments': [],
             }
             inner_comments = models.InnerComment.query(ancestor=comment.key).order(-models.InnerComment.created).fetch(offset=0, limit=3)
+            inner_creators = ndb.get_multi([inner_comment.creator for inner_comment in inner_comments])
             for j in range(0, len(inner_comments)):
                 inner_comment = inner_comments[len(inner_comments) - j - 1]
                 inner_info = {
-                    'creator': inner_comment.creator.get().get_public_info(),
+                    'creator': inner_creators[len(inner_comments) - j - 1].get_public_info(),
                     'content': inner_comment.content,
                     'created': inner_comment.created.strftime("%Y-%m-%d %H:%M"),
                     'deleted': inner_comment.deleted,
@@ -190,8 +190,11 @@ class Comment(BaseHandler):
 
     @video_exist_required_json
     def get_inner_comment(self, video):
-        comment = models.Comment.get_by_id(int(self.request.get('comment_id')), video.key)
-        if not comment:
+        try:
+            comment = models.Comment.get_by_id(int(self.request.get('comment_id')), video.key)
+            if not comment:
+                raise Exception('error')
+        except Exception, e:
             self.response.out.write(json.dumps({
                 'error': True,
                 'message': 'Comment not found'
@@ -203,11 +206,12 @@ class Comment(BaseHandler):
 
         offset = (page-1)*page_size
         inner_comments = models.InnerComment.query(ancestor=comment.key).order(models.InnerComment.created).fetch(offset=offset, limit=page_size)
+        inner_creators = ndb.get_multi([inner_comment.creator for inner_comment in inner_comments])
         result = {'error': False, 'inner_comments': []}
         for i in range(0, len(inner_comments)):
             inner_comment = inner_comments[i]
             info = {
-                'creator': inner_comment.creator.get().get_public_info(),
+                'creator': inner_creators[i].get_public_info(),
                 'content': inner_comment.content,
                 'created': inner_comment.created.strftime("%Y-%m-%d %H:%M"),
                 'deleted': inner_comment.deleted,
@@ -272,8 +276,11 @@ class Comment(BaseHandler):
     @login_required_json
     @video_exist_required_json
     def reply_post(self, video):
-        comment = models.Comment.get_by_id(int(self.request.get('comment_id')), video.key)
-        if not comment:
+        try:
+            comment = models.Comment.get_by_id(int(self.request.get('comment_id')), video.key)
+            if not comment:
+                raise Exception('error')
+        except Exception, e:
             self.response.out.write(json.dumps({
                 'error': True,
                 'message': 'Comment not found'
@@ -609,7 +616,6 @@ class Danmaku(BaseHandler):
 class Subtitles(BaseHandler):
     @video_clip_exist_required_json
     def get(self, video, clip_index):
-        clip = video.video_clips[clip_index-1].get()
         try:
             s_index = int(self.request.get('subtitle_index'))
             if s_index < 1 or s_index > len(clip.subtitle_danmaku_pools):
@@ -620,7 +626,8 @@ class Subtitles(BaseHandler):
                 'message': 'Subtitles not found.',
             }))
             return
-
+            
+        clip = video.video_clips[clip_index-1].get()
         subtitle_danmaku_pool = clip.subtitle_danmaku_pools[s_index-1].get()
         self.response.out.write(json.dumps({
             'subtitles': subtitle_danmaku_pool.subtitles,

@@ -40,9 +40,6 @@ class Space(BaseHandler):
             # logging.info(videos[i])
             video = videos[i]
             video_info = video.get_basic_info()
-            if video.playlist_belonged != None:
-                playlist = video.playlist_belonged.get()
-                video_info['playlist_title'] = playlist.title
             context['videos'].append(video_info)
 
         context['host'] = host.get_public_info(self.user)

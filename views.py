@@ -243,8 +243,10 @@ class Home(BaseHandler):
         context = {}
         context['top_ten_videos'] = []
         videos, total_page = models.Video.get_page(order=models.Video.hot_score, page=1, page_size=10)
-        for video in videos:
-            uploader = video.uploader.get()
+        uploaders = ndb.get_multi([video.uploader for video in videos])
+        for i in range(0, len(videos)):
+            video = videos[i]
+            uploader = uploaders[i]
             video_info = video.get_basic_info()
             video_info['uploader'] = uploader.get_public_info()
             context['top_ten_videos'].append(video_info)
@@ -257,8 +259,10 @@ class Category(BaseHandler):
         context['category_name'] = category
         context['top_ten_videos'] = []
         videos, total_page = models.Video.get_page(category=category, order=models.Video.hot_score, page=1, page_size=10)
-        for video in videos:
-            uploader = video.uploader.get()
+        uploaders = ndb.get_multi([video.uploader for video in videos])
+        for i in range(0, len(videos)):
+            video = videos[i]
+            uploader = uploaders[i]
             video_info = video.get_basic_info()
             video_info['uploader'] = uploader.get_public_info()
             context['top_ten_videos'].append(video_info)
@@ -272,8 +276,10 @@ class Subcategory(BaseHandler):
         context['subcategory_name'] = subcategory
         context['top_ten_videos'] = []
         videos, total_page = models.Video.get_page(category=category, subcategory=subcategory, order=models.Video.hot_score, page=1, page_size=10)
-        for video in videos:
-            uploader = video.uploader.get()
+        uploaders = ndb.get_multi([video.uploader for video in videos])
+        for i in range(0, len(videos)):
+            video = videos[i]
+            uploader = uploaders[i]
             video_info = video.get_basic_info()
             video_info['uploader'] = uploader.get_public_info()
             context['top_ten_videos'].append(video_info)
@@ -403,9 +409,10 @@ class CategoryVideo(BaseHandler):
 
         result = {'error': False}
         result['videos'] = []
+        uploaders = ndb.get_multi([video.uploader for video in videos])
         for i in range(0, len(videos)): # videos[0:limit]:
             video = videos[i]
-            uploader = video.uploader.get()
+            uploader = uploaders[i]
             video_info = video.get_basic_info()
             video_info['uploader'] = uploader.get_public_info()
             result['videos'].append(video_info)
@@ -429,6 +436,9 @@ class Search(BaseHandler):
         keywords = self.request.get('keywords').strip().lower()
         if not keywords:
             query_string = ''
+        elif models.ILLEGAL_REGEX.match(keywords):
+            self.notify('Keywords include illegal characters.');
+            return
         else:
             query_string = 'content: ' + keywords
         context['keywords'] = keywords
@@ -467,14 +477,12 @@ class Search(BaseHandler):
             total_found = min(result.number_found, models.MAX_QUERY_RESULT)
             total_pages = math.ceil(total_found/float(page_size))
 
-            video_keys = []
-            for video_doc in result.results:
-                video_keys.append(ndb.Key(urlsafe=video_doc.doc_id))
-            videos = ndb.get_multi(video_keys)
+            videos = ndb.get_multi([ndb.Key(urlsafe=video_doc.doc_id) for video_doc in result.results])
+            uploaders = ndb.get_multi([video.uploader for video in videos])
             for i in range(0, len(videos)):
                 video = videos[i]
                 video_info = video.get_basic_info()
-                uploader = video.uploader.get()
+                uploader = uploaders[i]
                 video_info['uploader'] = uploader.get_public_info()
                 context['videos'].append(video_info)
 
@@ -507,6 +515,9 @@ class SearchPlaylist(BaseHandler):
         keywords = self.request.get('keywords').strip().lower()
         if not keywords:
             query_string = ''
+        elif models.ILLEGAL_REGEX.match(keywords):
+            self.notify('Keywords include illegal characters.');
+            return
         else:
             query_string = 'content: ' + keywords
         context['keywords'] = keywords
@@ -522,23 +533,24 @@ class SearchPlaylist(BaseHandler):
             total_found = min(result.number_found, models.MAX_QUERY_RESULT)
             total_pages = math.ceil(total_found/float(page_size))
 
-            playlist_keys = []
-            for playlist_doc in result.results:
-                playlist_keys.append(ndb.Key(urlsafe=playlist_doc.doc_id))
-            playlists = ndb.get_multi(playlist_keys)
-
+            playlists = ndb.get_multi([ndb.Key(urlsafe=playlist_doc.doc_id) for playlist_doc in result.results])
+            creators = ndb.get_multi([playlist.creator for playlist in playlists])
             for i in range(0, len(playlists)):
                 playlist = playlists[i]
                 playlist_info = playlist.get_basic_info()
-                creator = playlist.creator.get()
+                creator = creators[i]
                 playlist_info['creator'] = creator.get_public_info()
                 playlist_info['videos'] = []
 
                 videos_limit = min(9, len(playlist.videos))
+                video_keys = []
                 for i in range(0, videos_limit):
-                    video = playlist.videos[i].get()
+                    video_keys.append(playlist.videos[i])
+                videos = ndb.get_multi(video_keys)
+                for i in range(0, len(videos)):
+                    video = videos[i]
                     video_info = video.get_basic_info()
-                    video_info['index'] = i + 1;
+                    video_info['index'] = i + 1
                     playlist_info['videos'].append(video_info)
 
                 context['playlists'].append(playlist_info)
@@ -564,6 +576,9 @@ class SearchUPer(BaseHandler):
         keywords = self.request.get('keywords').strip().lower()
         if not keywords:
             query_string = ''
+        elif models.ILLEGAL_REGEX.match(keywords):
+            self.notify('Keywords include illegal characters.');
+            return
         else:
             query_string = 'content: ' + keywords
         context['keywords'] = keywords
@@ -579,11 +594,7 @@ class SearchUPer(BaseHandler):
             total_found = min(result.number_found, models.MAX_QUERY_RESULT)
             total_pages = math.ceil(total_found/float(page_size))
 
-            uper_keys = []
-            for uper_doc in result.results:
-                uper_keys.append(ndb.Key(urlsafe=uper_doc.doc_id))
-            upers = ndb.get_multi(uper_keys)
-
+            upers = ndb.get_multi([ndb.Key(urlsafe=uper_doc.doc_id) for uper_doc in result.results])
             for i in range(0, len(upers)):
                 uper = upers[i]
                 uper_info = uper.get_public_info(self.user)

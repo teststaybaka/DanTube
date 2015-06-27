@@ -29,6 +29,7 @@ class History(BaseHandler):
             requested_history.append(user.history[base - i])
 
         videos = ndb.get_multi([f.video for f in requested_history])
+        uploader_keys = []
         for i in range(0, len(requested_history)):
             video = videos[i]
             if video is None:
@@ -36,10 +37,14 @@ class History(BaseHandler):
 
             video_info = video.get_basic_info()
             video_info['index'] = requested_history[i].clip_index
-            uploader = video.uploader.get()
-            video_info['uploader'] = uploader.get_public_info()
+            uploader_keys.append(video.uploader)
             video_info['last_viewed_time'] = requested_history[i].last_viewed_time.strftime("%Y-%m-%d %H:%M")
             context['videos'].append(video_info)
+
+        uploaders = ndb.get_multi(uploader_keys)
+        for i in range(0, len(uploaders)):
+            uploader = uploaders[i]
+            context['videos'][i]['uploader'] = uploader.get_public_info()
 
         context.update(self.get_page_range(page, math.ceil(len(user.history)/float(page_size))) )
         self.render('history', context)
@@ -64,17 +69,18 @@ class History(BaseHandler):
             ).order(-models.ActivityRecord.created).fetch(keys_only=True, offset=(page-1)*page_size, limit=page_size)
 
             comments = ndb.get_multi(comment_keys)
+            videos= ndb.get_multi([comment.video for comment in comments])
             for i in range(0, len(comments)):
                 comment = comments[i]
-                video = comment.video.get()
+                video = videos[i]
                 comment_info = {
                     'type': comment.activity_type,
                     'timestamp': comment.timestamp,
                     'floorth': comment.floorth,
                     'inner_floorth': comment.inner_floorth,
+                    'video': video.get_basic_info(),
                     'content': comment.content,
                     'created': comment.created.strftime("%Y-%m-%d %H:%M"),
-                    'video': video.get_basic_info(),
                     'clip_index': comment.clip_index,
                 }
                 context['comments'].append(comment_info)
@@ -99,8 +105,7 @@ class Favorites(BaseHandler):
                 break
             requested_favorites.append(user.favorites[base - i])
 
-        video_keys = [f.video for f in requested_favorites]
-        videos = ndb.get_multi(video_keys)
+        videos = ndb.get_multi([f.video for f in requested_favorites])
         for i in range(0, len(requested_favorites)):
             video = videos[i]
             if video is None:
@@ -179,6 +184,7 @@ class Unfavor(BaseHandler):
 
         deleted_ids = []
         put_list = []
+        uploader_keys = []
         for i in range(0, len(ids)):
             video_id = ids[i]
             # video = models.Video.get_by_id('dt'+video_id)
@@ -186,12 +192,11 @@ class Unfavor(BaseHandler):
             video_keys = [f.video for f in user.favorites]
             try:
                 idx = video_keys.index(video_key)
-                user.favorites.pop(idx)
-
-                deleted_ids.append(video_id)
             except Exception, e:
                 continue
 
+            user.favorites.pop(idx)
+            deleted_ids.append(video_id)
             video = video_key.get()
             if video is None:
                 continue
@@ -199,8 +204,11 @@ class Unfavor(BaseHandler):
             video.favors -= 1
             video.create_index('videos_by_favors', video.favors)
             put_list.append(video)
+            uploader_keys.append(video.uploader)
 
-            uploader = video.uploader.get()
+        uploaders = ndb.get_multi(uploader_keys)
+        for i in range(0, len(uploaders)):
+            uploader = uploaders[i]
             uploader.videos_favored -= 1
             put_list.append(uploader)
         
@@ -335,10 +343,12 @@ class Subscriptions(BaseHandler):
             records = []
             cursor = ''
 
+        videos = ndb.get_multi([record.video for record in records])
+        creators = ndb.get_multi([record.creator for record in records])
         for i in range(0, len(records)):
             record = records[i]
-            video = record.video.get()
-            creator = record.creator.get()
+            video = videos[i]
+            creator = creators[i]
             record_info = {
                 'creator': creator.get_public_info(),
                 'type': record.activity_type,
@@ -384,16 +394,14 @@ class Subscriptions(BaseHandler):
         self.response.out.write(json.dumps(result))
 
 class Verification(BaseHandler):
-    def get(self, *args, **kwargs):
+    def get(self, user_id, signup_token):
         # user = self.user
         # if user and user.verified:
         #     self.render('verification', {'error':False, 'message':"Your account %s has been activated!" % (user.email)})
         #     return
                 
         user = None
-        user_id = int(kwargs['user_id'])
-        signup_token = kwargs['signup_token']
-
+        user_id = int(user_id)
         user, ts = self.user_model.get_by_auth_token(user_id, signup_token, 'signup')
 
         if not user:

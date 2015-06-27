@@ -27,6 +27,7 @@ class Message(BaseHandler):
         else:
             result['cursor'] = cursor.urlsafe()
 
+        partner_keys = []
         for i in range(0, len(threads)):
             thread = threads[i]
             thread_dict = {}
@@ -37,19 +38,23 @@ class Message(BaseHandler):
             thread_dict['url'] = self.uri_for('message_detail', thread_id=thread.key.id())
 
             if thread.sender == user.key:
-                partner = thread.receiver.get()
+                partner_keys.append(thread.receiver)
                 thread_dict['is_sender'] = True
                 thread_dict['unread'] = False
             else:
-                partner = thread.sender.get()
+                partner_keys.append(thread.sender)
                 thread_dict['is_sender'] = False
                 if thread.new_messages > 0:
                     thread_dict['new_messages'] = thread.new_messages
                     thread_dict['unread'] = True
                 else:
                     thread_dict['unread'] = False
-            thread_dict['partner'] = partner.get_public_info()
             result['entries'].append(thread_dict)
+
+        partners = ndb.get_multi(partner_keys)
+        for i in range(0, len(partners)):
+            partner = partners[i]
+            result['entries'][i]['partner'] = partner.get_public_info()
 
         self.response.out.write(json.dumps(result))
 
@@ -259,11 +264,10 @@ class DeleteMessage(BaseHandler):
         for i in range(0, len(ids)):
             try:
                 thread_id = int(ids[i])
+                thread = models.MessageThread.get_by_id(thread_id)
+                if not thread or user.key == thread.delete_user or (thread.sender != user.key and thread.receiver != user.key):
+                    raise Exception('error')
             except Exception, e:
-                continue
-
-            thread = models.MessageThread.get_by_id(int(thread_id))
-            if not thread or user.key == thread.delete_user or (thread.sender != user.key and thread.receiver != user.key):
                 continue
 
             user.threads_counter -= 1
@@ -312,10 +316,12 @@ class Mentioned(BaseHandler):
 
         cursor = models.Cursor(urlsafe=self.request.get('cursor'))
         comments, cursor, more = models.MentionedComment.query(models.MentionedComment.receivers==user.key).order(-models.MentionedComment.created, models.MentionedComment.key).fetch_page(page_size, start_cursor=cursor)
+        videos = ndb.get_multi([comment.video for comment in comments])
+        senders = ndb.get_multi([comment.sender for comment in comments])
         for i in range(0, len(comments)):
             comment = comments[i]
-            video = comment.video.get()
-            sender = comment.sender.get()
+            video = videos[i]
+            sender = senders[i]
             comment_info = {
                 'sender': sender.get_public_info(),
                 'type': comment.comment_type,
@@ -373,7 +379,6 @@ class ReadNotification(BaseHandler):
     @login_required_json
     def post(self):
         user = self.user
-
         try:
             note_id = int(self.request.get('id'))
         except Exception, e:
@@ -422,11 +427,10 @@ class DeleteNotifications(BaseHandler):
         for i in range(0, len(ids)):
             try:
                 note_id = int(ids[i])
+                note = models.Notification.get_by_id(note_id)
+                if note is None or note.receiver.id() != user.key.id():
+                    raise Exception('error')
             except Exception, e:
-                continue
-
-            note = models.Notification.get_by_id(note_id)
-            if note is None or note.receiver.id() != user.key.id():
                 continue
 
             if not note.read:

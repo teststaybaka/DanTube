@@ -775,6 +775,10 @@ class Video(ndb.Model):
       clip = video_clips[i]
       for j in range(0, len(clip.danmaku_pools)):
         clip.danmaku_pools[j].delete()
+      for j in range(0, len(clip.advanced_danmaku_pools)):
+        clip.advanced_danmaku_pools[j].delete()
+      for j in range(0, len(clip.subtitle_danmaku_pools)):
+        clip.subtitle_danmaku_pools[j].delete()
       clip.key.delete()
 
     comments = Comment.query(ancestor=self.key).fetch(keys_only=True)
