@@ -8,18 +8,12 @@ class Space(BaseHandler):
             return
 
         page_size = models.DEFAULT_PAGE_SIZE
-        try:
-            page = int(self.request.get('page'))
-            if page < 1:
-                raise ValueError('Negative')
-        except ValueError:
-            page = 1
+        page = self.get_page_number()
 
-        if not self.user or int(user_id) != self.user.key.id():
+        if not self.user:
             host.space_visited += 1
             host.put()
-
-        if self.user and int(user_id) != self.user.key.id():
+        elif host.key != self.user.key:
             try:
                 idx = host.recent_visitors.index(self.user.key)
                 host.recent_visitors.pop(idx)
@@ -28,6 +22,7 @@ class Space(BaseHandler):
             host.recent_visitors.append(self.user.key)
             if len(host.recent_visitors) > 8:
                 host.recent_visitors.pop(0)
+            host.space_visited += 1
             host.put()
 
         context = {}
@@ -64,12 +59,7 @@ class SpacePlaylist(BaseHandler):
             return
 
         page_size = models.DEFAULT_PAGE_SIZE
-        try:
-            page = int(self.request.get('page'))
-            if page < 1:
-                raise ValueError('Negative')
-        except ValueError:
-            page = 1
+        page = self.get_page_number()
 
         context = {}
         context['playlists'] = []
@@ -106,9 +96,8 @@ class SpaceBoard(BaseHandler):
         self.render('space_board', context)
 
 class Subscribe(BaseHandler):
-    @login_required
+    @login_required_json
     def post(self, user_id):
-        self.response.headers['Content-Type'] = 'application/json'
         host = self.user_model.get_by_id(int(user_id))
         if not host:
             self.response.out.write(json.dumps({
@@ -141,19 +130,17 @@ class Subscribe(BaseHandler):
             return
     
         user.subscriptions.append(host.key)
-        user.put()
-        
         host.subscribers_counter += 1
-        host.put()
+
+        ndb.put_multi([user, host])
 
         self.response.out.write(json.dumps({
             'error': False
         }))
 
 class Unsubscribe(BaseHandler):
-    @login_required
+    @login_required_json
     def post(self, user_id):
-        self.response.headers['Content-Type'] = 'application/json'
         host = self.user_model.get_by_id(int(user_id))
         if not host:
             self.response.out.write(json.dumps({
@@ -165,10 +152,9 @@ class Unsubscribe(BaseHandler):
         user = self.user
         try:
             user.subscriptions.remove(host.key)
-            user.put()
-            
             host.subscribers_counter -= 1
-            host.put()
+
+            ndb.put_multi([user, host])
 
             self.response.out.write(json.dumps({
                 'error': False

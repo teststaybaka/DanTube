@@ -16,6 +16,18 @@ import math
 def time_to_seconds(time):
   return int((time - datetime(1970, 1, 1)).total_seconds())
 
+def number_upper_limit_99(num):
+  if num > 99:
+    return '99+'
+  elif num == 0:
+    return ''
+  else:
+    return str(num)
+
+EMIAL_REGEX = re.compile(r"^[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$")
+ILLEGAL_REGEX = re.compile(r".*[&@.,?!;:/\\\"'<>].*")
+SPLIT_REGEX = re.compile(r"[&@.,?!;:/\\\"'<>]")
+
 class History(ndb.Model):
   video = ndb.KeyProperty(kind='Video', required=True, indexed=False)
   clip_index = ndb.IntegerProperty(required=True, default=1, indexed=False)
@@ -45,13 +57,13 @@ class User(webapp2_extras.appengine.auth.models.User):
   videos_favored = ndb.IntegerProperty(required=True, default=0, indexed=False)
   space_visited = ndb.IntegerProperty(required=True, default=0, indexed=False)
   subscribers_counter = ndb.IntegerProperty(required=True, default=0, indexed=False)
-  threads_counter = ndb.IntegerProperty(required=True, default=0, indexed=False)
-  new_messages = ndb.IntegerProperty(required=True, default=0, indexed=False)
   recent_visitors = ndb.KeyProperty(kind='User', repeated=True, indexed=False)
 
   comments_num = ndb.IntegerProperty(required=True, default=0, indexed=False)
-  last_mentioned_check = ndb.DateTimeProperty(auto_now_add=True, required=True, indexed=False)
-  last_notification_check = ndb.DateTimeProperty(auto_now_add=True, required=True, indexed=False)
+  threads_counter = ndb.IntegerProperty(required=True, default=0, indexed=False)
+  new_messages = ndb.IntegerProperty(required=True, default=0, indexed=False)
+  new_mentions = ndb.IntegerProperty(required=True, default=0, indexed=False)
+  new_notifications = ndb.IntegerProperty(required=True, default=0, indexed=False)
   last_subscription_check = ndb.DateTimeProperty(auto_now_add=True, required=True, indexed=False)
 
   def delete_index(self):
@@ -108,7 +120,10 @@ class User(webapp2_extras.appengine.auth.models.User):
   def get_private_info(self):
     private_info = {
       'email': self.email,
-      'bullets': self.bullets
+      'bullets': self.bullets,
+      'new_mentions_99': number_upper_limit_99(self.new_mentions),
+      'new_notifications_99': number_upper_limit_99(self.new_notifications),
+      'new_messages_99': number_upper_limit_99(self.new_messages),
     }
     return private_info
 
@@ -136,11 +151,10 @@ class User(webapp2_extras.appengine.auth.models.User):
 
   @classmethod
   def validate_nickname(cls, nickname):
-    nickname = nickname.strip();
     if not nickname:
       logging.info('nickname 1')
       return None
-    if re.match(r".*[@.,?!;:/\\\"'<>].*", nickname):
+    if ILLEGAL_REGEX.match(nickname):
       logging.info('nickname 2')
       return None
     if len(nickname) > 50:
@@ -171,11 +185,10 @@ class User(webapp2_extras.appengine.auth.models.User):
 
   @classmethod
   def validate_email(cls, email):
-    email = email.strip()
     if not email:
       logging.info('email 1')
       return None
-    if re.match(r"^[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$", email) is None:
+    if EMIAL_REGEX.match(email) is None:
       logging.info('email 2')
       return None
 

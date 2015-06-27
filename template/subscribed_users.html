@@ -16,7 +16,7 @@
 
 {% block detail %}
 <div id="sub-title-line" class="container">
-    <div id="sub-title"><span class="commas_number">{{ subscription_counter }}</span> UPers</div>
+    <div id="sub-title"><span class="commas_number">{{ subscription_counter }}</span> UPer{% if subscription_counter > 1 %}s{% endif %}</div>
 </div>
 <div id="subs-user-list" class="container">
   {% if total_pages == 0 %}

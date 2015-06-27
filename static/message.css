@@ -341,7 +341,7 @@ div.notification-detail {
     transition: height .3s;
 }
 
-div.message-select-checkbox {
+.single-checkbox {
     width: 16px;
     height: 16px;
     position: absolute;
@@ -359,11 +359,11 @@ div.message-select-checkbox {
     background-repeat: no-repeat;
 }
 
-div.message-entry:hover div.message-select-checkbox {
+div.message-entry:hover .single-checkbox {
     display: inline-block;
 }
 
-div.message-select-checkbox.checked {
+.single-checkbox.checked {
     display: inline-block;
     background-position: 0 -192px;
     background-image: url("/static/img/basic_icons.png");

@@ -173,10 +173,9 @@ $(document).ready(function() {
     var cur_nickname = $('#nickname-change').val();
     $('#nickname-change').focusout(function(evt) {
         var nickname = evt.target.value.trim();
-        var puncts = /[@.,?!;:/\\"']/;
-        if (!nickname || puncts.test(nickname)) {
+        if (!nickname || dt.puncts.test(nickname)) {
             $('#change-nickname-error').addClass('show');
-            $('#change-nickname-error').text('Your nickname can\'t contain: @ . , ? ! ; : / \\ \" \'');
+            $('#change-nickname-error').text('Your nickname can\'t contain: & @ . , ? ! ; : / \\ \" \' < >');
             $(evt.target).addClass('error');
         } else if (nickname.length > 50) {
             $('#change-nickname-error').addClass('show');
@@ -216,12 +215,10 @@ $(document).ready(function() {
         button.disabled = true;
 
         var nickname = $('#nickname-change')[0].value.trim();
-        var puncts = /[@.,?!;:/\\"']/;
-
         var error = false;
-        if (!nickname || puncts.test(nickname)) {
+        if (!nickname || dt.puncts.test(nickname)) {
             $('#change-nickname-error').addClass('show');
-            $('#change-nickname-error').text('Your nickname can\'t contain: @ . , ? ! ; : / \\ \" \'');
+            $('#change-nickname-error').text('Your nickname can\'t contain: & @ . , ? ! ; : / \\ \" \' < >');
             $('#nickname-change').addClass('error');
             error = true;
         } else if (nickname.length > 50) {
@@ -272,11 +269,16 @@ $(document).ready(function() {
         return false;
     });
 
-    
+    $('#action-select .option-entry.deselect').click(function() {
+        $('.single-checkbox.checked').removeClass('checked');
+    });
+    $('#action-select .option-entry.select').click(function() {
+        $('.single-checkbox').addClass('checked');
+    });
 });
 
 dt.delete_entries = function(url) {
-    var checked_boxes = $('div.message-select-checkbox.checked');
+    var checked_boxes = $('.single-checkbox.checked');
     if (checked_boxes.length != 0) {
         var ids = [];
         for (var i = 0; i < checked_boxes.length; i++) {
@@ -287,7 +289,6 @@ dt.delete_entries = function(url) {
             url: url,
             data: {ids: ids},
             success: function(result) {
-                console.log(result);
                 if (!result.error) {
                     ids = result.message;
                     for (var i = 0; i < ids.length; i++) {
@@ -313,12 +314,12 @@ dt.scrollUpdateMessage = function(url, render_func) {
 
     $(window).scroll(function() {
         if(($(window).scrollTop() >= $('.message-entry:last-child').offset().top - 30 - $(window).height()) && !isLoading && !isOver) {
-            update_mentioned_message();
+            update_messages();
         }
     });
-    update_mentioned_message();
+    update_messages();
 
-    function update_mentioned_message() {
+    function update_messages() {
         isLoading = true;
         $('.messages-container').append('<div class="message-entry loading"></div>');
         $.ajax({

@@ -72,18 +72,16 @@ class Video(BaseHandler):
     def get(self, video, clip_index):
         user = self.user
         if user is not None:
-            l = len(user.history)
             videos = [h.video for h in user.history]
             try:
                 idx = videos.index(video.key)
                 user.history.pop(idx)
             except ValueError:
                 logging.info('not found')
-                l += 1
-            if l > 100:
-                user.history.pop(0)
             new_history = models.History(video=video.key, clip_index=clip_index)
             user.history.append(new_history)
+            if len(user.history) > 100:
+                user.history.pop(0)
             user.put()
 
         video_info = video.get_basic_info()
@@ -136,7 +134,7 @@ def comment_nickname_recognize(user, content, add_link):
     temp = ''
     users = []
     for i in range(0, len(content)):
-        if re.match(r".*[@.,?!;:/\\\"'].*", content[i]) and state == 1:
+        if models.SPLIT_REGEX.match(content[i]) and state == 1:
             state = 0
             new_content += assemble_link(temp, add_link, users)
             temp = ''
@@ -157,16 +155,7 @@ class Comment(BaseHandler):
     @video_exist_required_json
     def get_comment(self, video):
         page_size = 20
-        try:
-            page = int(self.request.get('page') )
-            if page < 1:
-                raise ValueError('Negative')
-        except ValueError:
-            self.response.out.write(json.dumps({
-                'error': True,
-                'message': 'Page invalid.'
-            }))
-            return
+        page = self.get_page_number()
 
         offset = (page-1)*page_size
         comments = models.Comment.query(ancestor=video.key).order(-models.Comment.created).fetch(offset=offset, limit=page_size)
@@ -201,11 +190,8 @@ class Comment(BaseHandler):
 
     @video_exist_required_json
     def get_inner_comment(self, video):
-        try:
-            comment = models.Comment.get_by_id(int(self.request.get('comment_id')), video.key)
-            if not comment:
-                raise ValueError('Id error')
-        except ValueError:
+        comment = models.Comment.get_by_id(int(self.request.get('comment_id')), video.key)
+        if not comment:
             self.response.out.write(json.dumps({
                 'error': True,
                 'message': 'Comment not found'
@@ -213,16 +199,7 @@ class Comment(BaseHandler):
             return
 
         page_size = models.DEFAULT_PAGE_SIZE
-        try:
-            page = int(self.request.get('page') )
-            if page < 1:
-                raise ValueError('Negative')
-        except ValueError:
-            self.response.out.write(json.dumps({
-                'error': True,
-                'message': 'Page invalid.'
-            }))
-            return
+        page = self.get_page_number()
 
         offset = (page-1)*page_size
         inner_comments = models.InnerComment.query(ancestor=comment.key).order(models.InnerComment.created).fetch(offset=offset, limit=page_size)
@@ -241,12 +218,12 @@ class Comment(BaseHandler):
         result['total_pages'] = math.ceil(comment.inner_comment_counter/float(page_size))
         self.response.out.write(json.dumps(result))
 
-    @login_required
+    @login_required_json
     @video_exist_required_json
     def comment_post(self, video):
         user = self.user
-        content = self.request.get('content')
-        if not content.strip():
+        content = self.request.get('content').strip()
+        if not content:
             self.response.out.write(json.dumps({
                 'error': True,
                 'message': 'No content.'
@@ -260,39 +237,43 @@ class Comment(BaseHandler):
             return
         content, users = comment_nickname_recognize(user, content, True)
 
-        allow_share = self.request.get('allow-post-comment')
-        if allow_share == 'on':
+        allow_share = self.request.get('allow-post-comment').strip()
+        if allow_share:
             allow_share = True
         else:
             allow_share = False
 
+        put_list = []
         comment = models.Comment.Create(video, user, content)
         video.comment_counter = comment.floorth
         video.update_hot_score(HOT_SCORE_PER_COMMENT)
         video.last_updated = datetime.now()
-        video.put()
+        put_list.append(video)
 
         comment_record = models.ActivityRecord(creator=user.key, activity_type='comment', floorth=comment.floorth, content=comment.content, video=video.key, public=allow_share)
-        comment_record.put()
+        put_list.append(comment_record)
         user.comments_num += 1
-        user.put()
+        put_list.append(user)
 
+        user_entries = []
         if len(users) != 0:
             mentioned_message = models.MentionedComment(receivers=users, sender=user.key, comment_type='comment', floorth=comment.floorth, content=comment.content, video=video.key)
-            mentioned_message.put()
+            put_list.append(mentioned_message)
+
+            user_entries = ndb.get_multi(users)
+            for i in range(0, len(user_entries)):
+                user_entries[i].new_mentions += 1
+        ndb.put_multi(put_list + user_entries)
 
         self.response.out.write(json.dumps({
             'error': False,
         }))
 
-    @login_required
+    @login_required_json
     @video_exist_required_json
     def reply_post(self, video):
-        try:
-            comment = models.Comment.get_by_id(int(self.request.get('comment_id')), video.key)
-            if not comment:
-                raise ValueError('Id error')
-        except ValueError:
+        comment = models.Comment.get_by_id(int(self.request.get('comment_id')), video.key)
+        if not comment:
             self.response.out.write(json.dumps({
                 'error': True,
                 'message': 'Comment not found'
@@ -300,8 +281,8 @@ class Comment(BaseHandler):
             return
 
         user = self.user
-        content = self.request.get('content')
-        if not content.strip():
+        content = self.request.get('content').strip()
+        if not content:
             self.response.out.write(json.dumps({
                 'error': True,
                 'message': 'No content.'
@@ -315,24 +296,31 @@ class Comment(BaseHandler):
             return
         content, users = comment_nickname_recognize(user, content, True)
 
-        allow_share = self.request.get('allow-post-reply')
-        if allow_share == 'on':
+        allow_share = self.request.get('allow-post-reply').strip()
+        if allow_share:
             allow_share = True
         else:
             allow_share = False
 
+        put_list = []
         inner_comment = models.InnerComment.Create(comment, user, content)
         video.last_updated = datetime.now()
-        video.put()
+        put_list.append(video)
 
         comment_record = models.ActivityRecord(creator=user.key, activity_type='inner_comment', floorth=inner_comment.floorth, inner_floorth=inner_comment.inner_floorth, content=inner_comment.content, video=video.key, public=allow_share)
-        comment_record.put()
+        put_list.append(comment_record)
         user.comments_num += 1
-        user.put()
+        put_list.append(user)
 
+        user_entries = []
         if len(users) != 0:
             mentioned_message = models.MentionedComment(receivers=users, sender=user.key, comment_type='inner_comment', floorth=inner_comment.floorth, inner_floorth=inner_comment.inner_floorth, content=inner_comment.content, video=video.key)
-            mentioned_message.put()
+            put_list.append(mentioned_message)
+
+            user_entries = ndb.get_multi(users)
+            for i in range(0, len(user_entries)):
+                user_entries[i].new_mentions += 1
+        ndb.put_multi(put_list + user_entries)
         
         self.response.out.write(json.dumps({
             'error': False,
@@ -368,7 +356,7 @@ class Danmaku(BaseHandler):
             'subtitle_names': subtitle_names,
         }))
 
-    @login_required
+    @login_required_json
     @video_clip_exist_required_json
     def post(self, video, clip_index):
         user = self.user
@@ -414,7 +402,7 @@ class Danmaku(BaseHandler):
             }))
             return
 
-        position = self.request.get('type')
+        position = self.request.get('type').strip()
         if not position in models.Danmaku_Positions:
             self.response.out.write(json.dumps({
                 'error': True,
@@ -422,17 +410,17 @@ class Danmaku(BaseHandler):
             }))
             return
 
-        allow_share = self.request.get('allow-share')
-        if allow_share == 'on':
+        allow_share = self.request.get('allow-share').strip()
+        if allow_share:
             allow_share = True
         else:
             allow_share = False
 
-        reply_to = self.request.get('reply-to')
+        reply_to = self.request.get('reply-to').strip()
         if reply_to:
             content = u'←' + content
             reply_to_key = ndb.Key('User', long(reply_to))
-            if reply_to_key not in users:
+            if reply_to_key not in users: # TODO: Risk of empty user key
                 users.append(reply_to_key)
 
         clip = video.video_clips[clip_index-1].get()
@@ -451,21 +439,29 @@ class Danmaku(BaseHandler):
                     clip.danmaku_pools.pop(0).delete()
                 clip.put()
 
+        put_list = []
         danmaku = models.Danmaku(timestamp=timestamp, content=content, position=position, size=size, color=color, creator=user.key)
         danmaku_pool.danmaku_list.append(danmaku)
-        danmaku_pool.put()
+        put_list.append(danmaku_pool)
         video.update_hot_score(HOT_SCORE_PER_DANMAKU)
         video.last_updated = datetime.now()
-        video.put()
+        put_list.append(video)
 
         danmaku_record = models.ActivityRecord(creator=user.key, activity_type='danmaku', timestamp=danmaku.timestamp, content=danmaku.content, video=video.key, clip_index=clip_index, public=allow_share)
-        danmaku_record.put()
+        put_list.append(danmaku_record)
         user.comments_num += 1
-        user.put()
+        put_list.append(user)
 
+        user_entries = []
         if len(users) != 0:
             mentioned_message = models.MentionedComment(receivers=users, sender=user.key, comment_type='danmaku', timestamp=danmaku.timestamp, content=danmaku.content, video=video.key, clip_index=clip_index)
-            mentioned_message.put()
+            put_list.append(mentioned_message)
+
+            user_entries = ndb.get_multi(users)
+            for i in range(0, len(user_entries)):
+                if user_entries[i]:
+                    user_entries[i].new_mentions += 1
+        ndb.put_multi(put_list + user_entries)
         
         self.response.out.write(json.dumps(self.format_danmaku(danmaku)))
 
@@ -481,7 +477,7 @@ class Danmaku(BaseHandler):
                     'color': danmaku.color,
                 }
 
-    @login_required
+    @login_required_json
     @video_clip_exist_required_json
     def post_advanced(self, video, clip_index):
         user = self.user
@@ -582,15 +578,13 @@ class Danmaku(BaseHandler):
 
         advanced_danmaku = models.AdvancedDanmaku(timestamp=timestamp, content=content, birth_x=birth_pos[0], birth_y=birth_pos[1], death_x=death_pos[0], death_y=death_pos[1], speed_x=speed[0], speed_y=speed[1], longevity=longevity, css=custom_css, creator=user.key)
         advanced_danmaku_pool.advanced_danmaku_list.append(advanced_danmaku)
-        advanced_danmaku_pool.put()
         video.update_hot_score(HOT_SCORE_PER_DANMAKU)
         video.last_updated = datetime.now()
-        video.put()
 
         danmaku_record = models.ActivityRecord(creator=user.key, activity_type='danmaku', timestamp=advanced_danmaku.timestamp, content=advanced_danmaku.content, video=video.key, clip_index=clip_index, public=False)
-        danmaku_record.put()
         user.comments_num += 1
-        user.put()
+
+        ndb.put_multi([advanced_danmaku_pool, video, danmaku_record, user])
         
         self.response.out.write(json.dumps(self.format_advanced_danmaku(advanced_danmaku)))
 
@@ -635,7 +629,7 @@ class Subtitles(BaseHandler):
             'created_seconds': models.time_to_seconds(subtitle_danmaku_pool.created),
         }))
 
-    @login_required
+    @login_required_json
     @video_clip_exist_required_json
     def post(self, video, clip_index):
         user = self.user
@@ -681,17 +675,17 @@ class Subtitles(BaseHandler):
 
         clip = video.video_clips[clip_index-1].get()
         subtitle_danmaku_pool = models.SubtitleDanmakuPool(memo=memo, subtitles=subtitles, creator=user.key)
-        subtitle_danmaku_pool.put()
         clip.subtitle_names.append(name)
         clip.subtitle_danmaku_pools.append(subtitle_danmaku_pool.key)
-        clip.put()
+
+        ndb.put_multi([subtitle_danmaku_pool, clip])
 
         self.response.out.write(json.dumps({
             'error': False,
         }))
 
 class Like(BaseHandler):
-    @login_required
+    @login_required_json
     @video_exist_required_json
     def post(self, video):
         user = self.user
@@ -699,22 +693,23 @@ class Like(BaseHandler):
         video.update_hot_score(HOT_SCORE_PER_LIKE)
         video.last_updated = datetime.now()
         video.put()
+
         self.response.out.write(json.dumps({
             'error': False,
             'likes': video.likes,
         }))
 
 class Hit(BaseHandler):
-    @login_required
+    @login_required_json
     @video_exist_required_json
     def post(self, video):
         video.hits += 1
         video.update_hot_score(HOT_SCORE_PER_HIT)
-        video.put()
         video.create_index('videos_by_hits', video.hits)
         uploader = video.uploader.get()
         uploader.videos_watched += 1
-        uploader.put()
+
+        ndb.put_multi([video, uploader])
 
         self.response.out.write(json.dumps({
             'error': False,

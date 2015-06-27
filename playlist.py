@@ -6,12 +6,7 @@ class ManagePlaylist(BaseHandler):
     def get(self):
         user = self.user
         page_size = models.DEFAULT_PAGE_SIZE
-        try:
-            page = int(self.request.get('page'))
-            if page < 1:
-                raise ValueError('Negative')
-        except ValueError:
-            page = 1
+        page = self.get_page_number()
 
         context = {}
         context['playlists'] = []
@@ -56,7 +51,7 @@ class ManagePlaylist(BaseHandler):
 
 class PlaylistInfo(BaseHandler):
     def check_params(self):
-        self.title = self.request.get('title')
+        self.title = self.request.get('title').strip()
         if not self.title:
             return {
                 'error': True,
@@ -68,7 +63,7 @@ class PlaylistInfo(BaseHandler):
                 'message': 'Title too long.'
             }
 
-        self.intro = self.request.get('intro')
+        self.intro = self.request.get('intro').strip()
         if len(self.intro) > 2000:
             return {
                 'error': True,
@@ -79,9 +74,8 @@ class PlaylistInfo(BaseHandler):
             'error': False,
         }
 
-    @login_required
+    @login_required_json
     def create(self):
-        self.response.headers['Content-Type'] = 'application/json'
         res = self.check_params()
         if res['error']:
             self.response.out.write(json.dumps(res))
@@ -100,9 +94,8 @@ class PlaylistInfo(BaseHandler):
             'error': False,
         }))
 
-    @login_required
+    @login_required_json
     def edit(self, playlist_id):
-        self.response.headers['Content-Type'] = 'application/json'
         playlist = models.PlayList.get_by_id(int(playlist_id))
         if not playlist:
             self.response.out.write(json.dumps({
@@ -136,9 +129,8 @@ class PlaylistInfo(BaseHandler):
         }))
 
 class DeletePlaylist(BaseHandler):
-    @login_required
+    @login_required_json
     def post(self):
-        self.response.headers['Content-Type'] = 'application/json'
         user = self.user
         ids = self.request.POST.getall('ids[]')
         deleted_ids = []
@@ -176,13 +168,8 @@ class EditPlaylist(BaseHandler):
             self.notify('You are not allowed to edit this list.')
             return
 
-        page_size = 15
-        try:
-            page = int(self.request.get('page'))
-            if page < 1:
-                raise ValueError('Negative')
-        except ValueError:
-            page = 1
+        page_size = models.DEFAULT_PAGE_SIZE
+        page = self.get_page_number()
 
         context = {
             'playlist': playlist.get_basic_info()
@@ -207,23 +194,17 @@ class EditPlaylist(BaseHandler):
         self.render('edit_playlist', context=context)
 
 class SearchVideo(BaseHandler):
-    @login_required
+    @login_required_json
     def post(self):
-        self.response.headers['Content-Type'] = 'application/json'
         user = self.user
         page_size = models.DEFAULT_PAGE_SIZE
-        try:
-            page = int(self.request.get('page'))
-            if page < 1:
-                raise ValueError('Negative')
-        except ValueError:
-            page = 1
+        page = self.get_page_number()
 
         context = {'error': False}
         context['videos'] = []
 
         keywords = self.request.get('keywords').strip().lower()
-        res = re.search('.*dt(\d+)', keywords)
+        res = re.search(r'dt(\d+)', keywords)
         if res:
             video_id = res.group(1)
             video = models.Video.get_by_id('dt' + str(video_id))
@@ -277,9 +258,8 @@ class SearchVideo(BaseHandler):
         self.response.out.write(json.dumps(context))
 
 class AddVideo(BaseHandler):
-    @login_required
+    @login_required_json
     def post(self, playlist_id):
-        self.response.headers['Content-Type'] = 'application/json'
         playlist = models.PlayList.get_by_id(int(playlist_id))
         user = self.user
         if not playlist:
@@ -297,6 +277,7 @@ class AddVideo(BaseHandler):
 
         ids = self.request.POST.getall('ids[]')
         added_ids = []
+        put_list = []
         for i in range(0, len(ids)):
             video_id = ids[i]
             video = models.Video.get_by_id('dt'+video_id)
@@ -304,7 +285,7 @@ class AddVideo(BaseHandler):
                 continue
 
             video.playlist_belonged = playlist.key
-            video.put()
+            put_list.append(video)
             playlist.videos.append(video.key)
             added_ids.append(video_id)
 
@@ -315,7 +296,7 @@ class AddVideo(BaseHandler):
             }))
             return
         playlist.modified = datetime.now()
-        playlist.put()
+        ndb.put_multi([playlist] + put_list)
 
         self.response.out.write(json.dumps({
             'error': False, 
@@ -323,9 +304,8 @@ class AddVideo(BaseHandler):
         }))
 
 class RemoveVideo(BaseHandler):
-    @login_required
+    @login_required_json
     def post(self, playlist_id):
-        self.response.headers['Content-Type'] = 'application/json'
         playlist = models.PlayList.get_by_id(int(playlist_id))
         user = self.user
         if not playlist:
@@ -343,6 +323,7 @@ class RemoveVideo(BaseHandler):
 
         ids = self.request.POST.getall('ids[]')
         deleted_ids = []
+        put_list = []
         for i in range(0, len(ids)):
             video_id = ids[i]
             video = models.Video.get_by_id('dt'+video_id)
@@ -353,7 +334,7 @@ class RemoveVideo(BaseHandler):
                 idx = playlist.videos.index(video.key)
                 playlist.videos.pop(idx)
                 video.playlist_belonged = None
-                video.put()
+                put_list.append(video)
                 deleted_ids.append(video_id)
             except Exception, e:
                 continue
@@ -365,7 +346,7 @@ class RemoveVideo(BaseHandler):
             }))
             return
         playlist.modified = datetime.now()
-        playlist.put()
+        ndb.put_multi([playlist] + put_list)
 
         self.response.out.write(json.dumps({
             'error': False, 
@@ -373,9 +354,8 @@ class RemoveVideo(BaseHandler):
         }))
 
 class MoveVideo(BaseHandler):
-    @login_required
+    @login_required_json
     def post(self, playlist_id):
-        self.response.headers['Content-Type'] = 'application/json'
         playlist = models.PlayList.get_by_id(int(playlist_id))
         user = self.user
         if not playlist:
@@ -394,14 +374,9 @@ class MoveVideo(BaseHandler):
         try:
             ori_idx = int(self.request.get('ori_idx')) - 1
             target_idx = int(self.request.get('target_idx')) - 1
+            if ori_idx < 0 or ori_idx >= len(playlist.videos) or target_idx < 0 or target_idx >= len(playlist.videos):
+                raise ValueError('Invalid')
         except ValueError:
-            self.response.out.write(json.dumps({
-                'error': True, 
-                'message': 'Index value error.'
-            }))
-            return
-
-        if ori_idx < 0 or ori_idx >= len(playlist.videos) or target_idx < 0 or target_idx >= len(playlist.videos):
             self.response.out.write(json.dumps({
                 'error': True, 
                 'message': 'Index value error.'

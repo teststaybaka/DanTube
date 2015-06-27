@@ -4,8 +4,7 @@ class Message(BaseHandler):
     @login_required
     def get(self):
         user = self.user
-        context = {}
-        context['user'] = {
+        context = {
             'threads_counter': user.threads_counter,
             'new_messages': user.new_messages
         }
@@ -256,8 +255,13 @@ class DeleteMessage(BaseHandler):
             return
 
         deleted_ids = []
+        put_list = []
         for i in range(0, len(ids)):
-            thread_id = ids[i]
+            try:
+                thread_id = int(ids[i])
+            except Exception, e:
+                continue
+
             thread = models.MessageThread.get_by_id(int(thread_id))
             if not thread or user.key == thread.delete_user or (thread.sender != user.key and thread.receiver != user.key):
                 continue
@@ -270,7 +274,7 @@ class DeleteMessage(BaseHandler):
                 thread.key.delete()
             else:
                 thread.delete_user = user.key
-                thread.put()
+                put_list.append(thread)
             deleted_ids.append(thread_id)
         
         if len(deleted_ids) == 0:
@@ -279,7 +283,7 @@ class DeleteMessage(BaseHandler):
                 'message': 'No message deleted.'
             }))
             return
-        user.put()
+        ndb.put_multi([user] + put_list)
 
         self.response.out.write(json.dumps({
             'error': False,
@@ -287,33 +291,13 @@ class DeleteMessage(BaseHandler):
         }))
 
 class Mentioned(BaseHandler):
-    def new_mentions_count(self):
-        user = self.user
-        new_count = models.MentionedComment.query(ndb.AND(models.MentionedComment.receivers==user.key, 
-                                                                models.MentionedComment.created > user.last_mentioned_check)).count()
-        return new_count
-
-    @login_required_json
-    def get_count(self):
-        new_messages = self.new_mentions_count()
-        self.response.out.write(json.dumps({
-            'error': False,
-            'count': new_messages,
-        }))
-
     @login_required
     def get(self):
         user = self.user
-        new_messages = self.new_mentions_count()
-        user.last_mentioned_check = datetime.now()
+        new_mentions = user.new_mentions
+        user.new_mentions = 0
         user.put()
-        if new_messages > 99:
-            self.response.set_cookie('new_mentions', '99+', path='/')
-        elif new_messages == 0:
-            self.response.set_cookie('new_mentions', '', path='/')
-        else:
-            self.response.set_cookie('new_mentions', str(new_messages), path='/')
-        self.render('mentioned_me', {'new_messages': new_messages})
+        self.render('mentioned_me', {'new_mentions': new_mentions})
 
     @login_required_json
     def post(self):
@@ -352,33 +336,10 @@ class Mentioned(BaseHandler):
         self.response.out.write(json.dumps(result))
 
 class Notifications(BaseHandler):
-    def new_notifications_count(self):
-        user = self.user
-        new_count = models.Notification.query(ndb.AND(models.Notification.receiver==user.key, 
-                                                                models.Notification.created > user.last_notification_check)).count()
-        return new_count
-
-    @login_required_json
-    def get_count(self):
-        new_messages = self.new_notifications_count()
-        self.response.out.write(json.dumps({
-            'error': False,
-            'count': new_messages,
-        }))
-
     @login_required
     def get(self):
         user = self.user
-        new_notifications = self.new_notifications_count()
-        user.last_notification_check = datetime.now()
-        user.put()
-        if new_notifications > 99:
-            self.response.set_cookie('new_notifications', '99+', path='/')
-        elif new_notifications == 0:
-            self.response.set_cookie('new_notifications', '', path='/')
-        else:
-            self.response.set_cookie('new_notifications', str(new_notifications), path='/')
-        self.render('notifications', {'new_notifications': new_notifications})
+        self.render('notifications', {'new_notifications': user.new_notifications})
 
     @login_required_json
     def post(self):
@@ -408,8 +369,9 @@ class Notifications(BaseHandler):
         
         self.response.out.write(json.dumps(result))
 
+class ReadNotification(BaseHandler):
     @login_required_json
-    def read(self):
+    def post(self):
         user = self.user
 
         try:
@@ -427,16 +389,26 @@ class Notifications(BaseHandler):
                 'error': True,
                 'message': 'No notification found.'
             }))
+            return
+        elif note.read:
+            self.response.out.write(json.dumps({
+                'error': True,
+                'message': 'Notification already read.'
+            }))
+            return
 
         note.read = True
-        note.put()
+        if user.new_notifications != 0:
+            user.new_notifications -= 1
+        ndb.put_multi([note, user])
 
         self.response.out.write(json.dumps({
             'error': False,
         }))
 
+class DeleteNotifications(BaseHandler):
     @login_required_json
-    def delete(self):
+    def post(self):
         user = self.user
         ids = self.request.POST.getall('ids[]')
         if len(ids) == 0:
@@ -457,8 +429,10 @@ class Notifications(BaseHandler):
             if note is None or note.receiver.id() != user.key.id():
                 continue
 
-            note.key.delete()
+            if not note.read:
+                user.new_notifications -= 1
             deleted_ids.append(note_id)
+            note.key.delete()
 
         if len(deleted_ids) == 0:
             self.response.out.write(json.dumps({
@@ -466,6 +440,7 @@ class Notifications(BaseHandler):
                 'message': 'No notification deleted.'
             }))
             return
+        user.put()
 
         self.response.out.write(json.dumps({
             'error': False,

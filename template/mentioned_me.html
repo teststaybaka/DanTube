@@ -17,7 +17,7 @@
 
 {% block detail %}
 <div id="sub-title-line" class="container">
-    <div id="sub-title"><span class="commas_number">{{ new_messages }}</span> new mentions</div>
+    <div id="sub-title"><span class="commas_number">{{ new_mentions }}</span> New mention{% if new_mentions > 1 %}s{% endif %}</div>
 </div>
 <div class="messages-container">
     <!-- <div class="message-entry none">

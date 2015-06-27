@@ -5,20 +5,20 @@ import urlparse
 
 YOUTUBE_API_URL = "https://www.googleapis.com/youtube/v3"
 YOUTUBE_API_KEY = "AIzaSyBbf3cs6Nw483po40jw7hZLejmdrgwozWc"
-                
+ISO_8601_period_rx = re.compile(
+    'P'   # designates a period
+    '(?:(?P<years>\d+)Y)?'   # years
+    '(?:(?P<months>\d+)M)?'  # months
+    '(?:(?P<weeks>\d+)W)?'   # weeks
+    '(?:(?P<days>\d+)D)?'    # days
+    '(?:T' # time part must begin with a T
+    '(?:(?P<hours>\d+)H)?'   # hourss
+    '(?:(?P<minutes>\d+)M)?' # minutes
+    '(?:(?P<seconds>\d+)S)?' # seconds
+    ')?'   # end of time part
+)
+
 def ISO_8601_to_seconds(duration):
-    ISO_8601_period_rx = re.compile(
-        'P'   # designates a period
-        '(?:(?P<years>\d+)Y)?'   # years
-        '(?:(?P<months>\d+)M)?'  # months
-        '(?:(?P<weeks>\d+)W)?'   # weeks
-        '(?:(?P<days>\d+)D)?'    # days
-        '(?:T' # time part must begin with a T
-        '(?:(?P<hours>\d+)H)?'   # hourss
-        '(?:(?P<minutes>\d+)M)?' # minutes
-        '(?:(?P<seconds>\d+)S)?' # seconds
-        ')?'   # end of time part
-    )
     d = ISO_8601_period_rx.match(duration).groupdict()
     days = 0
     if d['years']:
@@ -107,8 +107,8 @@ class VideoUpload(BaseHandler):
                 'message': 'Category mismatch!'
             }
 
-        self.description = self.request.get('description')
-        if not self.description.strip():
+        self.description = self.request.get('description').strip()
+        if not self.description:
             return {
                 'error': True,
                 'message': 'Description must not be empty!'
@@ -130,11 +130,16 @@ class VideoUpload(BaseHandler):
         self.tags = []
         for i in range(0, len(self.tags_ori)):
             tag = self.tags_ori[i].strip()
-            if tag != '':
+            if tag:
                 if len(tag) > 100:
                     return {
                         'error': True,
                         'message': 'Tags are too long!'
+                    }
+                elif models.ILLEGAL_REGEX.match(tag):
+                    return {
+                        'error': True,
+                        'message': 'Tags have illegal letters!'
                     }
                 self.tags.append(self.tags_ori[i].strip())
         if len(self.tags) == 0:
@@ -148,8 +153,8 @@ class VideoUpload(BaseHandler):
                 'message': 'Too many tags!'
             }
 
-        self.allow_tag_add = self.request.get('allow-add')
-        if self.allow_tag_add == 'on':
+        self.allow_tag_add = self.request.get('allow-add').strip()
+        if self.allow_tag_add:
             self.allow_tag_add = True
         else:
             self.allow_tag_add = False
@@ -290,9 +295,8 @@ class VideoUpload(BaseHandler):
             else:
                 self.thumbnail_key = models.blobstore.BlobKey(request_res)
 
-    @login_required
+    @login_required_json
     def submit_post(self):
-        self.response.headers['Content-Type'] = 'application/json'
         user = self.user
 
         res = self.field_check()
@@ -358,18 +362,16 @@ class VideoUpload(BaseHandler):
             return
 
         upload_record = models.ActivityRecord(creator=user.key, activity_type='upload', video=video.key, content=video.description)
-        upload_record.put()
-
         user.videos_submitted += 1
-        user.put()
+
+        ndb.put_multi([upload_record, user])
         self.response.out.write(json.dumps({
             'error': False,
             'message': 'Video submitted successfully!'
         }))
 
-    @login_required
+    @login_required_json
     def edit_post(self, video_id):
-        self.response.headers['Content-Type'] = 'application/json'
         video = models.Video.get_by_id('dt'+video_id)
         user = self.user
 
@@ -385,8 +387,8 @@ class VideoUpload(BaseHandler):
             self.response.out.write(json.dumps(res))
             return
 
-        self.allowPost = self.request.get('allow-post')
-        if self.allowPost == 'on':
+        self.allowPost = self.request.get('allow-post').strip()
+        if self.allowPost:
             self.allowPost = True
         else:
             self.allowPost = False
@@ -499,9 +501,8 @@ class VideoUpload(BaseHandler):
         else:
             if changed:
                 video.duration = video_duration
-                video.put()
                 edit_record = models.ActivityRecord(creator=user.key, activity_type='edit', video=video.key, content=video.description, public=self.allowPost)
-                edit_record.put()
+                ndb.put_multi([video, edit_record])
 
             if reindex:
                 video.create_index('videos_by_created', models.time_to_seconds(video.created) )
@@ -515,9 +516,8 @@ class VideoUpload(BaseHandler):
         }))
 
 class AddTag(BaseHandler):
-    @login_required
+    @login_required_json
     def post(self, video_id):
-        self.response.headers['Content-Type'] = 'application/json'
         video = models.Video.get_by_id('dt'+video_id)
         if not video:
             self.response.out.write(json.dumps({
@@ -545,10 +545,10 @@ class AddTag(BaseHandler):
                 'message': 'Tag too long.'
             }))
             return
-        elif ',' in new_tag:
+        elif models.ILLEGAL_REGEX.match(new_tag):
             self.response.out.write(json.dumps({
                 'error': True,
-                'message': 'Can not contain ",".'
+                'message': 'Tag has illegal letters.'
             }))
             return
         elif new_tag in video.tags:
@@ -577,9 +577,9 @@ class AddTag(BaseHandler):
         }))
 
 class DeleteVideo(BaseHandler):
-    @login_required
+    @login_required_json
     def post(self):
-        self.response.headers['Content-Type'] = 'application/json'
+        user = self.user
         ids = self.request.POST.getall('ids[]')
         if len(ids) == 0:
             self.response.out.write(json.dumps({
@@ -592,10 +592,10 @@ class DeleteVideo(BaseHandler):
         for i in range(0, len(ids)):
             video_id = ids[i]
             video = models.Video.get_by_id('dt'+video_id)
-            if video is None or video.uploader.id() != self.user.key.id():
+            if video is None or video.uploader.id() != user.key.id():
                 continue
 
-            self.user.videos_favored -= video.favors
+            user.videos_favored -= video.favors
             video.Delete()
             deleted_ids.append(video_id)
 
@@ -605,8 +605,8 @@ class DeleteVideo(BaseHandler):
                 'message': 'No video deleted.'
             }))
             return
-        self.user.videos_submitted -= len(deleted_ids)
-        self.user.put()
+        user.videos_submitted -= len(deleted_ids)
+        user.put()
 
         self.response.out.write(json.dumps({
             'error': False,
@@ -618,18 +618,13 @@ class ManageVideo(BaseHandler):
     def get(self):
         user = self.user
         page_size = models.DEFAULT_PAGE_SIZE
-        try:
-            page = int(self.request.get('page'))
-            if page < 1:
-                raise ValueError('Negative')
-        except ValueError:
-            page = 1
+        page = self.get_page_number()
 
         context = {}
         context['videos'] = []
 
         keywords = self.request.get('keywords').strip().lower()
-        order = self.request.get('order')
+        order = self.request.get('order').strip()
         if keywords:
             context['order'] = 'created'
             context['video_keywords'] = keywords

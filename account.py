@@ -16,12 +16,7 @@ class History(BaseHandler):
     def watch(self):
         user = self.user
         page_size = models.DEFAULT_PAGE_SIZE
-        try:
-            page = int(self.request.get('page'))
-            if page < 1:
-                raise ValueError('Negative')
-        except ValueError:
-            page = 1
+        page = self.get_page_number()
 
         context = {}
         context['videos'] = []
@@ -53,12 +48,7 @@ class History(BaseHandler):
     def comment(self):
         user = self.user
         page_size = 20
-        try:
-            page = int(self.request.get('page'))
-            if page < 1:
-                raise ValueError('Negative')
-        except ValueError:
-            page = 1
+        page = self.get_page_number()
 
         context = {}
         context['user'] = user.get_public_info()
@@ -97,12 +87,7 @@ class Favorites(BaseHandler):
     def get(self):
         user = self.user
         page_size = models.DEFAULT_PAGE_SIZE
-        try:
-            page = int(self.request.get('page'))
-            if page < 1:
-                raise ValueError('Negative')
-        except ValueError:
-            page = 1
+        page = self.get_page_number()
 
         context = {}
         context['videos'] = []
@@ -138,9 +123,8 @@ class Favorites(BaseHandler):
         self.render('favorites', context)
 
 class Favor(BaseHandler):
-    @login_required
+    @login_required_json
     def post(self, video_id):
-        self.response.headers['Content-Type'] = 'application/json'
         user = self.user
         video = models.Video.get_by_id('dt'+video_id)
         if not video:
@@ -166,16 +150,15 @@ class Favor(BaseHandler):
 
         new_favorite = models.Favorite(video=video.key)
         user.favorites.append(new_favorite)
-        user.put()
 
         video.favors += 1
         video.last_updated = datetime.now()
-        video.put()
         video.create_index('videos_by_favors', video.favors)
 
         uploader = video.uploader.get()
         uploader.videos_favored += 1
-        uploader.put()
+
+        ndb.put_multi([user, video, uploader])
 
         self.response.out.write(json.dumps({
             'error': False,
@@ -183,9 +166,8 @@ class Favor(BaseHandler):
         }))         
 
 class Unfavor(BaseHandler):
-    @login_required
+    @login_required_json
     def post(self):
-        self.response.headers['Content-Type'] = 'application/json'
         user = self.user
         ids = self.request.POST.getall('ids[]')
         if len(ids) == 0:
@@ -196,6 +178,7 @@ class Unfavor(BaseHandler):
             return
 
         deleted_ids = []
+        put_list = []
         for i in range(0, len(ids)):
             video_id = ids[i]
             # video = models.Video.get_by_id('dt'+video_id)
@@ -214,12 +197,12 @@ class Unfavor(BaseHandler):
                 continue
 
             video.favors -= 1
-            video.put()
-            video.create_index('videos_by_favors', video.favors )
+            video.create_index('videos_by_favors', video.favors)
+            put_list.append(video)
 
             uploader = video.uploader.get()
             uploader.videos_favored -= 1
-            uploader.put()
+            put_list.append(uploader)
         
         if len(deleted_ids) == 0:
             self.response.out.write(json.dumps({
@@ -227,7 +210,7 @@ class Unfavor(BaseHandler):
                 'message': 'No video removed.'
             }))
             return
-        user.put()
+        ndb.put_multi([user] + put_list)
 
         self.response.out.write(json.dumps({
             'error': False, 
@@ -239,12 +222,7 @@ class Subscribed(BaseHandler):
     def get(self):
         user = self.user
         page_size = 20
-        try:
-            page = int(self.request.get('page'))
-            if page < 1:
-                raise ValueError('Negative')
-        except ValueError:
-            page = 1
+        page = self.get_page_number()
 
         context = {}
         context['upers'] = []
@@ -281,9 +259,8 @@ class Subscriptions(BaseHandler):
             new_activities = 0
         return new_activities
 
-    @login_required
+    @login_required_json
     def get_count(self):
-        self.response.headers['Content-Type'] = 'application/json'
         new_count = self.new_subscription_count()
         self.response.out.write(json.dumps({
             'error': False,
@@ -296,12 +273,7 @@ class Subscriptions(BaseHandler):
         new_count = self.new_subscription_count()
         user.last_subscription_check = datetime.now()
         user.put()
-        if new_count > 99:
-            self.response.set_cookie('new_subscriptions', '99+', path='/')
-        elif new_count == 0:
-            self.response.set_cookie('new_subscriptions', '', path='/')
-        else:
-            self.response.set_cookie('new_subscriptions', str(new_count), path='/')
+        self.response.set_cookie('new_subscriptions', models.number_upper_limit_99(new_count), path='/')
         self.render('subscriptions')
 
     @login_required
@@ -310,24 +282,18 @@ class Subscriptions(BaseHandler):
         new_count = self.new_subscription_count()
         user.last_subscription_check = datetime.now()
         user.put()
-        if new_count > 99:
-            self.response.set_cookie('new_subscriptions', '99+', path='/')
-        elif new_count == 0:
-            self.response.set_cookie('new_subscriptions', '', path='/')
-        else:
-            self.response.set_cookie('new_subscriptions', str(new_count), path='/')
+        self.response.set_cookie('new_subscriptions', models.number_upper_limit_99(new_count), path='/')
         self.render('subscriptions_quick')
 
-    @login_required
+    @login_required_json
     def load_activities(self):
-        self.response.headers['Content-Type'] = 'application/json'
         user = self.user
         page_size = models.DEFAULT_PAGE_SIZE
 
         result = {'error': False}
         result['activities'] = []
 
-        uploads_only = self.request.get('uploads')
+        uploads_only = self.request.get('uploads').strip()
         if uploads_only == '1':
             uploads_only = True
         else:
@@ -392,17 +358,11 @@ class Subscriptions(BaseHandler):
         
         self.response.out.write(json.dumps(result))
 
-    @login_required
+    @login_required_json
     def load_upers(self):
-        self.response.headers['Content-Type'] = 'application/json'
         user = self.user
         page_size = 10
-        try:
-            page = int(self.request.get('page'))
-            if page < 1:
-                raise ValueError('Negative')
-        except ValueError:
-            page = 1
+        page = self.get_page_number()
 
         result = {'error': False}
         result['upers'] = []
@@ -467,9 +427,8 @@ class Verification(BaseHandler):
         self.render('notice', {'type':'success', 'notice':"Your account %s has been activated!" % (user.email)})
 
 class SendVerification(BaseHandler):
-    @login_required
+    @login_required_json
     def post(self):
-        self.response.headers['Content-Type'] = 'application/json'
         user = self.user
         if user.verified:
             self.response.out.write(json.dumps({'error':True,'message': 'Your account has been activated.'}))
@@ -501,9 +460,8 @@ class ChangePassword(BaseHandler):
     def get(self):
         self.render('change_password')
 
-    @login_required
+    @login_required_json
     def post(self):
-        self.response.headers['Content-Type'] = 'application/json'
         old_password = self.request.get('cur_password')
         if not old_password:
             self.response.out.write(json.dumps({'error':True,'message': 'Please enter your old password.'}))
@@ -535,13 +493,11 @@ class ChangeInfo(BaseHandler):
     def get(self):
         self.render('change_info')
 
-    @login_required
+    @login_required_json
     def post(self):
-        self.response.headers['Content-Type'] = 'application/json'
-
         user = self.user
         nickname = self.request.get('nickname').strip()
-        intro = self.request.get('intro')
+        intro = self.request.get('intro').strip()
 
         if nickname == user.nickname and intro == user.intro:
             self.response.out.write(json.dumps({'error':True,'message': 'Already applied.'}))
@@ -570,11 +526,9 @@ class ChangeAvatar(BaseHandler):
     def get(self):
         self.render('change_avatar')
 
-    @login_required
+    @login_required_json
     def post(self):
         user = self.user
-        self.response.headers['Content-Type'] = 'application/json'
-
         try:
             x0 = int(round(float(self.request.get('x0'))))
             y0 = int(round(float(self.request.get('y0'))))
@@ -694,10 +648,9 @@ class SpaceSetting(BaseHandler, blobstore_handlers.BlobstoreUploadHandler):
     def get(self):
         self.render('space_setting')
 
-    @login_required
+    @login_required_json
     def post(self):
         user = self.user
-        self.response.headers['Content-Type'] = 'application/json'
 
         space_name = self.request.get('space-name').strip()
         file_field = self.request.POST.get('css-file')
@@ -782,10 +735,9 @@ class SpaceSetting(BaseHandler, blobstore_handlers.BlobstoreUploadHandler):
 
         self.response.out.write(str(uploaded_file.key()))
 
-    @login_required
+    @login_required_json
     def reset(self):
         user = self.user
-        self.response.headers['Content-Type'] = 'application/json'
 
         if user.css_file != None:
             models.blobstore.BlobInfo(user.css_file).delete()

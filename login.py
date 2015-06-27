@@ -1,11 +1,10 @@
 from views import *
-from google.appengine.api import mail
 import time
 
 class EmailCheck(BaseHandler):
     def post(self):
         self.response.headers['Content-Type'] = 'text/plain'
-        res = models.User.query(models.User.auth_ids==self.request.get('email')).get()
+        res = models.User.query(models.User.auth_ids==self.request.get('email').strip()).get()
         if res is not None:
             self.response.write('error')
         else:
@@ -15,7 +14,7 @@ class EmailCheck(BaseHandler):
 class NicknameCheck(BaseHandler):
     def post(self):
         self.response.headers['Content-Type'] = 'text/plain'
-        res = models.User.query(models.User.nickname==self.request.get('nickname')).get()
+        res = models.User.query(models.User.nickname==self.request.get('nickname').strip()).get()
         if res is not None:
             self.response.write('error')
         else:
@@ -31,11 +30,11 @@ class Signup(BaseHandler):
     
     def post(self):
         self.response.headers['Content-Type'] = 'application/json'
-        email = self.user_model.validate_email(self.request.get('email'))
+        email = self.user_model.validate_email(self.request.get('email').strip())
         if not email:
             self.response.out.write(json.dumps({'error':True,'message': 'Email is invalid.'}))
             return
-        nickname = self.user_model.validate_nickname(self.request.get('nickname'))
+        nickname = self.user_model.validate_nickname(self.request.get('nickname').strip())
         if not nickname:
             self.response.out.write(json.dumps({'error':True,'message': 'Nickname is invalid.'}))
             return
@@ -91,9 +90,9 @@ class Signin(BaseHandler):
 
     def post(self):
         self.response.headers['Content-Type'] = 'application/json'
-        email = self.request.get('email')
+        email = self.request.get('email').strip()
         password = self.request.get('password')
-        remember = self.request.get('remember')
+        remember = self.request.get('remember').strip()
         # logging.info(self.request)
 
         if not email:
@@ -133,7 +132,7 @@ class ForgotPassword(BaseHandler):
             return
         
         self.response.headers['Content-Type'] = 'application/json'
-        email = self.request.get('email')
+        email = self.request.get('email').strip()
         if not email:
             self.response.out.write(json.dumps({'error':True,'message': 'Please enter your email address.'}))
             return

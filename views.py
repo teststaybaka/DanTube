@@ -154,16 +154,7 @@ def login_required(handler):
     def check_login(self, *args, **kwargs):
         auth = self.auth
         if not auth.get_user_by_session():
-            xrequest = self.request.headers.get('X-Requested-With')
-            if xrequest and xrequest == 'XMLHttpRequest':
-                self.response.headers['Content-Type'] = 'application/json'
-                self.response.out.write(json.dumps({
-                    'error': True,
-                    'message': 'Please log in!'
-                }))
-                return
-            else:
-                self.redirect(self.uri_for('signin'), abort=True)
+            self.redirect(self.uri_for('signin'), abort=True)
         else:
             return handler(self, *args, **kwargs)
  
@@ -251,7 +242,7 @@ class Home(BaseHandler):
     def get(self):
         context = {}
         context['top_ten_videos'] = []
-        videos, total_page = models.Video.get_page(order=models.Video.hits, page=1, page_size=10)
+        videos, total_page = models.Video.get_page(order=models.Video.hot_score, page=1, page_size=10)
         for video in videos:
             uploader = video.uploader.get()
             video_info = video.get_basic_info()
@@ -265,7 +256,7 @@ class Category(BaseHandler):
         context = {}
         context['category_name'] = category
         context['top_ten_videos'] = []
-        videos, total_page = models.Video.get_page(category=category, order=models.Video.hits, page=1, page_size=10)
+        videos, total_page = models.Video.get_page(category=category, order=models.Video.hot_score, page=1, page_size=10)
         for video in videos:
             uploader = video.uploader.get()
             video_info = video.get_basic_info()
@@ -280,7 +271,7 @@ class Subcategory(BaseHandler):
         context['category_name'] = category
         context['subcategory_name'] = subcategory
         context['top_ten_videos'] = []
-        videos, total_page = models.Video.get_page(category=category, subcategory=subcategory, order=models.Video.hits, page=1, page_size=10)
+        videos, total_page = models.Video.get_page(category=category, subcategory=subcategory, order=models.Video.hot_score, page=1, page_size=10)
         for video in videos:
             uploader = video.uploader.get()
             video_info = video.get_basic_info()
@@ -341,8 +332,8 @@ class CategoryVideo(BaseHandler):
     def post(self):
         # models.Video.fetch_page()
         self.response.headers['Content-Type'] = 'application/json'
-        category = self.request.get('category')
-        subcategory = self.request.get('subcategory')
+        category = self.request.get('category').strip()
+        subcategory = self.request.get('subcategory').strip()
 
         if (not (category in models.Video_Category)) or \
             ((category in models.Video_Category) and (subcategory) and not (subcategory in models.Video_SubCategory[category]) ):
@@ -373,7 +364,7 @@ class CategoryVideo(BaseHandler):
         #     }))
         #     return
 
-        order_str = self.request.get('order')
+        order_str = self.request.get('order').strip()
         if order_str == 'hits': # ranking
             order = models.Video.hits
         elif order_str == 'hot_score':
@@ -389,27 +380,8 @@ class CategoryVideo(BaseHandler):
             }))
             return
 
-        try:
-            page = int(self.request.get('page'))
-            if page < 1:
-                raise ValueError('Negative')
-        except ValueError:
-            self.response.out.write(json.dumps({
-                'error': True,
-                'message': 'Invalid page'
-            }))
-            return
-
-        try:
-            page_size = int(self.request.get('page_size'))
-            if page_size < 1:
-                raise ValueError('Negative')
-        except ValueError:
-            self.response.out.write(json.dumps({
-                'error': True,
-                'message': 'Invalid page size'
-            }))
-            return
+        page = self.get_page_number()
+        page_size = self.get_page_size()
 
         # videos, more = models.Video.fetch_page(category, subcategory, order, page)
         videos, total_pages = models.Video.get_page(category=category, subcategory=subcategory, order=order, page=page, page_size=page_size)
@@ -451,12 +423,7 @@ class Search(BaseHandler):
         #     video.create_index('videos_by_user' + str(video.uploader.id()), models.time_to_seconds(video.created) )
             
         page_size = models.DEFAULT_PAGE_SIZE
-        try:
-            page = int(self.request.get('page') )
-            if page < 1:
-                raise ValueError('Negative')
-        except ValueError:
-            page = 1
+        page = self.get_page_number()
 
         context = {}
         keywords = self.request.get('keywords').strip().lower()
@@ -466,19 +433,19 @@ class Search(BaseHandler):
             query_string = 'content: ' + keywords
         context['keywords'] = keywords
         
-        category = self.request.get('category')
+        category = self.request.get('category').strip()
         if category in models.Video_Category:
             context['cur_category'] = category
             if query_string:
                 query_string += ' AND '
             query_string += 'category: \"' + category + '\"'
 
-            subcategory = self.request.get('subcategory')
+            subcategory = self.request.get('subcategory').strip()
             if subcategory in models.Video_SubCategory[category]:
                 context['cur_subcategory'] = subcategory
                 query_string += ' AND subcategory: \"' + subcategory + '\"'
                                    
-        order = self.request.get('order')
+        order = self.request.get('order').strip()
         if order == 'hits':
             index = search.Index(name='videos_by_hits')
         elif order == 'created':
@@ -534,12 +501,7 @@ class Search(BaseHandler):
 class SearchPlaylist(BaseHandler):
     def get(self):
         page_size = models.DEFAULT_PAGE_SIZE
-        try:
-            page = int(self.request.get('page') )
-            if page < 1:
-                raise ValueError('Negative')
-        except ValueError:
-            page = 1
+        page = self.get_page_number()
 
         context = {}
         keywords = self.request.get('keywords').strip().lower()
@@ -596,12 +558,7 @@ class SearchUPer(BaseHandler):
         #     user.create_index()
         
         page_size = models.DEFAULT_PAGE_SIZE
-        try:
-            page = int(self.request.get('page') )
-            if page < 1:
-                raise ValueError('Negative')
-        except ValueError:
-            page = 1
+        page = self.get_page_number()
 
         context = {}
         keywords = self.request.get('keywords').strip().lower()
@@ -671,8 +628,8 @@ class Feedback(BaseHandler):
                 'message': 'Subject is too long!'
             }
 
-        self.description = self.request.get('description')
-        if not self.description.strip():
+        self.description = self.request.get('description').strip()
+        if not self.description:
             return {
                 'error': True,
                 'message': 'Description must not be empty!'
@@ -683,16 +640,15 @@ class Feedback(BaseHandler):
                 'message': 'Description is too long!'
             }
 
-        if(self.request.get('anonymous')):
+        if(self.request.get('anonymous').strip()):
             self.anonymous = True
         else:
             self.anonymous = False
 
         return {'error': False}
 
-    @login_required
+    @login_required_json
     def post(self):
-        self.response.headers['Content-Type'] = 'application/json'
         user = self.user
 
         res = self.field_check()
@@ -751,13 +707,12 @@ class Report(BaseHandler):
                 'message': 'Issue mismatch!'
             }
 
-        self.details = self.request.get('details')
+        self.details = self.request.get('details').strip()
 
         return {'error': False}
 
-    @login_required
+    @login_required_json
     def post(self):
-        self.response.headers['Content-Type'] = 'application/json'
         user = self.user
 
         res = self.field_check()

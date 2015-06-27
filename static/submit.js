@@ -94,6 +94,11 @@ function video_tag_check() {
                 $('#video-tags-error').text('All tags must be no longer than 100 characters.');
                 $('#video-tags').addClass('error');
                 return false;
+            } else if (dt.puncts.test(tag)) {
+                $('#video-tags-error').addClass('show');
+                $('#video-tags-error').text('Tags include illegal letters.');
+                $('#video-tags').addClass('error');
+                return false;
             }
             tags.push(tag);
         }

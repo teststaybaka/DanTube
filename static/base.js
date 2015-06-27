@@ -327,5 +327,7 @@ dt.LinkedList.prototype.remove = function(node) {
     }
     this.length--;
 }
+
+dt.puncts = /[&@.,?!;:/\\"'<>]/;
 //end of the file
 } (dt, jQuery));

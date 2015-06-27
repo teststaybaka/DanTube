@@ -17,7 +17,7 @@
 
 {% block detail %}
 <div id="sub-title-line" class="container">
-    <div id="sub-title"><span class="commas_number">{{ total_found }}</span> Playlists</div>
+    <div id="sub-title"><span class="commas_number">{{ total_found }}</span> Playlist{% if total_found %}s{% endif %}</div>
     <form class="sub-search-block" method="get" action="{{ uri_for('manage_playlist') }}">
         <input class="sub-search-input" type="text" name="keywords" placeholder="Search Playlists" value="{{ list_keywords }}">
         <input type="submit" class="sub-search-button" value="">

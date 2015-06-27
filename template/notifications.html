@@ -17,10 +17,14 @@
 
 {% block detail %}
 <div id="sub-title-line" class="container">
-    <div id="sub-title">{{ new_notifications }} new notifcations</div>
+    <div id="sub-title"><span class="commas_number">{{ new_notifications }}</span> New notifcation{% if new_notifications > 1 %}s{% endif %}</div>
     <div id="action-select">
         <div class="selected">Actions</div>
         <div class="option">
+            <div class="option-entry unread-only">Unread only</div>
+            <div class="option-entry show-all">Show all</div>
+            <div class="option-entry select">Select all</div>
+            <div class="option-entry deselect">Deselect all</div>
             <div class="option-entry delete">Delete</div>
         </div>
     </div>

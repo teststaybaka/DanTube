@@ -3,7 +3,7 @@ $(document).ready(function() {
     $('#action-select div.option-entry.delete').click(function() {
         dt.delete_entries('/account/notifications/delete');
     });
-    $('.messages-container').on('click', 'div.message-select-checkbox', function(evt) {
+    $('.messages-container').on('click', 'div.single-checkbox', function(evt) {
         $(this).toggleClass('checked');
     });
 
@@ -58,7 +58,7 @@ function render_notification_div(notification) {
             </div>\
             <div class="notification-detail">' + notification.content + '</div>\
         </div>\
-        <div class="message-select-checkbox" data-id="' + notification.id + '"></div>\
+        <div class="single-checkbox" data-id="' + notification.id + '"></div>\
     </div>'
     return div;
 }

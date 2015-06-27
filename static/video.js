@@ -797,7 +797,7 @@ function change_show_colored_danmaku(show) {
 }
 
 function add_block_rule(block_type, block_content) {
-	if (!block_content) return false;
+	if (!block_content) return;
 	// console.log(block_content);
 	$('.block-condition-input').val('');
 	for (var i = 0; i < block_rules.length; i++) {
@@ -808,7 +808,7 @@ function add_block_rule(block_type, block_content) {
 				dt.setCookie('block-rules', JSON.stringify(block_rules), 0);
 				$('.block-rule-entry:nth-child('+(i+1)+') .rule-status').removeClass('off').text('On');
 			}
-			return false;
+			return;
 		}
 	}
 
@@ -821,7 +821,7 @@ function add_block_rule(block_type, block_content) {
     block_rules.push({type: block_type, content: block_content, isOn: true});
 	change_block_rule(block_rules.length-1);
     dt.setCookie('block-rules', JSON.stringify(block_rules), 0);
-	return false;
+	return;
 }
 
 function change_block_rule(index) {
@@ -1618,7 +1618,8 @@ dt.onPlayerReady = function(event) {
 	$('#add-rule-form').submit(function(evt) {
 		var block_type = $('.list-selected.block').text();
 		var block_content = $('.block-condition-input').val();
-		return add_block_rule(block_type, block_content);
+		add_block_rule(block_type, block_content);
+		return false;
 	});
 	$('.block-list').on('click', '.block-rule.rule-status', function() {
 		var entry = $(this).parent();
@@ -2500,8 +2501,8 @@ $(document).ready(function() {
 		} else if (new_tag.length > 100) {
 			dt.pop_ajax_message('Tag is too long (less than 100 characters).', 'error');
 			error = true;
-		} else if (new_tag.indexOf(',') > -1) {
-			dt.pop_ajax_message('Can not contain ",".', 'error');
+		} else if (dt.puncts.test(new_tag)) {
+			dt.pop_ajax_message('Contain illegal characters.', 'error');
 			error = true;
 		}
 

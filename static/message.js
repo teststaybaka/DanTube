@@ -3,7 +3,7 @@ $(document).ready(function() {
     $('#action-select div.option-entry.delete').click(function() {
         dt.delete_entries('/account/messages/delete');
     });
-    $('div.messages-container').on('click', '.message-select-checkbox', function(evt) {
+    $('div.messages-container').on('click', '.single-checkbox', function(evt) {
         $(this).toggleClass('checked');
     });
 
@@ -34,7 +34,7 @@ function render_message_div(thread) {
                   <label> '+thread.updated+'</label>\
               </div>\
           </div>\
-          <div class="message-select-checkbox" data-id="' + thread.id + '"></div>\
+          <div class="single-checkbox" data-id="' + thread.id + '"></div>\
       </div>'
     return div;
 }

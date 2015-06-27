@@ -53,11 +53,9 @@ routes = [
     webapp2.Route(r'/account/messages/delete', message.DeleteMessage, name='delete_message'),
     webapp2.Route(r'/account/messages/compose', message.Compose, name='compose'),
     webapp2.Route(r'/account/mentioned', message.Mentioned, name='mentioned'),
-    webapp2.Route(r'/user/new_mentions', message.Mentioned, name='mentioned_count', handler_method='get_count'),
     webapp2.Route(r'/account/notifications', message.Notifications, name='notifications'),
-    webapp2.Route(r'/account/notifications/read', message.Notifications, name='read_note', handler_method='read'),
-    webapp2.Route(r'/account/notifications/delete', message.Notifications, name='delete_note', handler_method='delete'),
-    webapp2.Route(r'/user/new_notifications', message.Notifications, name='notifications_count', handler_method='get_count'),
+    webapp2.Route(r'/account/notifications/read', message.ReadNotification, name='read_note'),
+    webapp2.Route(r'/account/notifications/delete', message.DeleteNotifications, name='delete_note'),
 
     webapp2.Route(r'/user/<user_id:\d+>', user.Space, name='space'),
     webapp2.Route(r'/user/playlist/<user_id:\d+>', user.SpacePlaylist, name='space_playlist'),
