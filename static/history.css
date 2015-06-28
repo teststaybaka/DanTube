@@ -18,7 +18,7 @@ a.search-scope {
     vertical-align: top;
 }
 
-div.video-entry {
+div.content-entry {
     border-bottom: 1px solid rgb(200,200,200);
     padding: 25px;
     display: inline-table;
@@ -28,7 +28,7 @@ div.video-entry {
     box-sizing: border-box;
 }
 
-div.message-entry {
+div.content-entry {
     border-bottom: 1px solid rgb(200,200,200);
     padding: 15px 25px;
     display: inline-table;

@@ -1,4 +1,4 @@
-div.video-entry {
+div.content-entry {
     display: inline-table;
     padding: 25px;
     border-top: 1px solid rgb(230,230,230);
@@ -6,16 +6,17 @@ div.video-entry {
     -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
     -moz-box-sizing: border-box;    /* Firefox, other Gecko */
     box-sizing: border-box;
+    position: relative;
 }
 
-div.video-entry.none {
+div.content-entry.none {
     text-align: center;
     padding: 100px 50px;
     font-size: 18px;
     color: rgb(150,150,150);
 }
 
-div.video-entry.loading {
+div.content-entry.loading {
     padding: 100px 50px;
 }
 
@@ -57,7 +58,6 @@ div.video-info, div.list-info {
     padding-left: 20px;
     vertical-align: top;
     width: 488px;
-    position: relative;
 }
 
 div.video-category {
@@ -162,51 +162,7 @@ div.list-edit {
 a.edit-entry {
     display: inline-block;
     margin-right: 10px;
-    color: rgb(0,140,255);
     cursor: pointer;
-}
-
-a.edit-entry:hover {
-    color: rgb(255,177,108);
-}
-
-a.edit-entry:active {
-    color: rgb(0,50,200);
-}
-
-div.video-select-checkbox {
-    width: 16px;
-    height: 16px;
-    position: absolute;
-    right: -16px;
-    top: 50%;
-    cursor: pointer;
-    display: none;
-    border: 1px solid rgb(200,200,200);
-    background-color: white;
-    margin: 0;
-    border-radius: 3px;
-    -webkit-border-radius: 3px;
-    -moz-border-radius: 3px;
-    background-repeat: no-repeat;
-}
-
-div.video-entry:hover div.video-select-checkbox {
-    display: inline-block;
-}
-
-div.video-select-checkbox.checked {
-    display: inline-block;
-    background-position: 0 -192px;
-    background-image: url("/static/img/basic_icons.png");
-}
-
-div.video-delete:hover {
-    background-image: url("/static/img/delete-hover.png");
-}
-
-div.video-delete:active {
-    background-image: url("/static/img/delete-active.png");
 }
 
 div.pagination-line {
@@ -397,7 +353,7 @@ img.list-video-img {
 }
 
 div.video-info.playlist {
-    width: 540px;
+    width: 560px;
 }
 
 a.video-title.list {
@@ -408,7 +364,7 @@ a.list-video-title:hover {
     color: rgb(0,140,255);
 }
 
-div.video-entry.list {
+div.content-entry.list {
     padding: 15px 10px;
 }
 
@@ -462,21 +418,21 @@ div.popup-video-container {
     height: -webkit-calc(100% + 25px - 41px - 60px); /* Chrome, Safari */
 }
 
-div.video-entry.popup {
+div.content-entry.popup {
     padding: 10px;
     border: 0;
     cursor: pointer;
 }
 
-div.video-entry.popup.belonged div.video-title.popup {
+div.content-entry.popup.belonged div.video-title.popup {
     color: rgb(150,150,150);
 }
 
-div.video-entry.popup.belonged {
+div.content-entry.popup.belonged {
     background-color: rgb(240,240,240);
 }
 
-div.video-entry.popup.selected {
+div.content-entry.popup.selected {
     box-shadow: inset 0 0 8px rgb(180,180,180);
 }
 

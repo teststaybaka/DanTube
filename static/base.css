@@ -72,8 +72,8 @@ a {
 }
 
 #user-bar-background {
-	padding-top: 10px;
-    padding-bottom: 10px;
+	padding-top: 5px;
+    padding-bottom: 5px;
     min-width: 1024px;
     background-color: rgb(255,255,255);
     border-bottom: 1px solid rgb(50,180,240);

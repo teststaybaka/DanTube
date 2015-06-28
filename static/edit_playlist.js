@@ -1,66 +1,5 @@
 (function(dt, $) {
 $(document).ready(function() {
-    $('input.delete-button').click(function(evt) {
-        var ids= $(evt.target).attr('data-id').split(';');
-        dt.pop_ajax_message('Deleting...', 'info');
-        $(evt.target).prop('disabled', true);
-        var urls = window.location.href.split('/');
-        $.ajax({
-            type: "POST",
-            url: '/account/playlists/edit/remove/'+urls[urls.length - 1],
-            data: {ids: ids},
-            success: function(result) {
-                console.log(result);
-                if (!result.error) {
-                    dt.pop_ajax_message('Videos removed from the list!', 'success');
-                    ids = result.message;
-                    for (var i = 0; i < ids.length; i++) {
-                        $('div.video-entry.dt'+ids[i]).remove();
-                    }
-                } else {
-                    dt.pop_ajax_message(result.message, 'error');
-                }
-                $(evt.target).prop('disabled', false);
-            },
-            error: function (xhr, ajaxOptions, thrownError) {
-                console.log(xhr.status);
-                console.log(thrownError);
-                $(evt.target).prop('disabled', false);
-                dt.pop_ajax_message(xhr.status+' '+thrownError, 'error');
-            }
-        });
-        $('div.popup-window-container.remove').removeClass('show');
-    });
-
-    $('div.delete-button').click(function(evt) {
-        $('div.popup-window-container.remove').removeClass('show');
-    });
-
-    $('#action-select div.option-entry.delete').click(function() {
-        var checked_boxes = $('div.video-select-checkbox.checked');
-        if (checked_boxes.length != 0) {
-            $('div.popup-window-container.remove').addClass('show');
-            $('div.delete-target-name').remove();
-            var ids = $(checked_boxes[0]).attr('data-id');
-            var title = $(checked_boxes[0]).attr('data-title');
-            $('div.delete-buttons-line').before('<div class="delete-target-name">'+title+'</div>');
-            for (var i = 1; i < checked_boxes.length; i++) {
-                ids += ';'+ $(checked_boxes[i]).attr('data-id');
-                title = $(checked_boxes[i]).attr('data-title');
-                $('div.delete-buttons-line').before('<div class="delete-target-name">'+title+'</div>');
-            }
-            $('input.delete-button').attr('data-id', ids);
-        }
-    });
-
-    $('div.edit-playlists-container').on('click', 'div.video-select-checkbox', function(evt) {
-        if ($(evt.target).hasClass('checked')) {
-            $(evt.target).removeClass('checked');
-        } else {
-            $(evt.target).addClass('checked');
-        }
-    });
-
     $('div.edit-title-button').click(function(evt) {
         $('#sub-title').addClass('hidden');
         $('#playlist-title-change-form').addClass('show');
@@ -142,7 +81,7 @@ $(document).ready(function() {
     });
 
     $('input.add-button').click(function(evt) {
-        var entries = $('div.video-entry.popup.selected');
+        var entries = $('div.content-entry.popup.selected');
         if (entries.length == 0) return;
 
         $(evt.target).prop('disabled', true);
@@ -151,10 +90,9 @@ $(document).ready(function() {
         for (var i = 0; i < entries.length; i++) {
             ids.push($(entries[i]).attr('data-id'));
         }
-        var urls = window.location.href.split('/');
         $.ajax({
             type: "POST",
-            url: '/account/playlists/edit/add/'+urls[urls.length - 1], 
+            url: window.location.href+'/add',
             data: {ids: ids},
             success: function(result) {
                 if (!result.error) {
@@ -187,7 +125,7 @@ $(document).ready(function() {
         search_video(page);
     });
 
-    $('div.popup-video-container').on('click', 'div.video-entry.popup', function() {
+    $('div.popup-video-container').on('click', 'div.content-entry.popup', function() {
         if ($(this).hasClass('belonged')) return;
         if ($(this).hasClass('selected')) {
             $(this).removeClass('selected');
@@ -210,10 +148,9 @@ $(document).ready(function() {
         if(evt.keyCode == 13){
             var ori_idx = $(evt.target).parent().parent().siblings('div.list-No').text();
             var target_idx = $(evt.target).val();
-            var urls = window.location.href.split('/');
             $.ajax({
                 type: "POST",
-                url: '/account/playlists/edit/move/'+urls[urls.length - 1],
+                url: window.location.href+'/move',
                 data: {ori_idx: ori_idx, target_idx: target_idx},
                 success: function(result) {
                     if (!result.error) {
@@ -244,7 +181,7 @@ function search_video(page) {
     video_container.empty();
     pagination_container.children('a.page-change').remove();
     pagination_container.children('a.page-num').remove();
-    video_container.append('<div class="video-entry loading"></div>');
+    video_container.append('<div class="content-entry loading"></div>');
     $.ajax({
         type: "POST",
         url: form.action,
@@ -253,7 +190,7 @@ function search_video(page) {
             video_container.empty();
             if (!result.error) {
                 if(result.videos.length == 0) {
-                    video_container.append('<div class="video-entry none">No videos found.</div>');
+                    video_container.append('<div class="content-entry none">No videos found.</div>');
                 } else {
                     for(var i = 0; i < result.videos.length; i++) {
                         var video_div = render_popup_video_div(result.videos[i]);
@@ -265,14 +202,14 @@ function search_video(page) {
                 }
             } else {
                 console.log(result.message);
-                video_container.append('<div class="video-entry none">Search error.</div>');
+                video_container.append('<div class="content-entry none">Search error.</div>');
             }
         },
         error: function (xhr, ajaxOptions, thrownError) {
             console.log(xhr.status);
             console.log(thrownError);
             video_container.empty();
-            video_container.append('<div class="video-entry none">Load error.</div>');
+            video_container.append('<div class="content-entry none">Load error.</div>');
         }
     });
     return false;
@@ -283,7 +220,7 @@ function render_popup_video_div(video) {
     if (video.belonged) {
         belonged = 'belonged'
     }
-    var div = '<div class="video-entry popup ' + belonged + '" data-id="' + video.id_num +'">\
+    var div = '<div class="content-entry popup ' + belonged + '" data-id="' + video.id_num +'">\
                     <img class="list-video-img" src="' + video.thumbnail_url + '">\
                     <div class="video-info playlist">\
                         <div class="video-title popup">' + video.title + '</div>\

@@ -676,7 +676,7 @@ class ManageVideo(BaseHandler):
             context['videos'].append(video_info)
 
         context['total_found'] = total_found
-        context.update(self.get_page_range(page, total_pages) )
+        context.update(self.get_page_range(page, total_pages))
         self.render('manage_video', context)
 
 class VIDCheck(BaseHandler):

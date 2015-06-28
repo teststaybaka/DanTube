@@ -1,4 +1,4 @@
-div.message-entry {
+div.content-entry {
     border-top: 1px solid rgb(230,230,230);
     padding: 15px 25px;
     width: 100%;
@@ -10,11 +10,11 @@ div.message-entry {
     position: relative;
 }
 
-div.message-entry.unread, div.message-entry.mentioned {
+div.content-entry.unread, div.content-entry.mentioned {
     background-color: rgb(255,255,255);
 }
 
-div.message-entry.none {
+div.content-entry.none {
     padding: 100px;
     text-align: center;
     color: rgb(150,150,150);
@@ -22,7 +22,7 @@ div.message-entry.none {
     background-color: rgb(255,255,255);
 }
 
-div.message-entry.loading {
+div.content-entry.loading {
     padding: 50px;
     background-color: rgb(255,255,255);
 }
@@ -80,12 +80,12 @@ div.info-line label.time {
     vertical-align: bottom;
 }
 
-div.message-entry.unread a.message-title {
+div.content-entry.unread a.message-title {
     font-weight: bold;
     color: rgb(0,0,0);
 }
 
-div.message-entry a.message-title:hover {
+div.content-entry a.message-title:hover {
     color: rgb(0,140,255);
 }
 
@@ -110,31 +110,6 @@ div.info-line a.reply-link:hover {
 
 div.info-line a.reply-link:active {
     color: rgb(0,50,200);
-}
-
-div.message-delete {
-    width: 16px;
-    height: 16px;
-    position: absolute;
-    right: -16px;
-    top: 50%;
-    background-image: url("/static/img/delete.png");
-    background-repeat: no-repeat;
-    cursor: pointer;
-    background-size: contain;
-    display: none;
-}
-
-div.message-entry:hover div.message-delete {
-    display: inline-block;
-}
-
-div.message-delete:hover {
-    background-image: url("/static/img/delete-hover.png");
-}
-
-div.message-delete:active {
-    background-image: url("/static/img/delete-active.png");
 }
 
 div.pagination-line {
@@ -339,34 +314,6 @@ div.notification-detail {
     height: 0;
     -webkit-transition: height .3s; /* For Safari 3.1 to 6.0 */
     transition: height .3s;
-}
-
-.single-checkbox {
-    width: 16px;
-    height: 16px;
-    position: absolute;
-    right: 24px;
-    top: 40%;
-    cursor: pointer;
-    display: none;
-    border: 1px solid rgb(200,200,200);
-    background-color: white;
-    color: white;
-    margin: 0;
-    border-radius: 3px;
-    -webkit-border-radius: 3px;
-    -moz-border-radius: 3px;
-    background-repeat: no-repeat;
-}
-
-div.message-entry:hover .single-checkbox {
-    display: inline-block;
-}
-
-.single-checkbox.checked {
-    display: inline-block;
-    background-position: 0 -192px;
-    background-image: url("/static/img/basic_icons.png");
 }
 
 #action-select {

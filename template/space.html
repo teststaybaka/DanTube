@@ -32,12 +32,12 @@
 {% block left_body %}
 <div id="video-list">
   {% if total_pages == 0 %}
-    <div class="video-entry none">
+    <div class="content-entry none">
         No videos found.
     </div>
   {% endif %}
   {% for video in videos %}
-    <div class="video-entry">
+    <div class="content-entry">
       <a class="video-img" href="{{ video.url }}" target="_blank">
         <img class="video-img" src="{{ video.thumbnail_url }}">
       </a>

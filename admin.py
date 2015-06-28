@@ -43,12 +43,16 @@ class DanmakuTest(webapp2.RequestHandler):
 
 class Notify(webapp2.RequestHandler):
     def get(self):
-        ns = models.Notification.query().fetch()
-        for n in ns:
-            n.key.delete()
+        # ns = models.Notification.query().fetch()
+        # for n in ns:
+        #     n.key.delete()
 
-        n = models.Notification(receiver=ndb.Key('User', 6681749341863936), note_type='warning', title='SDFsdf', content='XXXXXXXXXXXXXXXXXX')
-        n.put()
+        user = ndb.Key('User', 6681749341863936).get()
+        # n = models.Notification(receiver=user.key, note_type='warning', title='SDFsdf', content='XXXXXXXXXXXXXXXXXX')
+        # n.put()
+        user.notification_counter = 2
+        user.new_notifications = 2
+        user.put()
 
 class Home(webapp2.RequestHandler):
     def get(self):

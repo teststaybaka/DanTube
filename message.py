@@ -4,29 +4,17 @@ class Message(BaseHandler):
     @login_required
     def get(self):
         user = self.user
+        page_size = 20
+        page = self.get_page_number()
+
+        thread_keys = models.MessageThread.query(ndb.AND(ndb.OR(models.MessageThread.sender==user.key, models.MessageThread.receiver==user.key), models.MessageThread.delete_user!=user.key)) \
+                                                    .order(models.MessageThread.delete_user, -models.MessageThread.updated, models.MessageThread.key).fetch(offset=(page-1)*page_size, limit=page_size, keys_only=True)
+        threads = ndb.get_multi(thread_keys)
         context = {
             'threads_counter': user.threads_counter,
-            'new_messages': user.new_messages
-        }
-        self.render('message', context)
-
-    @login_required_json
-    def post(self):
-        user = self.user
-        page_size = 20
-
-        cursor = models.Cursor(urlsafe=self.request.get('cursor'))
-        threads, cursor, more = models.MessageThread.query(ndb.AND(ndb.OR(models.MessageThread.sender==user.key, models.MessageThread.receiver==user.key), models.MessageThread.delete_user!=user.key)) \
-                                                    .order(models.MessageThread.delete_user, -models.MessageThread.updated, models.MessageThread.key).fetch_page(page_size, start_cursor=cursor)
-        result = {
-            'error': False,
+            'new_messages': user.new_messages,
             'entries': [],
         }
-        if not cursor:
-            result['cursor'] = ''
-        else:
-            result['cursor'] = cursor.urlsafe()
-
         partner_keys = []
         for i in range(0, len(threads)):
             thread = threads[i]
@@ -35,8 +23,6 @@ class Message(BaseHandler):
             thread_dict['subject'] = thread.subject
             thread_dict['last_message'] = thread.messages[-1].content
             thread_dict['updated'] = thread.updated.strftime("%Y-%m-%d %H:%M")
-            thread_dict['url'] = self.uri_for('message_detail', thread_id=thread.key.id())
-
             if thread.sender == user.key:
                 partner_keys.append(thread.receiver)
                 thread_dict['is_sender'] = True
@@ -49,14 +35,15 @@ class Message(BaseHandler):
                     thread_dict['unread'] = True
                 else:
                     thread_dict['unread'] = False
-            result['entries'].append(thread_dict)
+            context['entries'].append(thread_dict)
 
         partners = ndb.get_multi(partner_keys)
         for i in range(0, len(partners)):
             partner = partners[i]
-            result['entries'][i]['partner'] = partner.get_public_info()
+            context['entries'][i]['partner'] = partner.get_public_info()
 
-        self.response.out.write(json.dumps(result))
+        context.update(self.get_page_range(page, math.ceil(user.threads_counter/float(page_size))))
+        self.render('message', context)
 
 class Compose(BaseHandler):
     @login_required
@@ -345,18 +332,15 @@ class Notifications(BaseHandler):
     @login_required
     def get(self):
         user = self.user
-        self.render('notifications', {'new_notifications': user.new_notifications})
-
-    @login_required_json
-    def post(self):
-        user = self.user
         page_size = 20
+        page = self.get_page_number()
 
-        result = {'error': False}
-        result['entries'] = []
+        context = {}
+        context['new_notifications'] = user.new_notifications
+        context['entries'] = []
 
-        cursor = models.Cursor(urlsafe=self.request.get('cursor'))
-        notifications, cursor, more = models.Notification.query(models.Notification.receiver==user.key).order(-models.Notification.created, models.Notification.key).fetch_page(page_size, start_cursor=cursor)
+        notification_keys = models.Notification.query(models.Notification.receiver==user.key).order(-models.Notification.created, models.Notification.key).fetch(offset=(page-1)*page_size, limit=page_size, keys_only=True)
+        notifications = ndb.get_multi(notification_keys)
         for i in range(0, len(notifications)):
             notification = notifications[i]
             note_info = {
@@ -367,13 +351,10 @@ class Notifications(BaseHandler):
                 'title': notification.title,
                 'id': notification.key.id(),
             }
-            result['entries'].append(note_info)
-        if not cursor:
-            result['cursor'] = ''
-        else:
-            result['cursor'] = cursor.urlsafe()
+            context['entries'].append(note_info)
         
-        self.response.out.write(json.dumps(result))
+        context.update(self.get_page_range(page, math.ceil(user.notification_counter/float(page_size))))
+        self.render('notifications', context)
 
 class ReadNotification(BaseHandler):
     @login_required_json
@@ -435,6 +416,7 @@ class DeleteNotifications(BaseHandler):
 
             if not note.read:
                 user.new_notifications -= 1
+            user.notification_counter -= 1
             deleted_ids.append(note_id)
             note.key.delete()
 

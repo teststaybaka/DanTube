@@ -50,13 +50,13 @@
     {% endblock %}
 </div>
 {% if total_pages == 0 %}
-<div class="video-entry no-result">
+<div class="content-entry no-result">
     No result found. Please try other keywords.
 </div>
 {% else %}
     {% block search_result %}
     {% for video in videos %}
-    <div class="video-entry">
+    <div class="content-entry">
         <div class="video-img-uper">
             <a class="video-img" target="_blank" href="{{ video.url }}">
                 <img class="video-img" src="{{ video.thumbnail_url }}">

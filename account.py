@@ -105,7 +105,8 @@ class Favorites(BaseHandler):
                 break
             requested_favorites.append(user.favorites[base - i])
 
-        videos = ndb.get_multi([f.video for f in requested_favorites])
+        video_keys = [f.video for f in requested_favorites]
+        videos = ndb.get_multi(video_keys)
         for i in range(0, len(requested_favorites)):
             video = videos[i]
             if video is None:
@@ -114,7 +115,7 @@ class Favorites(BaseHandler):
                 video_info['thumbnail_url'] = '/static/img/video_deleted.png'
                 video_info['thumbnail_url_hq'] = '/static/img/video_deleted.png'
                 video_info['id_num'] = video_keys[i].id().replace('dt', '')
-                video_info['url'] = '/video/'+ str(video_keys[i].id())
+                video_info['url'] = '/video/'+ video_keys[i].id()
                 video_info['category'] = 'None'
                 video_info['subcategory'] = 'None'
             else:
@@ -272,25 +273,23 @@ class Subscriptions(BaseHandler):
         new_count = self.new_subscription_count()
         self.response.out.write(json.dumps({
             'error': False,
-            'count': new_count,
+            'count': models.number_upper_limit_99(new_count),
         }))
 
     @login_required
     def get_page(self):
         user = self.user
-        new_count = self.new_subscription_count()
         user.last_subscription_check = datetime.now()
         user.put()
-        self.response.set_cookie('new_subscriptions', models.number_upper_limit_99(new_count), path='/')
+        self.response.set_cookie('new_subscriptions', '', path='/')
         self.render('subscriptions')
 
     @login_required
     def full_page(self):
         user = self.user
-        new_count = self.new_subscription_count()
         user.last_subscription_check = datetime.now()
         user.put()
-        self.response.set_cookie('new_subscriptions', models.number_upper_limit_99(new_count), path='/')
+        self.response.set_cookie('new_subscriptions', '', path='/')
         self.render('subscriptions_quick')
 
     @login_required_json

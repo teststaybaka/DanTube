@@ -1,61 +1,5 @@
 (function(dt, $) {
 $(document).ready(function() {
-    $('input.delete-button').click(function(evt) {
-        var ids= $(evt.target).attr('data-id').split(';');
-        dt.pop_ajax_message('Deleting...', 'info');
-        $(evt.target).prop('disabled', true);
-        $.ajax({
-            type: "POST",
-            url: '/account/playlists/delete',
-            data: {ids: ids},
-            success: function(result) {
-                console.log(result);
-                if (!result.error) {
-                    dt.pop_ajax_message('Playlists deleted!', 'success');
-                    ids = result.message;
-                    for (var i = 0; i < ids.length; i++) {
-                        $('div.video-entry.'+ids[i]).remove();
-                    }
-                } else {
-                    dt.pop_ajax_message(result.message, 'error');
-                }
-                $(evt.target).prop('disabled', false);
-            },
-            error: function (xhr, ajaxOptions, thrownError) {
-                console.log(xhr.status);
-                console.log(thrownError);
-                $(evt.target).prop('disabled', false);
-                dt.pop_ajax_message(xhr.status+' '+thrownError, 'error');
-            }
-        });
-        $('div.popup-window-container').removeClass('show');
-    });
-
-    $('div.delete-button').click(function(evt) {
-        $('div.popup-window-container').removeClass('show');
-    });
-
-    $('#action-select div.option-entry.delete').click(function() {
-        var checked_boxes = $('div.video-select-checkbox.checked');
-        if (checked_boxes.length != 0) {
-            $('div.popup-window-container').addClass('show');
-            $('div.delete-target-name').remove();
-            var ids = $(checked_boxes[0]).attr('data-id');
-            var title = $(checked_boxes[0]).attr('data-title');
-            $('div.delete-buttons-line').before('<div class="delete-target-name">'+title+'</div>');
-            for (var i = 1; i < checked_boxes.length; i++) {
-                ids += ';'+ $(checked_boxes[i]).attr('data-id');
-                title = $(checked_boxes[i]).attr('data-title');
-                $('div.delete-buttons-line').before('<div class="delete-target-name">'+title+'</div>');
-            }
-            $('input.delete-button').attr('data-id', ids);
-        }
-    });
-
-    $('div.manage-playlists-container').on('click', 'div.video-select-checkbox', function(evt) {
-        $(this).toggleClass('checked');
-    });
-
     $('#playlist-create-button').click(function() {
         $('#playlist-create-dropdown').addClass('show');
     });
@@ -68,7 +12,7 @@ $(document).ready(function() {
         $("input.create-button").prop('disabled', true);
 
         var error = false;
-        var title = $('#playlist-title-input').val();
+        var title = $('#playlist-title-input').val().trim();
         if (!title) {
             dt.pop_ajax_message('Title can not be empty.', 'error');
             $('#playlist-title-input').addClass('error');
@@ -81,7 +25,7 @@ $(document).ready(function() {
             $('#playlist-title-input').removeClass('error');
         }
 
-        var intro = $('#playlist-intro-input').val();
+        var intro = $('#playlist-intro-input').val().trim();
         if (intro.length > 2000) {
             dt.pop_ajax_message('Introduction can not be longer than 2000 characters.', 'error');
             $('#playlist-intro-input').addClass('error');

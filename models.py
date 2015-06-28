@@ -63,6 +63,7 @@ class User(webapp2_extras.appengine.auth.models.User):
   threads_counter = ndb.IntegerProperty(required=True, default=0, indexed=False)
   new_messages = ndb.IntegerProperty(required=True, default=0, indexed=False)
   new_mentions = ndb.IntegerProperty(required=True, default=0, indexed=False)
+  notification_counter = ndb.IntegerProperty(required=True, default=0, indexed=False)
   new_notifications = ndb.IntegerProperty(required=True, default=0, indexed=False)
   last_subscription_check = ndb.DateTimeProperty(auto_now_add=True, required=True, indexed=False)
 

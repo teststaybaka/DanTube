@@ -269,42 +269,70 @@ $(document).ready(function() {
         return false;
     });
 
+    $('.single-checkbox').click(function(evt) {
+        $(this).toggleClass('checked');
+    });
     $('#action-select .option-entry.deselect').click(function() {
         $('.single-checkbox.checked').removeClass('checked');
     });
     $('#action-select .option-entry.select').click(function() {
         $('.single-checkbox').addClass('checked');
     });
+    deleteWindow(window.location.href+'/delete');
 });
 
-dt.delete_entries = function(url) {
-    var checked_boxes = $('.single-checkbox.checked');
-    if (checked_boxes.length != 0) {
-        var ids = [];
-        for (var i = 0; i < checked_boxes.length; i++) {
-            ids.push($(checked_boxes[i]).attr('data-id'));
-        }
+function deleteWindow (url) {
+    $('input.delete-button').click(function(evt) {
+        var ids= $(evt.target).attr('data-id').split(';');
+        dt.pop_ajax_message('Removing...', 'info');
+        $(evt.target).prop('disabled', true);
         $.ajax({
             type: "POST",
             url: url,
             data: {ids: ids},
             success: function(result) {
+                console.log(result);
                 if (!result.error) {
+                    dt.pop_ajax_message('Removed!', 'success');
                     ids = result.message;
                     for (var i = 0; i < ids.length; i++) {
-                        $('.message-entry[data-id="'+ids[i]+'"]').remove();
+                        $('div.content-entry.'+ids[i]).remove();
                     }
                 } else {
                     dt.pop_ajax_message(result.message, 'error');
                 }
+                $(evt.target).prop('disabled', false);
             },
             error: function (xhr, ajaxOptions, thrownError) {
                 console.log(xhr.status);
                 console.log(thrownError);
+                $(evt.target).prop('disabled', false);
                 dt.pop_ajax_message(xhr.status+' '+thrownError, 'error');
             }
         });
-    }
+        $('div.popup-window-container.remove').removeClass('show');
+    });
+
+    $('div.delete-button').click(function(evt) {
+        $('div.popup-window-container.remove').removeClass('show');
+    });
+
+    $('#action-select div.option-entry.delete').click(function() {
+        var checked_boxes = $('div.single-checkbox.checked');
+        if (checked_boxes.length != 0) {
+            $('div.popup-window-container.remove').addClass('show');
+            $('div.delete-target-name').remove();
+            var ids = $(checked_boxes[0]).attr('data-id');
+            var title = $(checked_boxes[0]).attr('data-title');
+            $('div.delete-buttons-line').before('<div class="delete-target-name">'+title+'</div>');
+            for (var i = 1; i < checked_boxes.length; i++) {
+                ids += ';'+ $(checked_boxes[i]).attr('data-id');
+                title = $(checked_boxes[i]).attr('data-title');
+                $('div.delete-buttons-line').before('<div class="delete-target-name">'+title+'</div>');
+            }
+            $('input.delete-button').attr('data-id', ids);
+        }
+    });
 }
 
 dt.scrollUpdateMessage = function(url, render_func) {
@@ -313,7 +341,7 @@ dt.scrollUpdateMessage = function(url, render_func) {
     var cursor = '';
 
     $(window).scroll(function() {
-        if(($(window).scrollTop() >= $('.message-entry:last-child').offset().top - 30 - $(window).height()) && !isLoading && !isOver) {
+        if(($(window).scrollTop() >= $('.content-entry:last-child').offset().top - 30 - $(window).height()) && !isLoading && !isOver) {
             update_messages();
         }
     });
@@ -321,20 +349,20 @@ dt.scrollUpdateMessage = function(url, render_func) {
 
     function update_messages() {
         isLoading = true;
-        $('.messages-container').append('<div class="message-entry loading"></div>');
+        $('.messages-container').append('<div class="content-entry loading"></div>');
         $.ajax({
             type: "POST",
             url: url,
             data: {cursor: cursor},
             success: function(result) {
-                $('.message-entry.loading').remove();
+                $('.content-entry.loading').remove();
                 if(!result.error) {
                     for (var i = 0; i < result.entries.length; i++) {
                         var div = render_func(result.entries[i]);
                         $('.messages-container').append(div);
                     }
                     if (result.entries.length == 0 && !cursor) {
-                        $('.messages-container').append('<div class="message-entry none"> No messages found.</div>');
+                        $('.messages-container').append('<div class="content-entry none"> No messages found.</div>');
                     }
                     if (result.entries.length < 20) {
                         isOver = true;
@@ -347,7 +375,7 @@ dt.scrollUpdateMessage = function(url, render_func) {
             },
             error: function (xhr, ajaxOptions, thrownError) {
                 isLoading = false;
-                $('.message-entry.loading').remove();
+                $('.content-entry.loading').remove();
                 console.log(xhr.status);
                 console.log(thrownError);
                 dt.pop_ajax_message(xhr.status+' '+thrownError, 'error');

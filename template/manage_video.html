@@ -2,7 +2,6 @@
 {% block head %}
 {{ super() }}
 <link rel="stylesheet" href="/static/manage_video.css" type="text/css" />
-<script src="/static/manage_video.js" language="JavaScript" type="text/javascript"></script>
 {% endblock %}
 
 {% block overview_active %}{% endblock %}
@@ -40,19 +39,18 @@
     <div id="action-select">
         <div class="selected">Actions</div>
         <div class="option">
-            <!-- <div class="option-entry">Add to</div> -->
+            <div class="option-entry select">Select all</div>
+            <div class="option-entry deselect">Deselect all</div>
             <div class="option-entry delete">Delete</div>
         </div>
     </div>
 </div>
 <div class="submitted-video-container">
     {% if total_pages == 0 %}
-    <div class="video-entry none">
-        No videos found.
-    </div>
+    <div class="content-entry none">No videos found.</div>
     {% endif %}
     {% for video in videos %}
-    <div class="video-entry dt{{ video.id_num }}">
+    <div class="content-entry {{ video.id_num }}">
         <a class="video-img" href="{{ video.url }}" target="_blank">
             <img class="video-img" src="{{ video.thumbnail_url }}">
         </a>
@@ -77,11 +75,11 @@
                 <div class="video-statistic-entry">Bullets: <span class="commas_number">{{ video.bullets }}</span></div>
             </div>
             <div class="video-edit">
-                <a href="{{ uri_for('edit_video', video_id=video.id_num) }}" class="edit-entry">[Edit Video]</a>
-                <a class="edit-entry">[Manage Danmaku]</a>
+                <a href="{{ uri_for('edit_video', video_id=video.id_num) }}" class="blue-link edit-entry">[Edit Video]</a>
+                <a class="blue-link edit-entry">[Manage Danmaku]</a>
             </div>
-            <div class="video-select-checkbox" data-id="{{ video.id_num }}" data-title="{{ video.title }}"></div>
         </div>
+        <div class="single-checkbox" data-id="{{ video.id_num }}" data-title="{{ video.title }}"></div>
     </div>
     {% endfor %}
 </div>
@@ -103,12 +101,12 @@
 {% endblock %}
 
 {% block popup_window %}
-<div class="popup-window-container">
+<div class="popup-window-container remove">
     <div class="popup-window-center">
         <div class="popup-window-padding"></div>
         <div class="popup-window-box">
             <div class="ajax-icon warning"></div>
-            <div class="delete-confirm-message">Are you sure to delete the video(s):</div>
+            <div class="delete-confirm-message">Are you sure to delete the following video(s)?</div>
             <div class="delete-target-name">sdf</div>
             <div class="delete-buttons-line container">
                 <input class="inline-button special delete-button" type="button" value="Delete">

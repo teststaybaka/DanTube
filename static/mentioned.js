@@ -4,7 +4,7 @@ $(document).ready(function() {
 });
 
 function render_comment_div(comment) {
-    var div = '<div class="message-entry mentioned">\
+    var div = '<div class="content-entry mentioned">\
         <a href="' + comment.sender.space_url + '" target="_blank" class="user-img">\
             <img src="' + comment.sender.avatar_url_small + '">\
         </a>\

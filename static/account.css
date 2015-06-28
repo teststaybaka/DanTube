@@ -975,7 +975,7 @@ div.popup-window-box {
     /*height: 200px;*/
     vertical-align: middle;
     display: inline-block;
-    padding: 25px;
+    padding: 20px 25px;
     border: 1px solid rgb(200,200,200);
     -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
     -moz-box-sizing: border-box;    /* Firefox, other Gecko */
@@ -1021,4 +1021,32 @@ div.delete-button, input.delete-button {
     margin: 0;
     font-size: 0;
     z-index: 1;
+}
+
+.single-checkbox {
+    width: 16px;
+    height: 16px;
+    position: absolute;
+    right: 22px;
+    top: 40%;
+    cursor: pointer;
+    display: none;
+    border: 1px solid rgb(200,200,200);
+    background-color: white;
+    color: white;
+    margin: 0;
+    border-radius: 3px;
+    -webkit-border-radius: 3px;
+    -moz-border-radius: 3px;
+    background-repeat: no-repeat;
+}
+
+.content-entry:hover .single-checkbox {
+    display: inline-block;
+}
+
+.single-checkbox.checked {
+    display: inline-block;
+    background-position: 0 -192px;
+    background-image: url("/static/img/basic_icons.png");
 }

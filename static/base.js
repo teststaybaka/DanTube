@@ -84,6 +84,19 @@ dt.pop_ajax_message = function(content, type) {
 }
 
 $(document).ready(function() {
+    if ($('#portrait').length != 0) {
+        var uesr_id = $('#portrait').attr('data-id');
+        var cookie = dt.getCookie(uesr_id+'_check');
+        if (!cookie) {
+            var now = new Date().toUTCString();
+            var extime = 10 * 60 *1000; // 10 mins wait
+            dt.setCookie(uesr_id+'_check', now, extime);
+            count_new_subscriptions();
+        }
+        var num = dt.getCookie('new_subscriptions');
+        $('#user-subscriptions-new-num').text(num);
+    }
+
     $('#portrait').mouseover(function() {
         $('#user-box').addClass('show');
         $('#user-box').removeClass('hide');
@@ -326,6 +339,24 @@ dt.LinkedList.prototype.remove = function(node) {
         this.tail = node.prev;
     }
     this.length--;
+}
+
+function count_new_subscriptions() {
+    $.ajax({
+        type: "POST",
+        url: '/user/new_subscriptions',
+        success: function(result) {
+            if(!result.error) {
+                $('#user-subscriptions-new-num').text(result.count);
+            } else {
+                console.log(result.error);
+            }
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            console.log(xhr.status);
+            console.log(thrownError);
+        }
+    });
 }
 
 dt.puncts = /[&@.,?!;:/\\"'<>]/;

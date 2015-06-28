@@ -11,12 +11,12 @@
 {% block left_body %}
 <div id="playlist-list">
     {% if total_pages == 0 %}
-    <div class="video-entry none">
+    <div class="content-entry none">
         No playlists found.
     </div>
     {% endif %}
     {% for playlist in playlists %}
-    <div class="video-entry {{ playlist.id }}">
+    <div class="content-entry {{ playlist.id }}">
         <a class="video-img" {% if playlist.url %}href="{{ playlist.url }}"{% endif %} target="_blank">
             <img class="video-img" src="{{ playlist.thumbnail_url }}">
             <div class="video-num-box">

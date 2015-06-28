@@ -2,7 +2,6 @@
 {% block head %}
 {{ super() }}
 <link rel="stylesheet" href="/static/manage_video.css" type="text/css" />
-<script src="/static/favorites.js" language="JavaScript" type="text/javascript"></script>
 {% endblock %}
 
 {% block overview_active %}{% endblock %}
@@ -21,18 +20,18 @@
   <div id="action-select">
       <div class="selected">Actions</div>
       <div class="option">
+          <div class="option-entry select">Select all</div>
+          <div class="option-entry deselect">Deselect all</div>
           <div class="option-entry delete">Remove</div>
       </div>
   </div>
 </div>
 <div class="favortite-video-container">
   {% if total_pages == 0 %}
-  <div class="video-entry none">
-    No videos found.
-  </div>
+  <div class="content-entry none">No videos found.</div>
   {% endif %}
   {% for video in videos %}
-  <div class="video-entry dt{{ video.id_num }}">
+  <div class="content-entry {{ video.id_num }}">
     <a class="video-img" href="{{ video.url }}" target="_blank">
         <img class="video-img" src="{{ video.thumbnail_url }}">
     </a>
@@ -56,8 +55,8 @@
             <label>Favored at: </label>
             {{ video.favored_time }}
         </div>
-        <div class="video-select-checkbox" data-id="{{ video.id_num }}" data-title="{{ video.title }}"></div>
     </div>
+    <div class="single-checkbox" data-id="{{ video.id_num }}" data-title="{{ video.title }}"></div>
   </div>
   {% endfor %}
 </div>
@@ -79,12 +78,12 @@
 {% endblock %}
 
 {% block popup_window %}
-<div class="popup-window-container">
+<div class="popup-window-container remove">
     <div class="popup-window-center">
         <div class="popup-window-padding"></div>
         <div class="popup-window-box">
             <div class="ajax-icon warning"></div>
-            <div class="delete-confirm-message">Are you sure to remove the video(s) from your favorites?</div>
+            <div class="delete-confirm-message">Are you sure to remove the following video(s) from your favorites?</div>
             <div class="delete-target-name">ffffd</div>
             <div class="delete-buttons-line container">
                 <input class="inline-button special delete-button" type="button" value="Remove">

@@ -54,12 +54,12 @@ a.space-navi-link.back:hover {
     float: left;
 }
 
-div.video-entry {
+div.content-entry {
     font-size: 0;
     padding: 25px;
 }
 
-div.video-entry:nth-child(even) {
+div.content-entry:nth-child(even) {
     background: rgb(250,250,250);
 }
 

@@ -250,7 +250,7 @@ function render_preview_video_div(video) {
 function render_ranking_video_div(video, rank) {
     var div = "";
     if (rank%ranking_page_size < 3) {
-        div = '<a class="ranking-video-entry" target="_blank" href="' + video.url + '">\
+        div = '<a class="ranking-content-entry" target="_blank" href="' + video.url + '">\
             <div class="ranking-top-video">\
                 <div class="top-video-thumbnail">\
                     <img src="' + video.thumbnail_url + '">\
@@ -261,7 +261,7 @@ function render_ranking_video_div(video, rank) {
             <div class="top-video-hits"><span class="preview-icon views"></span>' + dt.numberWithCommas(video.hits) + '</div>\
             <div class="top-video-comment-num"><span class="preview-icon comment"></span>' + dt.numberWithCommas(video.comment_counter) + '</div>';
     } else {
-        div = '<a class="ranking-video-entry" target="_blank" href="' + video.url + '">\
+        div = '<a class="ranking-content-entry" target="_blank" href="' + video.url + '">\
                 <div class="ranking-No">' + (rank+1) + '</div>\
                 <div class="ranking-video-title">' + video.title + '</div>';
     }

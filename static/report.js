@@ -1,6 +1,6 @@
 (function(dt, $) {
 function render_video_div(video) {
-    var div = '<div class="video-entry">\
+    var div = '<div class="content-entry">\
                   <a class="video-img" href="' + video.url +'" target="_blank">\
                     <img class="video-img" src="' + video.thumbnail_url + '">\
                   </a>\

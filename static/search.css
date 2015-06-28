@@ -37,7 +37,7 @@ div.search-result-num {
     margin-right: 10px;
 }
 
-div.video-entry {
+div.content-entry {
     border-bottom: 1px solid rgb(220,220,220);
     display: inline-table;
     width: 100%;
@@ -48,7 +48,7 @@ div.video-entry {
     font-size: 0;
 }
 
-div.video-entry.no-result {
+div.content-entry.no-result {
     text-align: center;
     font-size: 18px;
     color: rgb(150,150,150);

@@ -21,7 +21,7 @@ action="{{ uri_for('search_playlist') }}"
 
 {% block search_result %}
 {% for playlist in playlists %}
-<div class="video-entry">
+<div class="content-entry">
     <div class="video-img-uper">
         <a class="video-img" {% if playlist.url %}href="{{ playlist.url }}"{% endif %} target="_blank">
             <img class="video-img" src="{{ playlist.thumbnail_url }}">

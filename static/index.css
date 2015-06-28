@@ -487,7 +487,7 @@ div.preview-status {
     color: rgb(100,100,100);
 }
 
-a.ranking-video-entry {
+a.ranking-content-entry {
     font-size: 14px;
     margin-bottom: 14px;
     position: relative;
@@ -572,14 +572,14 @@ div.ranking-video-title {
     margin-left: 3px;
 }
 
-a.ranking-video-entry:hover div.video-preview-popup{
+a.ranking-content-entry:hover div.video-preview-popup{
     display: inline-block;
     -webkit-animation: delay_opacity_show .6s; /* Chrome, Safari, Opera */
     animation: delay_opacity_show .6s;
     right: 0;
 }
 
-a.ranking-video-entry:hover div.ranking-video-title, a.ranking-video-entry:hover div.top-video-title {
+a.ranking-content-entry:hover div.ranking-video-title, a.ranking-content-entry:hover div.top-video-title {
     color: rgb(0,140,255);
 }
 
