@@ -34,7 +34,7 @@ action="{{ uri_for('search_uper') }}"
         </div>
         <div class="uper-description">{{ uper.intro }}</div>
         <div class="uper-buttons">
-            <a class="inline-button">Send Message</a>
+            <a class="inline-button" href="{{ uri_for('message_compose') }}?to={{ uper.nickname }}">Send Message</a>
             <div class="inline-button subscribe-button {% if uper.subscribed %}unsubscribe{% endif %}" data-id="{{ uper.id }}"><span class="subscribe-icon"></span><span class="subscribe-text">{% if uper.subscribed %}Subscribed{% else %}Subscribe{% endif %}</span></div>
         </div>
     </div>

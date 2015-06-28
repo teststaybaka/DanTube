@@ -8,7 +8,7 @@
 {% block manage_subscription_active %}active{% endblock %}
 
 {% block topTitle %}
-<a class="top-title active" href="{{ uri_for('subscribed_users') }}">
+<a class="top-title active" href="">
     <div class="top-title-dot"></div>
     UPers
 </a>
@@ -18,7 +18,7 @@
 <div id="sub-title-line" class="container">
     <div id="sub-title"><span class="commas_number">{{ subscription_counter }}</span> UPer{% if subscription_counter > 1 %}s{% endif %}</div>
 </div>
-<div id="subs-user-list" class="container">
+<div id="subs-user-list">
   {% if total_pages == 0 %}
   <div class="no-subscription">
     You haven't subscribed to anyone.
@@ -31,7 +31,7 @@
     </a>
     <div class="user-details">
       <div><a class="user-nickname blue-link" href="{{ subs_user.space_url}}" target="_blank" title="{{ subs_user.nickname }}">{{ subs_user.nickname }}</a></div>
-      <a class="inline-button subscribed">Send Message</a>
+      <a class="inline-button subscribed" href="{{ uri_for('message_compose') }}?to={{ subs_user.nickname }}">Send Message</a>
       <div class="inline-button subscribed subscribe-button unsubscribe" data-id="{{ subs_user.id }}"><span class="subscribe-icon"></span><span class="subscribe-text">Subscribed</span></div>
     </div>
   </div>

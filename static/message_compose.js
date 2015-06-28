@@ -1,5 +1,4 @@
 (function(dt, $) {
-
 function check_receiver() {
     if (!$('input[name=receiver]').val()) {
         $('input[name=receiver]').addClass('error')
@@ -50,6 +49,10 @@ function check_content() {
 }
 
 $(document).ready(function() {
+    var target = dt.getParameterByName('to');
+    if (target) {
+        $('input[name=receiver]').val(target);
+    }
     $('input[name=receiver]').focusout(check_receiver);
     $('input[name=subject]').focusout(check_subject);
     $('textarea[name=content]').focusout(check_content);

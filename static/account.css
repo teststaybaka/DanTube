@@ -1,7 +1,7 @@
 #account-left-bar {
     border: 1px solid rgb(200,200,200);
     display: inline-block;
-    margin-top: 85px;
+    margin-top: 75px;
     width: 240px;
     float: left;
     box-shadow: -2px 2px 4px rgb(200,200,200);
@@ -82,7 +82,7 @@ a.sub-option.active {
 #account-right-section {
     display: inline-block;
     float: right;
-    margin-top: 85px;
+    margin-top: 75px;
     width: 750px;
     border: 1px solid rgb(200,200,200);
     /*box-shadow: -2px 2px 6px rgb(255,185,164);*/
@@ -521,11 +521,11 @@ label.statistic-icon.visited {
 }
 
 #change-password-form, #change-info-form, #video-submission-form, #change-space-form, #feedback-submission-form, #report-submission-form {
-    padding: 35px 25px 20px 25px;
+    padding: 25px 25px 20px 25px;
 }
 
 form.change div.input-line {
-    padding-bottom: 25px;
+    padding-bottom: 20px;
     position: relative;
     white-space: nowrap;
 }
@@ -590,15 +590,15 @@ div.video-part-drag-wrapper.float {
 }
 
 div.video-part-delete {
-    width: 16px;
-    height: 16px;
+    width: 12px;
+    height: 12px;
     position: absolute;
-    right: 5px;
-    top: 17px;
-    background-image: url("/static/img/delete.png");
+    right: 7px;
+    top: 19px;
+    background-position: 0 -1029px;
+    background-image: url("/static/img/basic_icons.png");
     background-repeat: no-repeat;
     cursor: pointer;
-    background-size: contain;
     display: none;
 }
 
@@ -607,11 +607,11 @@ div.video-part-line:hover div.video-part-delete {
 }
 
 div.video-part-delete:hover {
-    background-image: url("/static/img/delete-hover.png");
+    background-position: -20px -1029px;
 }
 
 div.video-part-delete:active {
-    background-image: url("/static/img/delete-active.png");
+    background-position: -20px -1011px;
 }
 
 @-webkit-keyframes up_to_down_expand {

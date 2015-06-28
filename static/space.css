@@ -13,7 +13,7 @@
 
 #navi-link-line {
     float: right;
-    padding-right: 15px;
+    padding-right: 10px;
 }
 
 a.space-navi-link {
@@ -56,11 +56,19 @@ a.space-navi-link.back:hover {
 
 div.content-entry {
     font-size: 0;
-    padding: 25px;
+    padding: 15px 25px;
 }
 
 div.content-entry:nth-child(even) {
     background: rgb(250,250,250);
+}
+
+div.content-entry.none {
+    text-align: center;
+    font-size: 22px;
+    color: rgb(150,150,150);
+    padding: 100px 0;
+    width: 700px;
 }
 
 a.video-img {
@@ -99,8 +107,8 @@ div.video-num {
 
 div.video-info {
     display: inline-block;
-    margin-left: 20px;
-    width: 500px;
+    margin-left: 15px;
+    width: 530px;
     height: 99px;
     overflow: hidden;
 }
@@ -157,14 +165,14 @@ div.video-intro {
 
 div.pagination-line {
     text-align: center;
-    padding: 15px;
+    padding: 10px 0;
 }
 
 #uper-info-box {
     float: right;
-    margin-left: 20px;
-    width: 258px;
+    width: 238px;
     text-align: center;
+    font-size: 0;
 }
 
 #uper-img {
@@ -183,7 +191,7 @@ div.pagination-line {
 }
 
 #uper-intro {
-    margin: 10px 20px 0 20px;
+    margin: 10px 10px 0 10px;
     border-top: 1px solid rgb(220,220,220);
     /*border-bottom: 1px solid rgb(220,220,220);*/
     padding: 10px;
@@ -195,7 +203,7 @@ div.pagination-line {
 }
 
 #uper-statistic {
-    margin: 0 20px;
+    margin: 0 10px;
     padding: 10px;
     font-size: 14px;
     text-align: left;
@@ -303,7 +311,7 @@ div.message-content {
 }
 
 #recent-visiter-box {
-    margin: 0 20px;
+    margin: 0 10px;
 }
 
 #visiter-line {

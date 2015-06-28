@@ -10,7 +10,7 @@
     <div class="quick-title-line">
         <div class="quick-title-head"></div>
         <div class="quick-title">Subscriptions</div>
-        <a class="search-scope active" href="?uploads=0">All Activity</a>
+        <a class="search-scope active" href="?">All Activity</a>
         <a class="search-scope" href="?uploads=1">Uploads Only</a>
     </div>
     <div class="activity-container">
@@ -63,7 +63,7 @@
         <div class="quick-title-head"></div>
         <div class="quick-title">UPers</div>
     </div>
-    <div class="upers-block container">
+    <div class="upers-block">
         {% if subscribed_users|count == 0 %}
         <div class="no-subscription quick">You haven't subscribed to anyone.</div>
         {% endif %}

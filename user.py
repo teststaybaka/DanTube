@@ -60,7 +60,6 @@ class SpacePlaylist(BaseHandler):
 
         context = {}
         context['playlists'] = []
-
         total_found = host.playlists_created
         total_pages = math.ceil(total_found/float(page_size))
         playlists = []
@@ -79,18 +78,24 @@ class SpacePlaylist(BaseHandler):
         context.update(self.get_page_range(page, total_pages) )
         self.render('space_playlist', context)
 
-class SpaceBoard(BaseHandler):
+class SpaceDiscuss(BaseHandler):
     def get(self, user_id):
+        logging.info('vsdfsdfsdfsdf')
         host = self.user_model.get_by_id(int(user_id))
         if not host:
             self.notify('404 not found.', 404)
             return
 
         context = {}
-        context['host'] = host.get_public_info()
+        context['host'] = host.get_public_info(self.user)
         context['host'].update(host.get_statistic_info())
         context['host'].update(host.get_visitor_info())
         self.render('space_board', context)
+
+    @login_required_json
+    def post(self, user_id):
+        pass
+
 
 class Subscribe(BaseHandler):
     @login_required_json
@@ -128,7 +133,6 @@ class Subscribe(BaseHandler):
     
         user.subscriptions.append(host.key)
         host.subscribers_counter += 1
-
         ndb.put_multi([user, host])
 
         self.response.out.write(json.dumps({
@@ -150,7 +154,6 @@ class Unsubscribe(BaseHandler):
         try:
             user.subscriptions.remove(host.key)
             host.subscribers_counter -= 1
-
             ndb.put_multi([user, host])
 
             self.response.out.write(json.dumps({

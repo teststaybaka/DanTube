@@ -1,16 +1,16 @@
 #subscription-block {
   border: 1px solid rgb(200,200,200);
-  width: 750px;
-  margin-top: 40px;
+  width: 775px;
+  margin-top: 20px;
   float: left;
   background-color: white;
 }
 
 #subscription-upers {
   float: right;
-  width: 230px;
+  width: 188px;
   border: 1px solid rgb(200,200,200);
-  margin-top: 40px;
+  margin-top: 20px;
   background-color: white;
 }
 
@@ -32,20 +32,19 @@ div.no-subscription.quick.loading {
 }
 
 #subs-user-list {
-  padding: 20px 0 0 30px;
+  padding: 15px 0 0 25px;
   border-top: 1px solid rgb(230,230,230);
 }
 
 div.subscription-user-box {
-  float: left;
   display: inline-block;
-  margin-right: 30px;
   padding: 15px;
   border-radius: 5px;
   -webkit-border-radius: 5px;
   -moz-border-radius: 5px;
   border: 1px solid rgb(200,200,200);
-  margin-bottom: 20px;
+  margin-bottom: 10px;
+  margin-right: 25px;
   font-size: 0;
 }
 
@@ -103,7 +102,7 @@ a.page-change, a.page-num {
 }
 
 div.activity-entry {
-  padding: 15px 25px;
+  padding: 10px 25px;
   border-top: 1px solid rgb(230,230,230);
   width: 100%;
   -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
@@ -143,11 +142,14 @@ div.activity-detail {
 }
 
 div.uploader-name, div.activity-title {
+  margin-top: 2px;
   word-wrap: break-word;
+  font-size: 0;
 }
 
 a.uploader-name, a.activity-title {
   font-size: 14px;
+  vertical-align: top;
 }
 
 a.activity-title:hover {
@@ -158,6 +160,7 @@ div.activity-detail label {
   font-size: 14px;
   color: rgb(150,150,150);
   margin-right: 5px;
+  vertical-align: top;
 }
 
 div.activity-time {
@@ -165,10 +168,11 @@ div.activity-time {
   font-size: 14px;
   color: rgb(100,100,100);
   margin-left: 10px;
+  vertical-align: top;
 }
 
 div.activity-intro {
-  margin-top: 5px;
+  margin-top: 2px;
   color: rgb(100,100,100);
   font-size: 14px;
   word-wrap: break-word;
@@ -196,12 +200,13 @@ img.video-img {
 
 div.upers-block {
   border-top: 1px solid rgb(230,230,230);
-  padding-left: 34px;
+  padding-left: 20px;
   padding-top: 15px;
+  font-size: 0;
 }
 
 div.quick-uper {
-  margin-right: 34px;
+  margin-right: 20px;
   margin-bottom: 15px;
-  float: left;
+  display: inline-block;
 }

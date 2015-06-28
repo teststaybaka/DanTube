@@ -41,14 +41,10 @@ function update_upers(page) {
 $(document).ready(function() {
     var url = document.URL;
     var urls = url.split('?');
-    var uploads = 0;
-    if (urls.length > 1) {
-        var index = urls[1].indexOf('uploads');
-        if (index > -1 && urls[1].substr(index+8) === '1') {
-            uploads = 1;
-            $('.search-scope.active').removeClass('active');
-            $('.search-scope:last-child').addClass('active');
-        }
+    var uploads = dt.getParameterByName('uploads');
+    if (uploads) {
+        $('.search-scope.active').removeClass('active');
+        $('.search-scope:last-child').addClass('active');
     }
 
     if ($('.upers-block').length != 0) {

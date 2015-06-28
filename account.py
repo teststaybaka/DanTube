@@ -46,7 +46,7 @@ class History(BaseHandler):
             uploader = uploaders[i]
             context['videos'][i]['uploader'] = uploader.get_public_info()
 
-        context.update(self.get_page_range(page, math.ceil(len(user.history)/float(page_size))) )
+        context.update(self.get_page_range(page, math.ceil(len(user.history)/float(page_size))))
         self.render('history', context)
 
     @login_required
@@ -73,6 +73,8 @@ class History(BaseHandler):
             for i in range(0, len(comments)):
                 comment = comments[i]
                 video = videos[i]
+                if video is None:
+                    continue
                 comment_info = {
                     'type': comment.activity_type,
                     'timestamp': comment.timestamp,
@@ -301,7 +303,7 @@ class Subscriptions(BaseHandler):
         result['activities'] = []
 
         uploads_only = self.request.get('uploads').strip()
-        if uploads_only == '1':
+        if uploads_only:
             uploads_only = True
         else:
             uploads_only = False
@@ -347,6 +349,8 @@ class Subscriptions(BaseHandler):
         for i in range(0, len(records)):
             record = records[i]
             video = videos[i]
+            if video is None:
+                continue
             creator = creators[i]
             record_info = {
                 'creator': creator.get_public_info(),

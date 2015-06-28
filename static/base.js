@@ -89,7 +89,7 @@ $(document).ready(function() {
         var cookie = dt.getCookie(uesr_id+'_check');
         if (!cookie) {
             var now = new Date().toUTCString();
-            var extime = 10 * 60 *1000; // 10 mins wait
+            var extime = 10 * 60 * 1000; // 10 mins wait
             dt.setCookie(uesr_id+'_check', now, extime);
             count_new_subscriptions();
         }
@@ -348,6 +348,7 @@ function count_new_subscriptions() {
         success: function(result) {
             if(!result.error) {
                 $('#user-subscriptions-new-num').text(result.count);
+                dt.setCookie('new_subscriptions', result.count, 0);
             } else {
                 console.log(result.error);
             }

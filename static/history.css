@@ -33,9 +33,14 @@ div.content-entry {
     padding: 15px 25px;
     display: inline-table;
     width: 100%;
+    font-size: 0;
     -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
     -moz-box-sizing: border-box;    /* Firefox, other Gecko */
     box-sizing: border-box;
+}
+
+div.content-entry.comment {
+    padding: 10px 25px;
 }
 
 a.video-img {
@@ -52,7 +57,7 @@ a.video-img img {
 div.video-info {
     display: inline-block;
     width: 778px;
-    margin-left: 20px;
+    margin-left: 15px;
     vertical-align: top;
 }
 
@@ -80,17 +85,14 @@ div.uper-line {
 div.uper-line label {
     font-size: 14px;
     color: rgb(150,150,150);
-    vertical-align: middle;
+    vertical-align: top;
+    margin-right: 5px;
 }
 
 div.uper-line a {
-    vertical-align: middle;
+    vertical-align: top;
     display: inline-block;
     font-size: 14px;
-}
-
-div.uper-line a:hover {
-    color: rgb(0,140,255);
 }
 
 div.video-statistic {

@@ -51,7 +51,7 @@ routes = [
     webapp2.Route(r'/account/messages', message.Message, name='message'),
     webapp2.Route(r'/account/messages/<thread_id:\d+>', message.Detail, name='message_detail'),
     webapp2.Route(r'/account/messages/delete', message.DeleteMessage, name='delete_message'),
-    webapp2.Route(r'/account/messages/compose', message.Compose, name='compose'),
+    webapp2.Route(r'/account/messages/compose', message.Compose, name='message_compose'),
     webapp2.Route(r'/account/mentioned', message.Mentioned, name='mentioned'),
     webapp2.Route(r'/account/notifications', message.Notifications, name='notifications'),
     webapp2.Route(r'/account/notifications/read', message.ReadNotification, name='read_note'),
@@ -59,7 +59,7 @@ routes = [
 
     webapp2.Route(r'/user/<user_id:\d+>', user.Space, name='space'),
     webapp2.Route(r'/user/playlist/<user_id:\d+>', user.SpacePlaylist, name='space_playlist'),
-    webapp2.Route(r'/user/board/<user_id:\d+>', user.SpaceBoard, name='space_board'),
+    webapp2.Route(r'/user/discuss/<user_id:\d+>', user.SpaceDiscuss, name='space_discuss'),
     webapp2.Route(r'/user/subscribe/<user_id:\d+>', user.Subscribe, name='subscribe'),
     webapp2.Route(r'/user/unsubscribe/<user_id:\d+>', user.Unsubscribe, name='unsubscribe'),
 

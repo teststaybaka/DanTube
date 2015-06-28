@@ -23,8 +23,8 @@
 }
 
 div.ranking-and-topic {
-    padding-top: 40px;
-    padding-bottom: 40px;
+    padding-top: 20px;
+    padding-bottom: 20px;
     border-bottom: 1px solid rgb(220,220,220);
 }
 
@@ -186,7 +186,7 @@ div.cover-uploader {
 }
 
 div.sub-category-block {
-    margin-bottom: 40px;
+    margin-bottom: 20px;
 }
 
 div.sub-category-dynamic-list {
@@ -273,7 +273,7 @@ div.side-title {
 }
 
 div.video-preview-container, div.ranking-video-container {
-    height: 468px;
+    height: 444px;
 }
 
 div.single-preview-line {
@@ -283,7 +283,7 @@ div.single-preview-line {
 a.video-preview {
     float: left;
     margin-right: 10px;
-    margin-bottom: 18px;
+    margin-bottom: 10px;
     width: 176px;
     position: relative;
     cursor: pointer;
@@ -292,6 +292,7 @@ a.video-preview {
 
 a.video-preview.wide {
     margin-right: 28px;
+    margin-bottom: 0;
 }
 
 div.video-preview-thumbnail {
@@ -370,7 +371,7 @@ div.video-preview-popup {
     top: -195px;
     background-color: white;
     width: 370px;
-    padding: 15px 18px;
+    padding: 10px 15px;
     display: none;
     z-index: 1;
 }
@@ -384,8 +385,9 @@ a.video-preview:hover div.video-preview-popup {
 div.popup-title {
     font-size: 14px;
     border-bottom: 1px solid rgb(200,200,200);
-    padding: 0 2px 5px 2px;
+    padding: 0 2px 2px 2px;
     min-height: 32px;
+    line-height: 16px;
     word-wrap: break-word;
 }
 
@@ -395,9 +397,9 @@ div.popup-statistic-line {
 }
 
 div.popup-statistic-entry {
-    width: 20%;
+    width: 23%;
     display: inline-block;
-    padding: 7px 2px;
+    padding: 2px;
 }
 
 span.preview-icon {
@@ -425,7 +427,7 @@ span.preview-icon.bullets {
 }
 
 div.popup-intro {
-    margin-bottom: 6px;
+    margin-bottom: 5px;
     height: 63px;
 }
 
@@ -464,14 +466,14 @@ div.popup-uploader {
     text-overflow: ellipsis;
     white-space: nowrap;
     display: inline-block;
-    vertical-align: text-bottom;
+    vertical-align: top;
 }
 
 div.popup-upload-time {
     text-align: right;
     display: inline-block;
     margin-left: 15px;
-    vertical-align: text-bottom;
+    vertical-align: top;
 }
 
 div.pagination-line {
@@ -489,20 +491,20 @@ div.preview-status {
 
 a.ranking-content-entry {
     font-size: 14px;
-    margin-bottom: 14px;
+    margin-bottom: 8px;
     position: relative;
     cursor: pointer;
     display: block;
 }
 
 div.ranking-top-video {
-    height: 48px;
-    margin-bottom: 5px;
+    height: 64px;
+    margin-bottom: 2px;
 }
 
 div.top-video-thumbnail {
-    width: 80px;
-    height: 45px;
+    width: 112px;
+    height: 63px;
     box-shadow: 0 0 1px rgb(100,100,100);
     display: inline-block;
     vertical-align: text-top;
@@ -528,10 +530,11 @@ div.top-No {
 
 div.top-video-title {
     display: inline-block;
-    width: 170px;
+    width: 138px;
     height: 100%;
     overflow: hidden;
     margin-left: 5px;
+    line-height: 16px;
     word-wrap: break-word;
     vertical-align: text-top;
 }
@@ -540,13 +543,13 @@ div.top-video-hits {
     display: inline-block;
     color: rgb(150,150,150);
     width: 120px;
-    vertical-align: text-bottom;
+    vertical-align: top;
 }
 
 div.top-video-comment-num {
     display: inline-block;
     color: rgb(150,150,150);
-    vertical-align: text-bottom;
+    vertical-align: top;
     margin-left: 10px;
 }
 
@@ -590,8 +593,8 @@ div.ranking-and-topic.subpage {
 #ranking-slides.subpage {
     width: 400px;
     height: 225px;
-    margin-right: 24px;
-    margin-bottom: 27px;
+    margin-right: 15px;
+    margin-bottom: 13px;
 }
 
 #slide-container.subpage {
@@ -607,10 +610,10 @@ div.slide-title.subpage {
 }
 
 a.next-top-videos.subpage {
-    width: 176px;
-    height: 99px;
-    margin-right: 24px;
-    margin-bottom: 27px;
+    width: 188px;
+    height: 106px;
+    margin-right: 15px;
+    margin-bottom: 13px;
 }
 
 div.hover-cover.subpage {

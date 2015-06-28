@@ -1,5 +1,5 @@
 #body-background {
-    padding-top: 40px;
+    padding-top: 20px;
 }
 
 #body-container {
@@ -15,7 +15,7 @@
 }
 
 div.search-scope-line {
-    padding: 7px 25px;
+    padding: 5px 25px;
     border-bottom: 1px solid rgb(220,220,220);
 }
 
@@ -41,7 +41,7 @@ div.content-entry {
     border-bottom: 1px solid rgb(220,220,220);
     display: inline-table;
     width: 100%;
-    padding: 20px 40px 20px 30px;
+    padding: 10px 40px 10px 30px;
     -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
     -moz-box-sizing: border-box;    /* Firefox, other Gecko */
     box-sizing: border-box;
@@ -79,7 +79,7 @@ div.uper-line {
     max-height: 64px;
     font-size: 14px;
     overflow: hidden;
-    margin-top: 10px;
+    margin-top: 5px;
 }
 
 a.video-uploader {
@@ -89,8 +89,8 @@ a.video-uploader {
 div.video-info {
     display: inline-block;
     vertical-align: top;
-    margin-left: 20px;
-    width: 740px;
+    margin-left: 15px;
+    width: 745px;
 }
 
 div.video-category {
@@ -122,7 +122,7 @@ a.video-title, a.uploader {
     font-size: 14px;
     /*color: rgb(100,100,100);*/
     /*font-weight: bold;*/
-    margin-top: 4px;
+    margin-top: 2px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -170,7 +170,7 @@ a.tag-entry {
     -moz-border-radius: 3px;
     padding: 3px 8px;
     display: inline-block;
-    margin: 8px 20px 0 0;
+    margin: 3px 10px 0 0;
 /*    border: 1px solid rgb(220,220,220);*/
     cursor: pointer;
     font-size: 14px;
@@ -198,7 +198,7 @@ a.tag-entry:hover {
 
 div.search-pagination-line {
     text-align: center;
-    padding: 15px 0;
+    padding: 10px 0;
     border-bottom: 1px solid rgb(200,200,200);
     font-size: 0;
 }
