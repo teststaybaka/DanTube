@@ -371,11 +371,13 @@
         </div>
         <div class="subtitles-block hidden">
           <div class="subtitles-list container">
-            <!-- <label class="check-label subtitle">
+            {% for name in subtitle_names %}
+            <label class="check-label subtitle">
               <div class="pseudo-checkbox"></div>
-              <input type="checkbox" id="show-colored-checkbox" class="checkbox hidden">
-              <span>English (by sdvsdfsdfcsdvsdvsdf)</span>
-            </label> -->
+              <input type="checkbox" id="show-colored-checkbox" class="checkbox hidden" data-index="{{ loop.index }}">
+              <span>{{ name }}</span>
+            </label>
+            {% endfor %}
           </div>
           <div class="player-setting-line full">
             <label class="player-setting-label full number">Subtitles font size</label>

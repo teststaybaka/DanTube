@@ -922,8 +922,8 @@ class MentionedComment(ndb.Model):
   floorth = ndb.IntegerProperty(indexed=False)
   inner_floorth = ndb.IntegerProperty(indexed=False)
   content = ndb.TextProperty(required=True, indexed=False)
-  video = ndb.KeyProperty(kind='Video', required=True, indexed=False)
-  clip_index = ndb.IntegerProperty(required=True, default=0, indexed=False)
+  video = ndb.KeyProperty(kind='Video', indexed=False)
+  clip_index = ndb.IntegerProperty(indexed=False)
 
 Activity_Types = Comment_Types + ['upload', 'edit']
 class ActivityRecord(ndb.Model):

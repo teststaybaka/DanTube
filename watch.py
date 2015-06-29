@@ -101,6 +101,10 @@ class Video(BaseHandler):
             video_info['clip_range_min'] = clip_index - 2
             video_info['clip_range_max'] = clip_index
 
+        subtitle_names = []
+        for i in range(0, len(cur_clip.subtitle_names)):
+            subtitle_names.append(cur_clip.subtitle_names[i])
+
         playlist_info = {}
         if video.playlist_belonged != None:
             playlist = video.playlist_belonged.get()
@@ -111,7 +115,7 @@ class Video(BaseHandler):
             videos = ndb.get_multi(playlist.videos)
             for i in range(0, len(videos)):
                 playlist_info['videos'].append(videos[i].get_basic_info())
-        context = {'video': video_info, 'uploader': uploader.get_public_info(user), 'playlist': playlist_info}
+        context = {'video': video_info, 'uploader': uploader.get_public_info(user), 'playlist': playlist_info, 'subtitle_names': subtitle_names}
         context['report_issues'] = models.Report_Issues
         self.render('video', context)
 
@@ -126,7 +130,8 @@ def assemble_link(temp, add_link, users):
     return temp
 
 def comment_nickname_recognize(user, content, add_link):
-    content = cgi.escape(content)
+    if add_link:
+        content = cgi.escape(content)
     new_content = ''
     state = 0
     temp = ''
@@ -353,14 +358,9 @@ class Danmaku(BaseHandler):
                 advanced_danmaku = advanced_danmaku_pool.advanced_danmaku_list[j]
                 danmaku_list.append(self.format_advanced_danmaku(advanced_danmaku))
 
-        subtitle_names = []
-        for i in range(0, len(clip.subtitle_names)):
-            subtitle_names.append(clip.subtitle_names[i])
-
         self.response.out.write(json.dumps({
             'error': False,
             'danmaku_list': danmaku_list,
-            'subtitle_names': subtitle_names,
         }))
 
     @login_required_json
@@ -616,6 +616,7 @@ class Danmaku(BaseHandler):
 class Subtitles(BaseHandler):
     @video_clip_exist_required_json
     def get(self, video, clip_index):
+        clip = video.video_clips[clip_index-1].get()
         try:
             s_index = int(self.request.get('subtitle_index'))
             if s_index < 1 or s_index > len(clip.subtitle_danmaku_pools):
@@ -627,7 +628,6 @@ class Subtitles(BaseHandler):
             }))
             return
             
-        clip = video.video_clips[clip_index-1].get()
         subtitle_danmaku_pool = clip.subtitle_danmaku_pools[s_index-1].get()
         self.response.out.write(json.dumps({
             'subtitles': subtitle_danmaku_pool.subtitles,

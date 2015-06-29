@@ -1,12 +1,33 @@
 from views import *
 
-class Space(BaseHandler):
-    def get(self, user_id):
+def host_required(handler):
+    def check_host(self, user_id):
         host = self.user_model.get_by_id(int(user_id))
         if not host:
             self.notify('404 not found.', 404)
             return
 
+        return handler(self, host)
+
+    return check_host
+
+def host_required_json(handler):
+    def check_host(self, user_id):
+        host = self.user_model.get_by_id(int(user_id))
+        if not host:
+            self.response.out.write(json.dumps({
+                'error': True,
+                'message': 'User not found.',
+            }))
+            return
+
+        return handler(self, host)
+
+    return check_host
+
+class Space(BaseHandler):
+    @host_required
+    def get(self, host):
         page_size = models.DEFAULT_PAGE_SIZE
         page = self.get_page_number()
 
@@ -49,12 +70,8 @@ class Space(BaseHandler):
         self.render('space', context)
 
 class SpacePlaylist(BaseHandler):
-    def get(self, user_id):
-        host = self.user_model.get_by_id(int(user_id))
-        if not host:
-            self.notify('404 not found.', 404)
-            return
-
+    @host_required
+    def get(self, host):
         page_size = models.DEFAULT_PAGE_SIZE
         page = self.get_page_number()
 
@@ -79,13 +96,8 @@ class SpacePlaylist(BaseHandler):
         self.render('space_playlist', context)
 
 class SpaceDiscuss(BaseHandler):
-    def get(self, user_id):
-        logging.info('vsdfsdfsdfsdf')
-        host = self.user_model.get_by_id(int(user_id))
-        if not host:
-            self.notify('404 not found.', 404)
-            return
-
+    @host_required
+    def get(self, host):
         context = {}
         context['host'] = host.get_public_info(self.user)
         context['host'].update(host.get_statistic_info())
@@ -93,21 +105,21 @@ class SpaceDiscuss(BaseHandler):
         self.render('space_board', context)
 
     @login_required_json
-    def post(self, user_id):
-        pass
-
-
-class Subscribe(BaseHandler):
-    @login_required_json
-    def post(self, user_id):
-        host = self.user_model.get_by_id(int(user_id))
-        if not host:
+    @host_required_json
+    def post(self, host):
+        user = self.user
+        content = self.request.get('content').strip()
+        if not content:
             self.response.out.write(json.dumps({
                 'error': True,
-                'message': 'User not found.',
+                'message': 'Cannot post empty comment.'
             }))
             return
 
+class Subscribe(BaseHandler):
+    @login_required_json
+    @host_required_json
+    def post(self, host):
         user = self.user
         if user == host:
             self.response.out.write(json.dumps({
@@ -141,15 +153,8 @@ class Subscribe(BaseHandler):
 
 class Unsubscribe(BaseHandler):
     @login_required_json
-    def post(self, user_id):
-        host = self.user_model.get_by_id(int(user_id))
-        if not host:
-            self.response.out.write(json.dumps({
-                'error': True,
-                'message': 'User not found.'
-            }))
-            return
-
+    @host_required_json
+    def post(self, host):
         user = self.user
         try:
             user.subscriptions.remove(host.key)

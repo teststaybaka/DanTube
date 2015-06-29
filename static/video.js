@@ -1772,10 +1772,8 @@ dt.onPlayerReady = function(event) {
 					dt.pop_ajax_message('Danmaku sent!', 'success');
 					result.timestamp = player.getCurrentTime() + 0.05;
 					result.blocked = false;
-					$('#danmaku-list').append('<div class="per-bullet container">\
-						<div class="bullet-time-value">' + secondsToTime(result.timestamp) + '</div>\
-						<div class="bullet-content-value" title="' + result.content + '">' + result.content + '</div>\
-						<div class="bullet-date-value">' + result.created + '</div></div>');
+					var listNode = document.getElementById("danmaku-list");
+					listNode.appendChild(generate_danmaku_pool_entry(result));
 					danmaku_pool_list.push(result);
 					normal_danmaku_sequence.addOne(result);
 				} else {
@@ -1849,10 +1847,8 @@ dt.onPlayerReady = function(event) {
 					dt.pop_ajax_message('Danmaku sent!', 'success');
 					result.timestamp = player.getCurrentTime() + 0.05;
 					result.blocked = false;
-					$('#danmaku-list').append('<div class="per-bullet container">\
-						<div class="bullet-time-value">' + secondsToTime(result.timestamp) + '</div>\
-						<div class="bullet-content-value" title="' + result.content + '">' + result.content + '</div>\
-						<div class="bullet-date-value">' + result.created + '</div></div>');
+					var listNode = document.getElementById("danmaku-list");
+					listNode.appendChild(generate_danmaku_pool_entry(result));
 					danmaku_pool_list.push(result);
 					normal_danmaku_sequence.addOne(result);
 				} else {
@@ -1930,10 +1926,9 @@ dt.onPlayerReady = function(event) {
 
 		return false;
 	});
-	$('.subtitles-list').on('change', 'input[type="checkbox"]', function() {
+	$('label.check-label input[type="checkbox"]').change(function() {
 		var subtitle_index = $(this).attr('data-index');
 		if ($(this).is(':checked')) {
-            $(this).prev().addClass('checked');
             $.ajax({
 				type: "GET",
 				url: '/video/subtitles_danmaku/'+url_suffix,
@@ -1979,7 +1974,6 @@ dt.onPlayerReady = function(event) {
 				}
 			});
         } else {
-            $(this).prev().removeClass('checked');
             delete subtitle_danmaku_container[subtitle_index];
             subtitles_one_clear(subtitle_index);
         }
@@ -2216,32 +2210,35 @@ function generate_danmaku_pool_list() {
 	while (listNode.lastChild) {
 		listNode.removeChild(listNode.lastChild);
 	}
-
 	for (var i = 0; i < danmaku_pool_list.length; i++) {
-		var per_container = document.createElement('div');
-		if (danmaku_pool_list[i].blocked) {
-			per_container.className = "per-bullet blocked";
-		} else {
-			per_container.className = "per-bullet";
-		}
-		per_container.setAttribute('data-creator', danmaku_pool_list[i].creator);
-
-		var time_value = document.createElement('div');
-		time_value.className = "bullet-time-value";
-		time_value.appendChild(document.createTextNode(secondsToTime(danmaku_pool_list[i].timestamp)));
-		var content_value = document.createElement('div');
-		content_value.className = "bullet-content-value";
-		content_value.title = danmaku_pool_list[i].content;
-		content_value.appendChild(document.createTextNode(danmaku_pool_list[i].content));
-		var date_value = document.createElement('div');
-		date_value.className = "bullet-date-value";
-		date_value.appendChild(document.createTextNode(danmaku_pool_list[i].created));
-		
-		per_container.appendChild(time_value);
-		per_container.appendChild(content_value);
-		per_container.appendChild(date_value);
-		listNode.appendChild(per_container);
+		listNode.appendChild(generate_danmaku_pool_entry(danmaku_pool_list[i]));
 	}
+}
+
+function generate_danmaku_pool_entry(entry) {
+	var per_container = document.createElement('div');
+	if (entry.blocked) {
+		per_container.className = "per-bullet blocked";
+	} else {
+		per_container.className = "per-bullet";
+	}
+	per_container.setAttribute('data-creator', entry.creator);
+
+	var time_value = document.createElement('div');
+	time_value.className = "bullet-time-value";
+	time_value.appendChild(document.createTextNode(secondsToTime(entry.timestamp)));
+	var content_value = document.createElement('div');
+	content_value.className = "bullet-content-value";
+	content_value.title = entry.content;
+	content_value.appendChild(document.createTextNode(entry.content));
+	var date_value = document.createElement('div');
+	date_value.className = "bullet-date-value";
+	date_value.appendChild(document.createTextNode(entry.created));
+	
+	per_container.appendChild(time_value);
+	per_container.appendChild(content_value);
+	per_container.appendChild(date_value);
+	return per_container
 }
 
 function refresh_danmaku_pool() {
@@ -2416,15 +2413,6 @@ $(document).ready(function() {
 				dt.quick_sort(danmaku_pool_list, 0, danmaku_pool_list.length - 1, danmaku_date_lower_compare);
 				generate_danmaku_pool_list();
 				normal_danmaku_sequence = new DanmakuTimeSequence(result.danmaku_list);
-
-				for (var i = 0; i < result.subtitle_names.length; i++) {
-					// console.log(result.subtitle_names[i])
-					$('.subtitles-list').append('<label class="check-label subtitle">\
-			          <div class="pseudo-checkbox"></div>\
-			          <input type="checkbox" id="show-colored-checkbox" class="checkbox hidden" data-index="'+(i+1)+'">\
-			          <span>'+result.subtitle_names[i]+'</span>\
-			        </label>');
-				}
 			} else {
 				dt.pop_ajax_message(result.message, 'error');
 			}
@@ -2467,19 +2455,14 @@ $(document).ready(function() {
 		var client = new ZeroClipboard(document.getElementById("danmaku-pool-copy-content"));
 	}
 	$('#danmaku-pool-check-all-sent').click(function() {
-		var block = '';
+		$('#danmaku-list-all').empty();
+		var listNode = $('#danmaku-list-all')[0];
 		var user = $('.danmaku-pool-menu').attr('data-creator');
 		for (var i = 0; i < danmaku_pool_list.length; i++) {
 			if (danmaku_pool_list[i].creator.toString() === user) {
-				block += '<div class="check-per-bullet">\
-						<div class="bullet-time-value">'+secondsToTime(danmaku_pool_list[i].timestamp)+'</div>\
-						<div class="bullet-content-value" title="'+danmaku_pool_list[i].content+'">'+danmaku_pool_list[i].content+'</div>\
-						<div class="bullet-date-value">'+danmaku_pool_list[i].created+'</div>\
-					</div>';
+				listNode.appendChild(generate_danmaku_pool_entry(danmaku_pool_list[i]))
 			}
 		}
-		$('#danmaku-list-all').empty();
-		$('#danmaku-list-all').append(block);
 		$('.player-full-setting.check-all-sent').removeClass('hidden');
 	});
 
