@@ -111,6 +111,12 @@ indexes:
 - kind: Video
   properties:
   - name: category
+  - name: created
+    direction: desc
+
+- kind: Video
+  properties:
+  - name: category
   - name: hits
     direction: desc
 
@@ -124,6 +130,13 @@ indexes:
   properties:
   - name: category
   - name: last_updated
+    direction: desc
+
+- kind: Video
+  properties:
+  - name: category
+  - name: subcategory
+  - name: created
     direction: desc
 
 - kind: Video

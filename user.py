@@ -95,27 +95,6 @@ class SpacePlaylist(BaseHandler):
         context.update(self.get_page_range(page, total_pages) )
         self.render('space_playlist', context)
 
-class SpaceDiscuss(BaseHandler):
-    @host_required
-    def get(self, host):
-        context = {}
-        context['host'] = host.get_public_info(self.user)
-        context['host'].update(host.get_statistic_info())
-        context['host'].update(host.get_visitor_info())
-        self.render('space_board', context)
-
-    @login_required_json
-    @host_required_json
-    def post(self, host):
-        user = self.user
-        content = self.request.get('content').strip()
-        if not content:
-            self.response.out.write(json.dumps({
-                'error': True,
-                'message': 'Cannot post empty comment.'
-            }))
-            return
-
 class Subscribe(BaseHandler):
     @login_required_json
     @host_required_json

@@ -1880,7 +1880,6 @@ div.inner-comment-container {
 	margin-top: 15px;
 	margin-left: 48px;
 	margin-right: 20px;
-	background-color: rgb(240,240,240);
 	border-radius: 3px;
 	-webkit-border-radius: 3px;
 	-moz-border-radius: 3px;
@@ -1957,7 +1956,7 @@ label.comment-time {
 }
 
 div.comment-content {
-	margin: 7px 0;
+	margin: 5px 0;
 	word-wrap: break-word;
 	white-space: pre-wrap;
 	font-size: 14px;

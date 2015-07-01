@@ -362,6 +362,7 @@
             <div class="checkbox-option on">On</div>
           </div>
         </div> -->
+        {% if subtitle_names|count != 0 %}
         <div class="player-setting-line full">
           <label class="player-setting-label full">Subtitles/CC</label>
           <div class="checkbox-selection subtitles off">
@@ -407,6 +408,7 @@
             <label class="setting-reset-button blue-link number">Reset</label>
           </div>
         </div>
+        {% endif %}
       </div>
     </div>
     <div class="player-full-setting block hidden">

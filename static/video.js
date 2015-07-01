@@ -13,7 +13,6 @@ var isLoop = false;
 var danmaku_pointer = 0;
 var danmaku_pool_list = [];
 var danmaku_elements = [];
-var danmaku_check_interval = 1/4;
 var curTime = 0;
 var lastTime = 0;
 var occupation_normal = [];
@@ -96,7 +95,7 @@ dt.onPlayerStateChange = function(event) {
 	if (event.data == YT.PlayerState.PLAYING) {
 		isPlaying = true;
 		if (danmakuVar == null) {
-			danmakuVar = setInterval(danmaku_update, danmaku_check_interval*1000);
+			danmakuVar = setInterval(danmaku_update, 250);
 		}
 		if (progressVar == null) {
 			progressVar = setInterval(progress_update, 500);
@@ -1926,7 +1925,7 @@ dt.onPlayerReady = function(event) {
 
 		return false;
 	});
-	$('label.check-label input[type="checkbox"]').change(function() {
+	$('label.check-label.subtitle input[type="checkbox"]').change(function() {
 		var subtitle_index = $(this).attr('data-index');
 		if ($(this).is(':checked')) {
             $.ajax({
@@ -2695,7 +2694,7 @@ $(document).ready(function() {
 		var user_name = comment_box.find('a.user-name').text();
 		inner_comment_container.append($('#user-reply-form'));
 		$('#user-reply-form').removeClass('hidden');
-		$('#reply-textarea').val('@' + user_name + ': ');
+		$('#reply-textarea').val('@' + user_name + ': ').focus();
 	});
 
 	floorth = parseInt(dt.getParameterByName('comment'));

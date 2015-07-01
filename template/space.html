@@ -21,7 +21,6 @@
     <div id="navi-link-line">
       <a class="space-navi-link {% block videos_active %}active{% endblock %}" href="{{ uri_for('space', user_id=host.id) }}">Videos</a>
       <a class="space-navi-link {% block playlists_active %}{% endblock %}" href="{{ uri_for('space_playlist', user_id=host.id) }}">Playlists</a>
-      <a class="space-navi-link {% block board_active %}{% endblock %}" href="{{ uri_for('space_discuss', user_id=host.id) }}">Discussion</a>
       <a class="space-navi-link back" href="{{ uri_for('home') }}">Back</a>
     </div>
   </div>

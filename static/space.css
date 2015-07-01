@@ -236,7 +236,7 @@ div.uper-statistic-content {
 
 div.message-entry {
     font-size: 0;
-    padding: 15px 25px;
+    padding: 10px 25px;
 }
 
 div.message-entry:nth-child(even) {
@@ -244,8 +244,8 @@ div.message-entry:nth-child(even) {
 }
 
 img.user-img {
-    width: 64px;
-    height: 64px;
+    width: 48px;
+    height: 48px;
     box-shadow: 0 0 1px rgb(100,100,100);
 }
 
@@ -260,14 +260,16 @@ a.user-name {
     font-size: 14px;
 }
 
-a.user-name:hover {
-    color: rgb(0,140,255);
+label.floorth {
+    font-size: 14px;
+    margin-right: 10px;
+    color: rgb(150,150,150);
 }
 
 div.message-time {
     font-size: 14px;
     display: inline-block;
-    margin-left: 20px;
+    margin-left: 10px;
     color: rgb(150,150,150);
 }
 
@@ -280,7 +282,7 @@ div.message-content {
 }
 
 #write-message-box {
-    padding: 25px;
+    padding: 10px 25px;
     font-size: 0;
 }
 
@@ -298,8 +300,8 @@ div.message-content {
 
 #write-text {
     resize: vertical;
-    width: 500px;
-    min-height: 100px;
+    width: 550px;
+    min-height: 80px;
 }
 
 .inline-button.write {

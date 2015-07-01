@@ -309,6 +309,8 @@ class Mentioned(BaseHandler):
             comment = comments[i]
             video = videos[i]
             sender = senders[i]
+            if not video:
+                continue
             comment_info = {
                 'sender': sender.get_public_info(),
                 'type': comment.comment_type,

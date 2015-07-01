@@ -1,6 +1,6 @@
 div.content-entry {
     border-top: 1px solid rgb(230,230,230);
-    padding: 15px 25px;
+    padding: 10px 25px;
     width: 100%;
     display: inline-table;
     -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
@@ -51,7 +51,7 @@ div.info-line {
     font-size: 0;
     width: 100%;
     word-wrap: break-word;
-    margin-top: 2px;
+    margin-bottom: 2px;
 }
 
 div.info-line label {
@@ -143,7 +143,12 @@ div.pagination-line {
 }
 
 div.message-detail-entry {
-    padding-bottom: 10px;
+    overflow: hidden;
+    will-change: height;
+    padding: 0 1px 10px 1px;
+    -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
+    -moz-box-sizing: border-box;    /* Firefox, other Gecko */
+    box-sizing: border-box;
 }
 
 div.message-date {
@@ -182,6 +187,7 @@ div.message-content {
     position: relative;
     word-wrap: break-word;
     white-space: pre-wrap;
+    font-size: 14px;
 }
 
 div.message-content.send {
