@@ -1,7 +1,4 @@
 {% extends "template/history.html" %}
-{% block head %}
-{{ super() }}
-{% endblock %}
 
 {% block scope %}
 <a class="search-scope" href="{{ uri_for('history') }}">Views</a>
@@ -32,22 +29,4 @@
     </div>
 </div>
 {% endfor %}
-{% endblock %}
-
-{% block pagination %}
-{% if total_pages != 0 %}
-<div class="pagination-line">
-  {% if cur_page > 1 %}
-    <a class="page-change" href="{{ uri_for('history_comment') }}?page=1"><<</a>
-    <a class="page-change" href="{{ uri_for('history_comment') }}?page={{ cur_page - 1 }}"><</a>
-  {% endif %}
-  {% for p in pages %}
-    <a class="page-num {% if p == cur_page %}active{% endif %}" href="{{ uri_for('history_comment') }}?page={{ p }}">{{ p }}</a>
-  {% endfor %}
-  {% if cur_page < total_pages %}
-    <a class="page-change" href="{{ uri_for('history_comment') }}?page={{ cur_page + 1 }}">></a>
-    <a class="page-change" href="{{ uri_for('history_comment') }}?page={{ total_pages }}">>></a>
-  {% endif %}
-</div>
-{% endif %}
 {% endblock %}

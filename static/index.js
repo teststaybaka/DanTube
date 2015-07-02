@@ -28,8 +28,9 @@ function update_random_videos() {
     $.ajax({
         type: 'POST',
         url: '/video/random',
-        data: {'size': 5},
+        data: {size: 5},
         success: function(result) {
+            console.log(result)
             $('div.single-preview-line').empty();
             if(!result.error) {
                 for(var i = 0; i < result.videos.length; i++) {
@@ -37,6 +38,7 @@ function update_random_videos() {
                     $('div.single-preview-line').append(video_div);
                 }
             } else {
+                console.log('ssssssss')
                 $('div.single-preview-line').empty();
                 $('div.single-preview-line').append('<div class="preview-status">Load failed.</div>');
             }
@@ -44,6 +46,7 @@ function update_random_videos() {
         error: function (xhr, ajaxOptions, thrownError) {
             console.log(xhr.status);
             console.log(thrownError);
+            console.log('ddddddddd')
             $('div.single-preview-line').empty();
             $('div.single-preview-line').append('<div class="preview-status">Load failed.</div>');
         }
@@ -218,7 +221,6 @@ function render_wide_preview_video_div(video) {
 function render_preview_video_div(video) {
     var div =   '<div class="video-preview-thumbnail">\
                     <img src="' + video.thumbnail_url + '">\
-                    <!-- <div class="preview-time">23:20</div> -->\
                 </div>\
                 <div class="video-preview-statistic">\
                     <div class="video-preview-title">' + video.title + '</div>\
@@ -236,6 +238,7 @@ function render_preview_video_div(video) {
                     <div class="popup-intro">\
                         <div class="popup-thumbnail">\
                             <img src="' + video.thumbnail_url + '">\
+                            <div class="preview-time">' + dt.secondsToTime(video.duration) + '</div>\
                         </div>\
                         <div class="popup-descript">' + video.description + '</div>\
                     </div>\
@@ -277,6 +280,7 @@ function render_ranking_video_div(video, rank) {
                 <div class="popup-intro">\
                     <div class="popup-thumbnail">\
                         <img src="' + video.thumbnail_url + '">\
+                        <div class="preview-time">' + dt.secondsToTime(video.duration) + '</div>\
                     </div>\
                     <div class="popup-descript">' + video.description + '</div>\
                 </div>\

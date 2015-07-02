@@ -60,6 +60,7 @@
         <div class="video-img-uper">
             <a class="video-img" target="_blank" href="{{ video.url }}">
                 <img class="video-img" src="{{ video.thumbnail_url }}">
+                <div class="preview-time">{{ video.duration }}</div>
             </a>
             <div class="uper-line">
                 <label>UPer: </label>
@@ -91,19 +92,19 @@
         </div>
     </div>
     {% endfor %}
+    {% endblock %}
     <div class="search-pagination-line">
         {% if cur_page > 1%}
-            <a class="page-change" href="{{ uri_for('search') }}?keywords={{ keywords }}&order={{ order }}&category={{ cur_category }}&subcategory={{ cur_subcategory }}&page=1"><<</a>
-            <a class="page-change" href="{{ uri_for('search') }}?keywords={{ keywords }}&order={{ order }}&category={{ cur_category }}&subcategory={{ cur_subcategory }}&page={{ cur_page - 1 }}"><</a>
+            <a class="page-change" href="?keywords={{ keywords }}&order={{ order }}&category={{ cur_category }}&subcategory={{ cur_subcategory }}&page=1"><<</a>
+            <a class="page-change" href="?keywords={{ keywords }}&order={{ order }}&category={{ cur_category }}&subcategory={{ cur_subcategory }}&page={{ cur_page - 1 }}"><</a>
         {% endif %}
         {% for p in pages %}
-            <a class="page-num {% if p == cur_page %}active{% endif %}" href="{{ uri_for('search') }}?keywords={{ keywords }}&order={{ order }}&category={{ cur_category }}&subcategory={{ cur_subcategory }}&page={{ p }}">{{ p }}</a>
+            <a class="page-num {% if p == cur_page %}active{% endif %}" href="?keywords={{ keywords }}&order={{ order }}&category={{ cur_category }}&subcategory={{ cur_subcategory }}&page={{ p }}">{{ p }}</a>
         {% endfor %}
         {% if cur_page < total_pages %}
-            <a class="page-change" href="{{ uri_for('search') }}?keywords={{ keywords }}&order={{ order }}&category={{ cur_category }}&subcategory={{ cur_subcategory }}&page={{ cur_page + 1 }}">></a>
-            <a class="page-change" href="{{ uri_for('search') }}?keywords={{ keywords }}&order={{ order }}&category={{ cur_category }}&subcategory={{ cur_subcategory }}&page={{ total_pages }}">>></a>
+            <a class="page-change" href="?keywords={{ keywords }}&order={{ order }}&category={{ cur_category }}&subcategory={{ cur_subcategory }}&page={{ cur_page + 1 }}">></a>
+            <a class="page-change" href="?keywords={{ keywords }}&order={{ order }}&category={{ cur_category }}&subcategory={{ cur_subcategory }}&page={{ total_pages }}">>></a>
         {% endif %}
     </div>
-    {% endblock %}
 {% endif %}
 {% endblock %}

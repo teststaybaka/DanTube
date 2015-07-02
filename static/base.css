@@ -1015,6 +1015,13 @@ span.subscribe-icon {
     background-color: rgb(120,120,120);
 }
 
-.input-number {
-
+div.preview-time {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    background-color: rgba(50,50,50,0.5);
+    color: rgba(255,255,255,0.8);
+    font-size: 12px;
+    font-weight: bold;
+    padding: 0 3px;
 }

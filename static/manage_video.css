@@ -307,7 +307,7 @@ a.sub-title-link {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    vertical-align: text-bottom;
+    vertical-align: middle;
     font-size: 14px;
 }
 
@@ -324,7 +324,7 @@ div.edit-title-button {
     background-image: url("/static/img/basic_icons.png");
     cursor: pointer;
     display: inline-block;
-    vertical-align: text-bottom;
+    vertical-align: middle;
 }
 
 div.edit-title-button:hover {

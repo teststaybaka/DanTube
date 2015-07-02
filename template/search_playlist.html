@@ -1,7 +1,4 @@
 {% extends "template/search.html" %}
-{% block head %}
-{{ super() }}
-{% endblock %}
 
 {% block search_url %}
 action="{{ uri_for('search_playlist') }}"
@@ -49,17 +46,4 @@ action="{{ uri_for('search_playlist') }}"
     </div>
 </div>
 {% endfor %}
-<div class="search-pagination-line">
-    {% if cur_page > 1%}
-        <a class="page-change" href="{{ uri_for('search_playlist') }}?keywords={{ keywords }}&page=1"><<</a>
-        <a class="page-change" href="{{ uri_for('search_playlist') }}?keywords={{ keywords }}&page={{ cur_page - 1 }}"><</a>
-    {% endif %}
-    {% for p in pages %}
-        <a class="page-num {% if p == cur_page %}active{% endif %}" href="{{ uri_for('search_playlist') }}?keywords={{ keywords }}&page={{ p }}">{{ p }}</a>
-    {% endfor %}
-    {% if cur_page < total_pages %}
-        <a class="page-change" href="{{ uri_for('search_playlist') }}?keywords={{ keywords }}&page={{ cur_page + 1 }}">></a>
-        <a class="page-change" href="{{ uri_for('search_playlist') }}?keywords={{ keywords }}&page={{ total_pages }}">>></a>
-    {% endif %}
-</div>
 {% endblock %}

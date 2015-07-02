@@ -177,6 +177,7 @@ div.cover-title {
     height: 64px;
     overflow: hidden;
     margin-bottom: 5px;
+    line-height: 16px;
 }
 
 div.cover-uploader {
@@ -246,7 +247,7 @@ a.category-title {
 a.refresh-video {
     float: right;
     margin-right: 20px;
-    font-size: 16px;
+    font-size: 14px;
     margin-top: 3px;
     cursor: pointer;
     color: rgb(100,100,100);
@@ -299,24 +300,12 @@ div.video-preview-thumbnail {
     width: 176px;
     height: 99px;
     display: block;
-    position: relative;
 }
 
 div.video-preview-thumbnail img {
     width: 100%;
     height: 100%;
     box-shadow: 0 0 1px rgb(100,100,100);
-}
-
-div.preview-time {
-    position: absolute;
-    bottom: 0;
-    right: 0;
-    background-color: rgba(0,0,0,0.5);
-    color: white;
-    font-size: 12px;
-    font-weight: bold;
-    padding: 1px 5px;
 }
 
 div.video-preview-statistic {
@@ -368,7 +357,7 @@ div.video-preview-comment-num {
 div.video-preview-popup {
     position: absolute;
     box-shadow: 0 0 1px rgb(100,100,100);
-    top: -195px;
+    top: -165px;
     background-color: white;
     width: 370px;
     padding: 10px 15px;
@@ -436,6 +425,7 @@ div.popup-thumbnail {
     box-shadow: 0 0 1px rgb(100,100,100);
     display: inline-block;
     height: 100%;
+    position: relative;
 }
 
 div.popup-thumbnail img {
@@ -449,7 +439,8 @@ div.popup-descript {
     overflow: hidden;
     word-wrap: break-word;
     white-space: pre-wrap;
-    font-size: 13px;
+    font-size: 14px;
+    line-height: 16px;
     color: rgb(50,50,50);
     width: 248px;
     margin-left: 5px;
@@ -507,7 +498,7 @@ div.top-video-thumbnail {
     height: 63px;
     box-shadow: 0 0 1px rgb(100,100,100);
     display: inline-block;
-    vertical-align: text-top;
+    vertical-align: top;
 }
 
 div.top-video-thumbnail img {
@@ -536,7 +527,7 @@ div.top-video-title {
     margin-left: 5px;
     line-height: 16px;
     word-wrap: break-word;
-    vertical-align: text-top;
+    vertical-align: top;
 }
 
 div.top-video-hits {
@@ -575,7 +566,7 @@ div.ranking-video-title {
     margin-left: 3px;
 }
 
-a.ranking-content-entry:hover div.video-preview-popup{
+a.ranking-content-entry:hover div.video-preview-popup {
     display: inline-block;
     -webkit-animation: delay_opacity_show .6s; /* Chrome, Safari, Opera */
     animation: delay_opacity_show .6s;

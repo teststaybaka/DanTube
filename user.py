@@ -79,10 +79,7 @@ class SpacePlaylist(BaseHandler):
         context['playlists'] = []
         total_found = host.playlists_created
         total_pages = math.ceil(total_found/float(page_size))
-        playlists = []
-        if total_found != 0 and page <= total_pages:
-            offset = (page - 1) * page_size
-            playlists = models.PlayList.query(models.PlayList.creator==host.key).order(-models.PlayList.modified).fetch(offset=offset, limit=page_size)
+        playlists = models.PlayList.query(models.PlayList.creator==host.key).order(-models.PlayList.modified).fetch(offset=(page-1)*page_size, limit=page_size)
         
         for i in range(0, len(playlists)):
             playlist = playlists[i]
@@ -92,8 +89,37 @@ class SpacePlaylist(BaseHandler):
         context['host'] = host.get_public_info(self.user)
         context['host'].update(host.get_statistic_info())
         context['host'].update(host.get_visitor_info())
-        context.update(self.get_page_range(page, total_pages) )
+        context.update(self.get_page_range(page, total_pages))
         self.render('space_playlist', context)
+
+class FeaturedUpers(BaseHandler):
+    @host_required
+    def get(self, host):
+        page_size = 20;
+        page = self.get_page_number()
+
+        context = {'users': []}
+        total_found = len(host.subscriptions)
+        total_pages = math.ceil(total_found/float(page_size))
+        user_keys = []
+        offset = (page-1)*page_size
+        for i in range(0, page_size):
+            if i+offset >= total_found:
+                break
+            user_keys.append(host.subscriptions[i+offset])
+        
+        users = ndb.get_multi(user_keys)
+        for i in range(0, len(users)):
+            user = users[i]
+            info = user.get_public_info()
+            info.update(user.get_statistic_info())
+            context['users'].append(info)
+
+        context['host'] = host.get_public_info(self.user)
+        context['host'].update(host.get_statistic_info())
+        context['host'].update(host.get_visitor_info())
+        context.update(self.get_page_range(page, total_pages))
+        self.render('space_upers', context)
 
 class Subscribe(BaseHandler):
     @login_required_json

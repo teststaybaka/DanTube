@@ -63,15 +63,15 @@
 {% if total_pages != 0 %}
 <div class="pagination-line">
   {% if cur_page > 1 %}
-    <a class="page-change" href="{{ uri_for('favorites') }}?page=1"><<</a>
-    <a class="page-change" href="{{ uri_for('favorites') }}?page={{ cur_page - 1 }}"><</a>
+    <a class="page-change" href="?page=1"><<</a>
+    <a class="page-change" href="?page={{ cur_page - 1 }}"><</a>
   {% endif %}
   {% for p in pages %}
-    <a class="page-num {% if p == cur_page %}active{% endif %}" href="{{ uri_for('favorites') }}?page={{ p }}">{{ p }}</a>
+    <a class="page-num {% if p == cur_page %}active{% endif %}" href="?page={{ p }}">{{ p }}</a>
   {% endfor %}
   {% if cur_page < total_pages %}
-    <a class="page-change" href="{{ uri_for('favorites') }}?page={{ cur_page + 1 }}">></a>
-    <a class="page-change" href="{{ uri_for('favorites') }}?page={{ total_pages }}">>></a>
+    <a class="page-change" href="?page={{ cur_page + 1 }}">></a>
+    <a class="page-change" href="?page={{ total_pages }}">>></a>
   {% endif %}
 </div>
 {% endif %}

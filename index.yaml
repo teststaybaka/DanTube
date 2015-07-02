@@ -108,6 +108,12 @@ indexes:
   - name: modified
     direction: desc
 
+- kind: SpaceDiscussion
+  ancestor: yes
+  properties:
+  - name: created
+    direction: desc
+
 - kind: Video
   properties:
   - name: category

@@ -86,15 +86,15 @@
 {% if total_pages != 0 %}
 <div class="pagination-line">
   {% if cur_page > 1 %}
-    <a class="page-change" href="{{ uri_for('manage_video') }}?keywords={{ video_keywords }}&order={{ order }}&page=1"><<</a>
-    <a class="page-change" href="{{ uri_for('manage_video') }}?keywords={{ video_keywords }}&order={{ order }}&page={{ cur_page - 1 }}"><</a>
+    <a class="page-change" href="?keywords={{ video_keywords }}&order={{ order }}&page=1"><<</a>
+    <a class="page-change" href="?keywords={{ video_keywords }}&order={{ order }}&page={{ cur_page - 1 }}"><</a>
   {% endif %}
   {% for p in pages %}
-    <a class="page-num {% if p == cur_page %}active{% endif %}" href="{{ uri_for('manage_video') }}?keywords={{ video_keywords }}&order={{ order }}&page={{ p }}">{{ p }}</a>
+    <a class="page-num {% if p == cur_page %}active{% endif %}" href="?keywords={{ video_keywords }}&order={{ order }}&page={{ p }}">{{ p }}</a>
   {% endfor %}
   {% if cur_page < total_pages %}
-    <a class="page-change" href="{{ uri_for('manage_video') }}?keywords={{ video_keywords }}&order={{ order }}&page={{ cur_page + 1 }}">></a>
-    <a class="page-change" href="{{ uri_for('manage_video') }}?keywords={{ video_keywords }}&order={{ order }}&page={{ total_pages }}">>></a>
+    <a class="page-change" href="?keywords={{ video_keywords }}&order={{ order }}&page={{ cur_page + 1 }}">></a>
+    <a class="page-change" href="?keywords={{ video_keywords }}&order={{ order }}&page={{ total_pages }}">>></a>
   {% endif %}
 </div>
 {% endif %}

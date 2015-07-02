@@ -6,7 +6,6 @@
 
 {% block head %}
 {{ super() }}
-<script src="/static/space.js" language="JavaScript" type="text/javascript"></script>
 {% if host.space_css %}
 <link rel="stylesheet" href="{{ uri_for('space_css', resource=host.space_css) }}" type="text/css" />
 {% else %}
@@ -21,6 +20,7 @@
     <div id="navi-link-line">
       <a class="space-navi-link {% block videos_active %}active{% endblock %}" href="{{ uri_for('space', user_id=host.id) }}">Videos</a>
       <a class="space-navi-link {% block playlists_active %}{% endblock %}" href="{{ uri_for('space_playlist', user_id=host.id) }}">Playlists</a>
+      <a class="space-navi-link {% block upers_active %}{% endblock %}" href="{{ uri_for('featured_upers', user_id=host.id) }}">UPers</a>
       <a class="space-navi-link back" href="{{ uri_for('home') }}">Back</a>
     </div>
   </div>
@@ -28,8 +28,8 @@
 {% endblock %}
 
 {% block body %}
-{% block left_body %}
 <div id="video-list">
+  {% block left_body %}
   {% if total_pages == 0 %}
     <div class="content-entry none">
         No videos found.
@@ -54,6 +54,7 @@
       </div>
     </div>
   {% endfor %}
+  {% endblock %}
   {% if total_pages != 0 %}
   <div class="pagination-line">
     {% if cur_page > 1 %}
@@ -70,7 +71,6 @@
   </div>
   {% endif %}
 </div>
-{% endblock %}
 
 <div id="uper-info-box">
   <img id="uper-img" src="{{ host.avatar_url }}">

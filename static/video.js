@@ -445,7 +445,7 @@ function progress_tip_show(evt) {
 	tip.style.transform = "translateX("+offset+"px)";
 
 	var curTime = offset/progress_bar.offsetWidth*player.getDuration();
-	tip.lastChild.nodeValue = secondsToTime(curTime);
+	tip.lastChild.nodeValue = dt.secondsToTime(curTime);
 }
 
 function progress_tip_hide(evt) {
@@ -490,7 +490,7 @@ function progress_bar_stop(evt) {
 	}
 	var num = offset/progress_bar.offsetWidth*player.getDuration();
 	var progress_number = document.getElementById("progress-number");
-	progress_number.lastChild.nodeValue = secondsToTime(num)+"/"+progress_number.lastChild.nodeValue.split('/')[1];
+	progress_number.lastChild.nodeValue = dt.secondsToTime(num)+"/"+progress_number.lastChild.nodeValue.split('/')[1];
 	player.seekTo(num, true);
 	document.onmousemove = null;
 	document.onmouseup = null;
@@ -513,7 +513,7 @@ function progress_update() {
 	// console.log('progress_update');
 	var progress_number = document.getElementById("progress-number");
 	var splits = progress_number.lastChild.nodeValue.split('/');
-	progress_number.lastChild.nodeValue = secondsToTime(player.getCurrentTime())+"/"+splits[1];
+	progress_number.lastChild.nodeValue = dt.secondsToTime(player.getCurrentTime())+"/"+splits[1];
 	if (!progressHold) {
 		var progress_played = document.getElementById("progress-bar-played");
 		progress_played.style.width = player.getCurrentTime()/player.getDuration()*100+'%';
@@ -980,7 +980,7 @@ function danmaku_update() {
 				}
 				ele.element.style.fontSize = Math.round(ele.ref_danmaku.size*danmaku_scale/3)+'px';
 				ele.element.style.fontFamily = danmaku_font;
-				// ele.element.lastChild.nodeValue = secondsToTime(ele.ref_danmaku.timestamp);
+				// ele.element.lastChild.nodeValue = dt.secondsToTime(ele.ref_danmaku.timestamp);
 				ele.generating = true;
 
 				if (ele.ref_danmaku.type === 'RightToLeft') {
@@ -1081,7 +1081,7 @@ function danmaku_update() {
 dt.onPlayerReady = function(event) {
 	player = dt.player;
 	var progress_number = document.getElementById("progress-number");
-	progress_number.lastChild.nodeValue = "00:00"+"/"+secondsToTime(player.getDuration());
+	progress_number.lastChild.nodeValue = "00:00"+"/"+dt.secondsToTime(player.getDuration());
 	setInterval(buffer_update, 500);
 	buffer_update();
 	progress_update();
@@ -2165,17 +2165,6 @@ function date_order_change(evt) {
 	time_title.className = "danmaku-order-title";
 }
 
-function secondsToTime(secs) {
-	var curTime;
-	if (Math.floor(secs/60) < 10) {
-		curTime = "0"+Math.floor(secs/60);
-	} else {
-		curTime = ""+Math.floor(secs/60);
-	}
-	curTime += ":"+("0"+Math.floor(secs%60)).substr(-2);
-	return curTime;
-}
-
 function danmaku_timestamp_lower_compare(x, y) {
 	if (x.timestamp != y.timestamp) {
 		return x.timestamp < y.timestamp;
@@ -2225,7 +2214,7 @@ function generate_danmaku_pool_entry(entry) {
 
 	var time_value = document.createElement('div');
 	time_value.className = "bullet-time-value";
-	time_value.appendChild(document.createTextNode(secondsToTime(entry.timestamp)));
+	time_value.appendChild(document.createTextNode(dt.secondsToTime(entry.timestamp)));
 	var content_value = document.createElement('div');
 	content_value.className = "bullet-content-value";
 	content_value.title = entry.content;

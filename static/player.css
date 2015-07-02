@@ -2028,8 +2028,12 @@ div.pagination-line.replies:empty {
 	word-wrap: break-word;
 }
 
+#list-intro-wrapper {
+	border-bottom: 1px solid rgb(220,220,220);
+}
+
 #list-intro {
-	margin: 10px 10px 25px 10px;
+	margin: 10px 10px 20px 10px;
 	color: rgb(100,100,100);
 	font-size: 14px;
 	word-wrap: break-word;

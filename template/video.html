@@ -682,8 +682,10 @@
   <div id="right-video-list">
     <div id="list-title">{{ playlist.title }}</div>
     {% if playlist.intro %}
-    <div id="list-intro">{{ playlist.intro }}</div>
-    <div id="list-intro-display-button" class="display-button intro"><span class="intro-display-text">SHOW MORE</span><span class="display-arrow"></span></div>
+    <div id="list-intro-wrapper">
+      <div id="list-intro">{{ playlist.intro }}</div>
+      <div id="list-intro-display-button" class="display-button intro"><span class="intro-display-text">SHOW MORE</span><span class="display-arrow"></span></div>
+    </div>
     {% endif %}
     <div id="list-scroll-bar">
       {% for list_video in playlist.videos %}

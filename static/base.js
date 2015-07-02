@@ -170,7 +170,10 @@ $(document).ready(function() {
     });
 
     $('span.commas_number').each(function() {
-        $(this).text(dt.numberWithCommas($(this).text()) )
+        $(this).text(dt.numberWithCommas($(this).text()) );
+    });
+    $('div.preview-time').each(function() {
+        $(this).text(dt.secondsToTime($(this).text()) );
     });
 
     $('div.emoticons-select').append('<div class="emoticons-menu container">\
@@ -339,6 +342,18 @@ dt.LinkedList.prototype.remove = function(node) {
         this.tail = node.prev;
     }
     this.length--;
+}
+
+dt.secondsToTime = function(secs) {
+    secs = parseInt(secs);
+    var curTime;
+    if (Math.floor(secs/60) < 10) {
+        curTime = "0"+Math.floor(secs/60);
+    } else {
+        curTime = ""+Math.floor(secs/60);
+    }
+    curTime += ":"+("0"+Math.floor(secs%60)).substr(-2);
+    return curTime;
 }
 
 function count_new_subscriptions() {

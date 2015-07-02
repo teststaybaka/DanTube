@@ -17,7 +17,7 @@
 
 {% block detail %}
 <div id="sub-title-line" class="container">
-    <div id="sub-title"><span class="commas_number">{{ total_found }}</span> Playlist{% if total_found %}s{% endif %}</div>
+    <div id="sub-title"><span class="commas_number">{{ total_found }}</span> Playlist{% if total_found > 1 %}s{% endif %}</div>
     <form class="sub-search-block" method="get" action="{{ uri_for('manage_playlist') }}">
         <input class="sub-search-input" type="text" name="keywords" placeholder="Search Playlists" value="{{ list_keywords }}">
         <input type="submit" class="sub-search-button" value="">
@@ -73,15 +73,15 @@
 {% if total_pages != 0 %}
 <div class="pagination-line">
   {% if cur_page > 1 %}
-    <a class="page-change" href="{{ uri_for('manage_playlist') }}?keywords={{ list_keywords }}&page=1"><<</a>
-    <a class="page-change" href="{{ uri_for('manage_playlist') }}?keywords={{ list_keywords }}&page={{ cur_page - 1 }}"><</a>
+    <a class="page-change" href="?keywords={{ list_keywords }}&page=1"><<</a>
+    <a class="page-change" href="?keywords={{ list_keywords }}&page={{ cur_page - 1 }}"><</a>
   {% endif %}
   {% for p in pages %}
-    <a class="page-num {% if p == cur_page %}active{% endif %}" href="{{ uri_for('manage_playlist') }}?keywords={{ list_keywords }}&page={{ p }}">{{ p }}</a>
+    <a class="page-num {% if p == cur_page %}active{% endif %}" href="?keywords={{ list_keywords }}&page={{ p }}">{{ p }}</a>
   {% endfor %}
   {% if cur_page < total_pages %}
-    <a class="page-change" href="{{ uri_for('manage_playlist') }}?keywords={{ list_keywords }}&page={{ cur_page + 1 }}">></a>
-    <a class="page-change" href="{{ uri_for('manage_playlist') }}?keywords={{ list_keywords }}&page={{ total_pages }}">>></a>
+    <a class="page-change" href="?keywords={{ list_keywords }}&page={{ cur_page + 1 }}">></a>
+    <a class="page-change" href="?keywords={{ list_keywords }}&page={{ total_pages }}">>></a>
   {% endif %}
 </div>
 {% endif %}
