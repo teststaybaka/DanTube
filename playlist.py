@@ -47,11 +47,8 @@ class ManagePlaylist(BaseHandler):
         context = {}
         context['playlists'] = []
 
-        keywords = self.request.get('keywords').strip().lower()
+        keywords = self.get_keywords()
         if keywords:
-            if models.ILLEGAL_REGEX.match(keywords):
-                self.notify('Keywords include illegal characters.');
-                return
             context['list_keywords'] = keywords
             query_string = 'content: ' + keywords
             page =  min(page, math.ceil(models.MAX_QUERY_RESULT/float(page_size)) )
@@ -221,19 +218,16 @@ class SearchVideo(BaseHandler):
         context = {'error': False}
         context['videos'] = []
 
-        keywords = self.request.get('keywords').strip().lower()
+        keywords = self.get_keywords()
         res = re.match(r'dt(\d+)', keywords)
         if res:
             video_id = res.group(1)
-            video = models.Video.get_by_id('dt' + str(video_id))
+            video = models.Video.get_by_id('dt' + video_id)
             videos = []
             if video and video.uploader.id() == user.key.id():
                 videos = [video]
             total_pages = 1
         elif keywords:
-            if models.ILLEGAL_REGEX.match(keywords):
-                self.notify('Keywords include illegal characters.');
-                return
             query_string = 'content: ' + keywords
             page =  min(page, math.ceil(models.MAX_QUERY_RESULT/float(page_size)) )
             offset = (page - 1)*page_size

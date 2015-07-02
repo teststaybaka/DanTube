@@ -25,8 +25,8 @@ def number_upper_limit_99(num):
     return str(num)
 
 EMIAL_REGEX = re.compile(r"^[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$")
-ILLEGAL_REGEX = re.compile(r".*[&@.,?!;:/\\\"'<>].*")
-SPLIT_REGEX = re.compile(r"[&@.,?!;:/\\\"'<>]")
+ILLEGAL_REGEX = re.compile(r".*[&@.,?!:/\\\"'<>].*")
+ILLEGAL_LETTER = re.compile(r"[&@.,?!:/\\\"'<>]")
 
 class History(ndb.Model):
   video = ndb.KeyProperty(kind='Video', required=True, indexed=False)

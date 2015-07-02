@@ -124,6 +124,9 @@ class BaseHandler(webapp2.RequestHandler):
             page = 1
         return page
 
+    def get_keywords(self):
+        return models.ILLEGAL_LETTER.sub(' ', self.request.get('keywords').strip().lower())
+
     def get_page_range(self, cur_page, total_pages, page_range=10):
         cur_page = int(cur_page)
         total_pages = int(total_pages)
@@ -433,12 +436,9 @@ class Search(BaseHandler):
         page = self.get_page_number()
 
         context = {}
-        keywords = self.request.get('keywords').strip().lower()
+        keywords = self.get_keywords()
         if not keywords:
             query_string = ''
-        elif models.ILLEGAL_REGEX.match(keywords):
-            self.notify('Keywords include illegal characters.');
-            return
         else:
             query_string = 'content: ' + keywords
         context['keywords'] = keywords
@@ -512,12 +512,9 @@ class SearchPlaylist(BaseHandler):
         page = self.get_page_number()
 
         context = {}
-        keywords = self.request.get('keywords').strip().lower()
+        keywords = self.get_keywords()
         if not keywords:
             query_string = ''
-        elif models.ILLEGAL_REGEX.match(keywords):
-            self.notify('Keywords include illegal characters.');
-            return
         else:
             query_string = 'content: ' + keywords
         context['keywords'] = keywords
@@ -573,12 +570,9 @@ class SearchUPer(BaseHandler):
         page = self.get_page_number()
 
         context = {}
-        keywords = self.request.get('keywords').strip().lower()
+        keywords = self.get_keywords()
         if not keywords:
             query_string = ''
-        elif models.ILLEGAL_REGEX.match(keywords):
-            self.notify('Keywords include illegal characters.');
-            return
         else:
             query_string = 'content: ' + keywords
         context['keywords'] = keywords

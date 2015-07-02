@@ -623,12 +623,9 @@ class ManageVideo(BaseHandler):
         context = {}
         context['videos'] = []
 
-        keywords = self.request.get('keywords').strip().lower()
+        keywords = self.get_keywords()
         order = self.request.get('order').strip()
         if keywords:
-            if models.ILLEGAL_REGEX.match(keywords):
-                self.notify('Keywords include illegal characters.');
-                return
             context['order'] = 'created'
             context['video_keywords'] = keywords
             query_string = 'content: ' + keywords

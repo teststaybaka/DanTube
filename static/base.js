@@ -375,6 +375,6 @@ function count_new_subscriptions() {
     });
 }
 
-dt.puncts = /[&@.,?!;:/\\"'<>]/;
+dt.puncts = /[&@.,?!:/\\"'<>]/;
 //end of the file
 } (dt, jQuery));

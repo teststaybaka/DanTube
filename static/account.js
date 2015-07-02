@@ -175,7 +175,7 @@ $(document).ready(function() {
         var nickname = evt.target.value.trim();
         if (!nickname || dt.puncts.test(nickname)) {
             $('#change-nickname-error').addClass('show');
-            $('#change-nickname-error').text('Your nickname can\'t contain: & @ . , ? ! ; : / \\ \" \' < >');
+            $('#change-nickname-error').text('Your nickname can\'t contain: & @ . , ? ! : / \\ \" \' < >');
             $(evt.target).addClass('error');
         } else if (nickname.length > 50) {
             $('#change-nickname-error').addClass('show');
@@ -218,7 +218,7 @@ $(document).ready(function() {
         var error = false;
         if (!nickname || dt.puncts.test(nickname)) {
             $('#change-nickname-error').addClass('show');
-            $('#change-nickname-error').text('Your nickname can\'t contain: & @ . , ? ! ; : / \\ \" \' < >');
+            $('#change-nickname-error').text('Your nickname can\'t contain: & @ . , ? ! : / \\ \" \' < >');
             $('#nickname-change').addClass('error');
             error = true;
         } else if (nickname.length > 50) {
