@@ -121,18 +121,12 @@ div.video-time {
 
 a.video-title, a.uploader {
     font-size: 14px;
-    /*color: rgb(100,100,100);*/
-    /*font-weight: bold;*/
     margin-top: 2px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
     display: inline-block;
     max-width: 100%;
-}
-
-a.video-title:hover {
-    color: rgb(0,140,255);
 }
 
 div.video-statistic {
@@ -190,6 +184,11 @@ a.episode-entry {
     margin-right: 10px;
     padding: 6px;
     font-weight: normal;
+}
+
+.upers-button {
+    margin-top: 8px;
+    margin-right: 10px;
 }
 
 a.tag-entry:hover {

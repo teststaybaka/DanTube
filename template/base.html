@@ -22,7 +22,7 @@
     <div id="user-bar-background">
         <div id="user-bar" class="container">
             <a id="logo" class="left" href="{{ uri_for('home') }}">DanTube</a>
-            <a class="navi left link" id="feeling-lucky" href="{{ uri_for('feeling_lucky') }}">I'm feeling lucky!</a>
+            <a class="navi left" id="feeling-lucky" href="{{ uri_for('feeling_lucky') }}">I'm feeling lucky!</a>
             {% if user.is_auth %}
             <div id="portrait" class="right" data-id="{{ user.id }}">
                 <a id="portrait-link" href="{{ uri_for('account') }}">
@@ -31,27 +31,27 @@
                 <div id="user-box">
                     <div id="user-box-nickname">{{ user.nickname }}</div>
                     <div id="user-message-container" class="container">
-                        <a href="{{ uri_for('mentioned') }}" id="user-at">@Me<div id="user-at-new-num">{{ user.new_mentions_99 }}</div></a>
+                        <a href="{{ uri_for('mentioned') }}" id="user-at" class="normal-link">@Me<div id="user-at-new-num">{{ user.new_mentions_99 }}</div></a>
 
-                        <a href="{{ uri_for('notifications') }}" id="user-notification">Notifications<div id="user-notification-new-num">{{ user.new_notifications_99 }}</div></a>
-                        <a href="{{ uri_for('message') }}" id="user-message">Messages<div id="user-message-new-num">{{ user.new_messages_99 }}</div></a>
+                        <a href="{{ uri_for('notifications') }}" id="user-notification" class="normal-link">Notifications<div id="user-notification-new-num">{{ user.new_notifications_99 }}</div></a>
+                        <a href="{{ uri_for('message') }}" id="user-message" class="normal-link">Messages<div id="user-message-new-num">{{ user.new_messages_99 }}</div></a>
                     </div>
                     <div id="user-box-bottom-line" class="container">
                         <a href="{{ uri_for('account') }}" id="user-config">
                             <span id="user-config-icon"></span>
                             <span id="user-config-text">Settings</span>
                         </a>
-                        <a href="{{ uri_for('logout') }}" id="logout" class="link">Sign out</a>
+                        <a href="{{ uri_for('logout') }}" id="logout" class="normal-link">Sign out</a>
                     </div>
                 </div>
             </div>
-            <a href="{{ uri_for('subscriptions_quick') }}" id="user-subscriptions" class="navi right link">Subscriptions<div id="user-subscriptions-new-num"></div></a>
-            <a href="{{ uri_for('favorites') }}" class="navi right link">Favorites</a>
-            <a href="{{ uri_for('history') }}" class="navi right link">History</a>
-            <a href="{{ uri_for('submit') }}" class="navi right link">Submit</a>
+            <a href="{{ uri_for('subscriptions_quick') }}" id="user-subscriptions" class="navi right normal-link">Subscriptions<div id="user-subscriptions-new-num"></div></a>
+            <a href="{{ uri_for('favorites') }}" class="navi right normal-link">Favorites</a>
+            <a href="{{ uri_for('history') }}" class="navi right normal-link">History</a>
+            <a href="{{ uri_for('submit') }}" class="navi right normal-link">Submit</a>
             {% else %}
-            <a href="{{ uri_for('signup') }}" id="signup-nav-button" class="navi right link">Sign up</a>
-            <a href="{{ uri_for('signin') }}" id="signin-nav-button" class="navi right link">Sign in</a>
+            <a href="{{ uri_for('signup') }}" id="signup-nav-button" class="navi right normal-link">Sign up</a>
+            <a href="{{ uri_for('signin') }}" id="signin-nav-button" class="navi right normal-link">Sign in</a>
             {% endif %}
         </div>
     </div>

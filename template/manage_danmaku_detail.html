@@ -1,0 +1,79 @@
+{% extends "template/account.html" %}
+{% block head %}
+{{ super() }}
+<link rel="stylesheet" href="/static/manage_video.css" type="text/css" />
+<script src="/static/manage_danmaku.js" language="JavaScript" type="text/javascript"></script>
+{% endblock %}
+
+{% block overview_active %}{% endblock %}
+{% block videos_active %}active{% endblock %}
+
+{% block topTitle %}
+<a class="top-title" href="{{ uri_for('manage_video') }}">
+    <div class="top-title-dot"></div>
+    Videos
+</a>
+<a class="top-title" href="{{ uri_for('manage_danmaku', video_id=id_num) }}">
+    <div class="top-title-dot"></div>
+    Parts
+</a>
+<a class="top-title active" href="">
+    <div class="top-title-dot"></div>
+    Danmaku
+</a>
+{% endblock %}
+
+{% block detail %}
+<div id="sub-title-line" class="container">
+    <a id="sub-title" class="normal-link" href="{{ uri_for('watch', video_id=id_num) }}" target="_blank">{{ title }}</a>
+</div>
+<div class="danmaku-clip-list">
+    <div class="actions-line container">
+        <a class="clip-title-label normal-link" href="{{ uri_for('watch', video_id=id_num) }}?index={{ clip_index }}" target="_blank">
+            {{ clip_title }}
+            {% if clip_title %}
+                {{ clip_index }}. {{ clip_title }}
+            {% else %}
+                Part {{ clip_index }}
+            {% endif %}
+        </a>
+        <div class="list-select">
+            <div class="list-selection down hidden">
+                {% for i in danmaku_list_range %}
+                <div class="list-option pool" data-index="{{ i+1 }}" data-type="danmaku" title="Danmaku pool {{ i+1 }}">Danmaku pool {{ i+1 }}</div>
+                {% endfor %}
+                {% if advanced_danmaku_pool %}
+                <div class="list-option pool" data-type="advanced" title="Advanced danmaku pool">Advanced danmaku pool</div>
+                {% endif %}
+                {% for sub_name in subtitle_names %}
+                <div class="list-option pool" data-index="{{ loop.index }}" data-type="subtitles" title="{{ sub_name }}">{{ sub_name }}</div>
+                {% endfor %}
+            </div>
+            <div class="list-selected pool">No pool available</div>
+        </div>
+        <div class="danmaku-num-label"></div>
+        <div class="inline-button actions delete disabled">Delete</div>
+        <div class="inline-button actions drop disabled">Drop the pool</div>
+    </div>
+    <div class="pools-block">
+        {% if danmaku_list_range|length == 0 and (not advanced_danmaku_pool) and subtitle_names|length == 0 %}
+        <div class="pool-detail-list none">Sorry, no danmaku found.</div>
+        {% else %}
+        <!-- <div class="pool-detail-list loading"></div>
+        <div class="pool-detail-entry label-line">
+            <div class="detail-label timestamp">Timestamp</div>
+            <div class="detail-label">Type</div>
+            <div class="detail-label content subtitles">Content</div>
+            <div class="single-checkbox inline all"></div>
+        </div>
+        <div class="pool-detail-entry">
+            <div class="detail-label timestamp">10:10</div>
+            <div class="detail-label">Subtitles</div>
+            <div class="detail-label content subtitles">sdvsdvsdfsdfsdfsdvsdvsdfsdfsdfsdvsdvsdfsdfsdfsdvsdvsdfsdfsdfsdvsdvsdfsdfsdf</div>
+            <div class="detail-label created">2014-07-12 05:23</div>
+            <div class="single-checkbox inline"></div>
+        </div> -->
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

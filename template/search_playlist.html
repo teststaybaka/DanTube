@@ -33,7 +33,7 @@ action="{{ uri_for('search_playlist') }}"
         </div>
     </div>
     <div class="video-info">
-        <a {% if playlist.url %}href="{{ playlist.url }}"{% endif %} class="video-title" target="_blank">{{ playlist.title }}</a>
+        <a {% if playlist.url %}href="{{ playlist.url }}"{% endif %} class="video-title normal-link" target="_blank">{{ playlist.title }}</a>
         <div class="playlist-description">{{ playlist.intro }}</div>
         <div class="playlist-episode">
             {% for video in playlist.videos %}

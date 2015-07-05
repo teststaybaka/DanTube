@@ -72,7 +72,7 @@ class ManagePlaylist(BaseHandler):
                 offset = (page - 1) * page_size
                 playlists = models.PlayList.query(models.PlayList.creator==self.user.key).order(-models.PlayList.modified).fetch(offset=offset, limit=page_size)
 
-        for i in range(0, len(playlists)):
+        for i in xrange(0, len(playlists)):
             playlist = playlists[i]
             info = playlist.get_basic_info()
             context['playlists'].append(info)
@@ -153,7 +153,7 @@ class DeletePlaylist(BaseHandler):
         user = self.user
         ids = self.request.POST.getall('ids[]')
         deleted_ids = []
-        for i in range(0, len(ids)):
+        for i in xrange(0, len(ids)):
             try:
                 playlist = models.PlayList.get_by_id(int(ids[i]))
                 if (not playlist) or user.key != playlist.creator:
@@ -193,13 +193,13 @@ class EditPlaylist(BaseHandler):
 
         requested_videos = []
         base = (page - 1)*page_size;
-        for i in range(0, page_size):
+        for i in xrange(0, page_size):
             if base + i >= len(playlist.videos):
                 break
             requested_videos.append(playlist.videos[base + i])
 
         videos = ndb.get_multi(requested_videos)
-        for i in range(0, len(videos)):
+        for i in xrange(0, len(videos)):
             video = videos[i]
             video_info = video.get_basic_info()
             video_info['index'] = i + base + 1;
@@ -254,7 +254,7 @@ class SearchVideo(BaseHandler):
                 videos = models.Video.query(models.Video.uploader==self.user.key).order(-models.Video.created).fetch(offset=offset, limit=page_size)
         
         # logging.info(videos)
-        for i in range(0, len(videos)):
+        for i in xrange(0, len(videos)):
             # logging.info(videos[i])
             video = videos[i]
             video_info = video.get_basic_info()
@@ -276,7 +276,7 @@ class AddVideo(BaseHandler):
         ids = self.request.POST.getall('ids[]')
         added_ids = []
         put_list = []
-        for i in range(0, len(ids)):
+        for i in xrange(0, len(ids)):
             video_id = ids[i]
             video = models.Video.get_by_id('dt'+video_id)
             if (not video) or video.playlist_belonged != None or video.uploader != user.key or len(playlist.videos) > 2000:
@@ -309,7 +309,7 @@ class RemoveVideo(BaseHandler):
         ids = self.request.POST.getall('ids[]')
         deleted_ids = []
         put_list = []
-        for i in range(0, len(ids)):
+        for i in xrange(0, len(ids)):
             video_id = ids[i]
             video = models.Video.get_by_id('dt'+video_id)
             if (not video) or video.playlist_belonged.id() != playlist.key.id() or video.uploader.id() != user.key.id():

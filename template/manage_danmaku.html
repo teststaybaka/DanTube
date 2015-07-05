@@ -1,0 +1,53 @@
+{% extends "template/account.html" %}
+{% block head %}
+{{ super() }}
+<link rel="stylesheet" href="/static/manage_video.css" type="text/css" />
+{% endblock %}
+
+{% block overview_active %}{% endblock %}
+{% block videos_active %}active{% endblock %}
+
+{% block topTitle %}
+<a class="top-title" href="{{ uri_for('manage_video') }}">
+    <div class="top-title-dot"></div>
+    Videos
+</a>
+<a class="top-title active" href="">
+    <div class="top-title-dot"></div>
+    Parts
+</a>
+{% endblock %}
+
+{% block detail %}
+<div id="sub-title-line" class="container">
+    <a id="sub-title" class="normal-link" href="{{ uri_for('watch', video_id=id_num) }}" target="_blank">{{ title }}</a>
+</div>
+<div class="danmaku-clip-list">
+    <div class="danmaku-table-line label-line">
+        <div class="table-label subtitle">Parts</div>
+        <div class="table-label">Danmaku</div>
+        <div class="table-label">Advanced</div>
+        <div class="table-label">Subtitles</div>
+        <div class="table-label">Code</div>
+    </div>
+    {% for clip in clips %}
+    <div class="danmaku-table-line line">
+        <div class="table-label subtitle">
+            <a class="normal-link" href="{{ uri_for('watch', video_id=id_num) }}?index={{ loop.index }}" target="_blank">
+            {{ clip.title }}
+            {% if clip.title %}
+                {{ loop.index }}. {{ clip.title }}
+            {% else %}
+                Part {{ loop.index }}
+            {% endif %}
+            </a>
+        </div>
+        <div class="table-label">{{ clip.danmaku_num }}</div>
+        <div class="table-label">{{ clip.advanced_danmaku_num }}</div>
+        <div class="table-label">{{ clip.subtitles_num }}</div>
+        <div class="table-label">{{ clip.code_num }}</div>
+        <a class="table-label action blue-link" href="{{ uri_for('manage_danmaku_detail', video_id=id_num) }}?index={{ loop.index }}">[Check]</a>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

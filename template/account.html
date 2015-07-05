@@ -57,7 +57,7 @@
     </div>
 </div>
 <div id="account-right-section">
-    <div id="account-top-title" class="container">
+    <div id="account-top-title">
         {% block topTitle %}
         <a class="top-title active" href="">
             <div class="top-title-dot"></div>
@@ -66,39 +66,37 @@
         {% endblock %}
     </div>
     {% block detail %}
-    <div>
-        <div class="container">
-            <div id="account-profile-img">
-                <a id="account-change-avatar" href="{{ uri_for('change_avatar') }}">Change Avatar</a>
-                <img id="account-profile-img-content" src="{{ user.avatar_url }}">
-            </div>
-            <div id="account-detail">
-                <div class="detail-entry" id="account-email">{{ user.email }}
-                    {% if user.verified %}
-                    <div id="verified-icon" title="Email verified"></div>
-                    {% else %}
-                    <div class="blue-link" id="resend-email-link">Resend email</div>
-                    {% endif %}
-                </div>
-                <div class="detail-entry" id="account-joint-time">Joined at {{ user.created }}.</div>
-                <div class="detail-entry" id="account-space-divide">--------------</div>
-                <div class="detail-entry" id="account-nickname">{{ user.nickname }}
-                </div>
-                <div class="detail-entry" id="account-intro">{% if user.intro %}{{ user.intro }}{% else %}Say something to others.{% endif %}</div>
-            </div>
-            <div id="mine-statistic">
-                <div><a><label class="mine-statistic-icon bullets"></label>{{ user.bullets }}<div>Your bullets.</div></a></div>
-                <div><a href="{{ uri_for('favorites') }}"><label class="mine-statistic-icon favorites"></label>{{ user.favorites_counter }}<div>Your favorites.</div></a></div>
-                <div><a href="{{ uri_for('subscriptions') }}"><label class="mine-statistic-icon subscriptions"></label>{{ user.subscriptions_counter }}<div>Your subscriptions.</div></a></div>
-            </div>
+    <div class="container">
+        <div id="account-profile-img">
+            <a id="account-change-avatar" href="{{ uri_for('change_avatar') }}">Change Avatar</a>
+            <img id="account-profile-img-content" src="{{ user.avatar_url }}">
         </div>
-        <div id="account-statistic" class="container">
-            <div class="statistic-entry"><label class="statistic-icon submission"></label>You have submitted <span>{{ user.videos_submitted }}</span> videos.</div>
-            <div class="statistic-entry"><label class="statistic-icon watched"></label>Your videos have been watched <span>{{ user.videos_watched }}</span> times.</div>
-            <div class="statistic-entry"><label class="statistic-icon favored"></label>Your videos were favored <span>{{ user.videos_favored }}</span> times.</div>
-            <div class="statistic-entry"><label class="statistic-icon subscribed"></label>You have <span>{{ user.subscribers_counter }}</span> subscribers.</div>
-            <div class="statistic-entry"><label class="statistic-icon visited"></label>Your space has been visited <span>{{ user.space_visited }}</span> times.</div>
+        <div id="account-detail">
+            <div class="detail-entry" id="account-email">{{ user.email }}
+                {% if user.verified %}
+                <div id="verified-icon" title="Email verified"></div>
+                {% else %}
+                <div class="blue-link" id="resend-email-link">Resend email</div>
+                {% endif %}
+            </div>
+            <div class="detail-entry" id="account-joint-time">Joined at {{ user.created }}.</div>
+            <div class="detail-entry" id="account-space-divide">--------------</div>
+            <div class="detail-entry" id="account-nickname">{{ user.nickname }}
+            </div>
+            <div class="detail-entry" id="account-intro">{% if user.intro %}{{ user.intro }}{% else %}Say something to others.{% endif %}</div>
         </div>
+        <div id="mine-statistic">
+            <div><a><label class="mine-statistic-icon bullets"></label>{{ user.bullets }}<div>Your bullets.</div></a></div>
+            <div><a href="{{ uri_for('favorites') }}"><label class="mine-statistic-icon favorites"></label>{{ user.favorites_counter }}<div>Your favorites.</div></a></div>
+            <div><a href="{{ uri_for('subscriptions') }}"><label class="mine-statistic-icon subscriptions"></label>{{ user.subscriptions_counter }}<div>Your subscriptions.</div></a></div>
+        </div>
+    </div>
+    <div id="account-statistic" class="container">
+        <div class="statistic-entry"><label class="statistic-icon submission"></label>You have submitted <span>{{ user.videos_submitted }}</span> videos.</div>
+        <div class="statistic-entry"><label class="statistic-icon watched"></label>Your videos have been watched <span>{{ user.videos_watched }}</span> times.</div>
+        <div class="statistic-entry"><label class="statistic-icon favored"></label>Your videos were favored <span>{{ user.videos_favored }}</span> times.</div>
+        <div class="statistic-entry"><label class="statistic-icon subscribed"></label>You have <span>{{ user.subscribers_counter }}</span> subscribers.</div>
+        <div class="statistic-entry"><label class="statistic-icon visited"></label>Your space has been visited <span>{{ user.space_visited }}</span> times.</div>
     </div>
     {% endblock %}
 </div>

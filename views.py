@@ -247,7 +247,7 @@ class Home(BaseHandler):
         context['top_ten_videos'] = []
         videos, total_page = models.Video.get_page(order=models.Video.hot_score, page=1, page_size=10)
         uploaders = ndb.get_multi([video.uploader for video in videos])
-        for i in range(0, len(videos)):
+        for i in xrange(0, len(videos)):
             video = videos[i]
             uploader = uploaders[i]
             video_info = video.get_basic_info()
@@ -263,7 +263,7 @@ class Category(BaseHandler):
         context['top_ten_videos'] = []
         videos, total_page = models.Video.get_page(category=category, order=models.Video.hot_score, page=1, page_size=10)
         uploaders = ndb.get_multi([video.uploader for video in videos])
-        for i in range(0, len(videos)):
+        for i in xrange(0, len(videos)):
             video = videos[i]
             uploader = uploaders[i]
             video_info = video.get_basic_info()
@@ -280,7 +280,7 @@ class Subcategory(BaseHandler):
         context['top_ten_videos'] = []
         videos, total_page = models.Video.get_page(category=category, subcategory=subcategory, order=models.Video.hot_score, page=1, page_size=10)
         uploaders = ndb.get_multi([video.uploader for video in videos])
-        for i in range(0, len(videos)):
+        for i in xrange(0, len(videos)):
             video = videos[i]
             uploader = uploaders[i]
             video_info = video.get_basic_info()
@@ -307,7 +307,7 @@ class RandomVideo(BaseHandler):
             result['videos'] = []
             max_id = models.Video.get_max_id()
 
-            for i in range(0, size):
+            for i in xrange(0, size):
                 while True:
                     random_id = random.randint(1, max_id)
                     if not fetched.get(random_id):
@@ -413,7 +413,7 @@ class CategoryVideo(BaseHandler):
         result = {'error': False}
         result['videos'] = []
         uploaders = ndb.get_multi([video.uploader for video in videos])
-        for i in range(0, len(videos)): # videos[0:limit]:
+        for i in xrange(0, len(videos)): # videos[0:limit]:
             video = videos[i]
             uploader = uploaders[i]
             video_info = video.get_basic_info()
@@ -479,7 +479,7 @@ class Search(BaseHandler):
 
             videos = ndb.get_multi([ndb.Key(urlsafe=video_doc.doc_id) for video_doc in result.results])
             uploaders = ndb.get_multi([video.uploader for video in videos])
-            for i in range(0, len(videos)):
+            for i in xrange(0, len(videos)):
                 video = videos[i]
                 video_info = video.get_basic_info()
                 uploader = uploaders[i]
@@ -532,7 +532,7 @@ class SearchPlaylist(BaseHandler):
 
             playlists = ndb.get_multi([ndb.Key(urlsafe=playlist_doc.doc_id) for playlist_doc in result.results])
             creators = ndb.get_multi([playlist.creator for playlist in playlists])
-            for i in range(0, len(playlists)):
+            for i in xrange(0, len(playlists)):
                 playlist = playlists[i]
                 playlist_info = playlist.get_basic_info()
                 creator = creators[i]
@@ -541,10 +541,10 @@ class SearchPlaylist(BaseHandler):
 
                 videos_limit = min(9, len(playlist.videos))
                 video_keys = []
-                for i in range(0, videos_limit):
+                for i in xrange(0, videos_limit):
                     video_keys.append(playlist.videos[i])
                 videos = ndb.get_multi(video_keys)
-                for i in range(0, len(videos)):
+                for i in xrange(0, len(videos)):
                     video = videos[i]
                     video_info = video.get_basic_info()
                     video_info['index'] = i + 1
@@ -589,7 +589,7 @@ class SearchUPer(BaseHandler):
             total_pages = math.ceil(total_found/float(page_size))
 
             upers = ndb.get_multi([ndb.Key(urlsafe=uper_doc.doc_id) for uper_doc in result.results])
-            for i in range(0, len(upers)):
+            for i in xrange(0, len(upers)):
                 uper = upers[i]
                 uper_info = uper.get_public_info(self.user)
                 uper_info.update(uper.get_statistic_info())

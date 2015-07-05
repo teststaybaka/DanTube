@@ -44,16 +44,24 @@ var video_subcategories = {};
     </div>
     <div class="input-line">
       <label class="form-label">Category:</label>
-      <select name="category"  id="select-category">
-        {% for key in category %}
-          <option value="{{ key }}" {% if key == video.category %} selected="selected" {% endif %}>{{ key }}</option>
-        {% endfor %}
-      </select>
-      <select name="subcategory" id="select-subcategory">
-        {% for val in subcategory[video.category] %}
-          <option value="{{ val }}" {% if val == video.subcategory %} selected="selected" {% endif %} >{{ val }}</option>
-        {% endfor %}
-      </select>
+      <div class="list-select">
+          <div class="list-selection down hidden">
+              {% for key in category %}
+              <div class="list-option category">{{ key }}</div>
+              {% endfor %}
+          </div>
+          <div class="list-selected"></div>
+          <input name="category" type="text" class="hidden">
+      </div>
+      <div class="list-select">
+          <div class="list-selection down subcategory hidden">
+              {% for val in subcategory[category[0]] %}
+              <div class="list-option subcategory">{{ val }}</div>
+              {% endfor %}
+          </div>
+          <div class="list-selected"></div>
+          <input name="subcategory" type="text" class="hidden">
+      </div>
     </div>
     <div class="input-line">
       <label for="video-description" class="form-label">Introduction:</label>
@@ -94,9 +102,13 @@ var video_subcategories = {};
                 <input type="text" class="title-input normal-input" placeholder="Optional title" name="sub-title[]" value="{{ clip.subtitle }}" tabindex="1">
                 <div class="video-part-error">Title too long.</div>
                 <textarea class="intro-input normal-input" placeholder="Optional sub-introduction" name="sub-intro[]" tabindex="1">{{ clip.subintro }}</textarea>
-                <select class="source-select" tabindex="1">
-                    <option>YouTube</option>
-                </select>
+                <div class="list-select">
+                    <div class="list-selection down source hidden">
+                        <div class="list-option source">YouTube</div>
+                    </div>
+                    <div class="list-selected source"></div>
+                    <input name="source[]" type="text" class="hidden">
+                </div>
                 <div class="video-part-error">Title too long.</div>
                 <input type="text" class="url-input normal-input" name="video-url[]" placeholder="e.g., youtube.com/watch?v=8NNTvx5eoXE" value="{{ clip.raw_url }}" tabindex="1">
                 <div class="video-part-delete" title="Remove"></div>

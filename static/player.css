@@ -83,10 +83,6 @@ div.danmaku {
 	cursor: pointer;
 }
 
-#switch-cancel:hover {
-	color: rgb(0,140,255);
-}
-
 #controller-background {
 	position: relative;
 	border: 1px solid rgb(200, 200, 200);
@@ -475,7 +471,7 @@ div.danmaku {
 #player-quick-settings {
 	padding: 5px;
 	position: absolute;
-	background-color: rgb(250,250,250);
+	background-color: rgb(255,255,255);
 	bottom: 50px;
 	margin-left: -165px;
 	font-size: 0;
@@ -490,7 +486,6 @@ div.danmaku {
 
 .player-setting-line {
 	margin: 7px;
-	position: relative;
 }
 
 .player-setting-label {
@@ -537,68 +532,6 @@ div.danmaku {
 	background-color: white;
 }
 
-.list-selection {
-	display: inline-block;
-	position: absolute;
-	bottom: 23px;
-	border: 1px solid rgb(200,200,200);
-	background-color: white;
-}
-
-.list-selection.hidden {
-	display: none;
-}
-
-.list-option {
-	font-size: 12px;
-	width: 85px;
-	line-height: 14px;
-	padding: 5px 8px 5px 8px;
-	cursor: pointer;
-	overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.list-option:hover {
-	background-color: rgb(230,230,230);
-}
-
-.list-option.active {
-	display: none;
-}
-
-.list-selected {
-	font-size: 12px;
-	display: inline-block;
-	border: 1px solid rgb(200,200,200);
-	width: 85px;
-	line-height: 14px;
-	padding: 4px 8px 4px 8px;
-	background-color: white;
-	cursor: pointer;
-	position: relative;
-	overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    vertical-align: middle;
-}
-
-.list-selected:hover {
-	box-shadow: 0 0 1px rgb(100,100,100);
-}
-
-.list-selected:after {
-	width: 0;
-    height: 0;
-    position: absolute;
-    content: "";
-    right: 8px;
-    border: 3px solid transparent;
-    border-top: 6px solid rgb(150,150,150);
-    margin-top: 5px;
-}
-
 .list-option.font, .list-selected.font {
 	width: 150px;
 	font-size: 14px;
@@ -609,7 +542,7 @@ div.danmaku {
 }
 
 .list-option.block, .list-selected.block {
-	width: 80px;
+	width: 75px;
 	font-size: 14px;
 	line-height: normal;
 }
@@ -618,14 +551,8 @@ div.danmaku {
 	margin-right: 5px;
 }
 
-.list-selection.font, .list-selection.block {
-	top: 23px;
-	bottom: auto;
-	z-index: 2;
-}
-
 .list-selection.block {
-	top: 25px;
+	z-index: 2;
 }
 
 .screen-size {
@@ -1576,19 +1503,16 @@ span.statistic-icon.favorites {
 	width: 219px;
 }
 
-#video-parts-container {
-	padding-top: 5px;
-}
-
 a.episode-link {
 	font-weight: normal;
 	float: left;
-	color: rgb(100,100,100);
 	word-wrap: break-word;
 	-webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
     -moz-box-sizing: border-box;    /* Firefox, other Gecko */
     box-sizing: border-box;
     max-width: 100%;
+    margin-right: 10px;
+    margin-top: 8px;
 }
 
 a.inline-button.episode-link.active {

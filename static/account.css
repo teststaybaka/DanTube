@@ -93,17 +93,16 @@ a.sub-option.active {
 #account-top-title {
     border-bottom: 1px solid rgb(200,200,200);
     padding: 0 25px;
-    font-size: 20px;
 }
 
 a.top-title {
     padding: 0 5px;
     padding-top: 13px;
-    float: left;
     margin-right: 15px;
-    display: block;
+    display: inline-block;
     padding-bottom: 13px;
     color: rgb(100,100,100);
+    font-size: 20px;
 }
 
 div.top-title-dot {
@@ -152,12 +151,11 @@ a.top-title.active div.top-title-dot {
     white-space: nowrap;
     max-width: 360px;
     color: rgb(100,100,100);
+    line-height: 22px;
 }
 
 .inline-button.sub {
     float: right;
-    margin-top: 0;
-    margin-right: 0;
     min-width: 40px;
     text-align: center;
     font-weight: normal;
@@ -315,19 +313,10 @@ div.detail-entry {
 
 #resend-email-link {
     display: inline-block;
-    color: rgb(0,140,255);
     font-weight: normal;
     cursor: pointer;
     font-size: 15px;
     margin-left: 7px;
-}
-
-#resend-email-link:hover {
-    color: rgb(255,177,108);
-}
-
-#resend-email-link:active {
-    color: rgb(0,50,200);
 }
 
 #resend-email-link.send {
@@ -521,7 +510,7 @@ label.statistic-icon.visited {
 }
 
 #change-password-form, #change-info-form, #video-submission-form, #change-space-form, #feedback-submission-form, #report-submission-form {
-    padding: 25px 25px 20px 25px;
+    padding: 20px 25px;
 }
 
 form.change div.input-line {
@@ -544,7 +533,7 @@ form.change div.input-line {
     font-size: 0;
 }
 
-div.table-label {
+.table-label {
     display: inline-block;
     font-size: 14px;
 }
@@ -645,14 +634,17 @@ form.change label.form-label {
 }
 
 form.change input[type=password], form.change input[type=text], form.change select, form.change textarea {
-    padding: 4px;
-    font-size: 14px;
     width: 300px;
+    vertical-align: middle;
 }
 
-form.change select {
-    width: 165px;
-    display: inline-block;
+form.change .list-option, form.change .list-selected {
+    width: 155px;
+    padding: 5px 6px;
+    font-size: 14px;
+}
+
+form.change .list-selected {
     margin-right: 20px;
 }
 
@@ -661,8 +653,12 @@ form.change input.title-input {
     margin-right: 12px;  
 }
 
-form.change select.source-select {
-    width: 90px;
+form.change .list-selected.source, form.change .list-option.source {
+    width: 80px;
+    padding: 4px;
+}
+
+form.change .list-selected.source {
     margin-right: 12px;
 }
 

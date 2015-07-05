@@ -43,7 +43,6 @@ var ori_danmaku_font = 'Times New Roman';
 var danmaku_font = 'Times New Roman';
 var block_rules = [];
 var normal_danmaku_sequence;
-var subtitle_format = /^\[(\d+):(\d{1,2}).(\d{1,2})\](.*)$/;
 var show_subtitles = 0;
 var ori_subtitles_font_size = 16;
 var subtitles_font_size = 16;
@@ -121,7 +120,9 @@ dt.onPlayerStateChange = function(event) {
 		if (isLoop) {
 			player.playVideo();
 		} else if (autoSwitch && $('a.episode-link.active').length != 0 && $('a.episode-link.active').next().length != 0) {
-			auto_switch_count_down();
+			auto_switch_count_down($('a.episode-link.active').next());
+		} else if (autoSwitch && $('a.list-entry.active').length != 0 && $('a.list-entry.active').next().length != 0) {
+			auto_switch_count_down($('a.list-entry.active').next());
 		} else {
 			clearInterval(danmakuVar);
 			clearInterval(progressVar);
@@ -131,7 +132,7 @@ dt.onPlayerStateChange = function(event) {
 	}
 }
 
-function auto_switch_count_down() {
+function auto_switch_count_down(target_link) {
 	var count_down = 5;
 	var one_down = function() {
 		console.log('one down '+count_down)
@@ -140,7 +141,7 @@ function auto_switch_count_down() {
 	        count_down -= 1;
 	        switch_count_down = setTimeout(one_down, 1000);
     	} else {
-    		window.location.href = $('a.episode-link.active').next().attr('href')+"&autoplay=1";
+    		window.location.href = target_link.attr('href')+"?autoplay=1";
     	}
 	}
 
@@ -964,16 +965,16 @@ function danmaku_update() {
 			ele.clear_request = false;
 			if (ele.ref_danmaku.type === 'Advanced') {
 				ele.element.setAttribute('data-index', i);
-				ele.element.lastChild.nodeValue = ele.ref_danmaku.content;
+				ele.element.innerHTML = ele.ref_danmaku.content;
 				ele.element.setAttribute('style', ele.ref_danmaku.css);
 				ele.element.style.left = player_width + 10+'px';
 			} else {
 				ele.element.setAttribute('data-index', i);
-				ele.element.lastChild.nodeValue = ele.ref_danmaku.content;
+				ele.element.innerHTML = ele.ref_danmaku.content;
 				ele.element.setAttribute('style', '');
 				ele.element.style.left = player_width + 10+'px';
 				ele.element.style.opacity = danmaku_opacity;
-				ele.element.style.color = '#'+('000000'+ele.ref_danmaku.color.toString(16)).substr(-6);
+				ele.element.style.color = dt.dec2hexColor(ele.ref_danmaku.color);
 				if (has_text_outline) {
 					var outline_color = reverse_color(ele.ref_danmaku.color);
 					ele.element.style.textShadow = '1px 0 1px '+outline_color+', -1px 0 1px '+outline_color+', 0 1px 1px '+outline_color+', 0 -1px 1px '+outline_color;
@@ -1033,8 +1034,7 @@ function danmaku_update() {
 			while (ref_danmaku = subtitle_danmaku_list.next()) {
 				var bul = document.createElement('div');
 				bul.setAttribute('class', 'danmaku');
-				var text = document.createTextNode(ref_danmaku.content);
-				bul.appendChild(text);
+				bul.innerHTML = ref_danmaku.content;
 				bul.style.left = player_width + 10 + 'px';
 				bul.style.opacity = subtitles_opacity;
 				bul.style.fontSize = subtitles_font_size+'px';
@@ -1343,21 +1343,7 @@ dt.onPlayerReady = function(event) {
 		$('.list-selected.font').text(danmaku_font);
 	});
 
-	$(document).click(function() {
-		$('.list-selection').addClass('hidden');
-	});
-	$('.list-selected').click(function(evt) {
-		evt.stopPropagation();
-        var list = $(this).siblings('.list-selection');
-        if (list.hasClass('hidden')) {
-        	$('.list-selection').addClass('hidden');
-            list.removeClass('hidden');
-        } else {
-            list.addClass('hidden');
-        }
-    });
     $('.list-option').click(function(evt) {
-    	evt.stopPropagation();
     	if ($(this).hasClass('quality')) {
     		player.setPlaybackQuality(quality_local2youtube($(this).text()));
     	} else if ($(this).hasClass('speed')) {
@@ -1366,12 +1352,6 @@ dt.onPlayerReady = function(event) {
     		danmaku_font = $(this).text();
     		dt.setCookie('danmaku_font', danmaku_font, 0);
     	}
-
-        var selection = $(this).parent();
-        selection.siblings('.list-selected').text($(this).text());
-        $(this).siblings().removeClass('active');
-        $(this).addClass('active');
-        selection.addClass('hidden');
     });
 
     $('.danmaku-pool-setting').click(function() {
@@ -1875,7 +1855,7 @@ dt.onPlayerReady = function(event) {
 		for (var i = 0; i < lines.length; i++) {
 			var line = lines[i].trim();
 			if (line) {
-				var result = line.match(subtitle_format);
+				var result = line.match(dt.subtitle_format);
 				if (result[4]) {
 					subtitles_list.push({
 						'timestamp': parseInt(result[1])*60+parseInt(result[2])+parseInt(result[3])/100,
@@ -1936,16 +1916,11 @@ dt.onPlayerReady = function(event) {
 					if(!result.error) {
 						var entity = result;
 						var subtitles_list = [];
-						var error = false;
-						var lines = entity.subtitles.replace(/\r/g, '').split('\n');
+						var lines = entity.subtitles.split('\n');
 						for (var i = 0; i < lines.length; i++) {
 							var line = lines[i].trim();
 							if (line) {
-								var result = line.match(subtitle_format);
-								if (!result || parseInt(result[2]) >= 60) {
-									error = true;
-									break;
-								}
+								var result = line.match(dt.subtitle_format);
 								if (result[4]) {
 									subtitles_list.push({
 										'timestamp': parseInt(result[1])*60+parseInt(result[2])+parseInt(result[3])/100,
@@ -1956,12 +1931,7 @@ dt.onPlayerReady = function(event) {
 							}
 						}
 
-						if (error) {
-							dt.pop_ajax_message('There is an error in the subtitles.', 'error');
-						} else {
-							var subtitle_danmaku_list = new DanmakuTimeSequence(subtitles_list);
-							subtitle_danmaku_container[subtitle_index] = subtitle_danmaku_list;
-						}
+						subtitle_danmaku_container[subtitle_index] = new DanmakuTimeSequence(subtitles_list);
 					} else {
 						dt.pop_ajax_message(result.message, 'error');
 					}
@@ -2031,7 +2001,7 @@ function subtitles_danmaku_form_check() {
 		for (var i = 0; i < lines.length; i++) {
 			var line = lines[i].trim();
 			if (line) {
-				var result = line.match(subtitle_format);
+				var result = line.match(dt.subtitle_format);
 				if (!result || parseInt(result[2]) >= 60) {
 					dt.pop_ajax_message('Format error at line '+(i+1), 'error');
 					$('textarea[name="subtitles"]')[0].focus();
@@ -2218,7 +2188,7 @@ function generate_danmaku_pool_entry(entry) {
 	var content_value = document.createElement('div');
 	content_value.className = "bullet-content-value";
 	content_value.title = entry.content;
-	content_value.appendChild(document.createTextNode(entry.content));
+	content_value.innerHTML = entry.content;
 	var date_value = document.createElement('div');
 	date_value.className = "bullet-date-value";
 	date_value.appendChild(document.createTextNode(entry.created));

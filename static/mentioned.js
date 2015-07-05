@@ -21,13 +21,13 @@ function render_comment_div(comment) {
         div += 'comment'
     }
         div += ' in</label>\
-                <a class="message-title" href="' + comment.video.url + '" target="_blank">' + comment.video.title + '</a>\
+                <a class="message-title normal-link" href="' + comment.video.url + '" target="_blank">' + comment.video.title + '</a>\
             </div>\
             <div class="info-line">\
                 <div class="comment-content">' + comment.content + '</div>\
             </div>\
             <div class="info-line">\
-                <a class="reply-link" href="' + comment.video.url + '?'
+                <a class="reply-link blue-link" href="' + comment.video.url + '?'
     if (comment.type === 'comment') {
         div +=  'comment=' + comment.floorth;
     } else if (comment.type === 'inner_comment') {

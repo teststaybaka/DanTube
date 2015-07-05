@@ -144,7 +144,7 @@ class User(webapp2_extras.appengine.auth.models.User):
     visitor_info = {}
     visitor_info['visitors'] = []
     recent_visitors = ndb.get_multi(self.recent_visitors)
-    for i in list(reversed(range(0, len(recent_visitors)))):
+    for i in reversed(xrange(0, len(recent_visitors))):
       visitor = recent_visitors[i]
       info = visitor.get_public_info()
       visitor_info['visitors'].append(info)
@@ -358,7 +358,7 @@ class PlayList(ndb.Model):
 
   def Delete(self):
     videos = ndb.get_multi(self.videos)
-    for i in range(0, len(videos)):
+    for i in xrange(0, len(videos)):
         videos[i].playlist_belonged = None
     ndb.put_multi(videos)
 
@@ -399,8 +399,10 @@ class VideoClip(ndb.Model):
   vid = ndb.StringProperty(required=True, indexed=False)
   duration = ndb.IntegerProperty(required=True, indexed=False, default=0)
   source = ndb.StringProperty(required=True, choices=['youtube'])
+  danmaku_num = ndb.IntegerProperty(required=True, default=0)
   danmaku_pools = ndb.KeyProperty(kind='DanmakuPool', repeated=True, indexed=False)
-  advanced_danmaku_pools = ndb.KeyProperty(kind='AdvancedDanmakuPool', repeated=True, indexed=False)
+  advanced_danmaku_num = ndb.IntegerProperty(required=True, default=0)
+  advanced_danmaku_pool = ndb.KeyProperty(kind='AdvancedDanmakuPool', indexed=False)
   subtitle_names = ndb.StringProperty(repeated=True, indexed=False)
   subtitle_danmaku_pools = ndb.KeyProperty(kind='SubtitleDanmakuPool', repeated=True, indexed=False)
 
@@ -417,18 +419,14 @@ class VideoClip(ndb.Model):
       url = raw_url
     return {'url': url, 'vid': vid, 'source': source}
 
-  @staticmethod
-  def Create(subintro, duration, raw_url, vid, source):
-    # res = VideoClip.parse_url(raw_url)
-    clip = VideoClip(
-      subintro = subintro, 
-      raw_url = raw_url,
-      duration = duration,
-      vid = vid,
-      source = source
-    )
-    clip.put()
-    return clip
+  def Delete(self):
+    for pool in danmaku_pools:
+      pool.delete()
+    if advanced_danmaku_pool:
+      advanced_danmaku_pool.delete()
+    for pool in subtitle_danmaku_pools:
+      pool.delete()
+    self.key.delete()
 
 class CategoryCounter(ndb.Model):
   counter = ndb.IntegerProperty(required=True, default=0, indexed=False)
@@ -630,8 +628,8 @@ class Video(ndb.Model):
 
     basic_info = {
       'title': self.title,
-      'url': '/video/'+ str(self.key.id()),
-      'id': str(self.key.id()),
+      'url': '/video/'+ self.key.id(),
+      'id': self.key.id(),
       'id_num': self.key.id().replace('dt', ''),
       'thumbnail_url': thumbnail_url,
       'thumbnail_url_hq': thumbnail_url_hq,
@@ -657,7 +655,7 @@ class Video(ndb.Model):
       'clips': [],
     }
     clips = ndb.get_multi(self.video_clips)
-    for i in range(0, len(self.video_clips)):
+    for i in xrange(0, len(self.video_clips)):
       full_info['clips'].append({
         'subtitle': self.video_clip_titles[i],
         'subintro': clips[i].subintro,
@@ -772,21 +770,14 @@ class Video(ndb.Model):
       blobstore.BlobInfo(self.thumbnail).delete()
 
     video_clips = ndb.get_multi(self.video_clips)
-    for i in range(0, len(video_clips)):
-      clip = video_clips[i]
-      for j in range(0, len(clip.danmaku_pools)):
-        clip.danmaku_pools[j].delete()
-      for j in range(0, len(clip.advanced_danmaku_pools)):
-        clip.advanced_danmaku_pools[j].delete()
-      for j in range(0, len(clip.subtitle_danmaku_pools)):
-        clip.subtitle_danmaku_pools[j].delete()
-      clip.key.delete()
+    for i in xrange(0, len(video_clips)):
+      video_clips[i].Delete()
 
     comments = Comment.query(ancestor=self.key).fetch(keys_only=True)
-    for i in range(0, len(comments)):
+    for i in xrange(0, len(comments)):
       comment = comments[i]
       inner_comments = InnerComment.query(ancestor=comment).fetch(keys_only=True)
-      for j in range(0, len(inner_comments)):
+      for j in xrange(0, len(inner_comments)):
         inner_comments[j].delete()
       comment.delete()
 

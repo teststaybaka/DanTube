@@ -16,7 +16,7 @@ class Message(BaseHandler):
             'entries': [],
         }
         partner_keys = []
-        for i in range(0, len(threads)):
+        for i in xrange(0, len(threads)):
             thread = threads[i]
             thread_dict = {}
             thread_dict['id'] = thread.key.id()
@@ -38,7 +38,7 @@ class Message(BaseHandler):
             context['entries'].append(thread_dict)
 
         partners = ndb.get_multi(partner_keys)
-        for i in range(0, len(partners)):
+        for i in xrange(0, len(partners)):
             partner = partners[i]
             context['entries'][i]['partner'] = partner.get_public_info()
 
@@ -248,7 +248,7 @@ class DeleteMessage(BaseHandler):
 
         deleted_ids = []
         put_list = []
-        for i in range(0, len(ids)):
+        for i in xrange(0, len(ids)):
             try:
                 thread_id = int(ids[i])
                 thread = models.MessageThread.get_by_id(thread_id)
@@ -305,7 +305,7 @@ class Mentioned(BaseHandler):
         comments, cursor, more = models.MentionedComment.query(models.MentionedComment.receivers==user.key).order(-models.MentionedComment.created, models.MentionedComment.key).fetch_page(page_size, start_cursor=cursor)
         videos = ndb.get_multi([comment.video for comment in comments])
         senders = ndb.get_multi([comment.sender for comment in comments])
-        for i in range(0, len(comments)):
+        for i in xrange(0, len(comments)):
             comment = comments[i]
             video = videos[i]
             sender = senders[i]
@@ -343,7 +343,7 @@ class Notifications(BaseHandler):
 
         notification_keys = models.Notification.query(models.Notification.receiver==user.key).order(-models.Notification.created, models.Notification.key).fetch(offset=(page-1)*page_size, limit=page_size, keys_only=True)
         notifications = ndb.get_multi(notification_keys)
-        for i in range(0, len(notifications)):
+        for i in xrange(0, len(notifications)):
             notification = notifications[i]
             note_info = {
                 'type': notification.note_type,
@@ -407,7 +407,7 @@ class DeleteNotifications(BaseHandler):
             return
 
         deleted_ids = []
-        for i in range(0, len(ids)):
+        for i in xrange(0, len(ids)):
             try:
                 note_id = int(ids[i])
                 note = models.Notification.get_by_id(note_id)

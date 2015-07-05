@@ -29,7 +29,7 @@
             <input type="submit" class="inline-button special create-button done" value="Done">
         </div>
     </form>
-    <div id="sub-title" class="playlist"><a {% if playlist.url %}href="{{ playlist.url }}"{% endif %} class="sub-title-link">{{ playlist.title }}</a><div class="edit-title-button"></div></div>
+    <div id="sub-title" class="playlist"><a {% if playlist.url %}href="{{ playlist.url }}"{% endif %} class="sub-title-link normal-link">{{ playlist.title }}</a><div class="edit-title-button"></div></div>
     <div id="action-select">
         <div class="selected">Actions</div>
         <div class="option">
@@ -52,7 +52,7 @@
         </a>
         <div class="video-info playlist">
             <div class="video-title">
-                <a class="video-title list" href="{{ video.url }}" target="_blank">{{ video.title }}</a>
+                <a class="video-title list normal-link" href="{{ video.url }}" target="_blank">{{ video.title }}</a>
             </div>
             <div class="list-video-time">{{ video.created }}</div>
             <div class="video-edit">

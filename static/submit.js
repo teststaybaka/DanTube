@@ -5,9 +5,13 @@ video_part_line_html = '<div class="video-part-line">\
                 <input type="text" class="title-input normal-input" placeholder="Optional title" name="sub-title[]" tabindex="1">\
                 <div class="video-part-error">Title too long.</div>\
                 <textarea class="intro-input normal-input" placeholder="Optional sub-introduction" name="sub-intro[]" tabindex="1"></textarea>\
-                <select class="source-select" tabindex="1">\
-                    <option>YouTube</option>\
-                </select>\
+                <div class="list-select">\
+                    <div class="list-selection down source hidden">\
+                        <div class="list-option source">YouTube</div>\
+                    </div>\
+                    <div class="list-selected source">YouTube</div>\
+                    <input name="source[]" type="text" class="hidden">\
+                </div>\
                 <div class="video-part-error">Title too long.</div>\
                 <input type="text" class="url-input normal-input" name="video-url[]" placeholder="e.g., youtube.com/watch?v=8NNTvx5eoXE" tabindex="1">\
                 <div class="video-part-delete" title="Remove"></div>\
@@ -172,12 +176,16 @@ function url_check(target) {
 }
 
 $(document).ready(function() {
-    $('#select-category').change(function() {
-        var subcategory = video_subcategories[$(this).val()];
-        $('#select-subcategory').empty();
-        for(var i = 0; i < subcategory.length; i++) {
-            $('#select-subcategory').append('<option value="' + subcategory[i] + '">' + subcategory[i] + '</option>');
+    $('.list-option.category').click(function() {
+        var subcategories = video_subcategories[$(this).text()];
+        $('.list-selection.subcategory').empty();
+        for (var i = 0; i < subcategories.length; i++) {
+            $('.list-selection.subcategory').append('<div class="list-option subcategory">'+subcategories[i]+'</div>');
         }
+        var first_option = $($('.list-selection.subcategory').children()[0]);
+        $('.list-selection.subcategory').next().text(first_option.text())
+                                        .next().val(first_option.text());
+
     });
 
     $('#video-part-content').mousedown(function(evt) {

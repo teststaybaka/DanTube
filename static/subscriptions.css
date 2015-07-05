@@ -152,10 +152,6 @@ a.uploader-name, a.activity-title {
   vertical-align: top;
 }
 
-a.activity-title:hover {
-  color: rgb(0,140,255);
-}
-
 div.activity-detail label {
   font-size: 14px;
   color: rgb(150,150,150);

@@ -57,7 +57,7 @@ class Space(BaseHandler):
             videos = models.Video.query(models.Video.uploader==host.key).order(-models.Video.created).fetch(offset=offset, limit=page_size)
         
         # logging.info(videos)
-        for i in range(0, len(videos)):
+        for i in xrange(0, len(videos)):
             # logging.info(videos[i])
             video = videos[i]
             video_info = video.get_basic_info()
@@ -81,7 +81,7 @@ class SpacePlaylist(BaseHandler):
         total_pages = math.ceil(total_found/float(page_size))
         playlists = models.PlayList.query(models.PlayList.creator==host.key).order(-models.PlayList.modified).fetch(offset=(page-1)*page_size, limit=page_size)
         
-        for i in range(0, len(playlists)):
+        for i in xrange(0, len(playlists)):
             playlist = playlists[i]
             info = playlist.get_basic_info()
             context['playlists'].append(info)
@@ -103,13 +103,13 @@ class FeaturedUpers(BaseHandler):
         total_pages = math.ceil(total_found/float(page_size))
         user_keys = []
         offset = (page-1)*page_size
-        for i in range(0, page_size):
+        for i in xrange(0, page_size):
             if i+offset >= total_found:
                 break
             user_keys.append(host.subscriptions[i+offset])
         
         users = ndb.get_multi(user_keys)
-        for i in range(0, len(users)):
+        for i in xrange(0, len(users)):
             user = users[i]
             info = user.get_public_info()
             info.update(user.get_statistic_info())

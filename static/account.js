@@ -72,6 +72,7 @@ $(document).ready(function() {
     $('#resend-email-link').click(function(evt) {
         if ($(evt.target).hasClass('send')) return;
         $(evt.target).addClass('send');
+        $(evt.target).removeClass('blue-link');
         $(evt.target).text('Sending...');
 
         $.ajax({
@@ -140,7 +141,7 @@ $(document).ready(function() {
         $.ajax({
             type: "POST",
             url: "/account/password",
-            data: [{name: 'cur_password', value: cur_pw}, {name: 'new_password', value: new_pw}],
+            data: {cur_password: cur_pw, new_password: new_pw},
             success: function(result) {
                 console.log(result);
                 if(!result.error) {

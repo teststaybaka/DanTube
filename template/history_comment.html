@@ -18,7 +18,7 @@
         </div>
         <div class="info-line">
             <label class="info-label">Post a {% if comment.type == "danmaku" %}danmaku{% elif comment.type == "comment" %}comment{% else %}reply{% endif %} in </label>
-            <a class="message-title" href="{{ comment.video.url }}" target="_blank">{{ comment.video.title }}</a>
+            <a class="message-title normal-link" href="{{ comment.video.url }}" target="_blank">{{ comment.video.title }}</a>
         </div>
         <div class="info-line">
             <div class="comment-content">{% autoescape False %}{{ comment.content }}{% endautoescape %}</div>

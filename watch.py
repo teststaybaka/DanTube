@@ -102,7 +102,7 @@ class Video(BaseHandler):
             video_info['clip_range_max'] = clip_index
 
         subtitle_names = []
-        for i in range(0, len(cur_clip.subtitle_names)):
+        for i in xrange(0, len(cur_clip.subtitle_names)):
             subtitle_names.append(cur_clip.subtitle_names[i])
 
         playlist_info = {}
@@ -113,7 +113,7 @@ class Video(BaseHandler):
             playlist_info['cur_index'] = idx
             playlist_info['videos'] = []
             videos = ndb.get_multi(playlist.videos)
-            for i in range(0, len(videos)):
+            for i in xrange(0, len(videos)):
                 playlist_info['videos'].append(videos[i].get_basic_info())
         context = {'video': video_info, 'uploader': uploader.get_public_info(user), 'playlist': playlist_info, 'subtitle_names': subtitle_names}
         context['report_issues'] = models.Report_Issues
@@ -130,14 +130,13 @@ def assemble_link(temp, add_link, users):
     return temp
 
 def comment_nickname_recognize(user, content, add_link):
-    if add_link:
-        content = cgi.escape(content)
+    content = cgi.escape(content)
     new_content = ''
     state = 0
     temp = ''
     users = []
-    for i in range(0, len(content)):
-        if models.SPLIT_REGEX.match(content[i]) and state == 1:
+    for i in xrange(0, len(content)):
+        if models.ILLEGAL_LETTER.match(content[i]) and state == 1:
             state = 0
             new_content += assemble_link(temp, add_link, users)
             temp = ''
@@ -164,7 +163,7 @@ class Comment(BaseHandler):
         comments = models.Comment.query(ancestor=video.key).order(-models.Comment.created).fetch(offset=offset, limit=page_size)
         result = {'error': False, 'comments':[], 'total_comments': video.comment_counter}
         creators = ndb.get_multi([comment.creator for comment in comments])
-        for i in range(0, len(comments)):
+        for i in xrange(0, len(comments)):
             comment = comments[i]
             info = {
                 'creator': creators[i].get_public_info(),
@@ -178,7 +177,7 @@ class Comment(BaseHandler):
             }
             inner_comments = models.InnerComment.query(ancestor=comment.key).order(-models.InnerComment.created).fetch(offset=0, limit=3)
             inner_creators = ndb.get_multi([inner_comment.creator for inner_comment in inner_comments])
-            for j in range(0, len(inner_comments)):
+            for j in xrange(0, len(inner_comments)):
                 inner_comment = inner_comments[len(inner_comments) - j - 1]
                 inner_info = {
                     'creator': inner_creators[len(inner_comments) - j - 1].get_public_info(),
@@ -213,7 +212,7 @@ class Comment(BaseHandler):
         inner_comments = models.InnerComment.query(ancestor=comment.key).order(models.InnerComment.created).fetch(offset=offset, limit=page_size)
         inner_creators = ndb.get_multi([inner_comment.creator for inner_comment in inner_comments])
         result = {'error': False, 'inner_comments': []}
-        for i in range(0, len(inner_comments)):
+        for i in xrange(0, len(inner_comments)):
             inner_comment = inner_comments[i]
             info = {
                 'creator': inner_creators[i].get_public_info(),
@@ -270,7 +269,7 @@ class Comment(BaseHandler):
             put_list.append(mentioned_message)
 
             user_entries = ndb.get_multi(users)
-            for i in range(0, len(user_entries)):
+            for i in xrange(0, len(user_entries)):
                 user_entries[i].new_mentions += 1
         ndb.put_multi(put_list + user_entries)
 
@@ -330,7 +329,7 @@ class Comment(BaseHandler):
             put_list.append(mentioned_message)
 
             user_entries = ndb.get_multi(users)
-            for i in range(0, len(user_entries)):
+            for i in xrange(0, len(user_entries)):
                 user_entries[i].new_mentions += 1
         ndb.put_multi(put_list + user_entries)
         
@@ -344,19 +343,20 @@ class Danmaku(BaseHandler):
     def get(self, video, clip_index):
         clip = video.video_clips[clip_index-1].get()
         danmaku_list = []
+        danmaku_num = 0
         danmaku_pools = ndb.get_multi(clip.danmaku_pools)
-        for i in range(0, len(danmaku_pools)):
-            danmaku_pool = danmaku_pools[i]
-            for j in range(0, len(danmaku_pool.danmaku_list)):
-                danmaku = danmaku_pool.danmaku_list[j]
-                danmaku_list.append(self.format_danmaku(danmaku))
+        for danmaku_pool in danmaku_pools:
+            danmaku_num += len(danmaku_pool.danmaku_list)
+            danmaku_list += [Danmaku.format_danmaku(danmaku) for danmaku in danmaku_pool.danmaku_list]
+        clip.danmaku_num = danmaku_num
 
-        advanced_danmaku_pools = ndb.get_multi(clip.advanced_danmaku_pools)
-        for i in range(0, len(advanced_danmaku_pools)):
-            advanced_danmaku_pool = advanced_danmaku_pools[i]
-            for j in range(0, len(advanced_danmaku_pool.advanced_danmaku_list)):
-                advanced_danmaku = advanced_danmaku_pool.advanced_danmaku_list[j]
-                danmaku_list.append(self.format_advanced_danmaku(advanced_danmaku))
+        advanced_danmaku_num = 0
+        if clip.advanced_danmaku_pool:
+            advanced_danmaku_pool = clip.advanced_danmaku_pool.get()
+            advanced_danmaku_num += len(advanced_danmaku_pool.advanced_danmaku_list)
+            danmaku_list += [Danmaku.format_advanced_danmaku(advanced_danmaku) for advanced_danmaku in advanced_danmaku_pool.advanced_danmaku_list]
+        clip.advanced_danmaku_num = advanced_danmaku_num
+        clip.put()
 
         self.response.out.write(json.dumps({
             'error': False,
@@ -465,18 +465,20 @@ class Danmaku(BaseHandler):
             put_list.append(mentioned_message)
 
             user_entries = ndb.get_multi(users)
-            for i in range(0, len(user_entries)):
+            for i in xrange(0, len(user_entries)):
                 if user_entries[i]:
                     user_entries[i].new_mentions += 1
         ndb.put_multi(put_list + user_entries)
         
-        self.response.out.write(json.dumps(self.format_danmaku(danmaku)))
+        self.response.out.write(json.dumps(Danmaku.format_danmaku(danmaku)))
 
-    def format_danmaku(self, danmaku):
+    @staticmethod
+    def format_danmaku(danmaku):
         return {
                     'content': danmaku.content,
                     'timestamp': danmaku.timestamp,
                     'created': danmaku.created.strftime("%m-%d %H:%M"),
+                    'created_year': danmaku.created.strftime("%Y-%m-%d %H:%M"),
                     'created_seconds': models.time_to_seconds(danmaku.created),
                     'creator': danmaku.creator.id(),
                     'type': danmaku.position,
@@ -568,38 +570,32 @@ class Danmaku(BaseHandler):
             return
 
         clip = video.video_clips[clip_index-1].get()
-        if len(clip.advanced_danmaku_pools) == 0:
+        if not clip.advanced_danmaku_pool:
             advanced_danmaku_pool = models.AdvancedDanmakuPool()
-            advanced_danmaku_pool.put()
-            clip.advanced_danmaku_pools.append(advanced_danmaku_pool.key)
-            clip.put()
         else:
-            advanced_danmaku_pool = clip.advanced_danmaku_pools[-1].get()
-            if len(advanced_danmaku_pool.advanced_danmaku_list) >= 200:
-                advanced_danmaku_pool = models.AdvancedDanmakuPool()
-                advanced_danmaku_pool.put()
-                clip.advanced_danmaku_pools.append(advanced_danmaku_pool.key)
-                if len(clip.advanced_danmaku_pools) > 20:
-                    clip.advanced_danmaku_pools.pop(0).delete()
-                clip.put()
+            advanced_danmaku_pool = clip.advanced_danmaku_pool.get()
 
         advanced_danmaku = models.AdvancedDanmaku(timestamp=timestamp, content=content, birth_x=birth_pos[0], birth_y=birth_pos[1], death_x=death_pos[0], death_y=death_pos[1], speed_x=speed[0], speed_y=speed[1], longevity=longevity, css=custom_css, creator=user.key)
         advanced_danmaku_pool.advanced_danmaku_list.append(advanced_danmaku)
         video.update_hot_score(HOT_SCORE_PER_DANMAKU)
         video.last_updated = datetime.now()
-
         danmaku_record = models.ActivityRecord(creator=user.key, activity_type='danmaku', timestamp=advanced_danmaku.timestamp, content=advanced_danmaku.content, video=video.key, clip_index=clip_index, public=False)
         user.comments_num += 1
 
         ndb.put_multi([advanced_danmaku_pool, video, danmaku_record, user])
+        if not clip.advanced_danmaku_pool:
+            clip.advanced_danmaku_pool = advanced_danmaku_pool.key
+            clip.put()
         
-        self.response.out.write(json.dumps(self.format_advanced_danmaku(advanced_danmaku)))
+        self.response.out.write(json.dumps(Danmaku.format_advanced_danmaku(advanced_danmaku)))
 
-    def format_advanced_danmaku(self, advanced_danmaku):
+    @staticmethod
+    def format_advanced_danmaku(advanced_danmaku):
         return {
                     'content': advanced_danmaku.content,
                     'timestamp': advanced_danmaku.timestamp,
                     'created': advanced_danmaku.created.strftime("%m-%d %H:%M"),
+                    'created_year': advanced_danmaku.created.strftime("%Y-%m-%d %H:%M"),
                     'created_seconds': models.time_to_seconds(advanced_danmaku.created),
                     'creator': advanced_danmaku.creator.id(),
                     'birth_x': advanced_danmaku.birth_x,
@@ -629,12 +625,17 @@ class Subtitles(BaseHandler):
             return
             
         subtitle_danmaku_pool = clip.subtitle_danmaku_pools[s_index-1].get()
-        self.response.out.write(json.dumps({
+        self.response.out.write(json.dumps(Subtitles.format_subtitles(subtitle_danmaku_pool)))
+
+    @staticmethod
+    def format_subtitles(subtitle_danmaku_pool):
+        return {
             'subtitles': subtitle_danmaku_pool.subtitles,
             'creator': subtitle_danmaku_pool.creator.id(),
             'created': subtitle_danmaku_pool.created.strftime("%m-%d %H:%M"),
+            'created_year': subtitle_danmaku_pool.created.strftime("%Y-%m-%d %H:%M"),
             'created_seconds': models.time_to_seconds(subtitle_danmaku_pool.created),
-        }))
+        }
 
     @login_required_json
     @video_clip_exist_required_json
@@ -672,7 +673,7 @@ class Subtitles(BaseHandler):
 
         reg = re.compile(r'^\[\d+:\d{1,2}.\d{1,2}\].*$')
         lines = subtitles.split('\n')
-        for i in range(0, len(lines)):
+        for i in xrange(0, len(lines)):
             if not (lines[i] and reg.match(lines[i])):
                 self.response.out.write(json.dumps({
                     'error': True,

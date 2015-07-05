@@ -111,7 +111,7 @@ function render_activity_div(record) {
         </a>'
     if (record.type === 'upload' || record.type === 'edit') {
         div += '<div class="activity-detail">\
-                <div class="activity-title">\
+                <div class="activity-title normal-link">\
                     <label>'
         if (record.type === 'upload') {
             div += 'Uploaded'
@@ -119,7 +119,7 @@ function render_activity_div(record) {
             div += 'Edited'
         }
         div += '</label>\
-                    <a href="' + record.video.url + '" class="activity-title" target="_blank">' + record.video.title + '</a>\
+                    <a href="' + record.video.url + '" class="activity-title normal-link" target="_blank">' + record.video.title + '</a>\
                 </div>\
                 <div class="uploader-name">\
                     <label>by</label>\
@@ -134,7 +134,7 @@ function render_activity_div(record) {
         </div>'
     } else {
         div += '<div class="activity-detail">\
-            <div class="activity-title">\
+            <div class="activity-title normal-link">\
                 <label>'
         if (record.type === 'comment') {
             div += 'Posted a comment in'
@@ -144,7 +144,7 @@ function render_activity_div(record) {
             div += 'Posted a danmaku in'
         }
         div += '</label>\
-                <a href="' + record.video.url + '" class="activity-title" target="_blank">' + record.video.title + '</a>\
+                <a href="' + record.video.url + '" class="activity-title normal-link" target="_blank">' + record.video.title + '</a>\
             </div>\
             <div class="uploader-name">\
                 <label>by</label>\

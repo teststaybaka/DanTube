@@ -104,10 +104,6 @@ a.video-title.favored {
     margin-top: 7px;
 }
 
-a.video-title:hover {
-    color: rgb(0,140,255);
-}
-
 div.list-intro {
     font-size: 14px;
     color: rgb(150,150,150);
@@ -309,11 +305,7 @@ a.sub-title-link {
     text-overflow: ellipsis;
     white-space: nowrap;
     vertical-align: middle;
-    font-size: 14px;
-}
-
-a.sub-title-link:hover {
-    color: rgb(0,140,255);
+    font-size: 16px;
 }
 
 div.edit-title-button {
@@ -362,12 +354,8 @@ a.video-title.list {
     margin-top: 0;
 }
 
-a.list-video-title:hover {
-    color: rgb(0,140,255);
-}
-
 div.content-entry.list {
-    padding: 15px 10px;
+    padding: 10px;
 }
 
 div.list-video-time {
@@ -452,4 +440,160 @@ div.video-title.popup {
 div.add-button, input.add-button {
     float: right;
     margin-top: 10px;
+}
+
+.danmaku-clip-list {
+    border-top: 1px solid rgb(220,220,220);
+    padding: 15px 20px 25px 20px;
+}
+
+.danmaku-table-line {
+    padding: 5px;
+    padding-left: 3px;
+    border-bottom: 1px solid rgb(200,200,200);
+    color: rgb(100,100,100);
+    font-size: 0;
+}
+
+.danmaku-table-line.label-line {
+    font-weight: bold;
+}
+
+.table-label {
+    width: 100px;
+    margin-right: 10px;
+    display: inline-block;
+    vertical-align: middle;
+    line-height: 16px;
+}
+
+.table-label.subtitle {
+    width: 170px;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.table-label.action {
+    width: auto;
+}
+
+.pools-block {
+    border: 1px solid rgb(220,220,220);
+    border-radius: 5px;
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    color: rgb(100,100,100);
+    font-size: 0;
+}
+
+.pool-detail-list.none {
+    font-size: 18px;
+    text-align: center;
+    color: rgb(150,150,150);
+    padding: 50px;
+}
+
+.pool-detail-list.loading {
+    padding: 50px;
+}
+
+.pool-detail-entry {
+    padding: 5px;
+}
+
+.pool-detail-entry:nth-child(odd) {
+    background-color: rgb(240,240,240);
+}
+
+.pool-detail-entry.label-line {
+    background-color: rgb(220,220,220);
+}
+
+.detail-label {
+    font-size: 14px;
+    width: 60px;
+    display: inline-block;
+    vertical-align: middle;
+    height: 16px;
+    overflow: hidden;
+    margin-right: 10px;
+}
+
+.detail-label.color {
+    width: 40px;
+}
+
+.detail-label.timestamp {
+    width: 70px;
+}
+
+.detail-label.content {
+    width: 260px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.detail-label.content.advanced, .detail-label.content.subtitles {
+    width: 380px;
+}
+
+.detail-label.created {
+    width: 120px;
+}
+
+.color-box {
+    width: 14px;
+    height: 14px;
+    border: 1px solid rgb(200,200,200);
+}
+
+.single-checkbox.inline {
+    position: static;
+    display: inline-block;
+    vertical-align: middle;
+    width: 14px;
+    height: 14px;
+}
+
+.single-checkbox.inline.checked {
+    background-position: -1px -193px;
+}
+
+.actions-line {
+    margin-bottom: 10px;
+    font-size: 0;
+}
+
+.list-selected, .list-option {
+    font-size: 14px;
+    line-height: 16px;
+}
+
+.list-selected.pool, .list-option.pool {
+    width: 150px;
+}
+
+.clip-title-label {
+    display: inline-block;
+    vertical-align: middle;
+    line-height: 18px;
+    font-size: 16px;
+    color: rgb(100,100,100);
+    margin-right: 10px;
+}
+
+.inline-button.actions {
+    font-weight: normal;
+    border-radius: 0;
+    margin: 0;
+    float: right;
+    margin-left: 10px;
+}
+
+.danmaku-num-label {
+    font-size: 14px;
+    vertical-align: middle;
+    display: inline-block;
+    margin-left: 10px;
+    color: rgb(100,100,100);
 }

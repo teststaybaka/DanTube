@@ -1,4 +1,5 @@
 from views import *
+from watch import Danmaku, Subtitles
 from PIL import Image
 from google.appengine.api import images
 import urlparse
@@ -39,6 +40,62 @@ def ISO_8601_to_seconds(duration):
 
     return seconds
 
+def video_author_required(handler):
+    def check_author(self, video_id):
+        video = models.Video.get_by_id('dt'+video_id)
+        if video is None or video.uploader != self.user.key:
+            self.notify('You are not allowed to edit this video.')
+        else:
+            return handler(self, video)
+
+    return check_author
+
+def video_author_required_json(handler):
+    def check_author(self, video_id):
+        self.response.headers['Content-Type'] = 'application/json'
+        video = models.Video.get_by_id('dt'+video_id)
+        if video is None or video.uploader != self.user.key:
+            self.response.out.write(json.dumps({
+                'error': True,
+                'message': 'You are not allowed to edit this video.',
+            }))
+        else:
+            return handler(self, video)
+
+    return check_author
+
+def pool_index_required_json(handler):
+    def get_pool_index(self, video_id):
+        self.response.headers['Content-Type'] = 'application/json'
+        video = models.Video.get_by_id('dt'+video_id)
+        if video is None or video.uploader != self.user.key:
+            self.response.out.write(json.dumps({
+                'error': True,
+                'message': 'You are not allowed to edit this video.',
+            }))
+            return
+
+        try:
+            clip_index = int(self.request.get('index'))
+        except ValueError:
+            clip_index = 1
+        if clip_index < 1 or clip_index > len(video.video_clips):
+            self.response.out.write(json.dumps({
+                'error': True,
+                'message': 'Video not found or deleted.'
+            }))
+            return
+        clip = video.video_clips[clip_index-1].get()
+
+        try:
+            pool_index = int(self.request.get('pool_index'))
+        except ValueError:
+            pool_index = 1
+
+        return handler(self, video, clip, pool_index)
+
+    return get_pool_index
+
 class CoverUpload(BaseHandler, blobstore_handlers.BlobstoreUploadHandler):
     def post(self):
         self.response.headers['Content-Type'] = 'text/plain'
@@ -69,12 +126,9 @@ class VideoUpload(BaseHandler):
         self.render('submit_multi')
 
     @login_required
-    def edit(self, video_id):
-        video = models.Video.get_by_id('dt'+video_id)
-        if video is None or video.uploader.id() != self.user.key.id():
-            self.notify('You are not allowed to edit this video.')
-        else:
-            self.render('edit_video', {'video':video.get_full_info()})
+    @video_author_required
+    def edit(self, video):
+        self.render('edit_video', {'video':video.get_full_info()})
 
     def field_check(self):
         self.title = self.request.get('total-title').strip()
@@ -128,7 +182,7 @@ class VideoUpload(BaseHandler):
 
         self.tags_ori = self.request.get('tags').split(',')
         self.tags = []
-        for i in range(0, len(self.tags_ori)):
+        for i in xrange(0, len(self.tags_ori)):
             tag = self.tags_ori[i].strip()
             if tag:
                 if len(tag) > 100:
@@ -173,7 +227,7 @@ class VideoUpload(BaseHandler):
                 'error': True,
                 'message': 'Too many parts!'
             }
-        for i in range(0, len(self.raw_urls)):
+        for i in xrange(0, len(self.raw_urls)):
             raw_url = self.raw_urls[i].strip();
             if not raw_url:
                 return {
@@ -212,7 +266,7 @@ class VideoUpload(BaseHandler):
 
 
         self.subtitles = self.request.POST.getall('sub-title[]')
-        for i in range(0, len(self.subtitles)):
+        for i in xrange(0, len(self.subtitles)):
             subtitle = self.subtitles[i].strip()
             if len(subtitle) > 400:
                 return {
@@ -221,7 +275,7 @@ class VideoUpload(BaseHandler):
                 }
 
         self.subintros = self.request.POST.getall('sub-intro[]')
-        for i in range(0, len(self.subintros)):
+        for i in xrange(0, len(self.subintros)):
             subintro = self.subintros[i]
             if len(subintro) > 2000:
                 return {
@@ -230,7 +284,7 @@ class VideoUpload(BaseHandler):
                 }
 
         self.indices = self.request.POST.getall('index[]')
-        for i in range(0, len(self.indices)):
+        for i in xrange(0, len(self.indices)):
             try:
                 index = int(self.indices[i])
             except Exception, e:
@@ -316,25 +370,17 @@ class VideoUpload(BaseHandler):
                 }))
                 return
 
-        try:
-            self.video_clips = []
-            for i in range(0, len(self.raw_urls)):
-                video_clip = models.VideoClip.Create(
-                    subintro=self.subintros[i], 
-                    duration=self.durations[i], 
-                    raw_url=self.raw_urls[i],
-                    source=self.sources[i],
-                    vid=self.vids[i]
-                )
-                self.video_clips.append(video_clip.key)
-        except Exception, e: # TODO: a regular thread is required to remove unused clip
-            for i in range(0, len(self.video_clips)):
-                self.video_clips[i].delete()
-            self.response.out.write(json.dumps({
-                'error': True,
-                'message': str(e),
-            }))
-            return
+        self.video_clips = []
+        for i in xrange(0, len(self.raw_urls)):
+            video_clip = models.VideoClip(
+                subintro=self.subintros[i], 
+                duration=self.durations[i], 
+                raw_url=self.raw_urls[i],
+                source=self.sources[i],
+                vid=self.vids[i]
+            )
+            self.video_clips.append(video_clip)
+        ndb.put_multi(self.video_clips)
 
         try:
             video = models.Video.Create(
@@ -350,11 +396,11 @@ class VideoUpload(BaseHandler):
                 thumbnail = self.thumbnail_key,
                 default_thumbnail = self.default_thumbnail,
                 subtitles = self.subtitles,
-                video_clips = self.video_clips,
+                video_clips = [clip.key for clip in self.video_clips],
             )
         except Exception, e:
-            for i in range(0, len(self.video_clips)):
-                self.video_clips[i].delete()
+            for i in xrange(0, len(self.video_clips)):
+                self.video_clips[i].key.delete()
             self.response.out.write(json.dumps({
                 'error': True,
                 'message': str(e),
@@ -363,25 +409,17 @@ class VideoUpload(BaseHandler):
 
         upload_record = models.ActivityRecord(creator=user.key, activity_type='upload', video=video.key, content=video.description)
         user.videos_submitted += 1
-
         ndb.put_multi([upload_record, user])
+
         self.response.out.write(json.dumps({
             'error': False,
             'message': 'Video submitted successfully!'
         }))
 
     @login_required_json
-    def edit_post(self, video_id):
-        video = models.Video.get_by_id('dt'+video_id)
+    @video_author_required_json
+    def edit_post(self, video):
         user = self.user
-
-        if video is None or video.uploader.id() != user.key.id():
-            self.response.out.write(json.dumps({
-                'error': True,
-                'message': 'You are not allowed to edit this video.',
-            }))
-            return
-
         res = self.field_check()
         if res['error']:
             self.response.out.write(json.dumps(res))
@@ -405,110 +443,103 @@ class VideoUpload(BaseHandler):
                 }))
                 return
 
-        try:
-            reindex = False
-            changed = False
-            if video.description != self.description:
-                video.description = self.description
-                changed = True
-                reindex = True
+        reindex = False
+        changed = False
+        if video.description != self.description:
+            video.description = self.description
+            changed = True
+            reindex = True
 
-            if video.title != self.title:
-                video.title = self.title
-                changed = True
-                reindex = True
+        if video.title != self.title:
+            video.title = self.title
+            changed = True
+            reindex = True
 
-            if video.category != self.category:
-                video.category = self.category
-                changed = True
-                reindex = True
+        if video.category != self.category:
+            video.category = self.category
+            changed = True
+            reindex = True
 
-            if video.subcategory != self.subcategory:
-                video.subcategory = self.subcategory
-                changed = True
-                reindex = True
+        if video.subcategory != self.subcategory:
+            video.subcategory = self.subcategory
+            changed = True
+            reindex = True
 
-            if video.video_type != self.video_type:
-                video.video_type = self.video_type
+        if video.video_type != self.video_type:
+            video.video_type = self.video_type
 
-            if video.tags != self.tags:
-                video.tags = self.tags
-                changed = True
-                reindex = True
+        if video.tags != self.tags:
+            video.tags = self.tags
+            changed = True
+            reindex = True
 
-            if video.allow_tag_add != self.allow_tag_add:
-                video.allow_tag_add = self.allow_tag_add
-                changed = True
+        if video.allow_tag_add != self.allow_tag_add:
+            video.allow_tag_add = self.allow_tag_add
+            changed = True
 
-            if self.thumbnail_key != None:
-                if video.thumbnail != None:
-                    images.delete_serving_url(video.thumbnail)
-                    models.blobstore.BlobInfo(video.thumbnail).delete()
-                video.thumbnail = self.thumbnail_key
-                changed = True
+        if self.thumbnail_key != None:
+            if video.thumbnail != None:
+                images.delete_serving_url(video.thumbnail)
+                models.blobstore.BlobInfo(video.thumbnail).delete()
+            video.thumbnail = self.thumbnail_key
+            changed = True
 
-            if video.video_clip_titles != self.subtitles:
-                video.video_clip_titles = self.subtitles
-                changed = True
+        if video.video_clip_titles != self.subtitles:
+            video.video_clip_titles = self.subtitles
+            changed = True
 
-            new_clips = []
-            ori_clips = ndb.get_multi(video.video_clips)
-            used_clips = {}
-            video_duration = 0
-            for i in range(0, len(self.indices)):
-                index = int(self.indices[i])
-                if index != -1:
-                    clip = ori_clips[index]
-                    if clip.subintro != self.subintros[i]:
-                        clip.subintro = self.subintros[i]
-                    if clip.raw_url != self.raw_urls[i]:
-                        clip.raw_url = self.raw_urls[i]
-                    if clip.source != self.sources[i]:
-                        clip.source = self.sources[i]
-                    if clip.vid != self.vids[i]:
-                        clip.vid = self.vids[i]
-                    if clip.duration != self.durations[i]:
-                        clip.duration = self.durations[i]
-                    clip.put()
-                    video_duration += clip.duration
-                    new_clips.append(clip.key)
-                    used_clips[index] = 1
-                else:
-                    clip = models.VideoClip.Create(
-                        subintro=self.subintros[i], 
-                        duration=self.durations[i], 
-                        raw_url=self.raw_urls[i],
-                        source=self.sources[i],
-                        vid=self.vids[i]
-                    )
-                    video_duration += clip.duration
-                    new_clips.append(clip.key)
+        new_clips = []
+        ori_clips = ndb.get_multi(video.video_clips)
+        used_clips = {}
+        video_duration = 0
+        for i in xrange(0, len(self.indices)):
+            index = int(self.indices[i])
+            if index != -1:
+                clip = ori_clips[index]
+                if clip.subintro != self.subintros[i]:
+                    clip.subintro = self.subintros[i]
+                if clip.raw_url != self.raw_urls[i]:
+                    clip.raw_url = self.raw_urls[i]
+                if clip.source != self.sources[i]:
+                    clip.source = self.sources[i]
+                if clip.vid != self.vids[i]:
+                    clip.vid = self.vids[i]
+                if clip.duration != self.durations[i]:
+                    clip.duration = self.durations[i]
+                clip.put()
+                video_duration += clip.duration
+                new_clips.append(clip.key)
+                used_clips[index] = 1
+            else:
+                clip = models.VideoClip(
+                    subintro=self.subintros[i], 
+                    duration=self.durations[i], 
+                    raw_url=self.raw_urls[i],
+                    source=self.sources[i],
+                    vid=self.vids[i]
+                )
+                clip.put()
+                video_duration += clip.duration
+                new_clips.append(clip.key)
 
-            if video.video_clips != new_clips:
-                # logging.info('not the same')
-                for i in range(0, len(ori_clips)):
-                    if not used_clips.get(i):
-                        ori_clips[i].key.delete()
-                video.video_clips = new_clips
-                changed = True
+        if video.video_clips != new_clips:
+            # logging.info('not the same')
+            for i in xrange(0, len(ori_clips)):
+                if not used_clips.get(i):
+                    ori_clips[i].key.delete()
+            video.video_clips = new_clips
+            changed = True
 
-        except Exception, e:
-            self.response.out.write(json.dumps({
-                'error': True,
-                'message': str(e)
-            }))
-            return
-        else:
-            if changed:
-                video.duration = video_duration
-                edit_record = models.ActivityRecord(creator=user.key, activity_type='edit', video=video.key, content=video.description, public=self.allowPost)
-                ndb.put_multi([video, edit_record])
+        if changed:
+            video.duration = video_duration
+            edit_record = models.ActivityRecord(creator=user.key, activity_type='edit', video=video.key, content=video.description, public=self.allowPost)
+            ndb.put_multi([video, edit_record])
 
-            if reindex:
-                video.create_index('videos_by_created', models.time_to_seconds(video.created) )
-                video.create_index('videos_by_hits', video.hits )
-                video.create_index('videos_by_favors', video.favors )
-                video.create_index('videos_by_user' + str(video.uploader.id()), models.time_to_seconds(video.created) )
+        if reindex:
+            video.create_index('videos_by_created', models.time_to_seconds(video.created) )
+            video.create_index('videos_by_hits', video.hits )
+            video.create_index('videos_by_favors', video.favors )
+            video.create_index('videos_by_user' + str(video.uploader.id()), models.time_to_seconds(video.created) )
 
         self.response.out.write(json.dumps({
             'error': False,
@@ -589,10 +620,10 @@ class DeleteVideo(BaseHandler):
             return
 
         deleted_ids = []
-        for i in range(0, len(ids)):
+        for i in xrange(0, len(ids)):
             video_id = ids[i]
             video = models.Video.get_by_id('dt'+video_id)
-            if video is None or video.uploader.id() != user.key.id():
+            if video is None or video.uploader != user.key:
                 continue
 
             user.videos_favored -= video.favors
@@ -663,7 +694,7 @@ class ManageVideo(BaseHandler):
                 videos = models.Video.query(models.Video.uploader==self.user.key).order(-order).fetch(offset=offset, limit=page_size)
         
         # logging.info(videos)
-        for i in range(0, len(videos)):
+        for i in xrange(0, len(videos)):
             # logging.info(videos[i])
             video = videos[i]
             video_info = video.get_basic_info()
@@ -675,6 +706,165 @@ class ManageVideo(BaseHandler):
         context['total_found'] = total_found
         context.update(self.get_page_range(page, total_pages))
         self.render('manage_video', context)
+
+class ManageDanmaku(BaseHandler):
+    @login_required
+    @video_author_required
+    def get(self, video):
+        user = self.user
+        context = {
+            'title': video.title,
+            'id_num': video.key.id().replace('dt', ''),
+            'clips': [],
+        }
+        clips = ndb.get_multi(video.video_clips)
+        for i in xrange(0, len(clips)):
+            clip = clips[i]
+            context['clips'].append({
+                'title': video.video_clip_titles[i],
+                'danmaku_num': clip.danmaku_num,
+                'advanced_danmaku_num': clip.advanced_danmaku_num,
+                'subtitles_num': len(clip.subtitle_danmaku_pools),
+                'code_num': 0,
+            })
+        self.render('manage_danmaku', context)
+
+class ManageDanmakuDetail(BaseHandler):
+    @login_required
+    @video_author_required
+    def get(self, video):
+        user = self.user
+        try:
+            clip_index = int(self.request.get('index'))
+        except ValueError:
+            clip_index = 1
+        if clip_index < 1 or clip_index > len(video.video_clips):
+            self.response.out.write(json.dumps({
+                'error': True,
+                'message': 'Video not found or deleted.'
+            }))
+            return
+        clip = video.video_clips[clip_index-1].get()
+        context = {
+            'title': video.title,
+            'id_num': video.key.id().replace('dt', ''),
+            'clip_index': clip_index,
+            'clip_title': video.video_clip_titles[clip_index-1],
+            'danmaku_num': clip.danmaku_num,
+            'danmaku_list_range': range(0, len(clip.danmaku_pools)),
+            'advanced_danmaku_pool': clip.advanced_danmaku_pool,
+            'subtitles_num': len(clip.subtitle_danmaku_pools),
+            'subtitle_names': clip.subtitle_names,
+            'code_num': 0,
+        }
+        self.render('manage_danmaku_detail', context)
+
+    @login_required_json
+    @pool_index_required_json
+    def post(self, video, clip, pool_index):
+        pool_type = self.request.get('pool_type').strip()
+        try:
+            if pool_type == 'danmaku':
+                danmaku_pool = clip.danmaku_pools[pool_index-1].get()
+                self.response.out.write(json.dumps({
+                    'error': False,
+                    'danmaku_list': [Danmaku.format_danmaku(danmaku) for danmaku in danmaku_pool.danmaku_list]
+                }))
+            elif pool_type == 'advanced':
+                advanced_danmaku_pool = clip.advanced_danmaku_pool.get()
+                self.response.out.write(json.dumps({
+                    'error': False,
+                    'danmaku_list': [Danmaku.format_advanced_danmaku(danmaku) for danmaku in advanced_danmaku_pool.advanced_danmaku_list]
+                }))
+            elif pool_type == 'subtitles':
+                subtitle_danmaku_pool = clip.subtitle_danmaku_pools[pool_index-1].get()
+                self.response.out.write(json.dumps({
+                    'error': False,
+                    'subtitles_list': Subtitles.format_subtitles(subtitle_danmaku_pool)
+                }))
+            elif pool_type == 'code':
+                self.response.out.write(json.dumps({
+                    'error': False,
+                }))
+        except IndexError:
+            self.response.out.write(json.dumps({
+                'error': True,
+                'message': 'Index out of range.'
+            }))
+
+    @login_required_json
+    @pool_index_required_json
+    def drop(self, video, clip, pool_index):
+        pool_type = self.request.get('pool_type').strip()
+        try:
+            if pool_type == 'danmaku':
+                danmaku_pool = clip.danmaku_pools.pop(pool_index-1)
+                danmaku_pool.delete()
+                self.response.out.write(json.dumps({
+                    'error': False,
+                }))
+            elif pool_type == 'advanced':
+                clip.advanced_danmaku_pool.delete()
+                clip.advanced_danmaku_pool = None
+                self.response.out.write(json.dumps({
+                    'error': False,
+                }))
+            elif pool_type == 'subtitles':
+                subtitle_danmaku_pool = clip.subtitle_danmaku_pools.pop(pool_index-1)
+                subtitle_danmaku_pool.delete()
+                clip.subtitle_names.pop(pool_index-1)
+                self.response.out.write(json.dumps({
+                    'error': False,
+                }))
+            elif pool_type == 'code':
+                self.response.out.write(json.dumps({
+                    'error': False,
+                }))
+            clip.put()
+        except IndexError:
+            self.response.out.write(json.dumps({
+                'error': True,
+                'message': 'Index out of range.'
+            }))
+
+    @login_required_json
+    @pool_index_required_json
+    def delete(self, video, clip, pool_index):
+        try:
+            idxs = [int(index) for index in self.request.POST.getall('danmaku_index[]')]
+        except ValueError:
+            self.response.out.write(json.dumps({
+                'error': True,
+                'message': 'Invalid indices.'
+            }))
+            return
+        idxs.sort(reverse=True)
+
+        pool_type = self.request.get('pool_type').strip()
+        try:
+            if pool_type == 'danmaku':
+                danmaku_pool = clip.danmaku_pools[pool_index-1].get()
+                for index in idxs:
+                    danmaku_pool.danmaku_list.pop(index)
+                danmaku_pool.put()
+            elif pool_type == 'advanced':
+                advanced_danmaku_pool = clip.advanced_danmaku_pool.get()
+                for index in idxs:
+                    advanced_danmaku_pool.advanced_danmaku_list.pop(index)
+                advanced_danmaku_pool.put()
+            # elif pool_type == 'code':
+            #     self.response.out.write(json.dumps({
+            #         'error': False,
+            #     }))
+            self.response.out.write(json.dumps({
+                'error': False,
+                'message': 'Danmaku deleted.'
+            }))
+        except IndexError:
+            self.response.out.write(json.dumps({
+                'error': True,
+                'message': 'Index out of range.'
+            }))
 
 class VIDCheck(BaseHandler):
     def get(self):

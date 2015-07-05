@@ -85,10 +85,6 @@ div.content-entry.unread a.message-title {
     color: rgb(0,0,0);
 }
 
-div.content-entry a.message-title:hover {
-    color: rgb(0,140,255);
-}
-
 div.comment-content {
     margin-top: 5px;
     font-size: 14px;
@@ -98,22 +94,13 @@ div.comment-content {
     max-width: 100%;
 }
 
-div.info-line a.reply-link {
+a.reply-link {
     margin-top: 5px;
     font-size: 14px;
-    color: rgb(0,140,255);
-}
-
-div.info-line a.reply-link:hover {
-    color: rgb(255,177,108);
-}
-
-div.info-line a.reply-link:active {
-    color: rgb(0,50,200);
 }
 
 div.pagination-line {
-    padding: 15px 0;
+    padding: 10px 0;
     border-top: 1px solid rgb(230,230,230);
     text-align: center;
 }

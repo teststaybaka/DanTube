@@ -44,15 +44,19 @@ a {
 }
 
 .blue-link {
-    color: rgb(0,140,255);
+    color: rgb(0,140,255) !important;
 }
 
 .blue-link:hover {
-    color: rgb(255,177,108);
+    color: rgb(255,177,108) !important;
 }
 
 .blue-link:active {
-    color: rgb(0,50,200);
+    color: rgb(0,50,200) !important;
+}
+
+.normal-link:hover {
+    color: rgb(0,140,255) !important;
 }
 
 .container:after {
@@ -123,10 +127,6 @@ div.navi, a.navi {
 	margin-left: 10px;
 	cursor: pointer;
 	display: inline-block;
-}
-
-div.link:hover, a.link:hover {
-	color: rgb(0,140,255);
 }
 
 #signin-nav-button {
@@ -315,7 +315,6 @@ div.link:hover, a.link:hover {
 #user-at:hover {
     background-position: 0 -28px;
 	background-repeat: no-repeat;
-	color: rgb(0,140,255);
 }
 
 #user-notification {
@@ -327,7 +326,6 @@ div.link:hover, a.link:hover {
 #user-notification:hover {
 	background-position: 0 -68px;
 	background-repeat: no-repeat;
-	color: rgb(0,140,255);
 }
 
 #user-message {
@@ -339,7 +337,6 @@ div.link:hover, a.link:hover {
 #user-message:hover {
 	background-position: 0 -108px;
 	background-repeat: no-repeat;
-	color: rgb(0,140,255);
 }
 
 #user-box-bottom-line {
@@ -670,11 +667,10 @@ a.page-num.active {
     padding: 4px 8px;
     font-size: 14px;
     display: inline-block;
+    vertical-align: middle;
     border-radius: 5px;
     -webkit-border-radius: 5px;
     -moz-border-radius: 5px;
-    margin-top: 8px;
-    margin-right: 10px;
     cursor: pointer;
     color: rgb(100,100,100);
     font-weight: bold;
@@ -696,10 +692,11 @@ a.page-num.active {
     display: none;
 }
 
-.inline-button:disabled {
+.inline-button:disabled, .inline-button.disabled {
+    cursor: default;
     color: rgb(200,200,200);
     /*box-shadow: 0 0 0;*/
-    background-color: rgb(250,250,250);
+    background-color: rgb(255,255,255);
     border: 1px solid rgb(200,200,200);
 }
 
@@ -867,18 +864,6 @@ div.ajax-content {
     border-top: 1px solid rgb(200,200,200);
 }
 
-#notice-redirect {
-    color: rgb(0,140,255);
-}
-
-#notice-redirect:hover {
-    color: rgb(255,177,108);
-}
-
-#notice-redirect:active {
-    color: rgb(0,50,200);
-}
-
 div.emoticons-select {
     margin-top: 15px;
     display: inline-block;
@@ -1024,4 +1009,76 @@ div.preview-time {
     font-size: 12px;
     font-weight: bold;
     padding: 0 3px;
+}
+
+.list-select {
+    position: relative;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.list-selection {
+    display: inline-block;
+    position: absolute;
+    bottom: 100%;
+    border: 1px solid rgb(200,200,200);
+    border-bottom: 0;
+    background-color: white;
+    z-index: 1;
+}
+
+.list-selection.down {
+    top: 100%;
+    border-top: 0;
+    border-bottom: 1px solid rgb(200,200,200);
+    bottom: auto;
+}
+
+.list-selection.hidden {
+    display: none;
+}
+
+.list-option {
+    font-size: 12px;
+    width: 80px;
+    line-height: 14px;
+    padding: 4px 12px 4px 8px;
+    cursor: pointer;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.list-option:hover {
+    background-color: rgb(150,150,150);
+    color: white;
+}
+
+.list-option.active {
+    display: none;
+}
+
+.list-selected {
+    font-size: 12px;
+    border: 1px solid rgb(200,200,200);
+    width: 80px;
+    line-height: 14px;
+    padding: 4px 12px 4px 8px;
+    background-color: white;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.list-selected:after {
+    width: 0;
+    height: 0;
+    position: absolute;
+    content: "";
+    right: 8px;
+    border: 3px solid transparent;
+    border-top: 6px solid rgb(150,150,150);
+    margin-top: 5px;
 }

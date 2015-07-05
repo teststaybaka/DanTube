@@ -121,7 +121,7 @@
       </div>
       <div id="switch-count-down" class="hidden">
         <span id="switch-count-span">Switch to the next part in 5 seconds.</span>
-        <span id="switch-cancel">Cancel</span>
+        <span id="switch-cancel normal-link">Cancel</span>
       </div>
     </div>
     <div id="progress-controller-wrap">
@@ -153,27 +153,31 @@
             <div id="player-quick-settings">
               <div class="player-setting-line">
                 <label class="player-setting-label">Speed</label>
-                <div class="list-selection hidden">
-                  <div class="list-option speed">0.25</div>
-                  <div class="list-option speed">0.5</div>
-                  <div class="list-option speed active">1.0</div>
-                  <div class="list-option speed">1.25</div>
-                  <div class="list-option speed">1.5</div>
-                  <div class="list-option speed">2.0</div>
+                <div class="list-select">
+                  <div class="list-selection hidden">
+                    <div class="list-option speed">0.25</div>
+                    <div class="list-option speed">0.5</div>
+                    <div class="list-option speed active">1.0</div>
+                    <div class="list-option speed">1.25</div>
+                    <div class="list-option speed">1.5</div>
+                    <div class="list-option speed">2.0</div>
+                  </div>
+                  <div class="list-selected">1.0</div>
                 </div>
-                <div class="list-selected">1.0</div>
               </div>
               <div class="player-setting-line">
                 <label class="player-setting-label">Quality</label>
-                <div class="list-selection quality hidden">
-                  <div class="list-option quality">1080p</div>
-                  <div class="list-option quality">720p</div>
-                  <div class="list-option quality">480p</div>
-                  <div class="list-option quality">360p</div>
-                  <div class="list-option quality">240p</div>
-                  <div class="list-option quality active">Auto</div>
+                <div class="list-select">
+                  <div class="list-selection quality hidden">
+                    <div class="list-option quality">1080p</div>
+                    <div class="list-option quality">720p</div>
+                    <div class="list-option quality">480p</div>
+                    <div class="list-option quality">360p</div>
+                    <div class="list-option quality">240p</div>
+                    <div class="list-option quality active">Auto</div>
+                  </div>
+                  <div class="list-selected quality">Auto</div>
                 </div>
-                <div class="list-selected quality">Auto</div>
               </div>
               <div class="player-setting-line">
                 <label class="player-setting-label">Auto switch</label>
@@ -330,22 +334,24 @@
         </div>
         <div class="player-setting-line full">
           <label class="player-setting-label full">Text font</label>
-          <div class="list-selection font hidden">
-            <div class="list-option font">Georgia</div>
-            <div class="list-option font">Palatino Linotype</div>
-            <div class="list-option font">Book Antiqua</div>
-            <div class="list-option font active">Times New Roman</div>
-            <div class="list-option font">Aria</div>
-            <div class="list-option font">Helvetica</div>
-            <div class="list-option font">Arial Black</div>
-            <div class="list-option font">Impact</div>
-            <div class="list-option font">Lucida Sans Unicode</div>
-            <div class="list-option font">Tahoma</div>
-            <div class="list-option font">Verdana</div>
-            <div class="list-option font">Courier New</div>
-            <div class="list-option font">Lucida Console</div>
+          <div class="list-select">
+            <div class="list-selection down font hidden">
+              <div class="list-option font">Georgia</div>
+              <div class="list-option font">Palatino Linotype</div>
+              <div class="list-option font">Book Antiqua</div>
+              <div class="list-option font active">Times New Roman</div>
+              <div class="list-option font">Aria</div>
+              <div class="list-option font">Helvetica</div>
+              <div class="list-option font">Arial Black</div>
+              <div class="list-option font">Impact</div>
+              <div class="list-option font">Lucida Sans Unicode</div>
+              <div class="list-option font">Tahoma</div>
+              <div class="list-option font">Verdana</div>
+              <div class="list-option font">Courier New</div>
+              <div class="list-option font">Lucida Console</div>
+            </div>
+            <div class="list-selected font">Times New Roman</div>
           </div>
-          <div class="list-selected font">Times New Roman</div>
           <label class="setting-reset-button blue-link font">Reset</label>
         </div>
         <div class="player-setting-line full">
@@ -418,12 +424,14 @@
       </div>
       <div class="player-setting-line full"><label>Add blocking rules</label><a class="help-link" title="How to use blocking rules?"></a></div>
       <form id="add-rule-form" class="player-setting-line full">
-        <div class="list-selection block hidden">
-          <div class="list-option block active">Keywords</div>
-          <div class="list-option block">RegExp</div>
-          <div class="list-option block">User</div>
+        <div class="list-select">
+          <div class="list-selection down block hidden">
+            <div class="list-option block active">Keywords</div>
+            <div class="list-option block">RegExp</div>
+            <div class="list-option block">User</div>
+          </div>
+          <div class="list-selected block">Keywords</div>
         </div>
-        <div class="list-selected block">Keywords</div>
         <input type="text" class="normal-input block-condition-input">
         <input type="submit" class="inline-button special add-block" value="Add">
       </form>

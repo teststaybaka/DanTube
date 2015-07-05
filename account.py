@@ -23,14 +23,14 @@ class History(BaseHandler):
         requested_history = []
 
         base = len(user.history) - 1 - (page - 1)*page_size;
-        for i in range(0, page_size):
+        for i in xrange(0, page_size):
             if base - i < 0:
                 break
             requested_history.append(user.history[base - i])
 
         videos = ndb.get_multi([f.video for f in requested_history])
         uploader_keys = []
-        for i in range(0, len(requested_history)):
+        for i in xrange(0, len(requested_history)):
             video = videos[i]
             if video is None:
                 continue
@@ -42,7 +42,7 @@ class History(BaseHandler):
             context['videos'].append(video_info)
 
         uploaders = ndb.get_multi(uploader_keys)
-        for i in range(0, len(uploaders)):
+        for i in xrange(0, len(uploaders)):
             uploader = uploaders[i]
             context['videos'][i]['uploader'] = uploader.get_public_info()
 
@@ -70,7 +70,7 @@ class History(BaseHandler):
 
             comments = ndb.get_multi(comment_keys)
             videos= ndb.get_multi([comment.video for comment in comments])
-            for i in range(0, len(comments)):
+            for i in xrange(0, len(comments)):
                 comment = comments[i]
                 video = videos[i]
                 if video is None:
@@ -102,14 +102,14 @@ class Favorites(BaseHandler):
 
         requested_favorites = []
         base = len(user.favorites) - 1 - (page - 1)*page_size;
-        for i in range(0, page_size):
+        for i in xrange(0, page_size):
             if base - i < 0:
                 break
             requested_favorites.append(user.favorites[base - i])
 
         video_keys = [f.video for f in requested_favorites]
         videos = ndb.get_multi(video_keys)
-        for i in range(0, len(requested_favorites)):
+        for i in xrange(0, len(requested_favorites)):
             video = videos[i]
             if video is None:
                 video_info = {}
@@ -188,7 +188,7 @@ class Unfavor(BaseHandler):
         deleted_ids = []
         put_list = []
         uploader_keys = []
-        for i in range(0, len(ids)):
+        for i in xrange(0, len(ids)):
             video_id = ids[i]
             # video = models.Video.get_by_id('dt'+video_id)
             video_key = ndb.Key('Video', 'dt'+video_id)
@@ -210,7 +210,7 @@ class Unfavor(BaseHandler):
             uploader_keys.append(video.uploader)
 
         uploaders = ndb.get_multi(uploader_keys)
-        for i in range(0, len(uploaders)):
+        for i in xrange(0, len(uploaders)):
             uploader = uploaders[i]
             uploader.videos_favored -= 1
             put_list.append(uploader)
@@ -240,14 +240,13 @@ class Subscribed(BaseHandler):
 
         requested_upers = []
         base = len(user.subscriptions) - 1 - (page - 1)*page_size;
-        for i in range(0, page_size):
+        for i in xrange(0, page_size):
             if base - i < 0:
                 break
             requested_upers.append(user.subscriptions[base - i])
 
         upers = ndb.get_multi(requested_upers)
-        for i in range(0, len(upers)):
-            uper = upers[i]
+        for uper in upers:
             uper_info = uper.get_public_info()
             context['upers'].append(uper_info)
 
@@ -261,7 +260,7 @@ class Subscriptions(BaseHandler):
         user = self.user
         if len(user.subscriptions) > 1:
             operation = ndb.OR(models.ActivityRecord.creator==user.subscriptions[0], models.ActivityRecord.creator==user.subscriptions[1])
-            for i in range(2, len(user.subscriptions)):
+            for i in xrange(2, len(user.subscriptions)):
                 operation = ndb.OR(models.ActivityRecord.creator==user.subscriptions[i], operation)
             new_activities = models.ActivityRecord.query(ndb.AND(operation, models.ActivityRecord.public==True, models.ActivityRecord.created > user.last_subscription_check)).count()
         elif len(user.subscriptions) == 1:
@@ -311,7 +310,7 @@ class Subscriptions(BaseHandler):
         cursor = models.Cursor(urlsafe=self.request.get('cursor'))
         if len(user.subscriptions) > 1:
             condition = ndb.OR(models.ActivityRecord.creator==user.subscriptions[0], models.ActivityRecord.creator==user.subscriptions[1])
-            for i in range(2, len(user.subscriptions)):
+            for i in xrange(2, len(user.subscriptions)):
                 condition = ndb.OR(models.ActivityRecord.creator==user.subscriptions[i], condition)
             if uploads_only:
                 records, cursor, more = models.ActivityRecord.query(
@@ -346,7 +345,7 @@ class Subscriptions(BaseHandler):
 
         videos = ndb.get_multi([record.video for record in records])
         creators = ndb.get_multi([record.creator for record in records])
-        for i in range(0, len(records)):
+        for i in xrange(0, len(records)):
             record = records[i]
             video = videos[i]
             if video is None:
@@ -382,13 +381,13 @@ class Subscriptions(BaseHandler):
 
         requested_upers = []
         base = len(user.subscriptions) - 1 - (page - 1)*page_size;
-        for i in range(0, page_size):
+        for i in xrange(0, page_size):
             if base - i < 0:
                 break
             requested_upers.append(user.subscriptions[base - i])
 
         upers = ndb.get_multi(requested_upers)
-        for i in range(0, len(upers)):
+        for i in xrange(0, len(upers)):
             uper = upers[i]
             uper_info = uper.get_public_info()
             result['upers'].append(uper_info)
