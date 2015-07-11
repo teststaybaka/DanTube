@@ -90,7 +90,7 @@ div.comment-content {
     font-size: 14px;
     word-wrap: break-word;
     white-space: pre-wrap;
-    color: rgb(100,100,100);
+    color: rgb(50,50,50);
     max-width: 100%;
 }
 
@@ -266,7 +266,7 @@ form.reply-block {
 
 .inline-button.send {
     float: right;
-    margin-top: 15px;
+    margin-top: 10px;
     margin-right: 0;
     min-width: 58px;
     text-align: center;

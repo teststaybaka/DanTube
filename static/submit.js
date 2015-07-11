@@ -5,12 +5,12 @@ video_part_line_html = '<div class="video-part-line">\
                 <input type="text" class="title-input normal-input" placeholder="Optional title" name="sub-title[]" tabindex="1">\
                 <div class="video-part-error">Title too long.</div>\
                 <textarea class="intro-input normal-input" placeholder="Optional sub-introduction" name="sub-intro[]" tabindex="1"></textarea>\
-                <div class="list-select">\
-                    <div class="list-selection down source hidden">\
-                        <div class="list-option source">YouTube</div>\
+                <div class="list-select source">\
+                    <div class="list-selection down hidden">\
+                        <div class="list-option medium active">YouTube</div>\
                     </div>\
-                    <div class="list-selected source">YouTube</div>\
-                    <input name="source[]" type="text" class="hidden">\
+                    <div class="list-selected medium">YouTube</div>\
+                    <input name="source[]" type="text" class="hidden" value="YouTube">\
                 </div>\
                 <div class="video-part-error">Title too long.</div>\
                 <input type="text" class="url-input normal-input" name="video-url[]" placeholder="e.g., youtube.com/watch?v=8NNTvx5eoXE" tabindex="1">\
@@ -185,6 +185,7 @@ $(document).ready(function() {
         var first_option = $($('.list-selection.subcategory').children()[0]);
         $('.list-selection.subcategory').next().text(first_option.text())
                                         .next().val(first_option.text());
+        first_option.addClass('active');
 
     });
 
@@ -302,7 +303,6 @@ $(document).ready(function() {
 
     $('#video-submission-form').submit(function(evt) {
         $('#thumbnail-error').removeClass('show');
-        $('#change-applying').addClass('show');
 
         var button = document.querySelector('input.save_change-button');
         button.disabled = true;
@@ -342,10 +342,10 @@ $(document).ready(function() {
         }
         if (error) {
             button.disabled = false;
-            $('#change-applying').removeClass('show');
             return false;
         }
 
+        $('#change-applying').addClass('show');
         var formData = new FormData(document.getElementById('video-submission-form'));
         $.ajax({
             type: "POST",

@@ -37,19 +37,19 @@
                 Part {{ clip_index }}
             {% endif %}
         </a>
-        <div class="list-select">
+        <div class="list-select pool">
             <div class="list-selection down hidden">
                 {% for i in danmaku_list_range %}
-                <div class="list-option pool" data-index="{{ i+1 }}" data-type="danmaku" title="Danmaku pool {{ i+1 }}">Danmaku pool {{ i+1 }}</div>
+                <div class="list-option medium" data-index="{{ i+1 }}" data-type="danmaku" title="Danmaku pool {{ i+1 }}">Danmaku pool {{ i+1 }}</div>
                 {% endfor %}
                 {% if advanced_danmaku_pool %}
-                <div class="list-option pool" data-type="advanced" title="Advanced danmaku pool">Advanced danmaku pool</div>
+                <div class="list-option medium" data-type="advanced" title="Advanced danmaku pool">Advanced danmaku pool</div>
                 {% endif %}
                 {% for sub_name in subtitle_names %}
-                <div class="list-option pool" data-index="{{ loop.index }}" data-type="subtitles" title="{{ sub_name }}">{{ sub_name }}</div>
+                <div class="list-option medium" data-index="{{ loop.index }}" data-type="subtitles" title="{{ sub_name }}">{{ sub_name }}</div>
                 {% endfor %}
             </div>
-            <div class="list-selected pool">No pool available</div>
+            <div class="list-selected auto medium">No pool available</div>
         </div>
         <div class="danmaku-num-label"></div>
         <div class="inline-button actions delete disabled">Delete</div>

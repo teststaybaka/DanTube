@@ -119,7 +119,7 @@ function render_activity_div(record) {
             div += 'Edited'
         }
         div += '</label>\
-                    <a href="' + record.video.url + '" class="activity-title normal-link" target="_blank">' + record.video.title + '</a>\
+                    <a href="' + record.video_url + '" class="activity-title normal-link" target="_blank">' + record.video_title + '</a>\
                 </div>\
                 <div class="uploader-name">\
                     <label>by</label>\
@@ -127,7 +127,7 @@ function render_activity_div(record) {
                     <div class="activity-time">' + record.created + '</div>\
                 </div>\
                 <div class="activity-intro">' + record.content + '</div>\
-                <a class="video-img" href="' + record.video.url + '" target="_blank">\
+                <a class="video-img" href="' + record.video_url + '" target="_blank">\
                     <img class="video-img" src="' + record.video.thumbnail_url + '">\
                 </a>\
             </div>\
@@ -144,7 +144,7 @@ function render_activity_div(record) {
             div += 'Posted a danmaku in'
         }
         div += '</label>\
-                <a href="' + record.video.url + '" class="activity-title normal-link" target="_blank">' + record.video.title + '</a>\
+                <a href="' + record.video_url + '" class="activity-title normal-link" target="_blank">' + record.video_title + '</a>\
             </div>\
             <div class="uploader-name">\
                 <label>by</label>\
@@ -152,7 +152,7 @@ function render_activity_div(record) {
                 <div class="activity-time">' + record.created + '</div>\
             </div>\
             <div class="activity-intro">' + record.content + '</div>\
-            <a class="comment-check blue-link" href="' + record.video.url + '?'
+            <a class="comment-check blue-link" href="' + record.video_url + '?'
         if (record.type === 'comment') {
             div +=  'comment=' + record.floorth;
         } else if (record.type === 'inner_comment') {

@@ -18,7 +18,7 @@
 <div id="sub-title-line" class="container">
     <div id="sub-title"><span class="commas_number">{{ total_found }}</span> Video{% if total_found > 1 %}s{% endif %}</div>
     <form class="sub-search-block" method="get" action="{{ uri_for('manage_video') }}">
-        <input class="sub-search-input" type="text" name="keywords" placeholder="Search Videos" value="{{ video_keywords }}">
+        <input class="sub-search-input" type="text" name="keywords" placeholder="Search Videos" value="{{ video_keywords }}" tabindex="1">
         <input type="submit" class="sub-search-button" value="">
     </form>
     <div id="view-method">

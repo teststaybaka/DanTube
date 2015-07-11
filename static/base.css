@@ -72,7 +72,7 @@ a {
 }
 
 .hidden {
-    display: none;
+    display: none !important;
 }
 
 #user-bar-background {
@@ -81,7 +81,6 @@ a {
     min-width: 1024px;
     background-color: rgb(255,255,255);
     border-bottom: 1px solid rgb(50,180,240);
-    /*box-shadow: 0px 0 8px rgb(200,200,200);*/
 }
 
 #user-bar {
@@ -688,10 +687,6 @@ a.page-num.active {
     color: rgb(255,255,255);
 }
 
-.inline-button.hidden {
-    display: none;
-}
-
 .inline-button:disabled, .inline-button.disabled {
     cursor: default;
     color: rgb(200,200,200);
@@ -865,7 +860,7 @@ div.ajax-content {
 }
 
 div.emoticons-select {
-    margin-top: 15px;
+    margin-top: 10px;
     display: inline-block;
     float: left;
     color: rgb(100,100,100);
@@ -1025,6 +1020,10 @@ div.preview-time {
     border-bottom: 0;
     background-color: white;
     z-index: 1;
+    -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
+    -moz-box-sizing: border-box;    /* Firefox, other Gecko */
+    box-sizing: border-box;
+    width: 100%;
 }
 
 .list-selection.down {
@@ -1034,23 +1033,22 @@ div.preview-time {
     bottom: auto;
 }
 
-.list-selection.hidden {
-    display: none;
-}
-
 .list-option {
     font-size: 12px;
-    width: 80px;
     line-height: 14px;
     padding: 4px 12px 4px 8px;
     cursor: pointer;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
+    -moz-box-sizing: border-box;    /* Firefox, other Gecko */
+    box-sizing: border-box;
+    width: 100%;
 }
 
 .list-option:hover {
-    background-color: rgb(150,150,150);
+    background-color: rgb(0,140,255);
     color: white;
 }
 
@@ -1061,15 +1059,17 @@ div.preview-time {
 .list-selected {
     font-size: 12px;
     border: 1px solid rgb(200,200,200);
-    width: 80px;
     line-height: 14px;
     padding: 4px 12px 4px 8px;
     background-color: white;
     cursor: pointer;
-    position: relative;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
+    -moz-box-sizing: border-box;    /* Firefox, other Gecko */
+    box-sizing: border-box;
+    width: 100%;
 }
 
 .list-selected:after {
@@ -1081,4 +1081,9 @@ div.preview-time {
     border: 3px solid transparent;
     border-top: 6px solid rgb(150,150,150);
     margin-top: 5px;
+}
+
+.list-selected.medium, .list-option.medium {
+    font-size: 14px;
+    line-height: 16px;
 }

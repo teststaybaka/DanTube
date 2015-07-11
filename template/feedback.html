@@ -1,7 +1,6 @@
 {% extends "template/account.html" %}
 {% block head %}
 {{ super() }}
-<script src="/static/feedback.js" language="JavaScript" type="text/javascript"></script>
 {% endblock %}
 
 {% block overview_active %}{% endblock %}
@@ -15,31 +14,31 @@
 {% endblock %}
 
 {% block detail %}
-<form class="change" id="feedback-submission-form" method="post" action="{{ uri_for('feedback') }}">
+<form class="change" id="feedback-submission-form" method="POST" action="{{ uri_for('feedback') }}">
     <div class="input-line">
         <label class="form-label">Category:</label>
-        <select name="category"  id="select-category">
-        {% for key in feedback_category %}
-            <option value="{{ key }}">{{ key }}</option>
-        {% endfor %}
-        </select>
+        <div class="list-select feedback">
+            <div class="list-selection down hidden">
+                {% for key in feedback_category %}
+                <div class="list-option medium">{{ key }}</div>
+                {% endfor %}
+            </div>
+            <div class="list-selected medium auto"></div>
+            <input name="category" type="text" class="hidden">
+        </div>
     </div>
     <div class="input-line">
         <label for="feedback-subject" class="form-label">Subject:</label>
-        <input type="text" id="feedback-subject" class="normal-input" name="subject" tabindex="1" placeholder="Feedback subject">
+        <input type="text" id="feedback-subject" class="normal-input" name="subject" tabindex="1">
         <div class="input-error" id="feedback-subject-error">Please.</div>
     </div>
     <div class="input-line">
         <label for="feedback-description" class="form-label">Description:</label>
-        <textarea class="normal normal-input" id="feedback-description" class="normal-input" name="description" tabindex="1" placeholder="Feedback description."></textarea>
+        <textarea class="normal normal-input" id="feedback-description" class="normal-input" name="description" tabindex="1"></textarea>
         <div class="input-error" id="feedback-description-error">Please.</div>
     </div>
-    <label for="anonymous" class="check-label">
-        <input type="checkbox" class="checkbox" id="anonymous" name="anonymous" tabindex="1">
-        <span>Anonymous</span>
-    </label>
     <div>
-        <input class="save_change-button" type="submit" value="Send feedback" />
+        <input class="save_change-button" type="submit" value="Send Feedback" />
         <div id="change-applying"></div>
     </div>
 </form>

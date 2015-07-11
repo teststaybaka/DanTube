@@ -303,14 +303,10 @@ class Mentioned(BaseHandler):
 
         cursor = models.Cursor(urlsafe=self.request.get('cursor'))
         comments, cursor, more = models.MentionedComment.query(models.MentionedComment.receivers==user.key).order(-models.MentionedComment.created, models.MentionedComment.key).fetch_page(page_size, start_cursor=cursor)
-        videos = ndb.get_multi([comment.video for comment in comments])
         senders = ndb.get_multi([comment.sender for comment in comments])
         for i in xrange(0, len(comments)):
             comment = comments[i]
-            video = videos[i]
             sender = senders[i]
-            if not video:
-                continue
             comment_info = {
                 'sender': sender.get_public_info(),
                 'type': comment.comment_type,
@@ -319,7 +315,8 @@ class Mentioned(BaseHandler):
                 'inner_floorth': comment.inner_floorth,
                 'content': comment.content,
                 'created': comment.created.strftime("%Y-%m-%d %H:%M"),
-                'video': video.get_basic_info(),
+                'video_title': comment.video_title,
+                'video_url': '/video/'+comment.video.id(),
                 'clip_index': comment.clip_index,
             }
             result['entries'].append(comment_info)

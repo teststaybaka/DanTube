@@ -39,6 +39,7 @@ $(document).ready(function() {
             return false;
         }
 
+        dt.pop_ajax_message('Creating...', 'info');
         $.ajax({
             type: "POST",
             url: evt.target.action,

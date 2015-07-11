@@ -41,19 +41,19 @@ var video_subcategories = {};
         <div class="list-select">
             <div class="list-selection down hidden">
                 {% for key in category %}
-                <div class="list-option category">{{ key }}</div>
+                <div class="list-option medium category">{{ key }}</div>
                 {% endfor %}
             </div>
-            <div class="list-selected"></div>
+            <div class="list-selected medium auto"></div>
             <input name="category" type="text" class="hidden">
         </div>
         <div class="list-select">
             <div class="list-selection down subcategory hidden">
                 {% for val in subcategory[category[0]] %}
-                <div class="list-option subcategory">{{ val }}</div>
+                <div class="list-option medium subcategory">{{ val }}</div>
                 {% endfor %}
             </div>
-            <div class="list-selected"></div>
+            <div class="list-selected medium auto"></div>
             <input name="subcategory" type="text" class="hidden">
         </div>
     </div>
@@ -95,12 +95,12 @@ var video_subcategories = {};
                 <input type="text" class="title-input normal-input" placeholder="Optional title" name="sub-title[]" tabindex="1">
                 <div class="video-part-error">Title too long.</div>
                 <textarea class="intro-input normal-input" placeholder="Optional sub-introduction" name="sub-intro[]" tabindex="1"></textarea>
-                <div class="list-select">
-                    <div class="list-selection down source hidden">
-                        <div class="list-option source">YouTube</div>
+                <div class="list-select source">
+                    <div class="list-selection down hidden">
+                        <div class="list-option medium active">YouTube</div>
                     </div>
-                    <div class="list-selected source"></div>
-                    <input name="source[]" type="text" class="hidden">
+                    <div class="list-selected medium">YouTube</div>
+                    <input name="source[]" type="text" class="hidden" value="YouTube">
                 </div>
                 <div class="video-part-error">Title too long.</div>
                 <input type="text" class="url-input normal-input" name="video-url[]" placeholder="e.g., youtube.com/watch?v=8NNTvx5eoXE" tabindex="1">
@@ -114,7 +114,6 @@ var video_subcategories = {};
             <div class="input-error add-more" id="video-tags-error">Please.</div>
         </div>
     </div>
-
     <div>
         <input class="save_change-button" type="submit" value="Submit Video" />
         <div id="change-applying"></div>

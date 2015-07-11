@@ -74,7 +74,7 @@ function load_danmaku_list(option) {
                     for (var i = 0; i < result.danmaku_list.length; i++) {
                         list_block.append(render_advanced_entry(result.danmaku_list[i], i));
                     }
-                    $('.danmaku-num-label').text(result.danmaku_list.length);
+                    $('.danmaku-num-label').text(result.danmaku_list.length+'/1000');
                 } else if (option.attr('data-type') === 'subtitles') {
                     list_block.append('<div class="pool-detail-entry label-line">\
                         <div class="detail-label timestamp">Timestamp</div>\
@@ -118,7 +118,7 @@ function load_danmaku_list(option) {
 
 function render_danmaku_entry(entry, index) {
     div = '<div class="pool-detail-entry">\
-                <div class="detail-label timestamp">'+dt.secondsToTime(entry.timestamp)+'</div>\
+                <div class="detail-label timestamp">'+dt.millisecondsToTime(entry.timestamp)+'</div>\
                 <div class="detail-label">'
     if (entry.type == 'RightToLeft') {
         div += 'Normal';
@@ -137,7 +137,7 @@ function render_danmaku_entry(entry, index) {
 
 function render_advanced_entry(entry, index) {
     div = '<div class="pool-detail-entry">\
-                <div class="detail-label timestamp">'+dt.secondsToTime(entry.timestamp)+'</div>\
+                <div class="detail-label timestamp">'+dt.millisecondsToTime(entry.timestamp)+'</div>\
                 <div class="detail-label">Advanced</div>\
                 <div class="detail-label content advanced" title="'+entry.content+'">'+entry.content+'</div>\
                 <div class="detail-label created">'+entry.created_year+'</div>\
@@ -148,7 +148,7 @@ function render_advanced_entry(entry, index) {
 
 function render_subtitles_entry(entry, created_year) {
     div = '<div class="pool-detail-entry">\
-                <div class="detail-label timestamp">'+dt.secondsToTime(entry.timestamp)+'</div>\
+                <div class="detail-label timestamp">'+dt.millisecondsToTime(entry.timestamp)+'</div>\
                 <div class="detail-label">Subtitles</div>\
                 <div class="detail-label content subtitles" title="'+entry.content+'">'+entry.content+'</div>\
                 <div class="detail-label created">'+created_year+'</div>\

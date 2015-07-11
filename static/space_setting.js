@@ -74,7 +74,6 @@ $(document).ready(function() {
             type: "POST",
             url: "/account/space_reset",
             success: function(result) {
-                console.log(result);
                 if(!result.error) {
                     dt.pop_ajax_message('Space settings have been reset!', 'success');
                     setTimeout(function(){
@@ -103,26 +102,20 @@ $(document).ready(function() {
     $('#change-space-form').submit(function(evt) {
         $('#change-space-css-error').removeClass('show');
         $('#space-css-change').removeClass('error');
-        $('#change-applying').addClass('show');
 
         var buttons = document.querySelectorAll('input.save_change-button');
         for (var i = 0; i < buttons.length; i++) {
             buttons[i].disabled = true;
         }
 
-        var error = false;
         if (!space_name_check(space_name)) {
-            error = true;
-        }
-
-        if (error) {
             for (var i = 0; i < buttons.length; i++) {
                 buttons[i].disabled = false;
             }
-            $('#change-applying').removeClass('show');
             return false;
         }
 
+        $('#change-applying').addClass('show');
         var formData = new FormData(document.getElementById('change-space-form'));
         $.ajax({
             type: "POST",
@@ -132,7 +125,6 @@ $(document).ready(function() {
             contentType: false,
             processData: false,
             success: function(result) {
-                console.log(result);
                 if(result.error) {
                     dt.pop_ajax_message(result.message, 'error');
                     for (var i = 0; i < buttons.length; i++) {

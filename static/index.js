@@ -30,7 +30,6 @@ function update_random_videos() {
         url: '/video/random',
         data: {size: 5},
         success: function(result) {
-            console.log(result)
             $('div.single-preview-line').empty();
             if(!result.error) {
                 for(var i = 0; i < result.videos.length; i++) {

@@ -75,7 +75,7 @@
                 <a class="category-name">Forum</a>
             </div> -->
             <form id="search-form" method="get" {% block search_url %}action="{{ uri_for('search') }}"{% endblock %}>
-                <input type="text" name="keywords" id="search-input" value="{{ keywords }}">
+                <input type="text" name="keywords" id="search-input" value="{{ keywords }}" tabindex="3">
                 <input type="submit" id="search-button" value="">
             </form>
         </div>

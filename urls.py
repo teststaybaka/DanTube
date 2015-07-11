@@ -1,6 +1,6 @@
 import webapp2
 
-import views, admin, login, account, video, message, user, playlist, watch
+import views, admin, login, account, video, message, user, playlist, watch, report
 import models
 
 secret_key = 'efrghtrrouhsmvnmxdiosjkgjfds68_=' \
@@ -104,9 +104,10 @@ routes = [
     webapp2.Route(r'/search/playlist', views.SearchPlaylist, name="search_playlist"),
     webapp2.Route(r'/search/uper', views.SearchUPer, name="search_uper"),
 
-    webapp2.Route(r'/feedback', views.Feedback, name="feedback"),
-    webapp2.Route(r'/report', views.Report, name="report"),
-    webapp2.Route(r'/vid_check', video.VIDCheck, name="vid_check"),
+    webapp2.Route(r'/feedback', report.Feedback, name="feedback"),
+    webapp2.Route(r'/report/video/dt<video_id:\d+>', report.Report, name="report_video", handler_method="video"),
+    webapp2.Route(r'/report/comment/dt<video_id:\d+>', report.Report, name="report_comment", handler_method="comment"),
+    webapp2.Route(r'/report/danmaku/dt<video_id:\d+>', report.Report, name="report_danmaku", handler_method="danmaku"),
 
     webapp2.Route(r'/admin', admin.Home, name="Admin_Home"),
     webapp2.Route(r'/admin/video', admin.VideoPageTest, name="Admin_Video"),

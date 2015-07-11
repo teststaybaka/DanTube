@@ -157,8 +157,12 @@ div.no-history {
      margin-top: 2px;
 }
 
+.info-line:first-child {
+    margin: 0;
+}
+
 .comment-content {
-    color: rgb(100,100,100);
+    color: rgb(50,50,50);
     max-width: 100%;
     white-space: pre-wrap;
     word-wrap: break-word;

@@ -768,13 +768,13 @@ class ManageDanmakuDetail(BaseHandler):
                 danmaku_pool = clip.danmaku_pools[pool_index-1].get()
                 self.response.out.write(json.dumps({
                     'error': False,
-                    'danmaku_list': [Danmaku.format_danmaku(danmaku) for danmaku in danmaku_pool.danmaku_list]
+                    'danmaku_list': [Danmaku.format_danmaku(danmaku, danmaku_pool) for danmaku in danmaku_pool.danmaku_list]
                 }))
             elif pool_type == 'advanced':
                 advanced_danmaku_pool = clip.advanced_danmaku_pool.get()
                 self.response.out.write(json.dumps({
                     'error': False,
-                    'danmaku_list': [Danmaku.format_advanced_danmaku(danmaku) for danmaku in advanced_danmaku_pool.advanced_danmaku_list]
+                    'danmaku_list': [Danmaku.format_advanced_danmaku(danmaku, advanced_danmaku_pool) for danmaku in advanced_danmaku_pool.danmaku_list]
                 }))
             elif pool_type == 'subtitles':
                 subtitle_danmaku_pool = clip.subtitle_danmaku_pools[pool_index-1].get()
@@ -841,21 +841,21 @@ class ManageDanmakuDetail(BaseHandler):
         idxs.sort(reverse=True)
 
         pool_type = self.request.get('pool_type').strip()
+        if pool_type == 'danmaku':
+            danmaku_pool = clip.danmaku_pools[pool_index-1].get()
+        elif pool_type == 'advanced':
+            danmaku_pool = clip.advanced_danmaku_pool.get()
+        else:
+            self.response.out.write(json.dumps({
+                'error': True,
+                'message': 'Invalid type.'
+            }))
+
         try:
-            if pool_type == 'danmaku':
-                danmaku_pool = clip.danmaku_pools[pool_index-1].get()
-                for index in idxs:
-                    danmaku_pool.danmaku_list.pop(index)
-                danmaku_pool.put()
-            elif pool_type == 'advanced':
-                advanced_danmaku_pool = clip.advanced_danmaku_pool.get()
-                for index in idxs:
-                    advanced_danmaku_pool.advanced_danmaku_list.pop(index)
-                advanced_danmaku_pool.put()
-            # elif pool_type == 'code':
-            #     self.response.out.write(json.dumps({
-            #         'error': False,
-            #     }))
+            for index in idxs:
+                danmaku_pool.danmaku_list.pop(index)
+            danmaku_pool.put()
+            
             self.response.out.write(json.dumps({
                 'error': False,
                 'message': 'Danmaku deleted.'
@@ -865,33 +865,3 @@ class ManageDanmakuDetail(BaseHandler):
                 'error': True,
                 'message': 'Index out of range.'
             }))
-
-class VIDCheck(BaseHandler):
-    def get(self):
-        self.response.headers['Content-Type'] = 'application/json'
-
-        vid = self.request.get('vid').strip()
-        if not vid:
-            self.response.out.write(json.dumps({
-                'valid': False,
-                'message': 'Video ID must not be empty!'
-            }))
-            return
-        if re.match(r"^dt[1-9][0-9]*$", vid) is None:
-            self.response.out.write(json.dumps({
-                'valid': False,
-                'message': 'Invalid Video ID!'
-            }))
-            return
-        video = models.Video.get_by_id(vid)
-        if not video:
-            self.response.out.write(json.dumps({
-                'valid': False,
-                'message': 'Video ID does not exist!'
-            }))
-            return
-
-        self.response.out.write(json.dumps({
-            'valid': True,
-            'video': video.get_basic_info()
-        }))

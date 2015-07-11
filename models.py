@@ -461,6 +461,7 @@ class Video(ndb.Model):
   likes = ndb.IntegerProperty(required=True, default=0)
   favors = ndb.IntegerProperty(required=True, default=0)
   bullets = ndb.IntegerProperty(required=True, default=0)
+  shares = ndb.IntegerProperty(required=True, default=0)
   comment_counter = ndb.IntegerProperty(required=True, default=0)
 
   # cls_var = 0
@@ -628,7 +629,7 @@ class Video(ndb.Model):
 
     basic_info = {
       'title': self.title,
-      'url': '/video/'+ self.key.id(),
+      'url': '/video/'+self.key.id(),
       'id': self.key.id(),
       'id_num': self.key.id().replace('dt', ''),
       'thumbnail_url': thumbnail_url,
@@ -641,6 +642,7 @@ class Video(ndb.Model):
       'hits': self.hits,
       'bullets': self.bullets,
       'comment_counter': self.comment_counter,
+      'shares': self.shares,
       'likes': self.likes,
       'favors': self.favors,
       'last_updated': self.last_updated.strftime("%Y-%m-%d %H:%M:%S"),
@@ -792,6 +794,7 @@ class Video(ndb.Model):
 
 Danmaku_Positions = ['RightToLeft', 'Top', 'Bottom']
 class Danmaku(ndb.Model):
+  index = ndb.IntegerProperty(required=True, default=0, indexed=False)
   timestamp = ndb.FloatProperty(required=True, indexed=False)
   content = ndb.StringProperty(required=True, indexed=False)
   position = ndb.StringProperty(required=True, default='RightToLeft', choices=Danmaku_Positions, indexed=False)
@@ -801,6 +804,7 @@ class Danmaku(ndb.Model):
   created = ndb.DateTimeProperty(auto_now_add=True, indexed=False)
 
 class AdvancedDanmaku(ndb.Model):
+  index = ndb.IntegerProperty(required=True, default=0, indexed=False)
   timestamp = ndb.FloatProperty(required=True, indexed=False)
   content = ndb.StringProperty(required=True, indexed=False)
   birth_x = ndb.FloatProperty(required=True, indexed=False)
@@ -815,13 +819,14 @@ class AdvancedDanmaku(ndb.Model):
   created = ndb.DateTimeProperty(auto_now_add=True, indexed=False)
 
 class DanmakuPool(ndb.Model):
+  counter = ndb.IntegerProperty(required=True, default=0, indexed=False)
   danmaku_list = ndb.StructuredProperty(Danmaku, repeated=True, indexed=False)
 
 class AdvancedDanmakuPool(ndb.Model):
-  advanced_danmaku_list = ndb.StructuredProperty(AdvancedDanmaku, repeated=True, indexed=False)
+  counter = ndb.IntegerProperty(required=True, default=0, indexed=False)
+  danmaku_list = ndb.StructuredProperty(AdvancedDanmaku, repeated=True, indexed=False)
 
 class SubtitleDanmakuPool(ndb.Model):
-  memo = ndb.StringProperty(required=True, indexed=False)
   subtitles = ndb.TextProperty(required=True, indexed=False)
   status = ndb.StringProperty(required=True, indexed=False, default='Pending', choices=['Pending', 'Approved'])
   creator = ndb.KeyProperty(kind='User', required=True, indexed=False)
@@ -865,6 +870,10 @@ class InnerComment(ndb.Model):
   floorth = ndb.IntegerProperty(required=True, default=0, indexed=False)
   inner_floorth = ndb.IntegerProperty(required=True, default=0, indexed=False)
   deleted = ndb.BooleanProperty(required=True, default=False, indexed=False)
+
+  @staticmethod
+  def get_by_id(id, comment_key):
+    return super(InnerComment, InnerComment).get_by_id(id, parent=comment_key)
 
   @staticmethod
   @ndb.transactional(retries=10)
@@ -914,6 +923,7 @@ class MentionedComment(ndb.Model):
   inner_floorth = ndb.IntegerProperty(indexed=False)
   content = ndb.TextProperty(required=True, indexed=False)
   video = ndb.KeyProperty(kind='Video', indexed=False)
+  video_title = ndb.StringProperty(required=True, default='', indexed=False)
   clip_index = ndb.IntegerProperty(indexed=False)
 
 Activity_Types = Comment_Types + ['upload', 'edit']
@@ -926,28 +936,61 @@ class ActivityRecord(ndb.Model):
   content = ndb.TextProperty(indexed=False)
   created = ndb.DateTimeProperty(auto_now_add=True)
   video = ndb.KeyProperty(kind='Video', required=True, indexed=False)
+  video_title = ndb.StringProperty(required=True, default='', indexed=False)
   clip_index = ndb.IntegerProperty(indexed=False)
   public = ndb.BooleanProperty(required=True, default=True)
 
-Feedback_Category = ['bug', 'suggestion', 'other']
+Feedback_Category = ['Bug', 'Suggestion', 'Report', 'Others']
 class Feedback(ndb.Model):
   category = ndb.StringProperty(required=True, choices=Feedback_Category)
   subject = ndb.StringProperty(required=True, indexed=False)
   description = ndb.TextProperty(required=True, indexed=False)
   created = ndb.DateTimeProperty(auto_now_add=True)
   processed = ndb.BooleanProperty(required=True, default=False)
-  anonymous = ndb.BooleanProperty(required=True, indexed=False)
-  sender_nickname = ndb.StringProperty(indexed=False)
-  sender = ndb.KeyProperty(kind='User', indexed=False)
+  sender_nickname = ndb.StringProperty(required=True, indexed=False)
+  sender = ndb.KeyProperty(kind='User', required=True, indexed=False)
 
-Report_Issues = ['Sexual content', 'Violent or repulsive content', 'Hateful or abusive content', 'Others']
-class Report(ndb.Model):
-  video = ndb.KeyProperty(kind='Video', required=True)
-  video_id = ndb.StringProperty(required=True)
+Video_Issues = ['Graphic sexual activity', 'Nudity', 'Animal abuse', 'Promotes hatred', 'Promotes terrorism', 'Drug abuse', 'Self injury', 'Child abuse', 'Misleading thumbnail', 'Misleading text', 'Scams/fraud', 'Infringe copyrights', 'Suspicious code danmaku', 'Others']
+class ReportVideo(ndb.Model):
+  video = ndb.KeyProperty(kind='Video', required=True, indexed=False)
   video_title = ndb.StringProperty(required=True, indexed=False)
-  issue = ndb.StringProperty(required=True, choices=Report_Issues)
-  details = ndb.TextProperty(indexed=False)
+  clip = ndb.KeyProperty(kind='VideoClip', required=True, indexed=False)
+  clip_index = ndb.IntegerProperty(required=True, indexed=False)
+  issue = ndb.StringProperty(required=True, choices=Video_Issues, indexed=False)
+  description = ndb.TextProperty(indexed=False)
   created = ndb.DateTimeProperty(auto_now_add=True)
   processed = ndb.BooleanProperty(required=True, default=False)
   reporter_nickname = ndb.StringProperty(required=True, indexed=False)
-  reporter = ndb.KeyProperty(required=True, kind='User', indexed=False)
+  reporter = ndb.KeyProperty(kind='User', required=True, indexed=False)
+
+Comment_Issues = ['Spam', 'Sexually explicity material', 'Hate speech', 'Harassment', 'Copyrighted material', 'Others']
+class ReportComment(ndb.Model):
+  video = ndb.KeyProperty(kind='Video', required=True, indexed=False)
+  video_title = ndb.StringProperty(required=True, indexed=False)
+  issue = ndb.StringProperty(required=True, choices=Comment_Issues, indexed=False)
+  description = ndb.TextProperty(indexed=False)
+  created = ndb.DateTimeProperty(auto_now_add=True)
+  processed = ndb.BooleanProperty(required=True, default=False)
+  reporter_nickname = ndb.StringProperty(required=True, indexed=False)
+  reporter = ndb.KeyProperty(kind='User', required=True, indexed=False)
+  comment = ndb.KeyProperty(required=True, indexed=False)
+  content = ndb.StringProperty(required=True, indexed=False)
+  floorth = ndb.IntegerProperty(indexed=False)
+  inner_floorth = ndb.IntegerProperty(indexed=False)
+
+Danmaku_Issues = ['Blocking screen', 'Misleading information'] + Comment_Issues
+class ReportDanmaku(ndb.Model):
+  video = ndb.KeyProperty(kind='Video', required=True, indexed=False)
+  video_title = ndb.StringProperty(required=True, indexed=False)
+  clip = ndb.KeyProperty(kind='VideoClip', required=True, indexed=False)
+  clip_index = ndb.IntegerProperty(required=True, indexed=False)
+  issue = ndb.StringProperty(required=True, choices=Danmaku_Issues, indexed=False)
+  description = ndb.TextProperty(indexed=False)
+  created = ndb.DateTimeProperty(auto_now_add=True)
+  processed = ndb.BooleanProperty(required=True, default=False)
+  reporter_nickname = ndb.StringProperty(required=True, indexed=False)
+  reporter = ndb.KeyProperty(kind='User', required=True, indexed=False)
+  pool = ndb.KeyProperty(required=True, indexed=False)
+  danmaku_index = ndb.IntegerProperty(required=True, indexed=False)
+  timestamp = ndb.FloatProperty(required=True, indexed=False)
+  content = ndb.StringProperty(required=True, indexed=False)

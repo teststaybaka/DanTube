@@ -4,7 +4,6 @@
 <link rel="stylesheet" href="/static/colpick.css" type="text/css"/>
 <script src="/static/colpick.js" type="text/javascript"></script>
 <script src="/static/ZeroClipboard.min.js" type="text/javascript"></script>
-<link href="/static/video.css" rel="stylesheet" type="text/css">
 <link href="/static/player.css" rel="stylesheet" type="text/css">
 <script src="/static/video.js" language="JavaScript" type="text/javascript"></script>
 <script type="text/javascript">
@@ -53,36 +52,35 @@
       <div class="video-statistic" title="comments"><span class="statistic-icon comment"></span><span class="commas_number">{{ video.comment_counter }}</span></div>
       <div class="video-statistic" title="bullets"><span class="statistic-icon bullets"></span><span class="commas_number">{{ video.bullets }}</span></div>
       <div class="right" id="report-video">
-        <div id="report-button" style="cursor:pointer">
-          <span>Report</span>
-        </div>
-        <div id="report-box" class="popup-box">
-          <form class="change" id="report-submission-form" method="post" action="{{ uri_for('report') }}">
-            <input type="hidden" name="vid" id="video-id" value="{{ video.id }}">
-            <div class="input-line">
-              <label for="report-issue" class="form-label">Why do you want to report this video?</label>
-              <select name="issue"  id="report-issue" class="form-input">
-                {% for key in report_issues %}
-                  <option value="{{ key }}">{{ key }}</option>
-                {% endfor %}
-              </select>
+        <div id="report-video-button">Report</div>
+        <form id="report-video-form" class="popup-box arrow hidden" method="POST">
+          <div class="report-label">Why do you want to report this video?</div>
+          <div class="report-input-line">
+            <div class="list-select report">
+                <div class="list-selection down hidden">
+                    {% for key in video_issues %}
+                    <div class="list-option medium">{{ key }}</div>
+                    {% endfor %}
+                </div>
+                <div class="list-selected auto medium"></div>
+                <input name="issue" type="text" class="hidden">
             </div>
-            <div class="input-line">
-                <label for="report-details" class="form-label">Details(optional):</label>
-                <textarea id="report-details" class="form-input" name="details" tabindex="1" placeholder="Optional details" maxlength="2000"></textarea>
-            </div>
-            <div class="container">
-              <input id="submit-report" class="inline-button special post" type="submit" value="Report" />
-            </div>
-          </form>
-          <div id="report-dismiss" class="popup-dismiss"></div>
-        </div>
+          </div>
+          <div class="report-label">Description (optional):</div>
+          <div class="report-input-line">
+            <textarea id="report-video-textarea" name="description" class="normal-input report" placeholder="If it happens at a centain time, include the timestamp, like 05:15." tabindex="1"></textarea>
+          </div>
+          <div class="container">
+            <input class="inline-button special report" type="submit" value="Report" />
+            <div class="inline-button report">Cancel</div>
+          </div>
+        </form>
       </div>
     </div>
     <div id="video-parts-container" class="container">
       {% if video.clip_titles|length > 1 %}
         {% for i in video.clip_range %}
-          <a class="inline-button episode-link {% if i+1 == video.cur_index %}active{% endif %} {% if i < video.clip_range_min or i > video.clip_range_max %}hidden{% endif %}" href="{{ video.url }}?index={{ i+1 }}">
+          <a class="inline-button episode-link {% if i+1 == video.cur_index %}active{% endif %} {% if i+1 < video.clip_range_min or i+1 > video.clip_range_max %}hidden{% endif %}" href="{{ video.url }}?index={{ i+1 }}">
           {% if video.clip_titles[i] %}
             {{ i+1 }}. {{ video.clip_titles[i] }}
           {% else %}
@@ -112,7 +110,7 @@
     </div>
   </div>
 </div>
-<div id="player-container" class="container">
+<div id="player-container">
   <div id="player-controller">
     <div id="player-background">
       <div class="player-vertical-padding"></div>
@@ -124,12 +122,37 @@
         <span id="switch-cancel normal-link">Cancel</span>
       </div>
     </div>
+    <form id="report-danmaku-form" class="popup-box hidden" method="POST">
+      <input type="text" class="hidden" name="pool_type" id="report-danmaku-type">
+      <input type="text" class="hidden" name="pool_id" id="report-danmaku-pool-id">
+      <input type="text" class="hidden" name="danmaku_index" id="report-danmaku-index">
+      <div class="report-label">Why do you want to report this danmaku?</div>
+      <div class="report-input-line">
+        <div class="list-select report">
+            <div class="list-selection down hidden">
+                {% for key in danmaku_issues %}
+                <div class="list-option medium">{{ key }}</div>
+                {% endfor %}
+            </div>
+            <div class="list-selected auto medium"></div>
+            <input name="issue" type="text" class="hidden">
+        </div>
+      </div>
+      <div class="report-label">Description (optional):</div>
+      <div class="report-input-line">
+        <textarea id="report-danmaku-textarea" name="description" class="normal-input report" placeholder="" tabindex="1"></textarea>
+      </div>
+      <div class="container">
+        <input class="inline-button special report" type="submit" value="Report" />
+        <div class="inline-button report">Cancel</div>
+      </div>
+    </form>
     <div id="progress-controller-wrap">
       <div id="progress-bar-background" ondragstart="return false;" ondrop="return false;" onselectstart="return false;">
         <div id="progress-bar" ondragstart="return false;" ondrop="return false;" onselectstart="return false;"></div>
         <div id="progress-bar-buffered" ondragstart="return false;" ondrop="return false;" onselectstart="return false;"></div>
         <div id="progress-bar-played" ondragstart="return false;" ondrop="return false;" onselectstart="return false;"></div>
-        <div id="progress-tip">--:--</div>
+        <div id="progress-tip" class="hidden">--:--</div>
       </div>
       <div id="controller-background">
         <div id="controller" class="container">
@@ -153,7 +176,7 @@
             <div id="player-quick-settings">
               <div class="player-setting-line">
                 <label class="player-setting-label">Speed</label>
-                <div class="list-select">
+                <div class="list-select speed">
                   <div class="list-selection hidden">
                     <div class="list-option speed">0.25</div>
                     <div class="list-option speed">0.5</div>
@@ -167,7 +190,7 @@
               </div>
               <div class="player-setting-line">
                 <label class="player-setting-label">Quality</label>
-                <div class="list-select">
+                <div class="list-select quality">
                   <div class="list-selection quality hidden">
                     <div class="list-option quality">1080p</div>
                     <div class="list-option quality">720p</div>
@@ -334,23 +357,23 @@
         </div>
         <div class="player-setting-line full">
           <label class="player-setting-label full">Text font</label>
-          <div class="list-select">
-            <div class="list-selection down font hidden">
-              <div class="list-option font">Georgia</div>
-              <div class="list-option font">Palatino Linotype</div>
-              <div class="list-option font">Book Antiqua</div>
-              <div class="list-option font active">Times New Roman</div>
-              <div class="list-option font">Aria</div>
-              <div class="list-option font">Helvetica</div>
-              <div class="list-option font">Arial Black</div>
-              <div class="list-option font">Impact</div>
-              <div class="list-option font">Lucida Sans Unicode</div>
-              <div class="list-option font">Tahoma</div>
-              <div class="list-option font">Verdana</div>
-              <div class="list-option font">Courier New</div>
-              <div class="list-option font">Lucida Console</div>
+          <div class="list-select font">
+            <div class="list-selection down hidden">
+              <div class="list-option medium font">Georgia</div>
+              <div class="list-option medium font">Palatino Linotype</div>
+              <div class="list-option medium font">Book Antiqua</div>
+              <div class="list-option medium font active">Times New Roman</div>
+              <div class="list-option medium font">Aria</div>
+              <div class="list-option medium font">Helvetica</div>
+              <div class="list-option medium font">Arial Black</div>
+              <div class="list-option medium font">Impact</div>
+              <div class="list-option medium font">Lucida Sans Unicode</div>
+              <div class="list-option medium font">Tahoma</div>
+              <div class="list-option medium font">Verdana</div>
+              <div class="list-option medium font">Courier New</div>
+              <div class="list-option medium font">Lucida Console</div>
             </div>
-            <div class="list-selected font">Times New Roman</div>
+            <div class="list-selected medium font">Times New Roman</div>
           </div>
           <label class="setting-reset-button blue-link font">Reset</label>
         </div>
@@ -424,15 +447,15 @@
       </div>
       <div class="player-setting-line full"><label>Add blocking rules</label><a class="help-link" title="How to use blocking rules?"></a></div>
       <form id="add-rule-form" class="player-setting-line full">
-        <div class="list-select">
-          <div class="list-selection down block hidden">
-            <div class="list-option block active">Keywords</div>
-            <div class="list-option block">RegExp</div>
-            <div class="list-option block">User</div>
+        <div class="list-select block">
+          <div class="list-selection down hidden">
+            <div class="list-option medium active">Keywords</div>
+            <div class="list-option medium">RegExp</div>
+            <div class="list-option medium">User</div>
           </div>
-          <div class="list-selected block">Keywords</div>
+          <div class="list-selected medium block">Keywords</div>
         </div>
-        <input type="text" class="normal-input block-condition-input">
+        <input type="text" class="normal-input block-condition-input" tabindex="1">
         <input type="submit" class="inline-button special add-block" value="Add">
       </form>
       <div class="block-list-title-line">
@@ -456,20 +479,20 @@
         <div class="player-setting-line full">
           <label>Content</label>
           <div class="advanced-danmaku-input-box">
-            <input class="normal-input long-long" id="advanced-danmaku-content" type="text" name="content">
+            <input class="normal-input long-long" id="advanced-danmaku-content" type="text" name="content" tabindex="1">
           </div>
         </div>
         <div class="player-setting-line full">
           <label class="advanced-danmaku-label">Birth position</label>
           <div class="advanced-danmaku-input-box">
             <label>X:</label>
-            <input class="normal-input advanced-danmaku-input number-input negative" type="text" name="birth-position-X" value="0" data-old="0">
+            <input class="normal-input advanced-danmaku-input number-input negative" type="text" name="birth-position-X" value="0" data-old="0" tabindex="1">
             <div class="number-input-arrow up"></div>
             <div class="number-input-arrow down"></div>
           </div>
           <div class="advanced-danmaku-input-box">
             <label>Y:</label>
-            <input class="normal-input advanced-danmaku-input number-input negative" type="text" name="birth-position-Y" value="0" data-old="0">
+            <input class="normal-input advanced-danmaku-input number-input negative" type="text" name="birth-position-Y" value="0" data-old="0" tabindex="1">
             <div class="number-input-arrow up"></div>
             <div class="number-input-arrow down"></div>
           </div>
@@ -478,13 +501,13 @@
           <label class="advanced-danmaku-label">Death position</label>
           <div class="advanced-danmaku-input-box">
             <label>X:</label>
-            <input class="normal-input advanced-danmaku-input number-input negative" type="text" name="death-position-X" value="-1" data-old="-1">
+            <input class="normal-input advanced-danmaku-input number-input negative" type="text" name="death-position-X" value="-1" data-old="-1" tabindex="1">
             <div class="number-input-arrow up"></div>
             <div class="number-input-arrow down"></div>
           </div>
           <div class="advanced-danmaku-input-box">
             <label>Y:</label>
-            <input class="normal-input advanced-danmaku-input number-input negative" type="text" name="death-position-Y" value="0" data-old="0">
+            <input class="normal-input advanced-danmaku-input number-input negative" type="text" name="death-position-Y" value="0" data-old="0" tabindex="1">
             <div class="number-input-arrow up"></div>
             <div class="number-input-arrow down"></div>
           </div>
@@ -493,13 +516,13 @@
           <label class="advanced-danmaku-label">Speed (pixel/sec)</label>
           <div class="advanced-danmaku-input-box">
             <label>X:</label>
-            <input class="normal-input advanced-danmaku-input number-input" type="text" name="speed-X" value="80" data-old="80">
+            <input class="normal-input advanced-danmaku-input number-input" type="text" name="speed-X" value="80" data-old="80" tabindex="1">
             <div class="number-input-arrow up"></div>
             <div class="number-input-arrow down"></div>
           </div>
           <div class="advanced-danmaku-input-box">
             <label>Y:</label>
-            <input class="normal-input advanced-danmaku-input number-input" type="text" name="speed-Y" value="0" data-old="0">
+            <input class="normal-input advanced-danmaku-input number-input" type="text" name="speed-Y" value="0" data-old="0" tabindex="1">
             <div class="number-input-arrow up"></div>
             <div class="number-input-arrow down"></div>
           </div>
@@ -507,7 +530,7 @@
         <div class="player-setting-line full">
           <label class="advanced-danmaku-label">Longevity (sec)</label>
           <div class="advanced-danmaku-input-box">
-            <input class="normal-input advanced-danmaku-input number-input" type="text" name="longevity" value="0" data-old="0">
+            <input class="normal-input advanced-danmaku-input number-input" type="text" name="longevity" value="0" data-old="0" tabindex="1">
             <div class="number-input-arrow up"></div>
             <div class="number-input-arrow down"></div>
           </div>
@@ -515,7 +538,7 @@
         <div class="player-setting-line full">
           <label class="advanced-danmaku-label">Start time (sec)</label>
           <div class="advanced-danmaku-input-box">
-            <input class="normal-input advanced-danmaku-input number-input" id="new-timestamp" type="text" value="0" data-old="0">
+            <input class="normal-input advanced-danmaku-input number-input" id="new-timestamp" type="text" value="0" data-old="0" tabindex="1">
             <div class="number-input-arrow up"></div>
             <div class="number-input-arrow down"></div>
           </div>
@@ -526,7 +549,7 @@
           </label>
         </div>
         <div class="player-setting-line full"><label>CSS customization</label><a class="help-link" title="Reference for advanced danmaku."></a></div>
-        <div class="player-setting-line full"><textarea class="css-customize-input normal-input" name="danmaku-css" placeholder="e.g., color: rgb(255,255,255);">color: rgb(255,255,255);&#13;&#10;font-size: 20px;&#13;&#10;text-shadow: 1px 0 1px rgb(0,0,0), -1px 0 1px rgb(0,0,0), 0 1px 1px rgb(0,0,0), 0 -1px 1px rgb(0,0,0);</textarea></div>
+        <div class="player-setting-line full"><textarea class="css-customize-input normal-input" name="danmaku-css" placeholder="e.g., color: rgb(255,255,255);" tabindex="1">color: rgb(255,255,255);&#13;&#10;font-size: 20px;&#13;&#10;text-shadow: 1px 0 1px rgb(0,0,0), -1px 0 1px rgb(0,0,0), 0 1px 1px rgb(0,0,0), 0 -1px 1px rgb(0,0,0);</textarea></div>
         <div class="player-setting-line full container">
           <input class="inline-button special special-danmaku-button" type="submit" value="Send">
           <input class="inline-button special-danmaku-button" type="button" value="Preview">
@@ -534,19 +557,15 @@
       </form>
       <form class="special-danmaku-setting subtitle hidden" id="subtitles-danmaku-form">
         <div class="player-setting-line full">
-          <label class="subtitle-danmaku-label">Language & author</label>
-          <input class="subtitle-danmaku-input normal-input" name="name" type="text" placeholder="e.g., English (by John Peter)">
-        </div>
-        <div class="player-setting-line full">
-          <label class="subtitle-danmaku-label">Description</label>
-          <input class="subtitle-danmaku-input normal-input" name="memo" type="text" placeholder="Optional, what are the features?">
+          <label class="subtitle-danmaku-label">Language & description</label>
+          <input class="subtitle-danmaku-input normal-input" name="name" type="text" placeholder="e.g., English (by XXX)" tabindex="1">
         </div>
         <div class="player-setting-line full">
           <label>Copy all your subtitles/captions here.</label>
           <a class="help-link" title="Subtitle format."></a>
         </div>
         <div class="player-setting-line full">
-          <textarea class="subtitle-content-input normal-input" name="subtitles" placeholder="e.g., [10:23.08] This is a subtitle."></textarea>
+          <textarea class="subtitle-content-input normal-input" name="subtitles" placeholder="e.g., [10:23.08] This is a line." tabindex="1"></textarea>
         </div>
         <div class="player-setting-line full container">
           <input class="inline-button special special-danmaku-button" type="submit" value="Send">
@@ -569,7 +588,7 @@
           <label class="blue-link code-area-button">Clear</label>
         </div>
         <div class="player-setting-line full">
-          <textarea class="code-danmaku-content-input normal-input" name="subtitle-content"></textarea>
+          <textarea class="code-danmaku-content-input normal-input" name="subtitle-content" tabindex="1"></textarea>
         </div>
         <div class="player-setting-line full container">
           <input type="submit" class="inline-button special special-danmaku-button" value="Send">
@@ -618,14 +637,14 @@
     <div class="right-click-entry" id="danmaku-locate-it">Locate the danmaku</div>
     <div class="right-click-entry" id="danmaku-block-sender">Block the sender</div>
     <div class="right-click-separate-line"></div>
-    <div class="right-click-entry">Report abuse</div>
+    <div class="right-click-entry" id="danmaku-report">Report abuse</div>
   </div>
   <div class="danmaku-pool-menu hidden">
     <div class="right-click-entry" id="danmaku-pool-copy-content">Copy content</div>
     <div class="right-click-entry" id="danmaku-pool-check-all-sent">Check all his/her danmaku</div>
     <div class="right-click-entry" id="danmaku-pool-block-sender">Block the sender</div>
     <div class="right-click-separate-line"></div>
-    <div class="right-click-entry">Report abuse</div>
+    <div class="right-click-entry" id="danmaku-pool-report">Report abuse</div>
   </div>
 </div>
 <div id="left-info-box">
@@ -645,15 +664,16 @@
     <div id="video-intro-display-button" class="display-button intro"><span class="intro-display-text">SHOW MORE</span><span class="display-arrow"></span></div>
     <div class="container">
       <div class="operation-button" title="Like this!" id="like-this"><span class="operation-icon like"></span><span class="commas_number">{{ video.likes }}</span></div>
-      <div class="operation-button" title="Strongly recommend!"><span class="operation-icon bullets"></span><span class="commas_number">{{ video.bullets }}</span></div>
+      <div class="operation-button" title="Support you!"><span class="operation-icon bullets"></span><span class="commas_number">{{ video.bullets }}</span></div>
       <div class="operation-button" title="It's my favorite!" id="add-to-favorite"><span class="operation-icon favors"></span><span class="commas_number">{{ video.favors }}</span></div>
+      <div class="operation-button" title="Share it!"><span class="operation-icon share"></span><span class="commas_number">{{ video.shares }}</span></div>
     </div>
   </div>
   <div id="comments-block-title">Comments <span class="commas_number">{{ video.comment_counter }}</span></div>
   <form id="user-comment-form">
     <img class="comment-img" src="{% if user.is_auth %}{{ user.avatar_url_small }}{% else %}/static/emoticons_img/default_avatar1.png{% endif %}">
     <div class="write-comment-block">
-      <textarea class="normal-input" name="content" id="comment-textarea" placeholder="{% if user.is_auth %}Share what you think{% else %}Please sign in{% endif %}"></textarea>
+      <textarea class="normal-input" name="content" id="comment-textarea" placeholder="{% if user.is_auth %}Share what you think{% else %}Please sign in{% endif %}" tabindex="1"></textarea>
       <div class="container">
         <div class="emoticons-select"></div>
         <label class="check-label">
@@ -669,7 +689,7 @@
     <img class="comment-img" src="{% if user.is_auth %}{{ user.avatar_url_small }}{% else %}/static/emoticons_img/default_avatar1.png{% endif %}">
     <div class="write-comment-block">
       <input type="text" class="hidden" id="comment-id-input" name="comment_id" value="">
-      <textarea class="normal-input" name="content" id="reply-textarea" placeholder="{% if user.is_auth %}Share what you think{% else %}Please sign in{% endif %}"></textarea>
+      <textarea class="normal-input" name="content" id="reply-textarea" placeholder="{% if user.is_auth %}Share what you think{% else %}Please sign in{% endif %}" tabindex="1"></textarea>
       <div class="container">
         <div class="emoticons-select"></div>
         <label class="check-label">
@@ -685,6 +705,31 @@
   </div>
   <div class="pagination-line all"></div>
 </div>
+<form id="report-comment-form" class="popup-box hidden" method="POST">
+  <input type="text" class="hidden" name="is_inner" id="report-comment-is-inner">
+  <input type="text" class="hidden" name="comment_id" id="report-comment-id">
+  <input type="text" class="hidden" name="inner_comment_id" id="report-comment-inner-id">
+  <div class="report-label">Why do you want to report this comment?</div>
+  <div class="report-input-line">
+    <div class="list-select report">
+        <div class="list-selection down hidden">
+            {% for key in comment_issues %}
+            <div class="list-option medium">{{ key }}</div>
+            {% endfor %}
+        </div>
+        <div class="list-selected auto medium"></div>
+        <input name="issue" type="text" class="hidden">
+    </div>
+  </div>
+  <div class="report-label">Description (optional):</div>
+  <div class="report-input-line">
+    <textarea id="report-comment-textarea" name="description" class="normal-input report" placeholder="" tabindex="1"></textarea>
+  </div>
+  <div class="container">
+    <input class="inline-button special report" type="submit" value="Report" />
+    <div class="inline-button report">Cancel</div>
+  </div>
+</form>
 <div id="right-info-box">
   {% if playlist %}
   <div id="right-video-list">

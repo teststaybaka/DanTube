@@ -22,8 +22,8 @@
 {% block detail %}
 <div id="sub-title-line" class="container">
     <form id="playlist-title-change-form" action="{{ uri_for('edit_playlist_info', playlist_id=playlist.id) }}" method="POST">
-        <input id="playlist-title-change" class="normal-input" type="text" name="title" placeholder="Title here." value="{{ playlist.title }}" />
-        <textarea id="playlist-intro-change" class="normal-input" type="text" name="intro" placeholder="Optional introduction to your playlist.">{{ playlist.intro }}</textarea>
+        <input id="playlist-title-change" class="normal-input" type="text" name="title" placeholder="Title here." value="{{ playlist.title }}" tabindex="2">
+        <textarea id="playlist-intro-change" class="normal-input" type="text" name="intro" placeholder="Optional introduction to your playlist." tabindex="2">{{ playlist.intro }}</textarea>
         <div id="playlist-change-buttons-line">
             <div class="inline-button create-button">Cancel</div>
             <input type="submit" class="inline-button special create-button done" value="Done">
@@ -103,7 +103,7 @@
             <div class="add-search-title-line container">
                 <div class="add-search-title">Select videos to add</div>
                 <form id="search-video-form" class="sub-search-block none-float" method="POST" action="{{ uri_for('search_video_to_list') }}">
-                    <input class="sub-search-input" type="text" name="keywords" placeholder="Id, url or keywords" value="">
+                    <input class="sub-search-input" type="text" name="keywords" placeholder="Id, url or keywords" tabindex="1">
                     <input type="submit" class="sub-search-button" value="">
                 </form>
             </div>

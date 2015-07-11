@@ -254,35 +254,31 @@ $(document).ready(function() {
         $(this).toggleClass('on');
     });
 
-    $('.list-selected').each(function(evt) {
-        var first_option = $($(this).prev().children()[0]);
-        if (first_option.length > 0) {
-            first_option.addClass('active');
-            $(this).text(first_option.text());
-            $(this).next().val(first_option.text());
-        }
-    });
-    $('.list-selected').click(function(evt) {
-        evt.stopPropagation();
-        var list = $(this).prev();
-        if (list.hasClass('hidden')) {
+    if ($('.list-selected').length > 0) {
+        $('.list-selected.auto').each(function(evt) {
+            var first_option = $($(this).prev().children()[0]);
+            if (first_option.length > 0) {
+                first_option.addClass('active');
+                $(this).text(first_option.text());
+                $(this).next().val(first_option.text());
+            }
+        });
+        $(document).click(function() {
             $('.list-selection').addClass('hidden');
-            list.removeClass('hidden');
-        }
-
-        var hideOption = function() {
-            list.addClass('hidden');
-            $(document).off('click', hideOption);
-        }
-        $(document).click(hideOption);
-    });
-    $('.list-selection').on('click', '.list-option', function(evt) {
-        var list = $(this).parent();
-        list.next().text($(this).text());
-        list.next().next().val($(this).text());
-        $(this).siblings().removeClass('active');
-        $(this).addClass('active');
-    });
+        });
+        $(document).on('click', '.list-selected', function(evt) {
+            evt.stopPropagation();
+            $('.list-selection').addClass('hidden');
+            $(this).prev().removeClass('hidden');
+        });
+        $(document).on('click', '.list-option', function(evt) {
+            var list = $(this).parent();
+            list.next().text($(this).text());
+            list.next().next().val($(this).text());
+            $(this).siblings().removeClass('active');
+            $(this).addClass('active');
+        });
+    }
 });
 
 dt.render_pagination = function(cur_page, total_pages) {
@@ -394,7 +390,7 @@ dt.LinkedList.prototype.remove = function(node) {
 }
 
 dt.secondsToTime = function(secs) {
-    secs = Math.round(secs);
+    secs = Math.floor(secs);
     var curTime;
     if (Math.floor(secs/60) < 10) {
         curTime = "0"+Math.floor(secs/60);
@@ -405,8 +401,25 @@ dt.secondsToTime = function(secs) {
     return curTime;
 }
 
+dt.millisecondsToTime = function(millisecs) {
+    curTime = dt.secondsToTime(millisecs)+"."+("0"+Math.floor(millisecs*100)%100).substr(-2);
+    return curTime;
+}
+
 dt.dec2hexColor = function(dec_color) {
     return '#'+('000000'+dec_color.toString(16)).substr(-6);
+}
+
+dt.escapeHTML = function(unsafe) {
+    return unsafe.replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;");
+}
+
+dt.unescapeHTML = function(safe) {
+    return safe.replace(/&amp;/g, "&")
+                .replace(/&lt;/g, "<")
+                .replace(/&gt;/g, ">");
 }
 
 dt.subtitle_format = /^\[(\d+):(\d{1,2}).(\d{1,2})\](.*)$/;

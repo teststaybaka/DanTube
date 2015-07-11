@@ -69,18 +69,15 @@ class History(BaseHandler):
             ).order(-models.ActivityRecord.created).fetch(keys_only=True, offset=(page-1)*page_size, limit=page_size)
 
             comments = ndb.get_multi(comment_keys)
-            videos= ndb.get_multi([comment.video for comment in comments])
             for i in xrange(0, len(comments)):
                 comment = comments[i]
-                video = videos[i]
-                if video is None:
-                    continue
                 comment_info = {
                     'type': comment.activity_type,
                     'timestamp': comment.timestamp,
                     'floorth': comment.floorth,
                     'inner_floorth': comment.inner_floorth,
-                    'video': video.get_basic_info(),
+                    'video_title': comment.video_title,
+                    'video_url': '/video/'+comment.video.id(),
                     'content': comment.content,
                     'created': comment.created.strftime("%Y-%m-%d %H:%M"),
                     'clip_index': comment.clip_index,
@@ -343,26 +340,52 @@ class Subscriptions(BaseHandler):
             records = []
             cursor = ''
 
-        videos = ndb.get_multi([record.video for record in records])
         creators = ndb.get_multi([record.creator for record in records])
-        for i in xrange(0, len(records)):
-            record = records[i]
-            video = videos[i]
-            if video is None:
-                continue
-            creator = creators[i]
-            record_info = {
-                'creator': creator.get_public_info(),
-                'type': record.activity_type,
-                'timestamp': record.timestamp,
-                'floorth': record.floorth,
-                'inner_floorth': record.inner_floorth,
-                'content': record.content,
-                'created': record.created.strftime("%Y-%m-%d %H:%M"),
-                'video': video.get_basic_info(),
-                'clip_index': record.clip_index,
-            }
-            result['activities'].append(record_info)
+        if uploads_only:
+            videos = ndb.get_multi([record.video for record in records])
+            for i in xrange(0, len(records)):
+                record = records[i]
+                creator = creators[i]
+                video = videos[i]
+                if not video:
+                    continue
+                record_info = {
+                    'creator': creator.get_public_info(),
+                    'type': record.activity_type,
+                    'timestamp': record.timestamp,
+                    'floorth': record.floorth,
+                    'inner_floorth': record.inner_floorth,
+                    'content': record.content,
+                    'created': record.created.strftime("%Y-%m-%d %H:%M"),
+                    'video_title': record.video_title,
+                    'video_url': '/video/'+record.video.id(),
+                    'video': video.get_basic_info(),
+                    'clip_index': record.clip_index,
+                }
+                result['activities'].append(record_info)
+        else:
+            for i in xrange(0, len(records)):
+                record = records[i]
+                creator = creators[i]
+                record_info = {
+                    'creator': creator.get_public_info(),
+                    'type': record.activity_type,
+                    'timestamp': record.timestamp,
+                    'floorth': record.floorth,
+                    'inner_floorth': record.inner_floorth,
+                    'content': record.content,
+                    'created': record.created.strftime("%Y-%m-%d %H:%M"),
+                    'video_title': record.video_title,
+                    'video_url': '/video/'+record.video.id(),
+                    'clip_index': record.clip_index,
+                }
+                if record.activity_type == 'upload' or record.activity_type == 'edit':
+                    video = record.video.get()
+                    if video:
+                        record_info['video'] = video.get_basic_info()
+                    else:
+                        continue
+                result['activities'].append(record_info)
         if not cursor:
             result['cursor'] = ''
         else:

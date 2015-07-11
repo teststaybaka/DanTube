@@ -43,6 +43,7 @@ $(document).ready(function() {
             return false;
         }
 
+        dt.pop_ajax_message('Updating...', 'info');
         $.ajax({
             type: "POST",
             url: evt.target.action,
@@ -148,6 +149,7 @@ $(document).ready(function() {
         if(evt.keyCode == 13){
             var ori_idx = $(evt.target).parent().parent().siblings('div.list-No').text();
             var target_idx = $(evt.target).val();
+            dt.pop_ajax_message('Moving...', 'info');
             $.ajax({
                 type: "POST",
                 url: window.location.href+'/move',
@@ -227,7 +229,6 @@ function render_popup_video_div(video) {
                         <div class="list-video-time">' + video.created + '</div>\
                     </div>\
                 </div>'
-
     return div;
 }
 //end of the file

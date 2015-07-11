@@ -600,7 +600,7 @@ div.video-part-delete:hover {
 }
 
 div.video-part-delete:active {
-    background-position: -20px -1011px;
+    background-position: 0 -1048px;
 }
 
 @-webkit-keyframes up_to_down_expand {
@@ -638,13 +638,8 @@ form.change input[type=password], form.change input[type=text], form.change sele
     vertical-align: middle;
 }
 
-form.change .list-option, form.change .list-selected {
+form.change .list-select {
     width: 155px;
-    padding: 5px 6px;
-    font-size: 14px;
-}
-
-form.change .list-selected {
     margin-right: 20px;
 }
 
@@ -653,13 +648,13 @@ form.change input.title-input {
     margin-right: 12px;  
 }
 
-form.change .list-selected.source, form.change .list-option.source {
-    width: 80px;
-    padding: 4px;
+form.change .list-select.source {
+    width: 90px;
+    margin-right: 12px;
 }
 
-form.change .list-selected.source {
-    margin-right: 12px;
+form.change .list-select.feedback {
+    width: 250px;
 }
 
 form.change input.url-input {
@@ -697,7 +692,7 @@ form.change textarea.intro-input {
     vertical-align: top;
     resize: none;
     height: 16px;
-    width: 180px;
+    width: 182px;
     margin-right: 12px;
     -webkit-transition: height .15s; /* For Safari 3.1 to 6.0 */
     transition: height .15s;

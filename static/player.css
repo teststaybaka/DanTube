@@ -24,6 +24,7 @@ div.danmaku {
     top: 0;
     left: 0;
     position: relative;
+    font-size: 0;
 }
 
 #player-container:-webkit-full-screen {
@@ -38,9 +39,8 @@ div.danmaku {
 
 #player-controller {
 	display: inline-block;
-	float: left;
 	width: 640px;
-	font-size: 0;
+	position: relative;
 }
 
 #player-background {
@@ -206,13 +206,13 @@ div.danmaku {
 	-webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
 	-moz-box-sizing: border-box;    /* Firefox, other Gecko */
 	box-sizing: border-box;
-	box-shadow: 0px 0 1px rgb(50,50,50);
+	box-shadow: 0 0 1px rgb(50,50,50);
 	pointer-events: none;
 	will-change: transform, -ms-transform, -webkit-transform;
 }
 
 #progress-tip {
-	display: none;
+	display: inline-block;
 	position: absolute;
 	bottom: 9px;
 	background-color: rgba(255,255,255,.5);
@@ -324,7 +324,7 @@ div.danmaku {
 	border-radius: 10px;
 	-webkit-border-radius: 10px;
     -moz-border-radius: 10px;
-	box-shadow: 0px 0 1px rgb(50,50,50);
+	box-shadow: 0px 0px 1px rgb(50,50,50);
 	bottom: 0;
 	pointer-events: none;
 	will-change: transform, -ms-transform, -webkit-transform;
@@ -532,27 +532,18 @@ div.danmaku {
 	background-color: white;
 }
 
-.list-option.font, .list-selected.font {
-	width: 150px;
-	font-size: 14px;
+.list-select.speed, .list-select.quality {
+	width: 90px;
 }
 
-.list-selected.font {
+.list-select.font {
+	width: 165px;
 	margin-right: 10px;
 }
 
-.list-option.block, .list-selected.block {
-	width: 75px;
-	font-size: 14px;
-	line-height: normal;
-}
-
-.list-selected.block {
+.list-select.block {
+	width: 90px;
 	margin-right: 5px;
-}
-
-.list-selection.block {
-	z-index: 2;
 }
 
 .screen-size {
@@ -884,7 +875,6 @@ div.danmaku-type-text {
 }
 
 #danmaku-pool {
-	float: left;
 	width: 383px;
 	border-bottom: 1px solid rgb(200, 200, 200);
 	border-right: 1px solid rgb(200, 200, 200);
@@ -892,7 +882,7 @@ div.danmaku-type-text {
 	background-color: white;
 	color: rgb(80,80,80);
 	position: relative;
-	font-size: 0;
+	display: inline-block;
 }
 
 .danmaku-pool-info {
@@ -1640,7 +1630,7 @@ div.add-new-tag-button:active {
 }
 
 #video-intro-box {
-	margin: 10px 10px 25px 10px;
+	margin: 10px 10px 20px 10px;
 	font-size: 14px;
 	color: rgb(100,100,100);
 	word-wrap: break-word;
@@ -1678,11 +1668,10 @@ div.display-button.comment:hover {
 }
 
 div.display-button.replies {
-	margin-left: 10px;
 	cursor: pointer;
 	font-size: 14px;
 	color: rgb(0,140,255);
-	margin-top: 10px;
+	margin-top: 5px;
 	display: inline-block;
 }
 
@@ -1714,14 +1703,14 @@ div.display-button.less:hover span.display-arrow {
 
 div.operation-button {
 	float: right;
-	margin: 5px;
 	color: rgb(100,100,100);
 	font-size: 14px;
-	padding: 5px 10px;
+	padding: 5px 8px;
 	cursor: pointer;
 	border-radius: 3px;
 	-webkit-border-radius: 3px;
     -moz-border-radius: 3px;
+    margin: 5px;
 }
 
 div.operation-button:hover {
@@ -1749,6 +1738,10 @@ span.operation-icon.favors {
 	background-position: 0 -828px;
 }
 
+span.operation-icon.share {
+	background-position: 0 -1073px;
+}
+
 #comments-block-title {
 	color: rgb(100,100,100);
 	font-size: 18px;
@@ -1774,6 +1767,7 @@ div.write-comment-block {
 	display: inline-block;
 	vertical-align: text-top;
 	margin-left: 10px;
+	font-size: 0;
 }
 
 #comment-textarea {
@@ -1789,7 +1783,7 @@ div.write-comment-block {
 }
 
 input.inline-button.post {
-	margin-top: 15px;
+	margin-top: 10px;
 	margin-right: 0;
 	float: right;
 	text-align: center;
@@ -1801,14 +1795,10 @@ input.inline-button.post {
 }
 
 div.inner-comment-container {
-	margin-top: 15px;
-	margin-left: 48px;
+	margin-top: 10px;
+	margin-left: 58px;
 	margin-right: 20px;
-	border-radius: 3px;
-	-webkit-border-radius: 3px;
-	-moz-border-radius: 3px;
-	border: 1px solid rgb(200,200,200);
-	padding-right: 20px;
+	border-top: 1px solid rgb(220,220,220);
 }
 
 div.inner-comment-container:empty {
@@ -1819,10 +1809,6 @@ div.comment-entry {
 	padding: 10px 0;
 	font-size: 0;
 	border-bottom: 1px solid rgb(220,220,220);
-}
-
-div.comment-entry.inner {
-	margin-left: 10px;
 }
 
 div.comment-entry.inner:last-child {
@@ -1860,7 +1846,7 @@ div.comment-detail-box {
 }
 
 div.comment-detail-box.inner {
-	width: 474px;
+	width: 490px;
 }
 
 label.floorth {
@@ -1884,7 +1870,7 @@ div.comment-content {
 	word-wrap: break-word;
 	white-space: pre-wrap;
 	font-size: 14px;
-	color: rgb(100,100,100);
+	color: rgb(50,50,50);
 	line-height: 16px;
 }
 
@@ -1897,7 +1883,6 @@ div.comment-content.collapse {
 
 div.comment-operation {
 	color: rgb(150,150,150);
-	font-weight: bold;
 	font-size: 14px;
 	margin-right: 10px;
 	display: inline-block;
@@ -2055,7 +2040,7 @@ div.list-video-statistic.comments {
 
 label.check-label {
     font-size: 14px;
-    margin-top: 22px;
+    margin-top: 17px;
     margin-left: 10px;
     cursor: pointer;
     display: inline-block;
@@ -2085,14 +2070,14 @@ span.checklabel {
 }
 
 .subtitle-danmaku-label {
-	width: 120px;
+	width: 140px;
 	display: inline-block;
 }
 
 input.subtitle-danmaku-input {
 	padding: 0 4px;
 	height: 22px;
-	width: 215px;
+	width: 195px;
 	margin-left: 10px;
 	vertical-align: middle;
 }
@@ -2100,7 +2085,7 @@ input.subtitle-danmaku-input {
 .subtitle-content-input {
 	resize: none;
 	width: 350px;
-	height: 290px;
+	height: 320px;
 }
 
 .code-danmaku-output {
@@ -2236,10 +2221,6 @@ input.subtitle-danmaku-input {
 	box-shadow: 0 0 1px rgb(150,150,150);
 }
 
-.input-layon-block.hidden {
-	display: none;
-}
-
 .layon-close {
 	position: absolute;
 	right: 0;
@@ -2264,4 +2245,84 @@ label.check-label.subtitle {
 .player-full-setting-lower-box {
 	height: 465px;
 	overflow-y: auto;
+}
+
+#report-video {
+	float: right;
+}
+
+#report-video-button {
+	cursor: pointer;
+}
+
+#report-video-form, #report-comment-form {
+	margin-top: 13px;
+	margin-left: -8px;
+}
+
+#report-danmaku-form {
+	left: calc(50% - 146px);
+    left: -moz-calc(50% - 146px); /* Firefox */
+    left: -webkit-calc(50% - 146px); /* Chrome, Safari */
+    top: calc(50% - 77px);
+    top: -moz-calc(50% - 77px); /* Firefox */
+    top: -webkit-calc(50% - 77px); /* Chrome, Safari */
+}
+
+.popup-box {
+	position: absolute;
+	z-index: 2;
+	background-color: white;
+	box-shadow: 2px 2px 4px rgba(200,200,200, 0.5);
+	border: 1px solid rgb(200,200,200);
+	padding: 10px 15px;
+	color: rgb(100,100,100);
+	text-align: left;
+}
+
+.popup-box.arrow:before, .popup-box.arrow:after {
+    bottom: 100%;
+    left: 7%;
+    border: solid transparent;
+    content: " ";
+    height: 0;
+    width: 0;
+    position: absolute;
+    pointer-events: none;
+}
+
+.popup-box.arrow:after {
+    border-bottom-color: rgb(255, 255, 255);
+    border-width: 10px;
+    margin-left: -10px;
+}
+
+.popup-box.arrow:before {
+    border-bottom-color: rgb(200, 200, 200);
+    border-width: 11px;
+    margin-left: -11px;
+}
+
+.list-select.report {
+	width: 250px;
+}
+
+.report-input-line {
+	margin: 5px 0;
+}
+
+textarea.report {
+	width: 250px;
+	height: 50px;
+	resize: none;
+}
+
+.inline-button.report {
+	float: right;
+	font-weight: normal;
+	margin-left: 10px;
+}
+
+.report-label {
+	font-size: 14px;
 }

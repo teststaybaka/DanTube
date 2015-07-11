@@ -295,7 +295,7 @@ div.create-button, input.create-button {
 #playlist-change-buttons-line {
     font-size: 0;
     text-align: right;
-    padding: 15px 0 0 0;
+    padding: 10px 0 0 0;
 }
 
 a.sub-title-link {
@@ -564,13 +564,8 @@ div.add-button, input.add-button {
     font-size: 0;
 }
 
-.list-selected, .list-option {
-    font-size: 14px;
-    line-height: 16px;
-}
-
-.list-selected.pool, .list-option.pool {
-    width: 150px;
+.list-select.pool {
+    width: 170px;
 }
 
 .clip-title-label {
