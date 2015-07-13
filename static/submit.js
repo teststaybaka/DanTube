@@ -180,7 +180,7 @@ $(document).ready(function() {
         var subcategories = video_subcategories[$(this).text()];
         $('.list-selection.subcategory').empty();
         for (var i = 0; i < subcategories.length; i++) {
-            $('.list-selection.subcategory').append('<div class="list-option subcategory">'+subcategories[i]+'</div>');
+            $('.list-selection.subcategory').append('<div class="list-option medium subcategory">'+subcategories[i]+'</div>');
         }
         var first_option = $($('.list-selection.subcategory').children()[0]);
         $('.list-selection.subcategory').next().text(first_option.text())

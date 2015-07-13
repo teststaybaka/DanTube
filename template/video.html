@@ -230,17 +230,17 @@
               </div>
               <label class="quick-block check-label">
                 <div class="pseudo-checkbox checked"></div>
-                <input type="checkbox" id="show-top-checkbox" class="checkbox hidden" checked="checked"/>
+                <input type="checkbox" id="show-top-checkbox" class="hidden" checked="checked"/>
                 <span>Show top danmaku</span>
               </label>
               <label class="quick-block check-label">
                 <div class="pseudo-checkbox checked"></div>
-                <input type="checkbox" id="show-bottom-checkbox" class="checkbox hidden" checked="checked"/>
+                <input type="checkbox" id="show-bottom-checkbox" class="hidden" checked="checked"/>
                 <span>Show bottom danmaku</span>
               </label>
               <label class="quick-block check-label">
                 <div class="pseudo-checkbox checked"></div>
-                <input type="checkbox" id="show-colored-checkbox" class="checkbox hidden" checked="checked"/>
+                <input type="checkbox" id="show-colored-checkbox" class="hidden" checked="checked"/>
                 <span>Show colored danmaku</span>
               </label>
             </div>
@@ -280,7 +280,7 @@
             <div>
               <label class="danmaku-share check-label">
                 <div class="pseudo-checkbox"></div>
-                <input type="checkbox" class="checkbox hidden" id="allow-post-danmaku" name="allow-share">
+                <input type="checkbox" class="hidden" id="allow-post-danmaku" name="allow-share">
                 <span>Share with subscribers.</span>
               </label>
             </div>
@@ -312,8 +312,8 @@
       </div>
       <div class="player-full-setting-lower-box">
         <!-- <div class="settings-hint">*All settings are stored in cookies. </div> -->
-        <div class="player-setting-line full">
-          <label class="player-setting-label full number">Move speed</label>
+        <div class="player-full-setting-line">
+          <label class="player-full-setting-label number">Move speed</label>
           <label class="number-adjusted">12</label>
           <div class="number-adjust-bar speed" ondragstart="return false;" ondrop="return false;" onselectstart="return false;">
             <div class="number-adjust-pointer" ondragstart="return false;" ondrop="return false;" onselectstart="return false;"></div>
@@ -321,8 +321,8 @@
           </div>
           <label class="setting-reset-button blue-link number">Reset</label>
         </div>
-        <div class="player-setting-line full">
-          <label class="player-setting-label full number">Longevity (of the top and bottom)</label>
+        <div class="player-full-setting-line">
+          <label class="player-full-setting-label number">Longevity (of the top and bottom)</label>
           <label class="number-adjusted">12</label>
           <div class="number-adjust-bar time" ondragstart="return false;" ondrop="return false;" onselectstart="return false;">
             <div class="number-adjust-pointer" ondragstart="return false;" ondrop="return false;" onselectstart="return false;"></div>
@@ -330,8 +330,8 @@
           </div>
           <label class="setting-reset-button blue-link number">Reset</label>
         </div>
-        <div class="player-setting-line full">
-          <label class="player-setting-label full number">Maximum number of danmaku</label>
+        <div class="player-full-setting-line">
+          <label class="player-full-setting-label number">Maximum number of danmaku</label>
           <label class="number-adjusted">12</label>
           <div class="number-adjust-bar danmaku-num" ondragstart="return false;" ondrop="return false;" onselectstart="return false;">
             <div class="number-adjust-pointer" ondragstart="return false;" ondrop="return false;" onselectstart="return false;"></div>
@@ -339,8 +339,8 @@
           </div>
           <label class="setting-reset-button blue-link number">Reset</label>
         </div>
-        <div class="player-setting-line full">
-          <label class="player-setting-label full number">Text scale</label>
+        <div class="player-full-setting-line">
+          <label class="player-full-setting-label number">Text scale</label>
           <label class="number-adjusted">12</label>
           <div class="number-adjust-bar scale" ondragstart="return false;" ondrop="return false;" onselectstart="return false;">
             <div class="number-adjust-pointer" ondragstart="return false;" ondrop="return false;" onselectstart="return false;"></div>
@@ -348,15 +348,15 @@
           </div>
           <label class="setting-reset-button blue-link number">Reset</label>
         </div>
-        <div class="player-setting-line full">
-          <label class="player-setting-label full">Text outline</label>
+        <div class="player-full-setting-line">
+          <label class="player-full-setting-label">Text outline</label>
           <div class="checkbox-selection text-outline on">
             <div class="checkbox-option off">Off</div>
             <div class="checkbox-option on">On</div>
           </div>
         </div>
-        <div class="player-setting-line full">
-          <label class="player-setting-label full">Text font</label>
+        <div class="player-full-setting-line">
+          <label class="player-full-setting-label">Text font</label>
           <div class="list-select font">
             <div class="list-selection down hidden">
               <div class="list-option medium font">Georgia</div>
@@ -377,23 +377,23 @@
           </div>
           <label class="setting-reset-button blue-link font">Reset</label>
         </div>
-        <div class="player-setting-line full">
-          <label class="player-setting-label full">Autohide controls</label>
+        <div class="player-full-setting-line">
+          <label class="player-full-setting-label">Autohide controls</label>
           <div class="checkbox-selection hide-controls off">
             <div class="checkbox-option off">Off</div>
             <div class="checkbox-option on">On</div>
           </div>
         </div>
-        <!-- <div class="player-setting-line full">
-          <label class="player-setting-label full">Full buffering</label>
+        <!-- <div class="player-full-setting-line">
+          <label class="player-full-setting-label">Full buffering</label>
           <div class="checkbox-selection off">
             <div class="checkbox-option off">Off</div>
             <div class="checkbox-option on">On</div>
           </div>
         </div> -->
         {% if subtitle_names|count != 0 %}
-        <div class="player-setting-line full">
-          <label class="player-setting-label full">Subtitles/CC</label>
+        <div class="player-full-setting-line">
+          <label class="player-full-setting-label">Subtitles/CC</label>
           <div class="checkbox-selection subtitles off">
             <div class="checkbox-option off">Off</div>
             <div class="checkbox-option on">On</div>
@@ -404,13 +404,13 @@
             {% for name in subtitle_names %}
             <label class="check-label subtitle">
               <div class="pseudo-checkbox"></div>
-              <input type="checkbox" id="show-colored-checkbox" class="checkbox hidden" data-index="{{ loop.index }}">
+              <input type="checkbox" id="show-colored-checkbox" class="hidden" data-index="{{ loop.index }}">
               <span>{{ name }}</span>
             </label>
             {% endfor %}
           </div>
-          <div class="player-setting-line full">
-            <label class="player-setting-label full number">Subtitles font size</label>
+          <div class="player-full-setting-line">
+            <label class="player-full-setting-label number">Subtitles font size</label>
             <label class="number-adjusted">16</label>
             <div class="number-adjust-bar subtitles-size" ondragstart="return false;" ondrop="return false;" onselectstart="return false;">
               <div class="number-adjust-pointer" ondragstart="return false;" ondrop="return false;" onselectstart="return false;"></div>
@@ -418,8 +418,8 @@
             </div>
             <label class="setting-reset-button blue-link number">Reset</label>
           </div>
-          <div class="player-setting-line full">
-            <label class="player-setting-label full number">Subtitles longevity</label>
+          <div class="player-full-setting-line">
+            <label class="player-full-setting-label number">Subtitles longevity</label>
             <label class="number-adjusted">12</label>
             <div class="number-adjust-bar subtitles-longevity" ondragstart="return false;" ondrop="return false;" onselectstart="return false;">
               <div class="number-adjust-pointer" ondragstart="return false;" ondrop="return false;" onselectstart="return false;"></div>
@@ -427,8 +427,8 @@
             </div>
             <label class="setting-reset-button blue-link number">Reset</label>
           </div>
-          <div class="player-setting-line full">
-            <label class="player-setting-label full number">Subtitles opacity</label>
+          <div class="player-full-setting-line">
+            <label class="player-full-setting-label number">Subtitles opacity</label>
             <label class="number-adjusted">12</label>
             <div class="number-adjust-bar subtitles-opacity" ondragstart="return false;" ondrop="return false;" onselectstart="return false;">
               <div class="number-adjust-pointer" ondragstart="return false;" ondrop="return false;" onselectstart="return false;"></div>
@@ -445,8 +445,8 @@
         <div class="player-setting-go-back"></div>
         <div class="player-setting-content-title">Block Settings</div>
       </div>
-      <div class="player-setting-line full"><label>Add blocking rules</label><a class="help-link" title="How to use blocking rules?"></a></div>
-      <form id="add-rule-form" class="player-setting-line full">
+      <div class="player-full-setting-line"><label>Add blocking rules</label><a class="help-link" title="How to use blocking rules?"></a></div>
+      <form id="add-rule-form" class="player-full-setting-line">
         <div class="list-select block">
           <div class="list-selection down hidden">
             <div class="list-option medium active">Keywords</div>
@@ -476,13 +476,13 @@
         <div class="danmaku-pool-setting tab code unselected">Code</div>
       </div>
       <form class="special-danmaku-setting advanced" id="advanced-danmaku-form">
-        <div class="player-setting-line full">
+        <div class="player-full-setting-line">
           <label>Content</label>
           <div class="advanced-danmaku-input-box">
             <input class="normal-input long-long" id="advanced-danmaku-content" type="text" name="content" tabindex="1">
           </div>
         </div>
-        <div class="player-setting-line full">
+        <div class="player-full-setting-line">
           <label class="advanced-danmaku-label">Birth position</label>
           <div class="advanced-danmaku-input-box">
             <label>X:</label>
@@ -497,7 +497,7 @@
             <div class="number-input-arrow down"></div>
           </div>
         </div>
-        <div class="player-setting-line full">
+        <div class="player-full-setting-line">
           <label class="advanced-danmaku-label">Death position</label>
           <div class="advanced-danmaku-input-box">
             <label>X:</label>
@@ -512,7 +512,20 @@
             <div class="number-input-arrow down"></div>
           </div>
         </div>
-        <div class="player-setting-line full">
+        <div class="player-full-setting-line">
+          <label class="advanced-danmaku-label">Position options</label>
+          <label class="check-label as-percent">
+            <div class="pseudo-checkbox checked"></div>
+            <input type="checkbox" class="hidden" tabindex="1" checked="checked" name="as-percent">
+            <span>As percent</span>
+          </label>
+          <label class="check-label">
+            <div class="pseudo-checkbox checked"></div>
+            <input type="checkbox" class="hidden" tabindex="1" checked="checked" name="relative">
+            <span>Relative to actual screen</span>
+          </label>
+        </div>
+        <div class="player-full-setting-line">
           <label class="advanced-danmaku-label">Speed (pixel/sec)</label>
           <div class="advanced-danmaku-input-box">
             <label>X:</label>
@@ -527,7 +540,7 @@
             <div class="number-input-arrow down"></div>
           </div>
         </div>
-        <div class="player-setting-line full">
+        <div class="player-full-setting-line">
           <label class="advanced-danmaku-label">Longevity (sec)</label>
           <div class="advanced-danmaku-input-box">
             <input class="normal-input advanced-danmaku-input number-input" type="text" name="longevity" value="0" data-old="0" tabindex="1">
@@ -535,62 +548,62 @@
             <div class="number-input-arrow down"></div>
           </div>
         </div>
-        <div class="player-setting-line full">
+        <div class="player-full-setting-line">
           <label class="advanced-danmaku-label">Start time (sec)</label>
           <div class="advanced-danmaku-input-box">
             <input class="normal-input advanced-danmaku-input number-input" id="new-timestamp" type="text" value="0" data-old="0" tabindex="1">
             <div class="number-input-arrow up"></div>
             <div class="number-input-arrow down"></div>
           </div>
-          <label class="percentage-check check-label">
+          <label class="check-label">
             <div class="pseudo-checkbox checked"></div>
-            <input type="checkbox" class="checkbox hidden" id="use-cur-timestamp" tabindex="1" checked="checked">
-            <span class="checklabel">Use current timestamp</span>
+            <input type="checkbox" class="hidden" id="use-cur-timestamp" tabindex="1" checked="checked">
+            <span>Use current timestamp</span>
           </label>
         </div>
-        <div class="player-setting-line full"><label>CSS customization</label><a class="help-link" title="Reference for advanced danmaku."></a></div>
-        <div class="player-setting-line full"><textarea class="css-customize-input normal-input" name="danmaku-css" placeholder="e.g., color: rgb(255,255,255);" tabindex="1">color: rgb(255,255,255);&#13;&#10;font-size: 20px;&#13;&#10;text-shadow: 1px 0 1px rgb(0,0,0), -1px 0 1px rgb(0,0,0), 0 1px 1px rgb(0,0,0), 0 -1px 1px rgb(0,0,0);</textarea></div>
-        <div class="player-setting-line full container">
+        <div class="player-full-setting-line"><label>CSS customization</label><a class="help-link" title="Reference for advanced danmaku."></a></div>
+        <div class="player-full-setting-line"><textarea class="css-customize-input normal-input" name="danmaku-css" placeholder="e.g., color: rgb(255,255,255);" tabindex="1">color: rgb(255,255,255);&#13;&#10;font-size: 20px;&#13;&#10;text-shadow: 1px 0 1px rgb(0,0,0), -1px 0 1px rgb(0,0,0), 0 1px 1px rgb(0,0,0), 0 -1px 1px rgb(0,0,0);</textarea></div>
+        <div class="player-full-setting-line container">
           <input class="inline-button special special-danmaku-button" type="submit" value="Send">
           <input class="inline-button special-danmaku-button" type="button" value="Preview">
         </div>
       </form>
       <form class="special-danmaku-setting subtitle hidden" id="subtitles-danmaku-form">
-        <div class="player-setting-line full">
+        <div class="player-full-setting-line">
           <label class="subtitle-danmaku-label">Language & description</label>
           <input class="subtitle-danmaku-input normal-input" name="name" type="text" placeholder="e.g., English (by XXX)" tabindex="1">
         </div>
-        <div class="player-setting-line full">
+        <div class="player-full-setting-line">
           <label>Copy all your subtitles/captions here.</label>
           <a class="help-link" title="Subtitle format."></a>
         </div>
-        <div class="player-setting-line full">
+        <div class="player-full-setting-line">
           <textarea class="subtitle-content-input normal-input" name="subtitles" placeholder="e.g., [10:23.08] This is a line." tabindex="1"></textarea>
         </div>
-        <div class="player-setting-line full container">
+        <div class="player-full-setting-line container">
           <input class="inline-button special special-danmaku-button" type="submit" value="Send">
           <input class="inline-button special-danmaku-button" type="button" value="Preview">
         </div>
       </form>
       <form class="special-danmaku-setting code hidden">
-        <div class="player-setting-line full">
+        <div class="player-full-setting-line">
           <label>Output</label>
           <label class="blue-link code-area-button">Copy</label>
           <label class="blue-link code-area-button">Clear</label>
         </div>
-        <div class="player-setting-line full">
+        <div class="player-full-setting-line">
           <textarea class="code-danmaku-output normal-input" readonly="readonly"></textarea>
         </div>
-        <div class="player-setting-line full">
+        <div class="player-full-setting-line">
           <label>Script</label>
           <a class="help-link" title="Script reference."></a>
           <label class="blue-link code-area-button">Copy</label>
           <label class="blue-link code-area-button">Clear</label>
         </div>
-        <div class="player-setting-line full">
+        <div class="player-full-setting-line">
           <textarea class="code-danmaku-content-input normal-input" name="subtitle-content" tabindex="1"></textarea>
         </div>
-        <div class="player-setting-line full container">
+        <div class="player-full-setting-line container">
           <input type="submit" class="inline-button special special-danmaku-button" value="Send">
           <input type="button" class="inline-button special-danmaku-button" value="Preview">
         </div>
@@ -676,10 +689,10 @@
       <textarea class="normal-input" name="content" id="comment-textarea" placeholder="{% if user.is_auth %}Share what you think{% else %}Please sign in{% endif %}" tabindex="1"></textarea>
       <div class="container">
         <div class="emoticons-select"></div>
-        <label class="check-label">
+        <label class="check-label comment-share">
             <div class="pseudo-checkbox checked"></div>
-            <input type="checkbox" class="checkbox hidden" name="allow-post-comment" tabindex="1" checked="checked">
-            <span class="checklabel">Share with subscribers.</span>
+            <input type="checkbox" class="hidden" name="allow-post-comment" tabindex="1" checked="checked">
+            <span>Share with subscribers.</span>
         </label>
         <input class="inline-button special post" value="Post" type="submit">
       </div>
@@ -692,10 +705,10 @@
       <textarea class="normal-input" name="content" id="reply-textarea" placeholder="{% if user.is_auth %}Share what you think{% else %}Please sign in{% endif %}" tabindex="1"></textarea>
       <div class="container">
         <div class="emoticons-select"></div>
-        <label class="check-label">
+        <label class="check-label comment-share">
             <div class="pseudo-checkbox checked"></div>
-            <input type="checkbox" class="checkbox hidden" name="allow-post-reply" tabindex="1" checked="checked">
-            <span class="checklabel">Share with subscribers.</span>
+            <input type="checkbox" class="hidden" name="allow-post-reply" tabindex="1" checked="checked">
+            <span>Share with subscribers.</span>
         </label>
         <input class="inline-button special post" value="Post" type="submit">
       </div>

@@ -407,7 +407,6 @@ div.danmaku {
 
 .quick-block.check-label {
 	display: block;
-	float: none;
 }
 
 #opacity-pointer {
@@ -822,9 +821,7 @@ div.danmaku-type-text {
 }
 
 .danmaku-share.check-label {
-	color: rgb(100,100,100);
 	margin: 5px;
-	float: none;
 }
 
 #danmaku-input-container {
@@ -1038,7 +1035,7 @@ div.danmaku-order-title.down:after {
 	overflow-y: auto;
 }
 
-div.per-bullet, .check-per-bullet {
+div.per-bullet {
 	color: rgb(120,120,120);
 	text-align: left;
 	padding: 0;
@@ -1047,19 +1044,19 @@ div.per-bullet, .check-per-bullet {
 	font-size: 0;
 }
 
-div.per-bullet.blocked, .check-per-bullet.blocked{
+div.per-bullet.blocked {
 	color: rgb(200,200,200);
 }
 
-div.per-bullet.selected, .check-per-bullet.selected{
+div.per-bullet.selected {
 	background-color: rgb(220,243,255);
 }
 
-div.per-bullet:hover, .check-per-bullet:hover {
+div.per-bullet:hover {
 	background-color: rgb(189,237,255);
 }
 
-div.per-bullet:active, .check-per-bullet:active {
+div.per-bullet:active {
 	background-color: rgb(129,206,243);
 }
 
@@ -1144,21 +1141,22 @@ div.bullet-date-value {
 	color: rgb(150,150,150);
 }
 
-.player-setting-line.full {
+.player-full-setting-line {
 	margin: 7px 10px;
 }
 
-.player-setting-line.full label {
+.player-full-setting-line label {
 	font-size: 14px;
 	vertical-align: middle;
+	display: inline-block;
 }
 
-.player-setting-label.full {
+.player-full-setting-label {
 	width: 115px;
-	text-align: left;
+	margin-right: 10px;
 }
 
-.player-setting-label.number {
+.player-full-setting-label.number {
 	width: 240px;
 }
 
@@ -1328,20 +1326,22 @@ div.bullet-date-value {
 .css-customize-input {
 	resize: none;
 	width: 350px;
-	height: 175px;
+	height: 155px;
 }
 
 .advanced-danmaku-label {
-	width: 100px;
-	display: inline-block;
+	width: 110px;
 }
 
 .advanced-danmaku-input-box {
 	display: inline-block;
 	position: relative;
-	margin-right: 5px;
-	margin-left: 5px;
+	margin-right: 10px;
 	vertical-align: middle;
+}
+
+.advanced-danmaku-input-box label {
+	margin-right: 5px;
 }
 
 .advanced-danmaku-input {
@@ -1349,7 +1349,6 @@ div.bullet-date-value {
 	height: 20px;
 	width: 55px;
 	font-size: 12px;
-	margin-left: 5px;
 	vertical-align: middle;
 }
 
@@ -1360,10 +1359,8 @@ div.bullet-date-value {
 	padding: 0 4px;
 }
 
-.percentage-check.check-label {
-	margin: 0;
-	margin-left: 8px;
-	float: none;
+.check-label.as-percent {
+	margin-right: 10px;
 }
 
 #video-info-container {
@@ -2038,12 +2035,9 @@ div.list-video-statistic.comments {
 	width: 90px;
 }
 
-label.check-label {
-    font-size: 14px;
+.check-label.comment-share {
     margin-top: 17px;
     margin-left: 10px;
-    cursor: pointer;
-    display: inline-block;
     float: left;
 }
 
@@ -2051,11 +2045,6 @@ input.checkbox {
     margin: 0;
     cursor: pointer;
     vertical-align: text-top;
-}
-
-span.checklabel {
-    vertical-align: top;
-    color: rgb(100,100,100);
 }
 
 .special-danmaku-button.inline-button {
@@ -2198,9 +2187,8 @@ input.subtitle-danmaku-input {
 .input-layon-block {
 	border: 1px solid rgb(200,200,200);
 	margin: 4px 0 4px 4px;
-	padding-left: 4px;
 	height: 15px;
-	width: 22px;
+	width: 26px;
 	font-size: 14px;
 	font-family: Impact, Charcoal, sans-serif;
 	font-weight: bolder;

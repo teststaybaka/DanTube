@@ -218,8 +218,8 @@ function volume_move(evt) {
 	}
 	volume_tip.lastChild.nodeValue = text;
 
-	player.setVolume(len/volume.offsetHeight*100);
-	dt.setCookie('player_volume', len/volume.offsetHeight*100);
+	player.setVolume(Math.floor(len/volume.offsetHeight*100));
+	dt.setCookie('player_volume', Math.floor(len/volume.offsetHeight*100));
 }
 
 function volume_end(evt) {
@@ -527,7 +527,7 @@ function progress_update() {
 }
 
 function Danmaku_Animation(ele) {
-	var lTime = 0;
+	var lTime = Date.now();
 	var type = ele.ref_danmaku.type;
 	var existingTime;
 	if (type !== 'Subtitles') existingTime = existing_time*1000;
@@ -535,6 +535,40 @@ function Danmaku_Animation(ele) {
 	var offsetWidth = ele.element.offsetWidth;
 	var offsetHeight = ele.element.offsetHeight;
 	var direct_x, direct_y;
+
+	if (type === 'RightToLeft') {
+		requestAnimationFrame(float_update);
+	} else if (type === 'Top' || type === 'Bottom') {
+		ele.posX = (player_width + offsetWidth)/2;
+		ele.element.style.WebkitTransform = "translate(-"+ele.posX+"px, "+ele.posY+"px)";
+		ele.element.style.msTransform = "translate(-"+ele.posX+"px, "+ele.posY+"px)";
+		ele.element.style.transform = "translate(-"+ele.posX+"px, "+ele.posY+"px)";
+		requestAnimationFrame(staying_update);
+	} else if (type === 'Advanced') {
+		ele.posX = get_positionX(ele.ref_danmaku.birth_x);
+		ele.posY = get_positionY(ele.ref_danmaku.birth_y);
+		var death_x = get_positionX(ele.ref_danmaku.death_x);
+		var death_y = get_positionY(ele.ref_danmaku.death_y);
+
+		if (death_x > ele.posX) direct_x = 1;
+		else if (death_x < ele.posX) direct_x = -1;
+		else direct_x = 0;
+
+		if (death_y > ele.posY) direct_y = 1;
+		else if (death_y < ele.posY) direct_y = -1;
+		else direct_y = 0;
+
+		if (ele.ref_danmaku.longevity != 0) {
+			existingTime = ele.ref_danmaku.longevity*1000;
+		}
+		requestAnimationFrame(advanced_update);
+	} else if (type === 'Subtitles') {
+		ele.posX = (player_width + offsetWidth)/2;
+		ele.element.style.WebkitTransform = "translate(-"+ele.posX+"px, "+ele.posY+"px)";
+		ele.element.style.msTransform = "translate(-"+ele.posX+"px, "+ele.posY+"px)";
+		ele.element.style.transform = "translate(-"+ele.posX+"px, "+ele.posY+"px)";
+		requestAnimationFrame(subtitles_update);
+	}
 
 	function get_positionX(x) {
 		if (x < 0) return offsetWidth + player_width + 10 + x;
@@ -544,43 +578,6 @@ function Danmaku_Animation(ele) {
 	function get_positionY(y) {
 		if (y < 0) return offsetHeight + player_height + y;
 		else return y;
-	}
-
-	this.startAnimation = function() {
-		lTime = Date.now();
-		if (type === 'RightToLeft') {
-			requestAnimationFrame(float_update);
-		} else if (type === 'Top' || type === 'Bottom') {
-			ele.posX = (player_width + offsetWidth)/2;
-			ele.element.style.WebkitTransform = "translate(-"+ele.posX+"px, "+ele.posY+"px)";
-			ele.element.style.msTransform = "translate(-"+ele.posX+"px, "+ele.posY+"px)";
-			ele.element.style.transform = "translate(-"+ele.posX+"px, "+ele.posY+"px)";
-			requestAnimationFrame(staying_update);
-		} else if (type === 'Advanced') {
-			ele.posX = get_positionX(ele.ref_danmaku.birth_x);
-			ele.posY = get_positionY(ele.ref_danmaku.birth_y);
-			var death_x = get_positionX(ele.ref_danmaku.death_x);
-			var death_y = get_positionY(ele.ref_danmaku.death_y);
-
-			if (death_x > ele.posX) direct_x = 1;
-			else if (death_x < ele.posX) direct_x = -1;
-			else direct_x = 0;
-
-			if (death_y > ele.posY) direct_y = 1;
-			else if (death_y < ele.posY) direct_y = -1;
-			else direct_y = 0;
-
-			if (ele.ref_danmaku.longevity != 0) {
-				existingTime = ele.ref_danmaku.longevity*1000;
-			}
-			requestAnimationFrame(advanced_update);
-		} else if (type === 'Subtitles') {
-			ele.posX = (player_width + offsetWidth)/2;
-			ele.element.style.WebkitTransform = "translate(-"+ele.posX+"px, "+ele.posY+"px)";
-			ele.element.style.msTransform = "translate(-"+ele.posX+"px, "+ele.posY+"px)";
-			ele.element.style.transform = "translate(-"+ele.posX+"px, "+ele.posY+"px)";
-			requestAnimationFrame(subtitles_update);
-		}
 	}
 
 	function float_update() {
@@ -951,9 +948,7 @@ function danmaku_update() {
 		var i = 0;
 		var ref_danmaku;
 		while (ref_danmaku = normal_danmaku_sequence.next()) {
-			while (!danmaku_elements[i].idle && i < max_danmaku) {
-				i++;
-			}
+			while (!danmaku_elements[i].idle && i < max_danmaku) i++;
 			if (i >= max_danmaku) break;
 
 			var ele = danmaku_elements[i];
@@ -1019,8 +1014,7 @@ function danmaku_update() {
 					occupation[j] += 1;
 				}
 			}
-			var danmaku_Animation = new Danmaku_Animation(ele);
-			danmaku_Animation.startAnimation();
+			Danmaku_Animation(ele);
 		}
 	}
 
@@ -1069,8 +1063,7 @@ function danmaku_update() {
 					occupation[j] += 1;
 				}
 
-				var danmaku_Animation = new Danmaku_Animation(ele);
-				danmaku_Animation.startAnimation();
+				Danmaku_Animation(ele);
 			}
 		}
 	}
@@ -1082,47 +1075,35 @@ dt.onPlayerReady = function(event) {
 	var progress_number = document.getElementById("progress-number");
 	progress_number.lastChild.nodeValue = "00:00"+"/"+dt.secondsToTime(player.getDuration());
 	setInterval(buffer_update, 500);
-	buffer_update();
-	progress_update();
 
 	var volume = dt.getCookie('player_volume');
 	if (!volume) {
-		player.setVolume(50);
-		dt.setCookie('player_volume', 50);
-		var volume_magnitude = document.getElementById("volume-magnitude");
-		volume_magnitude.style.height = 25 + "px";
-		var volume_pointer = document.getElementById("volume-pointer");
-		volume_pointer.style.WebkitTransform = "translateY(-"+25+"px)";
-		volume_pointer.style.msTransform = "translateY(-"+25+"px)";
-		volume_pointer.style.transform = "translateY(-"+25+"px)";
-		var volume_tip = document.getElementById("volume-tip");
-		volume_tip.style.WebkitTransform = "translateY(-"+25+"px)";
-		volume_tip.style.msTransform = "translateY(-"+25+"px)";
-		volume_tip.style.transform = "translateY(-"+25+"px)";
-		volume_tip.lastChild.nodeValue = 50;
+		volume = 50;
 	} else {
 		volume = parseInt(volume);
-		player.setVolume(volume);
-		// var volume_bar = document.getElementById("volume-bar");
-		var volume_magnitude = document.getElementById("volume-magnitude");
-		var len = 50*volume/100;
-		volume_magnitude.style.height = len + "px";
-		var volume_pointer = document.getElementById("volume-pointer");
-		volume_pointer.style.WebkitTransform = "translateY(-"+len+"px)";
-		volume_pointer.style.msTransform = "translateY(-"+len+"px)";
-		volume_pointer.style.transform = "translateY(-"+len+"px)";
-		var volume_tip = document.getElementById("volume-tip");
-		volume_tip.style.WebkitTransform = "translateY(-"+len+"px)";
-		volume_tip.style.msTransform = "translateY(-"+len+"px)";
-		volume_tip.style.transform = "translateY(-"+len+"px)";
-		var text;
-		if (Math.floor(len/50*100) < 10) {
-			text = "0"+Math.floor(len/50*100);
-		} else {
-			text = Math.floor(len/50*100);
-		}
-		volume_tip.lastChild.nodeValue = text;
 	}
+	volume = parseInt(volume);
+	player.setVolume(volume);
+	dt.setCookie('player_volume', volume);
+	// var volume_bar = document.getElementById("volume-bar");
+	var volume_magnitude = document.getElementById("volume-magnitude");
+	var len = 50*volume/100;
+	volume_magnitude.style.height = len + "px";
+	var volume_pointer = document.getElementById("volume-pointer");
+	volume_pointer.style.WebkitTransform = "translateY(-"+len+"px)";
+	volume_pointer.style.msTransform = "translateY(-"+len+"px)";
+	volume_pointer.style.transform = "translateY(-"+len+"px)";
+	var volume_tip = document.getElementById("volume-tip");
+	volume_tip.style.WebkitTransform = "translateY(-"+len+"px)";
+	volume_tip.style.msTransform = "translateY(-"+len+"px)";
+	volume_tip.style.transform = "translateY(-"+len+"px)";
+	var text;
+	if (volume < 10) {
+		text = "0" + volume;
+	} else {
+		text = volume;
+	}
+	volume_tip.lastChild.nodeValue = text;
 
 	var player_background = document.getElementById("player-background");
 	for (var i = 0; i < 120; i++) {
@@ -1654,21 +1635,33 @@ dt.onPlayerReady = function(event) {
 			$(this).val($(this).attr('data-old'));
 		}
     });
-	$('.number-input-arrow').click(function() {
-		var number_input = $(this).siblings('.number-input');
-		var num = parseFloat(number_input.val());
-		if (isNaN(num)) num = 0;
+    $('.number-input-arrow').mousedown(function() {
+    	var target = $(this);
+    	var number_input = target.siblings('.number-input');
 
-		num = Math.round(num*100);
-		if ($(this).hasClass('up')) {
-			num += 10;
-		}
-		if ($(this).hasClass('down') && (number_input.hasClass('negative') || num >= 10)) {
-			num -= 10;
-		}
-		num /= 100;
-		number_input.val(num);
-	});
+    	var inc_dec_number = function() {
+			var num = parseFloat(number_input.val());
+			if (isNaN(num)) num = 0;
+
+			num = Math.round(num*100);
+			if (target.hasClass('up')) {
+				num += 10;
+			}
+			if (target.hasClass('down') && (number_input.hasClass('negative') || num >= 10)) {
+				num -= 10;
+			}
+			num /= 100;
+			number_input.val(num);
+	    }
+
+    	var number_change_time = setInterval(inc_dec_number, 100);
+    	inc_dec_number();
+
+    	target.bind('mouseup mouseleave', function() {
+    		clearInterval(number_change_time);
+    		target.off('mouseup mouseleave');
+    	});
+    });
 	
 	$('div.danmaku').bind('contextmenu', function(evt) {
 		evt.preventDefault();
@@ -1682,8 +1675,16 @@ dt.onPlayerReady = function(event) {
 
 		var rect = $('#player-container').offset();
 		$('.danmaku-menu').removeClass('hidden');
-		$('.danmaku-menu')[0].style.left = evt.pageX - rect.left+'px';
-		$('.danmaku-menu')[0].style.top = evt.pageY - rect.top+'px';
+		if (evt.pageY + $('.danmaku-menu')[0].scrollHeight > player_height + rect.top) {
+			$('.danmaku-menu')[0].style.top = player_height - $('.danmaku-menu')[0].scrollHeight+'px';
+		} else {
+			$('.danmaku-menu')[0].style.top = evt.pageY - rect.top+'px';
+		}
+		if (evt.pageX + $('.danmaku-menu')[0].scrollWidth > player_width + rect.left) {
+			$('.danmaku-menu')[0].style.left = player_width - $('.danmaku-menu')[0].scrollWidth+'px';
+		} else {
+			$('.danmaku-menu')[0].style.left = evt.pageX - rect.left+'px';
+		}
 		var hide_menu = function() {
 			$('.danmaku-menu').addClass('hidden');
 			$(document).off('click', hide_menu);
@@ -1716,12 +1717,15 @@ dt.onPlayerReady = function(event) {
 		$('#danmaku-input').focus();
 	});
 	$('.layon-close').click(function(e) {
-		if (!$('.input-layon-block').hasClass('hidden')) {
-			$('.input-layon-block').addClass('hidden');
-			var danmaku_input = document.getElementById('danmaku-input');
-			danmaku_input.style.width = (danmaku_input.offsetWidth + 32) + 'px';
-		}
+		$('.input-layon-block').addClass('hidden');
+		var danmaku_input = document.getElementById('danmaku-input');
+		danmaku_input.style.width = (danmaku_input.offsetWidth + 32) + 'px';
 		$('#danmaku-reply-input').val('');
+	});
+	$('#danmaku-input').keydown(function(e) {
+		if (e.keyCode == 8 && e.target.selectionStart == 0 && !$('.input-layon-block').hasClass('hidden')) {
+			$('.layon-close').trigger('click');
+		}
 	});
 	$('#danmaku-report').click(function() {
 		$('#report-danmaku-form').removeClass('hidden');
@@ -1733,6 +1737,7 @@ dt.onPlayerReady = function(event) {
 		} else {
 			$('#report-danmaku-type').val('danmaku');
 		}
+		$('#report-danmaku-textarea').focus();
 		player.pauseVideo();
 	});
 	$('#report-danmaku-form').submit(function() {
@@ -1813,8 +1818,7 @@ dt.onPlayerReady = function(event) {
 		player_background.appendChild(bul);
 
 		var new_danmaku_element = {idle: false, generating: false, posX: 0, posY: 0, clear_request: false, element: bul, ref_danmaku: preview_danmaku};
-		var danmaku_Animation = new Danmaku_Animation(new_danmaku_element);
-		danmaku_Animation.startAnimation();
+		Danmaku_Animation(new_danmaku_element);
 		dt.pop_ajax_message('Previewing!', 'success');
 	});
 	$('#advanced-danmaku-form').submit(function(evt) {
@@ -1840,7 +1844,7 @@ dt.onPlayerReady = function(event) {
 			data: data,
 			success: function(result) {
 				if(!result.error) {
-					$('#danmaku-input').val('');
+					$('#advanced-danmaku-content').val('');
 					dt.pop_ajax_message('Danmaku sent!', 'success');
 					result.timestamp = player.getCurrentTime() + 0.05;
 					result.blocked = false;
@@ -2454,6 +2458,7 @@ $(document).ready(function() {
 		} else {
 			$('#report-danmaku-type').val('danmaku');
 		}
+		$('#report-danmaku-textarea').focus();
 		player.pauseVideo();
 	});
 
@@ -2698,6 +2703,7 @@ $(document).ready(function() {
 
 	$('#report-video-button').click(function() {
 		$('#report-video-form').removeClass('hidden');
+		$('#report-video-textarea').focus();
 	});
 	$('#report-video-form').submit(function(evt) {
 		send_report($(this), 'video');
@@ -2721,6 +2727,7 @@ $(document).ready(function() {
 		form.style.left = offset.left+'px';
 		form.style.top = offset.top - $(this).height()+'px';
 		$('#report-comment-form').removeClass('hidden');
+		$('#report-comment-textarea').focus();
 	});
 	$('#report-comment-form').submit(function(evt) {
 		send_report($(this), 'comment');
@@ -2923,7 +2930,7 @@ function send_report(form, type) {
 	      	dt.pop_ajax_message(result.message, 'error');
 	    } else {
 	    	$('#report-'+type+'-textarea').val('');
-	      	dt.pop_ajax_message('We\'ve received your report.', 'success');
+	      	dt.pop_ajax_message('We\'ve received your report. Thank you!', 'success');
 	    }
 	  },
 	  error: function (xhr, ajaxOptions, thrownError) {

@@ -27,25 +27,16 @@ div.input-line {
   position: relative;
 }
 
-label.form-label, label.check-label {
+label.form-label {
   display: block;
   color: rgb(100,100,100);
   margin-bottom: 10px;
 }
 
-input.checkbox {
-  margin: 0;
-  height: 15px;
-  width: 15px;
-  position: relative;
-  top: 2px;
-  cursor: pointer;
-}
-
 label.check-label {
-  cursor: pointer;
+  display: block;
+  margin-bottom: 10px;
   width: 110px;
-  font-size: 14px;
 }
 
 input.inputtext, input.inputpassword {

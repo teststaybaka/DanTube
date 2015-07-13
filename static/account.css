@@ -719,21 +719,13 @@ div.check-label-line {
 }
 
 form.change label.check-label {
-    font-size: 14px;
     margin-right: 15px;
-    cursor: pointer;
-    display: inline-block;
 }
 
 input.checkbox {
     margin: 0;
     cursor: pointer;
     vertical-align: text-top;
-}
-
-span.checklabel {
-    vertical-align: top;
-    color: rgb(100,100,100);
 }
 
 form.change div.option-button {

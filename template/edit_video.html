@@ -82,8 +82,8 @@ var video_subcategories = {};
         <label class="form-label"></label>
         <label class="check-label">
             <div class="pseudo-checkbox {% if video.allow_tag_add %}checked{% endif %}"></div>
-            <input type="checkbox" class="checkbox hidden" id="allow-add" name="allow-add" tabindex="1" {% if video.allow_tag_add %} checked="checked" {% endif %}>
-            <span class="checklabel">Allow others to add tags.</span>
+            <input type="checkbox" class="hidden" id="allow-add" name="allow-add" tabindex="1" {% if video.allow_tag_add %} checked="checked" {% endif %}>
+            <span>Allow others to add tags.</span>
         </label>
       </div>
     </div>
@@ -127,8 +127,8 @@ var video_subcategories = {};
       <input class="save_change-button" type="submit" value="Save Changes" />
       <label class="check-label">
           <div class="pseudo-checkbox checked"></div>
-          <input type="checkbox" class="checkbox hidden" id="allow-post" name="allow-post" tabindex="1" checked="checked">
-          <span class="checklabel">Post your changes.</span>
+          <input type="checkbox" class="hidden" id="allow-post" name="allow-post" tabindex="1" checked="checked">
+          <span>Post your changes.</span>
       </label>
       <div id="change-applying"></div>
   </div>

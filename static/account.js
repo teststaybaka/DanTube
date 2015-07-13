@@ -324,7 +324,7 @@ $(document).ready(function() {
                     dt.pop_ajax_message(result.message, 'error');
                     button.disabled = false;
                 } else {
-                    dt.pop_ajax_message('Feedback received!', 'success');
+                    dt.pop_ajax_message('We\'ve received your feedback. Thank you!', 'success');
                     setTimeout(function(){
                         window.location.reload(); 
                     }, 3000);

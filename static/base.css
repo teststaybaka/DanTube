@@ -959,6 +959,13 @@ span.subscribe-icon {
     background-position: 0 -928px;
 }
 
+label.check-label {
+    font-size: 14px;
+    color: rgb(100,100,100);
+    cursor: pointer;
+    display: inline-block;
+}
+
 .pseudo-checkbox {
     width: 13px;
     height: 13px;
