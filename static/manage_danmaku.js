@@ -119,13 +119,7 @@ function load_danmaku_list(option) {
 function render_danmaku_entry(entry, index) {
     div = '<div class="pool-detail-entry">\
                 <div class="detail-label timestamp">'+dt.millisecondsToTime(entry.timestamp)+'</div>\
-                <div class="detail-label">'
-    if (entry.type == 'RightToLeft') {
-        div += 'Normal';
-    } else {
-        div += entry.type;
-    }
-    div += '</div>\
+                <div class="detail-label">'+entry.type+'</div>\
                 <div class="detail-label color"><div class="color-box" style="background-color: '+dt.dec2hexColor(entry.color)+';"></div></div>\
                 <div class="detail-label">'+entry.size+'</div>\
                 <div class="detail-label content" title="'+entry.content+'">'+entry.content+'</div>\

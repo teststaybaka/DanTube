@@ -566,6 +566,16 @@ class Danmaku(BaseHandler):
                 'message': 'Invalid timestamp.',
             }))
 
+        if self.request.get('as-percent'):
+            as_percent = True
+        else:
+            as_percent = False
+
+        if self.request.get('relative'):
+            relative = True
+        else:
+            relative = False
+
         custom_css = self.request.get('danmaku-css').strip()
         if not custom_css:
             self.response.out.write(json.dumps({
@@ -587,7 +597,7 @@ class Danmaku(BaseHandler):
             }))
             return
 
-        danmaku = models.AdvancedDanmaku(index=advanced_danmaku_pool.counter, timestamp=timestamp, content=content, birth_x=birth_pos[0], birth_y=birth_pos[1], death_x=death_pos[0], death_y=death_pos[1], speed_x=speed[0], speed_y=speed[1], longevity=longevity, css=custom_css, creator=user.key)
+        danmaku = models.AdvancedDanmaku(index=advanced_danmaku_pool.counter, timestamp=timestamp, content=content, birth_x=birth_pos[0], birth_y=birth_pos[1], death_x=death_pos[0], death_y=death_pos[1], speed_x=speed[0], speed_y=speed[1], longevity=longevity, css=custom_css, as_percent=as_percent, relative=relative, creator=user.key)
         advanced_danmaku_pool.danmaku_list.append(danmaku)
         advanced_danmaku_pool.counter += 1
         video.update_hot_score(HOT_SCORE_PER_DANMAKU)
@@ -619,6 +629,8 @@ class Danmaku(BaseHandler):
                     'speed_y': advanced_danmaku.speed_y,
                     'longevity': advanced_danmaku.longevity,
                     'css': advanced_danmaku.css,
+                    'as_percent': advanced_danmaku.as_percent,
+                    'relative': advanced_danmaku.relative,
                     'type': 'Advanced',
                     'pool_id': danmaku_pool.key.id(),
                     'index': advanced_danmaku.index,

@@ -15,8 +15,8 @@
 
   function onYouTubeIframeAPIReady() {
     dt.player = new YT.Player('player', {
-      height: '360',
       width: '640',
+      height: '360',
       videoId: '{{ video.cur_vid }}',
       playerVars: {
         autoplay: 0,
@@ -274,8 +274,8 @@
             <div>
               <div class="danmaku-type-option top"><div class="danmaku-type-img top"></div><div class="danmaku-type-text">Top</div></div>
               <div class="danmaku-type-option bottom"><div class="danmaku-type-img bottom"></div><div class="danmaku-type-text">Bottom</div></div>
-              <div class="danmaku-type-option normal active"><div class="danmaku-type-img normal"></div><div class="danmaku-type-text">Right to left</div></div>
-              <input id="danmaku-type-input" type="text" value="RightToLeft" name="type" class="hidden">
+              <div class="danmaku-type-option normal active"><div class="danmaku-type-img normal"></div><div class="danmaku-type-text">Scroll</div></div>
+              <input id="danmaku-type-input" type="text" value="Scroll" name="type" class="hidden">
             </div>
             <div>
               <label class="danmaku-share check-label">
@@ -515,13 +515,13 @@
         <div class="player-full-setting-line">
           <label class="advanced-danmaku-label">Position options</label>
           <label class="check-label as-percent">
-            <div class="pseudo-checkbox checked"></div>
-            <input type="checkbox" class="hidden" tabindex="1" checked="checked" name="as-percent">
+            <div class="pseudo-checkbox"></div>
+            <input type="checkbox" class="hidden" tabindex="1" name="as-percent">
             <span>As percent</span>
           </label>
           <label class="check-label">
-            <div class="pseudo-checkbox checked"></div>
-            <input type="checkbox" class="hidden" tabindex="1" checked="checked" name="relative">
+            <div class="pseudo-checkbox"></div>
+            <input type="checkbox" class="hidden" tabindex="1" name="relative">
             <span>Relative to actual screen</span>
           </label>
         </div>
@@ -561,8 +561,13 @@
             <span>Use current timestamp</span>
           </label>
         </div>
-        <div class="player-full-setting-line"><label>CSS customization</label><a class="help-link" title="Reference for advanced danmaku."></a></div>
-        <div class="player-full-setting-line"><textarea class="css-customize-input normal-input" name="danmaku-css" placeholder="e.g., color: rgb(255,255,255);" tabindex="1">color: rgb(255,255,255);&#13;&#10;font-size: 20px;&#13;&#10;text-shadow: 1px 0 1px rgb(0,0,0), -1px 0 1px rgb(0,0,0), 0 1px 1px rgb(0,0,0), 0 -1px 1px rgb(0,0,0);</textarea></div>
+        <div class="player-full-setting-line">
+          <label>CSS customization</label>
+          <a class="help-link" title="Reference for advanced danmaku."></a>
+        </div>
+        <div class="player-full-setting-line">
+          <textarea class="css-customize-input normal-input" name="danmaku-css" placeholder="e.g., color: rgb(255,255,255);" tabindex="1">color: rgb(255,255,255);&#13;&#10;font-size: 20px;&#13;&#10;text-shadow: 1px 0 1px rgb(0,0,0), -1px 0 1px rgb(0,0,0), 0 1px 1px rgb(0,0,0), 0 -1px 1px rgb(0,0,0);</textarea>
+        </div>
         <div class="player-full-setting-line container">
           <input class="inline-button special special-danmaku-button" type="submit" value="Send">
           <input class="inline-button special-danmaku-button" type="button" value="Preview">

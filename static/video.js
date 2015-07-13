@@ -5,6 +5,8 @@ var player;
 var isPlaying = false;
 var player_width = 640;
 var player_height = 446;
+var player_inner_width = 640;
+var player_inner_height = 360;
 var danmakuVar = null;
 var progressVar = null;
 var progressHold = false;
@@ -265,6 +267,8 @@ function widescreen_change() {
 		$("#danmaku-pool").addClass('hidden');
 		player_width = 1024;
 		player_height = 576;
+		player_inner_width = player_width;
+		player_inner_height = player_height;
 		player.setSize(player_width, player_height);
 		$('.player-vertical-padding')[0].style.height = player_height+"px";
 		var player_controller = document.getElementById("player-controller");
@@ -281,14 +285,14 @@ function widescreen_change() {
 
 		var list = document.querySelectorAll("div.danmaku");
 		for (var i = 0; i < list.length; ++i) {
-		   list[i].style.left = player_width+10+"px";
+		   list[i].style.left = player_width+"px";
 		}
 	} else {
 		$("#danmaku-pool").removeClass('hidden');
 		player_width = 640;
 		player_height = 446;
-		var player_inner_width = player_width;
-		var player_inner_height = 360;
+		player_inner_width = 640;
+		player_inner_height = 360;
 		player.setSize(player_inner_width, player_inner_height);
 		$('.player-vertical-padding')[0].style.height = player_height+"px";
 		var player_controller = document.getElementById("player-controller");
@@ -305,7 +309,7 @@ function widescreen_change() {
 
 		var list = document.querySelectorAll("div.danmaku");
 		for (var i = 0; i < list.length; ++i) {
-		   list[i].style.left = player_width+10+"px";
+		   list[i].style.left = player_width+"px";
 		}
 	}
 }
@@ -342,8 +346,8 @@ function fullscreen_change(evt) {
 			wrap.style.bottom = - wrap.offsetHeight + 'px';
 		}
 		$("#danmaku-pool").addClass('hidden');
-		var player_inner_width = player_width;
-		var player_inner_height = player_height;
+		player_inner_width = player_width;
+		player_inner_height = player_height;
 		if (player_inner_height/9*16 < player_inner_width) {
 			player_inner_width = Math.round(player_inner_height/9*16);
 		} else {
@@ -365,7 +369,7 @@ function fullscreen_change(evt) {
 
 		var list = document.querySelectorAll("div.danmaku");
 		for (var i = 0; i < list.length; ++i) {
-		   list[i].style.left = player_width+10+"px";
+		   list[i].style.left = player_width+"px";
 		}
 	}
 }
@@ -401,8 +405,8 @@ function page_wide_player() {
 	player_width = $('body').innerWidth();
 	player_height = window.innerHeight - $('#progress-controller-wrap').height();
 	$("#danmaku-pool").addClass('hidden');
-	var player_inner_width = player_width;
-	var player_inner_height = player_height;
+	player_inner_width = player_width;
+	player_inner_height = player_height;
 	if (player_inner_height/9*16 < player_inner_width) {
 		player_inner_width = Math.round(player_inner_height/9*16);
 	} else {
@@ -424,7 +428,7 @@ function page_wide_player() {
 
 	var list = document.querySelectorAll("div.danmaku");
 	for (var i = 0; i < list.length; ++i) {
-	   list[i].style.left = player_width+10+"px";
+	   list[i].style.left = player_width+"px";
 	}
 }
 
@@ -530,25 +534,25 @@ function Danmaku_Animation(ele) {
 	var lTime = Date.now();
 	var type = ele.ref_danmaku.type;
 	var existingTime;
-	if (type !== 'Subtitles') existingTime = existing_time*1000;
-	else existingTime = subtitles_longevity*1000;
+	if (type !== 'Subtitles') existingTime = existing_time;
+	else existingTime = subtitles_longevity;
 	var offsetWidth = ele.element.offsetWidth;
 	var offsetHeight = ele.element.offsetHeight;
-	var direct_x, direct_y;
+	var direct_x, direct_y, death_x, death_y;
 
-	if (type === 'RightToLeft') {
-		requestAnimationFrame(float_update);
+	if (type === 'Scroll') {
+		requestAnimationFrame(scroll_update);
 	} else if (type === 'Top' || type === 'Bottom') {
 		ele.posX = (player_width + offsetWidth)/2;
 		ele.element.style.WebkitTransform = "translate(-"+ele.posX+"px, "+ele.posY+"px)";
 		ele.element.style.msTransform = "translate(-"+ele.posX+"px, "+ele.posY+"px)";
 		ele.element.style.transform = "translate(-"+ele.posX+"px, "+ele.posY+"px)";
-		requestAnimationFrame(staying_update);
+		requestAnimationFrame(static_update);
 	} else if (type === 'Advanced') {
 		ele.posX = get_positionX(ele.ref_danmaku.birth_x);
 		ele.posY = get_positionY(ele.ref_danmaku.birth_y);
-		var death_x = get_positionX(ele.ref_danmaku.death_x);
-		var death_y = get_positionY(ele.ref_danmaku.death_y);
+		death_x  = get_positionX(ele.ref_danmaku.death_x);
+		death_y = get_positionY(ele.ref_danmaku.death_y);
 
 		if (death_x > ele.posX) direct_x = 1;
 		else if (death_x < ele.posX) direct_x = -1;
@@ -559,7 +563,7 @@ function Danmaku_Animation(ele) {
 		else direct_y = 0;
 
 		if (ele.ref_danmaku.longevity != 0) {
-			existingTime = ele.ref_danmaku.longevity*1000;
+			existingTime = ele.ref_danmaku.longevity;
 		}
 		requestAnimationFrame(advanced_update);
 	} else if (type === 'Subtitles') {
@@ -571,16 +575,70 @@ function Danmaku_Animation(ele) {
 	}
 
 	function get_positionX(x) {
-		if (x < 0) return offsetWidth + player_width + 10 + x;
-		else return x;
+		if (x >= 0) {
+			if (ele.ref_danmaku.relative) {
+				if (ele.ref_danmaku.as_percent) {
+					return x/100*player_inner_width + dt.get_player_inner_pos_right();
+				} else {
+					return x + dt.get_player_inner_pos_right();
+				}
+			} else {
+				if (ele.ref_danmaku.as_percent) {
+					return x/100*player_width;
+				} else {
+					return x;
+				}
+			}
+		} else {
+			if (ele.ref_danmaku.relative) {
+				if (ele.ref_danmaku.as_percent) {
+					return x/100*player_inner_width + dt.get_player_inner_pos_left() + offsetWidth;
+				} else {
+					return x + dt.get_player_inner_pos_left() + offsetWidth;
+				}
+			} else {
+				if (ele.ref_danmaku.as_percent) {
+					return x/100*player_width + player_width + offsetWidth;
+				} else {
+					return x + player_width + offsetWidth;
+				}
+			}
+		}
 	}
 
 	function get_positionY(y) {
-		if (y < 0) return offsetHeight + player_height + y;
-		else return y;
+		if (y >= 0) {
+			if (ele.ref_danmaku.relative) {
+				if (ele.ref_danmaku.as_percent) {
+					return y/100*player_inner_height + dt.get_player_inner_pos_top();
+				} else {
+					return y + dt.get_player_inner_pos_top();
+				}
+			} else {
+				if (ele.ref_danmaku.as_percent) {
+					return y/100*player_height;
+				} else {
+					return y;
+				}
+			}
+		} else {
+			if (ele.ref_danmaku.relative) {
+				if (ele.ref_danmaku.as_percent) {
+					return y/100*player_inner_height + dt.get_player_inner_pos_bottom() + offsetHeight;
+				} else {
+					return y + dt.get_player_inner_pos_bottom() + offsetHeight;
+				}
+			} else {
+				if (ele.ref_danmaku.as_percent) {
+					return y/100*player_height + player_height + offsetHeight;
+				} else {
+					return y + player_height + offsetHeight;
+				}
+			}
+		}
 	}
 
-	function float_update() {
+	function scroll_update() {
 		var curTime = Date.now();
 		var deltaTime = curTime - lTime;
 		var speed = (100*danmaku_speed + 400 + offsetWidth)/10;
@@ -600,8 +658,8 @@ function Danmaku_Animation(ele) {
 			}
 		}
 
-		if (!ele.clear_request && ele.posX < offsetWidth + player_width + 10) {
-			requestAnimationFrame(float_update);
+		if (!ele.clear_request && ele.posX < offsetWidth + player_width) {
+			requestAnimationFrame(scroll_update);
 		} else {
 			ele.element.style.WebkitTransform = "translate(-"+0+"px, "+ele.posY+"px)";
 			ele.element.style.msTransform = "translate(-"+0+"px, "+ele.posY+"px)";
@@ -611,16 +669,16 @@ function Danmaku_Animation(ele) {
 		}
 	}
 
-	function staying_update() {
+	function static_update() {
 		var curTime = Date.now();
 		var deltaTime = curTime - lTime;
 		lTime = curTime;
 		if (isPlaying) {
-			existingTime -= deltaTime;
+			existingTime -= deltaTime/1000;
 		}
 
 		if (!ele.clear_request && existingTime > 0) {
-			requestAnimationFrame(staying_update);
+			requestAnimationFrame(static_update);
 		} else {
 			ele.generating = false;
 			if (type === 'Top') {
@@ -646,10 +704,8 @@ function Danmaku_Animation(ele) {
 		var speed = ele.ref_danmaku.speed;
 		lTime = curTime;
 
-		var death_x = get_positionX(ele.ref_danmaku.death_x);
-		var death_y = get_positionY(ele.ref_danmaku.death_y);
 		if (isPlaying) {
-			existingTime -= deltaTime;
+			existingTime -= deltaTime/1000;
 			ele.posX += direct_x*ele.ref_danmaku.speed_x*deltaTime/1000;
 			ele.posY += direct_y*ele.ref_danmaku.speed_y*deltaTime/1000;
 			ele.element.style.WebkitTransform = "translate(-"+ele.posX+"px, "+ele.posY+"px)";
@@ -658,7 +714,7 @@ function Danmaku_Animation(ele) {
 		}
 
 		if (!ele.clear_request 
-			&& (ele.ref_danmaku.longevity == 0 || (ele.ref_danmaku.longevity != 0 && existingTime > 0))
+			&& (direct_x != 0 || direct_y != 0 || (direct_x == 0 && direct_y == 0 && existingTime > 0))
 			&& ele.posX*direct_x <= death_x*direct_x 
 			&& ele.posY*direct_y <= death_y*direct_y) {
 			requestAnimationFrame(advanced_update);
@@ -961,12 +1017,12 @@ function danmaku_update() {
 				ele.element.setAttribute('data-index', i);
 				ele.element.lastChild.nodeValue = dt.unescapeHTML(ele.ref_danmaku.content);
 				ele.element.setAttribute('style', ele.ref_danmaku.css);
-				ele.element.style.left = player_width + 10+'px';
+				ele.element.style.left = player_width+'px';
 			} else {
 				ele.element.setAttribute('data-index', i);
 				ele.element.lastChild.nodeValue = dt.unescapeHTML(ele.ref_danmaku.content);
 				ele.element.setAttribute('style', '');
-				ele.element.style.left = player_width + 10+'px';
+				ele.element.style.left = player_width+'px';
 				ele.element.style.opacity = danmaku_opacity;
 				ele.element.style.color = dt.dec2hexColor(ele.ref_danmaku.color);
 				if (has_text_outline) {
@@ -978,7 +1034,7 @@ function danmaku_update() {
 				// ele.element.lastChild.nodeValue = dt.secondsToTime(ele.ref_danmaku.timestamp);
 				ele.generating = true;
 
-				if (ele.ref_danmaku.type === 'RightToLeft') {
+				if (ele.ref_danmaku.type === 'Scroll') {
 					accumulate = accumulate_normal;
 					occupation = occupation_normal;
 				} else if (ele.ref_danmaku.type === 'Bottom') {
@@ -1028,7 +1084,7 @@ function danmaku_update() {
 				var bul = document.createElement('div');
 				bul.setAttribute('class', 'danmaku');
 				bul.appendChild(document.createTextNode(dt.unescapeHTML(ref_danmaku.content)));
-				bul.style.left = player_width + 10 + 'px';
+				bul.style.left = player_width+'px';
 				bul.style.opacity = subtitles_opacity;
 				bul.style.fontSize = subtitles_font_size+'px';
 				player_background.appendChild(bul);
@@ -1807,12 +1863,14 @@ dt.onPlayerReady = function(event) {
 			speed_y: parseFloat($('input[name="speed-Y"]').val()),
 			longevity: parseFloat($('input[name="longevity"]').val()),
 			css: $('textarea[name="danmaku-css"]').val().trim(),
+			as_percent: $('input[name="as-percent"]').is(':checked'),
+			relative: $('input[name="relative"]').is(':checked'),
 			type: 'Advanced',
 		}
 		var bul = document.createElement('div');
 		bul.setAttribute('class', 'danmaku');
 		bul.setAttribute('style', preview_danmaku.css);
-		bul.style.left = player_width + 10+'px';
+		bul.style.left = player_width+'px';
 		var text = document.createTextNode(preview_danmaku.content);
 		bul.appendChild(text);
 		player_background.appendChild(bul);
@@ -2042,6 +2100,11 @@ function advanced_danmaku_form_check() {
 		dt.pop_ajax_message('Comment is too long (less than 350 characters).', 'error');
 		error = true;
 	}
+
+	$('.advanced-danmaku-input.number-input').each(function() {
+		var num = parseFloat($(this).val());
+		if (isNaN(num)) $(this).val('0');
+	})
 
 	if ($('input[name="birth-position-X"]').val() === $('input[name="death-position-X"]').val()
 		&& $('input[name="birth-position-Y"]').val() === $('input[name="death-position-Y"]').val()
@@ -2365,7 +2428,7 @@ $(document).ready(function() {
 		if ($(this).hasClass('top')) {
 			$('#danmaku-type-input').val('Top');
 		} else if ($(this).hasClass('normal')) {
-			$('#danmaku-type-input').val('RightToLeft');
+			$('#danmaku-type-input').val('Scroll');
 		} else if ($(this).hasClass('bottom')) {
 			$('#danmaku-type-input').val('Bottom');
 		}
@@ -2940,6 +3003,30 @@ function send_report(form, type) {
 	  }
 	});
 	return false;
+}
+
+dt.get_player_inner_width = function() {
+	return player_inner_width;
+}
+
+dt.get_player_inner_height = function() {
+	return player_inner_height;
+}
+
+dt.get_player_inner_pos_left = function() {
+	return (player_width + player_inner_width)/2;
+}
+
+dt.get_player_inner_pos_right = function() {
+	return (player_width - player_inner_width)/2;
+}
+
+dt.get_player_inner_pos_top = function() {
+	return (player_height - player_inner_height)/2;
+}
+
+dt.get_player_inner_pos_bottom = function() {
+	return (player_height + player_inner_height)/2;
 }
 //end of the file
 } (dt, jQuery));
