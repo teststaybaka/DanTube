@@ -563,7 +563,7 @@
         </div>
         <div class="player-full-setting-line">
           <label>CSS customization</label>
-          <a class="help-link" title="Reference for advanced danmaku."></a>
+          <a class="help-link" title="Reference for advanced danmaku"></a>
         </div>
         <div class="player-full-setting-line">
           <textarea class="css-customize-input normal-input" name="danmaku-css" placeholder="e.g., color: rgb(255,255,255);" tabindex="1">color: rgb(255,255,255);&#13;&#10;font-size: 20px;&#13;&#10;text-shadow: 1px 0 1px rgb(0,0,0), -1px 0 1px rgb(0,0,0), 0 1px 1px rgb(0,0,0), 0 -1px 1px rgb(0,0,0);</textarea>
@@ -580,7 +580,7 @@
         </div>
         <div class="player-full-setting-line">
           <label>Copy all your subtitles/captions here.</label>
-          <a class="help-link" title="Subtitle format."></a>
+          <a class="help-link" title="Subtitle format"></a>
         </div>
         <div class="player-full-setting-line">
           <textarea class="subtitle-content-input normal-input" name="subtitles" placeholder="e.g., [10:23.08] This is a line." tabindex="1"></textarea>
@@ -597,11 +597,11 @@
           <label class="blue-link code-area-button">Clear</label>
         </div>
         <div class="player-full-setting-line">
-          <textarea class="code-danmaku-output normal-input" readonly="readonly"></textarea>
+          <textarea id="textarea-danmaku-output" class="code-danmaku-output normal-input" readonly="readonly"></textarea>
         </div>
         <div class="player-full-setting-line">
           <label>Script</label>
-          <a class="help-link" title="Script reference."></a>
+          <a class="help-link" title="Script reference"></a>
           <label class="blue-link code-area-button">Copy</label>
           <label class="blue-link code-area-button">Clear</label>
         </div>
@@ -651,6 +651,7 @@
     <div id="danmaku-list"></div>
   </div>
   <div class="danmaku-menu hidden">
+    <div class="right-click-entry" id="danmaku-copy-content">Copy content</div>
     <div class="right-click-entry" id="danmaku-reply">Reply to the sender</div>
     <div class="right-click-entry" id="danmaku-locate-it">Locate the danmaku</div>
     <div class="right-click-entry" id="danmaku-block-sender">Block the sender</div>

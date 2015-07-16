@@ -23,8 +23,11 @@ div.danmaku {
     z-index: 1;
     top: 0;
     left: 0;
-    position: relative;
     font-size: 0;
+}
+
+#player-container.fix {
+	position: fixed;
 }
 
 #player-container:-webkit-full-screen {
@@ -159,6 +162,10 @@ div.danmaku {
 #progress-controller-wrap {
 	-webkit-transition: bottom .15s; /* For Safari 3.1 to 6.0 */
     transition: bottom .15s;
+}
+
+#progress-controller-wrap.auto-hide {
+	position: absolute;
 }
 
 #progress-bar-background {
@@ -2177,6 +2184,7 @@ input.subtitle-danmaku-input {
 .right-click-entry.disabled {
 	color: rgb(200,200,200);
 	background-color: white;
+	cursor: default;
 }
 
 .right-click-separate-line {
@@ -2189,9 +2197,6 @@ input.subtitle-danmaku-input {
 	margin: 4px 0 4px 4px;
 	height: 15px;
 	width: 26px;
-	font-size: 14px;
-	font-family: Impact, Charcoal, sans-serif;
-	font-weight: bolder;
 	display: inline-block;
 	color: rgb(100,100,100);
 	background-color: rgb(245,245,245);
@@ -2226,7 +2231,7 @@ input.subtitle-danmaku-input {
 
 label.check-label.subtitle {
 	margin-top: 3px;
-	margin-right: 5px;
+	margin-left: 10px;
 	margin-bottom: 7px;
 }
 
@@ -2266,6 +2271,7 @@ label.check-label.subtitle {
 	padding: 10px 15px;
 	color: rgb(100,100,100);
 	text-align: left;
+	font-size: 0;
 }
 
 .popup-box.arrow:before, .popup-box.arrow:after {
@@ -2309,6 +2315,7 @@ textarea.report {
 	float: right;
 	font-weight: normal;
 	margin-left: 10px;
+	margin-top: 5px;
 }
 
 .report-label {

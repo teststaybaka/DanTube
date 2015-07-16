@@ -104,7 +104,7 @@ routes = [
     webapp2.Route(r'/search/playlist', views.SearchPlaylist, name="search_playlist"),
     webapp2.Route(r'/search/uper', views.SearchUPer, name="search_uper"),
 
-    webapp2.Route(r'/feedback', report.Feedback, name="feedback"),
+    webapp2.Route(r'/contact', report.Contact, name="contact"),
     webapp2.Route(r'/report/video/dt<video_id:\d+>', report.Report, name="report_video", handler_method="video"),
     webapp2.Route(r'/report/comment/dt<video_id:\d+>', report.Report, name="report_comment", handler_method="comment"),
     webapp2.Route(r'/report/danmaku/dt<video_id:\d+>', report.Report, name="report_danmaku", handler_method="danmaku"),

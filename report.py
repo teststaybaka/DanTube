@@ -1,7 +1,7 @@
 from views import *
 from watch import video_clip_exist_required_json, video_exist_required_json
 
-class Feedback(BaseHandler):
+class Contact(BaseHandler):
     @login_required
     def get(self):
         self.render('feedback', {'feedback_category': models.Feedback_Category})

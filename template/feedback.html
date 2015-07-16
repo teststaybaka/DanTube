@@ -7,14 +7,14 @@
 {% block feedback_active %}active{% endblock %}
 
 {% block topTitle %}
-<a class="top-title active" href="{{ uri_for('feedback') }}">
+<a class="top-title active" href="{{ uri_for('contact') }}">
     <div class="top-title-dot"></div>
-    Feedback
+    Contact
 </a>
 {% endblock %}
 
 {% block detail %}
-<form class="change" id="feedback-submission-form" method="POST" action="{{ uri_for('feedback') }}">
+<form class="change" id="feedback-submission-form" method="POST" action="{{ uri_for('contact') }}">
     <div class="input-line">
         <label class="form-label">Category:</label>
         <div class="list-select feedback">
@@ -38,7 +38,7 @@
         <div class="input-error" id="feedback-description-error">Please.</div>
     </div>
     <div>
-        <input class="save_change-button" type="submit" value="Send Feedback" />
+        <input class="save_change-button" type="submit" value="Contact Us" />
         <div id="change-applying"></div>
     </div>
 </form>
