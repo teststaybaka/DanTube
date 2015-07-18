@@ -94,6 +94,7 @@ routes = [
     webapp2.Route(r'/video/danmaku/dt<video_id:\d+>', watch.Danmaku, name="danmaku"),
     webapp2.Route(r'/video/advanced_danmaku/dt<video_id:\d+>', watch.Danmaku, name="advanced_danmaku", handler_method="post_advanced"),
     webapp2.Route(r'/video/subtitles_danmaku/dt<video_id:\d+>', watch.Subtitles, name="subtitles_danmaku"),
+    webapp2.Route(r'/video/code_danmaku/dt<video_id:\d+>', watch.Danmaku, name="code_danmaku", handler_method="post_code"),
     webapp2.Route(r'/video/like/dt<video_id:\d+>', watch.Like, name="like"),
     webapp2.Route(r'/video/hit/dt<video_id:\d+>', watch.Hit, name="hit"),
 

@@ -8,7 +8,6 @@
 <script src="/static/video.js" language="JavaScript" type="text/javascript"></script>
 <script type="text/javascript">
   var tag = document.createElement('script');
-
   tag.src = "https://www.youtube.com/iframe_api";
   var firstScriptTag = document.getElementsByTagName('script')[0];
   firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
@@ -566,7 +565,7 @@
           <a class="help-link" title="Reference for advanced danmaku"></a>
         </div>
         <div class="player-full-setting-line">
-          <textarea class="css-customize-input normal-input" name="danmaku-css" placeholder="e.g., color: rgb(255,255,255);" tabindex="1">color: rgb(255,255,255);&#13;&#10;font-size: 20px;&#13;&#10;text-shadow: 1px 0 1px rgb(0,0,0), -1px 0 1px rgb(0,0,0), 0 1px 1px rgb(0,0,0), 0 -1px 1px rgb(0,0,0);</textarea>
+          <textarea class="css-customize-input normal-input" name="danmaku-css" placeholder="e.g., color: rgb(255,255,255);" tabindex="1">color: rgb(255,255,255);&#10;font-size: 20px;&#10;text-shadow: 1px 0 1px rgb(0,0,0), -1px 0 1px rgb(0,0,0), 0 1px 1px rgb(0,0,0), 0 -1px 1px rgb(0,0,0);</textarea>
         </div>
         <div class="player-full-setting-line container">
           <input class="inline-button special special-danmaku-button" type="submit" value="Send">
@@ -590,11 +589,11 @@
           <input class="inline-button special-danmaku-button" type="button" value="Preview">
         </div>
       </form>
-      <form class="special-danmaku-setting code hidden">
+      <form class="special-danmaku-setting code hidden" id="code-danmaku-form">
         <div class="player-full-setting-line">
           <label>Output</label>
-          <label class="blue-link code-area-button">Copy</label>
-          <label class="blue-link code-area-button">Clear</label>
+          <label id="copy-output" class="blue-link code-area-button" data-clipboard-target="textarea-danmaku-output">Copy</label>
+          <label id="clear-output" class="blue-link code-area-button">Clear</label>
         </div>
         <div class="player-full-setting-line">
           <textarea id="textarea-danmaku-output" class="code-danmaku-output normal-input" readonly="readonly"></textarea>
@@ -602,11 +601,11 @@
         <div class="player-full-setting-line">
           <label>Script</label>
           <a class="help-link" title="Script reference"></a>
-          <label class="blue-link code-area-button">Copy</label>
-          <label class="blue-link code-area-button">Clear</label>
+          <label id="copy-code" class="blue-link code-area-button" data-clipboard-target="textarea-code-danmaku">Copy</label>
+          <label id="clear-code" class="blue-link code-area-button">Clear</label>
         </div>
         <div class="player-full-setting-line">
-          <textarea class="code-danmaku-content-input normal-input" name="subtitle-content" tabindex="1"></textarea>
+          <textarea id="textarea-code-danmaku" class="code-danmaku-content-input normal-input" name="content" tabindex="1"></textarea>
         </div>
         <div class="player-full-setting-line container">
           <input type="submit" class="inline-button special special-danmaku-button" value="Send">

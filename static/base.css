@@ -47,11 +47,11 @@ a {
     color: rgb(0,140,255) !important;
 }
 
-.blue-link:hover {
+.blue-link:hover, .blue-link.zeroclipboard-is-hover {
     color: rgb(255,177,108) !important;
 }
 
-.blue-link:active {
+.blue-link:active, .blue-link.zeroclipboard-is-active {
     color: rgb(0,50,200) !important;
 }
 

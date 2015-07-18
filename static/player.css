@@ -44,6 +44,7 @@ div.danmaku {
 	display: inline-block;
 	width: 640px;
 	position: relative;
+	vertical-align: top;
 }
 
 #player-background {
@@ -887,6 +888,7 @@ div.danmaku-type-text {
 	color: rgb(80,80,80);
 	position: relative;
 	display: inline-block;
+	vertical-align: top;
 }
 
 .danmaku-pool-info {
@@ -2088,6 +2090,7 @@ input.subtitle-danmaku-input {
 	width: 350px;
 	height: 120px;
 	resize: none;
+	color: rgb(100,100,100);
 }
 
 .code-danmaku-content-input {

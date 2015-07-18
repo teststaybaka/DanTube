@@ -53,6 +53,21 @@ var subtitles_longevity = 5;
 var subtitles_opacity = 1;
 var linked_elements = new dt.LinkedList();
 var subtitle_danmaku_container = {};
+var code_intervals = [];
+var code_timeouts = [];
+
+var oldSetInterval = window.setInterval;
+var oldSetTimeout = window.setTimeout;
+var setInterval = function(func, time) {
+	var temp = oldSetInterval(func, time);
+	code_intervals.push(temp);
+	return temp;
+}
+var setTimeout = function(func, time) {
+	var temp = oldSetTimeout(func, time);
+	code_timeouts.push(temp);
+	return temp;
+}
 
 function DanmakuTimeSequence(danmaku_list) {
 	this.danmaku_list = danmaku_list;
@@ -92,14 +107,21 @@ DanmakuTimeSequence.prototype.consume = function() {
 	this.danmaku_pointer += 1;
 }
 
+function player_seek(time) {
+	player.seekTo(time, true);
+	danmaku_all_clear();
+	subtitles_all_clear();
+	code_all_clear();
+}
+
 dt.onPlayerStateChange = function(event) {
 	if (event.data == YT.PlayerState.PLAYING) {
 		isPlaying = true;
 		if (danmakuVar == null) {
-			danmakuVar = setInterval(danmaku_update, 250);
+			danmakuVar = oldSetInterval(danmaku_update, 250);
 		}
 		if (progressVar == null) {
-			progressVar = setInterval(progress_update, 500);
+			progressVar = oldSetInterval(progress_update, 500);
 		}
 		if (switch_count_down != null) {
 			stop_switch_count_down();
@@ -141,7 +163,7 @@ function auto_switch_count_down(target_link) {
 		if (count_down > 0) {
 			$('#switch-count-span').text('Switch to the next part in '+count_down+' seconds.');
 	        count_down -= 1;
-	        switch_count_down = setTimeout(one_down, 1000);
+	        switch_count_down = oldSetTimeout(one_down, 1000);
     	} else {
     		window.location.href = target_link.attr('href')+"?autoplay=1";
     	}
@@ -150,7 +172,7 @@ function auto_switch_count_down(target_link) {
 	$('#switch-count-down').removeClass('hidden');
 	$('#switch-count-span').text('Switch to the next part in '+count_down+' seconds.');
 	count_down -= 1;
-	switch_count_down = setTimeout(one_down, 1000);
+	switch_count_down = oldSetTimeout(one_down, 1000);
 }
 
 function stop_switch_count_down() {
@@ -241,6 +263,7 @@ function danmaku_switch(evt) {
 		$(danmaku_controller).removeClass('on');
 		show_danmaku = false;
 		danmaku_all_clear();
+		code_all_clear();
 	} else {//off
 		$(danmaku_controller).addClass('on');
 		$(danmaku_controller).removeClass('off');
@@ -485,7 +508,7 @@ function progress_bar_stop(evt) {
 	var progress_bar = document.getElementById("progress-bar");
 	var rect = progress_bar.getBoundingClientRect();
 	var offset = evt.clientX - rect.left;
-	if (offset < 0) {
+	if (offset < 5) {
 		offset = 0;
 	}
 	if (offset > progress_bar.offsetWidth) {
@@ -494,15 +517,12 @@ function progress_bar_stop(evt) {
 	var num = offset/progress_bar.offsetWidth*player.getDuration();
 	var progress_number = document.getElementById("progress-number");
 	progress_number.lastChild.nodeValue = dt.secondsToTime(num)+"/"+progress_number.lastChild.nodeValue.split('/')[1];
-	player.seekTo(num, true);
 	document.onmousemove = null;
 	document.onmouseup = null;
 	document.onmouseout = null;
+	player_seek(num);
 
 	progressHold = false;
-
-	danmaku_all_clear();
-	subtitles_all_clear();
 }
 
 function buffer_update() {
@@ -512,6 +532,7 @@ function buffer_update() {
 	progress_buffered.style.width = buffered*100+'%';
 }
 
+var quality_reg = / \(.*\)/;
 function progress_update() {
 	// console.log('progress_update');
 	var progress_number = document.getElementById("progress-number");
@@ -524,8 +545,9 @@ function progress_update() {
 
 	var cur_quality = quality_youtube2local(player.getPlaybackQuality());
 	if (typeof cur_quality !== 'undefined') {
-		var quality = $('.list-selected.quality').text().replace(/ \(.*\)/g, '');
-		$('.list-selected.quality').text(quality+' ('+cur_quality+')');
+		var quality_ele = $('.list-selected.quality');
+		var quality = quality_ele.text().replace(quality_reg, '');
+		quality_ele.text(quality+' ('+cur_quality+')');
 	}
 }
 
@@ -571,15 +593,17 @@ function Danmaku_Animation(ele) {
 		ele.element.style.msTransform = "translate(-"+ele.posX+"px, "+ele.posY+"px)";
 		ele.element.style.transform = "translate(-"+ele.posX+"px, "+ele.posY+"px)";
 		requestAnimationFrame(subtitles_update);
+	} else if (type === 'Custom') {
+		requestAnimationFrame(custom_update);
 	}
 
 	function get_positionX(x) {
 		if (x >= 0) {
 			if (ele.ref_danmaku.relative) {
 				if (ele.ref_danmaku.as_percent) {
-					return x/100*player_inner_width + dt.get_player_inner_pos_right();
+					return x/100*player_inner_width + get_player_inner_pos_right();
 				} else {
-					return x + dt.get_player_inner_pos_right();
+					return x + get_player_inner_pos_right();
 				}
 			} else {
 				if (ele.ref_danmaku.as_percent) {
@@ -591,9 +615,9 @@ function Danmaku_Animation(ele) {
 		} else {
 			if (ele.ref_danmaku.relative) {
 				if (ele.ref_danmaku.as_percent) {
-					return x/100*player_inner_width + dt.get_player_inner_pos_left() + offsetWidth;
+					return x/100*player_inner_width + get_player_inner_pos_left() + offsetWidth;
 				} else {
-					return x + dt.get_player_inner_pos_left() + offsetWidth;
+					return x + get_player_inner_pos_left() + offsetWidth;
 				}
 			} else {
 				if (ele.ref_danmaku.as_percent) {
@@ -609,9 +633,9 @@ function Danmaku_Animation(ele) {
 		if (y >= 0) {
 			if (ele.ref_danmaku.relative) {
 				if (ele.ref_danmaku.as_percent) {
-					return y/100*player_inner_height + dt.get_player_inner_pos_top();
+					return y/100*player_inner_height + get_player_inner_pos_top();
 				} else {
-					return y + dt.get_player_inner_pos_top();
+					return y + get_player_inner_pos_top();
 				}
 			} else {
 				if (ele.ref_danmaku.as_percent) {
@@ -623,9 +647,9 @@ function Danmaku_Animation(ele) {
 		} else {
 			if (ele.ref_danmaku.relative) {
 				if (ele.ref_danmaku.as_percent) {
-					return y/100*player_inner_height + dt.get_player_inner_pos_bottom() + offsetHeight;
+					return y/100*player_inner_height + get_player_inner_pos_bottom() + offsetHeight;
 				} else {
-					return y + dt.get_player_inner_pos_bottom() + offsetHeight;
+					return y + get_player_inner_pos_bottom() + offsetHeight;
 				}
 			} else {
 				if (ele.ref_danmaku.as_percent) {
@@ -742,6 +766,23 @@ function Danmaku_Animation(ele) {
 			for (var j = ele.posY; j < ele.element.offsetHeight + ele.posY; j++) {
 				occupation[j] -= 1;
 			}
+			ele.element.parentNode.removeChild(ele.element);
+			linked_elements.remove(ele);
+		}
+	}
+
+	function custom_update() {
+		var curTime = Date.now();
+		var deltaTime = curTime - lTime;
+		lTime = curTime;
+		var isOver = false;
+		if (isPlaying) {
+			isOver = ele.ref_danmaku.callback(deltaTime/1000);
+		}
+
+		if (!ele.clear_request && !isOver) {
+			requestAnimationFrame(custom_update);
+		} else {
 			ele.element.parentNode.removeChild(ele.element);
 			linked_elements.remove(ele);
 		}
@@ -1003,6 +1044,12 @@ function danmaku_update() {
 		var i = 0;
 		var ref_danmaku;
 		while (ref_danmaku = normal_danmaku_sequence.next()) {
+			if (ref_danmaku.type === 'Code') {
+				normal_danmaku_sequence.consume();
+				execute_code_danmaku(dt.unescapeHTML(ref_danmaku.content), null, null, null, null, null, null, null, null, null);
+				continue;
+			}
+
 			while (!danmaku_elements[i].idle && i < max_danmaku) i++;
 			if (i >= max_danmaku) break;
 
@@ -1117,7 +1164,6 @@ function danmaku_update() {
 				for (var j = ele.posY; j < offsetHeight + ele.posY; j++) {
 					occupation[j] += 1;
 				}
-
 				Danmaku_Animation(ele);
 			}
 		}
@@ -1129,7 +1175,7 @@ dt.onPlayerReady = function(event) {
 	player = dt.player;
 	var progress_number = document.getElementById("progress-number");
 	progress_number.lastChild.nodeValue = "00:00"+"/"+dt.secondsToTime(player.getDuration());
-	setInterval(buffer_update, 500);
+	oldSetInterval(buffer_update, 500);
 
 	var volume = dt.getCookie('player_volume');
 	if (!volume) {
@@ -1184,15 +1230,11 @@ dt.onPlayerReady = function(event) {
 
 	$('#backward-button').click(function() {
 		var time = Math.max(player.getCurrentTime() - 3, 0);
-		player.seekTo(time, true);
-		danmaku_all_clear();
-		subtitles_all_clear();
+		player_seek(time);
 	});
 	$('#forward-button').click(function() {
 		var time = Math.min(player.getCurrentTime() + 3, player.getDuration());
-		player.seekTo(time, true);
-		danmaku_all_clear();
-		subtitles_all_clear();
+		player_seek(time);
 	});
 
 	var volume_button = document.getElementById("volume-switch");
@@ -1707,7 +1749,7 @@ dt.onPlayerReady = function(event) {
 			number_input.val(num);
 	    }
 
-    	var number_change_time = setInterval(inc_dec_number, 100);
+    	var number_change_time = oldSetInterval(inc_dec_number, 100);
     	inc_dec_number();
 
     	target.bind('mouseup mouseleave', function() {
@@ -1757,9 +1799,7 @@ dt.onPlayerReady = function(event) {
 		}
 		$(document).click(hide_menu);
 	});
-	{
-		var client = new ZeroClipboard(document.getElementById("danmaku-copy-content"));
-	}
+	new ZeroClipboard(document.getElementById("danmaku-copy-content"));
 	$('#danmaku-block-sender').click(function(e) {
 		if ($(this).hasClass('disabled')) return;
 		var block_type = 'User';
@@ -1959,8 +1999,7 @@ dt.onPlayerReady = function(event) {
 				}
 			}
 		}
-		var subtitle_danmaku_list = new DanmakuTimeSequence(subtitles_list);
-		subtitle_danmaku_container[-1] = subtitle_danmaku_list;
+		subtitle_danmaku_container[-1] = new DanmakuTimeSequence(subtitles_list);
 		var checkbox = $('.checkbox-selection.subtitles');
 		if (checkbox.hasClass('off')) {
 			checkbox.trigger('click');
@@ -1984,8 +2023,6 @@ dt.onPlayerReady = function(event) {
 			success: function(result) {
 				if(!result.error) {
 					dt.pop_ajax_message('Subtitles have been submitted. Please wait for approval by the UPer.', 'success');
-					$('textarea[name="subtitles"]').val('');
-					$('input[name="name"]').val('');
 				} else {
 					dt.pop_ajax_message(result.message, 'error');
 				}
@@ -2043,6 +2080,61 @@ dt.onPlayerReady = function(event) {
         }
 	});
 
+	new ZeroClipboard(document.getElementById("copy-code"));
+	new ZeroClipboard(document.getElementById("copy-output"));
+	$('#clear-code').click(function() {
+		$('#textarea-code-danmaku').val('');
+	});
+	$('#clear-output').click(function() {
+		$('#textarea-danmaku-output').val('');
+	});
+	$('#code-danmaku-form input[type="button"]').click(function() {
+		var error = code_danmaku_form_check();
+		if (error) return;
+
+		var code = $('#textarea-code-danmaku').val().trim();
+		dt.pop_ajax_message('Previewing', 'success');
+		execute_code_danmaku(code, null, null, null, null, null, null, null, null, null);
+	});
+	$('#code-danmaku-form').submit(function() {
+		var button = document.querySelector('#code-danmaku-form .special-danmaku-button.special');
+		button.disabled = true;
+
+		var error = code_danmaku_form_check();
+		if (error) {
+			button.disabled = false;
+			return false;
+		}
+
+		var data = $(this).serialize();
+		if ($('#use-cur-timestamp').is(':checked')) {
+			data += '&'+$.param({timestamp: player.getCurrentTime()});
+		} else {
+			data += '&'+$.param({timestamp: $('#new-timestamp').val()});
+		}
+
+		$.ajax({
+			type: "POST",
+			url: '/video/code_danmaku/' + url_suffix,
+			data: data,
+			success: function(result) {
+				if(!result.error) {
+					dt.pop_ajax_message('Program has been submitted. Please wait for approval by the UPer.', 'success');
+				} else {
+					dt.pop_ajax_message(result.message, 'error');
+				}
+				button.disabled = false;
+			},
+			error: function (xhr, ajaxOptions, thrownError) {
+				console.log(xhr.status);
+				console.log(thrownError);
+				dt.pop_ajax_message(xhr.status+' '+thrownError, 'error');
+				button.disabled = false;
+			}
+		});
+		return false;
+	});
+
 	$(document).keydown(function(e) {
 		// console.log(e.keyCode)
 		if (e.keyCode == 27) {
@@ -2052,7 +2144,6 @@ dt.onPlayerReady = function(event) {
 				$('#page-wide').removeClass('on').addClass('off');
 				$('#player-container').removeClass('fix');
 				$(window).off('resize', page_wide_player);
-
 				widescreen_change();
 			}
 		}
@@ -2060,12 +2151,25 @@ dt.onPlayerReady = function(event) {
 
 	var timestamp = parseFloat(dt.getParameterByName('timestamp'));
 	if (!isNaN(timestamp)) {
-		player.seekTo(timestamp - 0.05, true);
+		player_seek(timestamp - 0.05);
 	}
 	var autoplay = dt.getParameterByName('autoplay');
 	if (autoplay === '1') {
 		player.playVideo();
 	}
+}
+
+function code_danmaku_form_check() {
+	var error = false;
+	var code = $('#textarea-code-danmaku').val().trim();
+	if (!code) {
+		dt.pop_ajax_message('Please write some code.');
+		error = true;
+	} else if (/document|window|location|oldSetInterval|oldSetTimeout|XMLHttpRequest|XDomainRequest|jQuery|\$/.test(code)) {
+		dt.pop_ajax_message('Code contains invalid keywords. Please check the document.', 'error');
+		error = true;
+	}
+	return error;
 }
 
 function subtitles_danmaku_form_check() {
@@ -2464,7 +2568,7 @@ $(document).ready(function() {
 		url: '/video/danmaku/' + url_suffix,
 		success: function(result) {
 			if(!result.error) {
-				console.log(result.danmaku_list.length);
+				console.log('Loaded danmaku: '+result.danmaku_list.length);
 				$('#total-danmaku-span').text(dt.numberWithCommas(result.danmaku_list.length));
 				for(var i = 0; i < result.danmaku_list.length; i++) {
 					result.danmaku_list[i].blocked = false;
@@ -2511,9 +2615,7 @@ $(document).ready(function() {
 		var block_content = danmaku_pool_list[$('.danmaku-pool-menu').attr('data-index')].creator.toString();
 		add_block_rule(block_type, block_content);
 	});
-	{
-		var client = new ZeroClipboard(document.getElementById("danmaku-pool-copy-content"));
-	}
+	new ZeroClipboard(document.getElementById("danmaku-pool-copy-content"));
 	$('#danmaku-pool-check-all-sent').click(function() {
 		$('#danmaku-list-all').empty();
 		var listNode = $('#danmaku-list-all')[0];
@@ -2819,6 +2921,24 @@ $(document).ready(function() {
 			$('.popup-box').addClass('hidden');
 		}
 	});
+
+	if (typeof console == "object" && console.log) {
+		var oldLog = console.log;
+		console.log = function (message) {
+			var textarea_output = document.getElementById('textarea-danmaku-output');
+		    textarea_output.value += message+'\n';
+		    textarea_output.scrollTop = textarea_output.scrollHeight;
+		    oldLog.apply(console, arguments);
+		};
+	} else {
+		console = {
+			log: function(message) {
+				var textarea_output = document.getElementById('textarea-danmaku-output');
+			    textarea_output.value += message+'\n';
+			    textarea_output.scrollTop = textarea_output.scrollHeight;
+			}
+		}
+	}
 });
 
 function update_comments(page, video_id) {
@@ -3019,28 +3139,58 @@ function send_report(form, type) {
 	return false;
 }
 
-dt.get_player_inner_width = function() {
-	return player_inner_width;
-}
-
-dt.get_player_inner_height = function() {
-	return player_inner_height;
-}
-
-dt.get_player_inner_pos_left = function() {
+function get_player_inner_pos_left() {
 	return (player_width + player_inner_width)/2;
 }
 
-dt.get_player_inner_pos_right = function() {
+function get_player_inner_pos_right() {
 	return (player_width - player_inner_width)/2;
 }
 
-dt.get_player_inner_pos_top = function() {
+function get_player_inner_pos_top() {
 	return (player_height - player_inner_height)/2;
 }
 
-dt.get_player_inner_pos_bottom = function() {
+function get_player_inner_pos_bottom() {
 	return (player_height + player_inner_height)/2;
+}
+
+function create_danmaku_element(content, update_callback) {
+	if (typeof update_callback !== 'function') throw {name: 'TypeError', message: 'update_callback must be a function'};
+	var new_danmaku = {
+		content: content,
+		callback: update_callback,
+		type: 'Custom',
+	}
+	var bul = document.createElement('div');
+	bul.setAttribute('class', 'danmaku');
+	bul.innerHTML = content;
+	var player_background = document.getElementById('player-background');
+	player_background.appendChild(bul);
+
+	var new_danmaku_element = {prev: null, next: null, clear_request: false, element: bul, ref_danmaku: new_danmaku};
+	linked_elements.push(new_danmaku_element);
+	Danmaku_Animation(new_danmaku_element);
+	return bul;
+}
+
+function code_all_clear() {
+	for (var i = 0; i < code_intervals; i++) {
+		clearInterval(code_intervals[i]);
+	}
+	for (var i = 0; i < code_timeouts; i++) {
+		clearTimeout(code_timeouts[i]);
+	}
+	code_intervals = [];
+	code_timeouts = [];
+}
+
+function execute_code_danmaku(code, document, window, jQuery, $, location, oldSetInterval, oldSetTimeout, XMLHttpRequest, XDomainRequest) {
+	try {
+		eval(code);
+	} catch (err) {
+		console.log(err.name+': '+err.message);
+	}
 }
 //end of the file
 } (dt, jQuery));

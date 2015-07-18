@@ -405,6 +405,8 @@ class VideoClip(ndb.Model):
   advanced_danmaku_pool = ndb.KeyProperty(kind='AdvancedDanmakuPool', indexed=False)
   subtitle_names = ndb.StringProperty(repeated=True, indexed=False)
   subtitle_danmaku_pools = ndb.KeyProperty(kind='SubtitleDanmakuPool', repeated=True, indexed=False)
+  code_danmaku_num = ndb.IntegerProperty(required=True, default=0, indexed=False)
+  code_danmaku_pool = ndb.KeyProperty(kind='CodeDanmakuPool', indexed=False)
 
   @staticmethod
   def parse_url(raw_url):
@@ -820,6 +822,13 @@ class AdvancedDanmaku(ndb.Model):
   creator = ndb.KeyProperty(kind='User', required=True, indexed=False)
   created = ndb.DateTimeProperty(auto_now_add=True, indexed=False)
 
+class CodeDanmaku(ndb.Model):
+  index = ndb.IntegerProperty(required=True, default=0, indexed=False)
+  timestamp = ndb.FloatProperty(required=True, indexed=False)
+  content = ndb.TextProperty(required=True, indexed=False)
+  creator = ndb.KeyProperty(kind='User', required=True, indexed=False)
+  created = ndb.DateTimeProperty(auto_now_add=True, indexed=False)
+
 class DanmakuPool(ndb.Model):
   counter = ndb.IntegerProperty(required=True, default=0, indexed=False)
   danmaku_list = ndb.StructuredProperty(Danmaku, repeated=True, indexed=False)
@@ -834,8 +843,12 @@ class SubtitleDanmakuPool(ndb.Model):
   creator = ndb.KeyProperty(kind='User', required=True, indexed=False)
   created = ndb.DateTimeProperty(auto_now_add=True, indexed=False)
 
+class CodeDanmakuPool(ndb.Model):
+  counter = ndb.IntegerProperty(required=True, default=0, indexed=False)
+  danmaku_list = ndb.StructuredProperty(CodeDanmaku, repeated=True, indexed=False)
+
 class Comment(ndb.Model):
-  creator = ndb.KeyProperty(kind='User', required=True, indexed=False) # add an Activity class to record it
+  creator = ndb.KeyProperty(kind='User', required=True, indexed=False)
   content = ndb.TextProperty(required=True, indexed=False)
   created = ndb.DateTimeProperty(auto_now_add=True)
   floorth = ndb.IntegerProperty(required=True, default=0, indexed=False)
@@ -928,7 +941,7 @@ class MentionedComment(ndb.Model):
   video_title = ndb.StringProperty(required=True, default='', indexed=False)
   clip_index = ndb.IntegerProperty(indexed=False)
 
-Activity_Types = Comment_Types + ['upload', 'edit']
+Activity_Types = Comment_Types + ['upload', 'edit', 'subtitles', 'code']
 class ActivityRecord(ndb.Model):
   creator = ndb.KeyProperty(kind='User', required=True)
   activity_type = ndb.StringProperty(required=True, choices=Activity_Types)
@@ -952,7 +965,7 @@ class Feedback(ndb.Model):
   sender_nickname = ndb.StringProperty(required=True, indexed=False)
   sender = ndb.KeyProperty(kind='User', required=True, indexed=False)
 
-Video_Issues = ['Graphic sexual activity', 'Nudity', 'Animal abuse', 'Promotes hatred', 'Promotes terrorism', 'Drug abuse', 'Self injury', 'Child abuse', 'Misleading thumbnail', 'Misleading text', 'Scams/fraud', 'Infringe copyrights', 'Suspicious code danmaku', 'Others']
+Video_Issues = ['Graphic sexual activity', 'Nudity', 'Animal abuse', 'Promotes hatred', 'Promotes terrorism', 'Drug abuse', 'Self injury', 'Child abuse', 'Misleading thumbnail', 'Misleading text', 'Scams/fraud', 'Infringe copyrights', 'Others']
 class ReportVideo(ndb.Model):
   video = ndb.KeyProperty(kind='Video', required=True, indexed=False)
   video_title = ndb.StringProperty(required=True, indexed=False)
@@ -980,7 +993,7 @@ class ReportComment(ndb.Model):
   floorth = ndb.IntegerProperty(indexed=False)
   inner_floorth = ndb.IntegerProperty(indexed=False)
 
-Danmaku_Issues = ['Blocking screen', 'Misleading information'] + Comment_Issues
+Danmaku_Issues = ['Blocking screen', 'Misleading information', 'Suspicious code'] + Comment_Issues
 class ReportDanmaku(ndb.Model):
   video = ndb.KeyProperty(kind='Video', required=True, indexed=False)
   video_title = ndb.StringProperty(required=True, indexed=False)

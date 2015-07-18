@@ -3,9 +3,12 @@ from views import *
 import math
 
 HOT_SCORE_PER_HIT = 5
-HOT_SCORE_PER_DANMAKU = 10
-HOT_SCORE_PER_COMMENT = 15
-HOT_SCORE_PER_LIKE = 5
+HOT_SCORE_PER_DANMAKU = 5
+HOT_SCORE_PER_COMMENT = 10
+HOT_SCORE_PER_LIKE = 10
+
+SUBTITLE_REG = re.compile(r'^\[\d+:\d{1,2}.\d{1,2}\].*$')
+CODE_REG = re.compile(r'.*(document|window|jQuery|\$).*')
 
 def video_clip_exist_required(handler):
     def check_exist(self, video_id):
@@ -357,6 +360,13 @@ class Danmaku(BaseHandler):
             advanced_danmaku_num += len(advanced_danmaku_pool.danmaku_list)
             danmaku_list += [Danmaku.format_advanced_danmaku(danmaku, advanced_danmaku_pool) for danmaku in advanced_danmaku_pool.danmaku_list]
         clip.advanced_danmaku_num = advanced_danmaku_num
+
+        code_danmaku_num = 0
+        if clip.code_danmaku_pool:
+            code_danmaku_pool = clip.code_danmaku_pool.get()
+            code_danmaku_num += len(code_danmaku_pool.danmaku_list)
+            danmaku_list += [Danmaku.format_code_danmaku(danmaku, code_danmaku_pool) for danmaku in code_danmaku_pool.danmaku_list]
+        clip.code_danmaku_num = code_danmaku_num
         clip.put()
 
         self.response.out.write(json.dumps({
@@ -600,12 +610,10 @@ class Danmaku(BaseHandler):
         danmaku = models.AdvancedDanmaku(index=advanced_danmaku_pool.counter, timestamp=timestamp, content=content, birth_x=birth_pos[0], birth_y=birth_pos[1], death_x=death_pos[0], death_y=death_pos[1], speed_x=speed[0], speed_y=speed[1], longevity=longevity, css=custom_css, as_percent=as_percent, relative=relative, creator=user.key)
         advanced_danmaku_pool.danmaku_list.append(danmaku)
         advanced_danmaku_pool.counter += 1
-        video.update_hot_score(HOT_SCORE_PER_DANMAKU)
-        video.last_updated = datetime.now()
         danmaku_record = models.ActivityRecord(creator=user.key, activity_type='danmaku', timestamp=danmaku.timestamp, content=danmaku.content, video=video.key, video_title=video.title, clip_index=clip_index, public=False)
         user.comments_num += 1
 
-        ndb.put_multi([advanced_danmaku_pool, video, danmaku_record, user])
+        ndb.put_multi([advanced_danmaku_pool, danmaku_record, user])
         if not clip.advanced_danmaku_pool:
             clip.advanced_danmaku_pool = advanced_danmaku_pool.key
             clip.put()
@@ -634,6 +642,62 @@ class Danmaku(BaseHandler):
                     'type': 'Advanced',
                     'pool_id': danmaku_pool.key.id(),
                     'index': advanced_danmaku.index,
+                }
+
+    @login_required_json
+    @video_clip_exist_required_json
+    def post_code(self, video, clip_index):
+        user = self.user
+        try:
+            timestamp = float(self.request.get('timestamp'))
+        except Exception, e:
+            self.response.out.write(json.dumps({
+                'error': True,
+                'message': 'Invalid timestamp.',
+            }))
+
+        content = self.request.get('content').strip()
+        if not content:
+            self.response.out.write(json.dumps({
+                'error': True,
+                'message': 'Can not be empty.',
+            }))
+            return
+        content = cgi.escape(content)
+
+        clip = video.video_clips[clip_index-1].get()
+        if not clip.code_danmaku_pool:
+            code_danmaku_pool = models.CodeDanmakuPool()
+        else:
+            code_danmaku_pool = clipd.code_danmaku_pool.get()
+
+        danmaku = models.CodeDanmaku(index=code_danmaku_pool.counter, timestamp=timestamp, content=content, creator=user.key)
+        code_danmaku_pool.danmaku_list.append(danmaku)
+        code_danmaku_pool.counter += 1
+        danmaku_record = models.ActivityRecord(creator=user.key, activity_type='code', timestamp=danmaku.timestamp, content=danmaku.content, video=video.key, video_title=video.title, clip_index=clip_index, public=False)
+        user.comments_num += 1
+
+        ndb.put_multi([code_danmaku_pool, danmaku_record, user])
+        if not clip.code_danmaku_pool:
+            clip.code_danmaku_pool = code_danmaku_pool.key
+            clip.put()
+
+        self.response.out.write(json.dumps({
+            'error': False,
+        }))
+
+    @staticmethod
+    def format_code_danmaku(code_danmaku, danmaku_pool):
+        return {
+                    'content': code_danmaku.content,
+                    'timestamp': code_danmaku.timestamp,
+                    'created': code_danmaku.created.strftime("%m-%d %H:%M"),
+                    'created_year': code_danmaku.created.strftime("%Y-%m-%d %H:%M"),
+                    'created_seconds': models.time_to_seconds(code_danmaku.created),
+                    'creator': code_danmaku.creator.id(),
+                    'type': 'Code',
+                    'pool_id': danmaku_pool.key.id(),
+                    'index': code_danmaku.index,
                 }
 
 class Subtitles(BaseHandler):
@@ -692,10 +756,9 @@ class Subtitles(BaseHandler):
             return
         subtitles = cgi.escape(subtitles)
 
-        reg = re.compile(r'^\[\d+:\d{1,2}.\d{1,2}\].*$')
         lines = subtitles.split('\n')
         for i in xrange(0, len(lines)):
-            if not (lines[i] and reg.match(lines[i])):
+            if not (lines[i] and SUBTITLE_REG.match(lines[i])):
                 self.response.out.write(json.dumps({
                     'error': True,
                     'message': 'Subtitles format error.',
@@ -707,7 +770,9 @@ class Subtitles(BaseHandler):
         subtitle_danmaku_pool.put()
         clip.subtitle_names.append(name)
         clip.subtitle_danmaku_pools.append(subtitle_danmaku_pool.key)
-        clip.put()
+        danmaku_record = models.ActivityRecord(creator=user.key, activity_type='subtitles', content=subtitles, video=video.key, video_title=video.title, clip_index=clip_index, public=False)
+        user.comments_num += 1
+        ndb.put_multi([clip, danmaku_record, user])
 
         self.response.out.write(json.dumps({
             'error': False,
