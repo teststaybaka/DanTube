@@ -296,7 +296,7 @@
             <div class="input-layon-block hidden" title="Replying">
               <div class="layon-close"></div>
             </div>
-            <input id="danmaku-input" type="text" placeholder="{% if not user.is_auth %}Please sign in{% endif %}" name="content">
+            <input id="danmaku-input" type="text" placeholder="{% if not user.is_auth %}Please sign in{% endif %}" name="content" tabindex="2">
           </div>
           <input id="fire-button" type="submit" value="Fire!" title="Burning Love!">
         </form>
@@ -550,13 +550,13 @@
         <div class="player-full-setting-line">
           <label class="advanced-danmaku-label">Start time (sec)</label>
           <div class="advanced-danmaku-input-box">
-            <input class="normal-input advanced-danmaku-input number-input" id="new-timestamp" type="text" value="0" data-old="0" tabindex="1">
+            <input class="normal-input advanced-danmaku-input number-input" id="advanced-timestamp" type="text" value="0" data-old="0" tabindex="1">
             <div class="number-input-arrow up"></div>
             <div class="number-input-arrow down"></div>
           </div>
           <label class="check-label">
             <div class="pseudo-checkbox checked"></div>
-            <input type="checkbox" class="hidden" id="use-cur-timestamp" tabindex="1" checked="checked">
+            <input type="checkbox" class="hidden" id="advanced-use-cur-timestamp" tabindex="1" checked="checked">
             <span>Use current timestamp</span>
           </label>
         </div>
@@ -606,6 +606,19 @@
         </div>
         <div class="player-full-setting-line">
           <textarea id="textarea-code-danmaku" class="code-danmaku-content-input normal-input" name="content" tabindex="1"></textarea>
+        </div>
+        <div class="player-full-setting-line">
+          <label class="advanced-danmaku-label">Execute at (sec)</label>
+          <div class="advanced-danmaku-input-box">
+            <input class="normal-input advanced-danmaku-input number-input" id="code-timestamp" type="text" value="0" data-old="0" tabindex="1">
+            <div class="number-input-arrow up"></div>
+            <div class="number-input-arrow down"></div>
+          </div>
+          <label class="check-label">
+            <div class="pseudo-checkbox checked"></div>
+            <input type="checkbox" class="hidden" id="code-use-cur-timestamp" tabindex="1" checked="checked">
+            <span>Use current timestamp</span>
+          </label>
         </div>
         <div class="player-full-setting-line container">
           <input type="submit" class="inline-button special special-danmaku-button" value="Send">
@@ -691,12 +704,12 @@
   <form id="user-comment-form">
     <img class="comment-img" src="{% if user.is_auth %}{{ user.avatar_url_small }}{% else %}/static/emoticons_img/default_avatar1.png{% endif %}">
     <div class="write-comment-block">
-      <textarea class="normal-input" name="content" id="comment-textarea" placeholder="{% if user.is_auth %}Share what you think{% else %}Please sign in{% endif %}" tabindex="1"></textarea>
+      <textarea class="normal-input" name="content" id="comment-textarea" placeholder="{% if user.is_auth %}Share what you think{% else %}Please sign in{% endif %}" tabindex="2"></textarea>
       <div class="container">
         <div class="emoticons-select"></div>
         <label class="check-label comment-share">
             <div class="pseudo-checkbox checked"></div>
-            <input type="checkbox" class="hidden" name="allow-post-comment" tabindex="1" checked="checked">
+            <input type="checkbox" class="hidden" name="allow-post-comment" checked="checked">
             <span>Share with subscribers.</span>
         </label>
         <input class="inline-button special post" value="Post" type="submit">
@@ -707,12 +720,12 @@
     <img class="comment-img" src="{% if user.is_auth %}{{ user.avatar_url_small }}{% else %}/static/emoticons_img/default_avatar1.png{% endif %}">
     <div class="write-comment-block">
       <input type="text" class="hidden" id="comment-id-input" name="comment_id" value="">
-      <textarea class="normal-input" name="content" id="reply-textarea" placeholder="{% if user.is_auth %}Share what you think{% else %}Please sign in{% endif %}" tabindex="1"></textarea>
+      <textarea class="normal-input" name="content" id="reply-textarea" placeholder="{% if user.is_auth %}Share what you think{% else %}Please sign in{% endif %}" tabindex="2"></textarea>
       <div class="container">
         <div class="emoticons-select"></div>
         <label class="check-label comment-share">
             <div class="pseudo-checkbox checked"></div>
-            <input type="checkbox" class="hidden" name="allow-post-reply" tabindex="1" checked="checked">
+            <input type="checkbox" class="hidden" name="allow-post-reply" checked="checked">
             <span>Share with subscribers.</span>
         </label>
         <input class="inline-button special post" value="Post" type="submit">

@@ -725,7 +725,7 @@ class ManageDanmaku(BaseHandler):
                 'danmaku_num': clip.danmaku_num,
                 'advanced_danmaku_num': clip.advanced_danmaku_num,
                 'subtitles_num': len(clip.subtitle_danmaku_pools),
-                'code_num': 0,
+                'code_num': clip.code_danmaku_num,
             })
         self.render('manage_danmaku', context)
 
@@ -755,7 +755,7 @@ class ManageDanmakuDetail(BaseHandler):
             'advanced_danmaku_pool': clip.advanced_danmaku_pool,
             'subtitles_num': len(clip.subtitle_danmaku_pools),
             'subtitle_names': clip.subtitle_names,
-            'code_num': 0,
+            'code_danmaku_pool': clip.code_danmaku_pool,
         }
         self.render('manage_danmaku_detail', context)
 
@@ -783,8 +783,10 @@ class ManageDanmakuDetail(BaseHandler):
                     'subtitles_list': Subtitles.format_subtitles(subtitle_danmaku_pool)
                 }))
             elif pool_type == 'code':
+                code_danmaku_pool = clip.code_danmaku_pool.get()
                 self.response.out.write(json.dumps({
                     'error': False,
+                    'danmaku_list': [Danmaku.format_code_danmaku(danmaku, code_danmaku_pool) for danmaku in code_danmaku_pool.danmaku_list]
                 }))
         except IndexError:
             self.response.out.write(json.dumps({
@@ -817,6 +819,8 @@ class ManageDanmakuDetail(BaseHandler):
                     'error': False,
                 }))
             elif pool_type == 'code':
+                clip.code_danmaku_pool.delete()
+                clip.code_danmaku_pool = None
                 self.response.out.write(json.dumps({
                     'error': False,
                 }))
@@ -845,11 +849,14 @@ class ManageDanmakuDetail(BaseHandler):
             danmaku_pool = clip.danmaku_pools[pool_index-1].get()
         elif pool_type == 'advanced':
             danmaku_pool = clip.advanced_danmaku_pool.get()
+        elif pool_type == 'code':
+            danmaku_pool = clip.code_danmaku_pool.get()
         else:
             self.response.out.write(json.dumps({
                 'error': True,
                 'message': 'Invalid type.'
             }))
+            return
 
         try:
             for index in idxs:

@@ -100,6 +100,18 @@ function load_danmaku_list(option) {
                         list_block.append(render_subtitles_entry(subtitles_list[i], result.subtitles_list.created_year));
                     }
                     $('.danmaku-num-label').text(subtitles_list.length);
+                } else if (option.attr('data-type') === 'code') {
+                    list_block.append('<div class="pool-detail-entry label-line">\
+                        <div class="detail-label timestamp">Timestamp</div>\
+                        <div class="detail-label">Type</div>\
+                        <div class="detail-label content code">Content</div>\
+                        <div class="detail-label created">Created</div>\
+                        <div class="single-checkbox inline all"></div>\
+                    </div>');
+                    for (var i = 0; i < result.danmaku_list.length; i++) {
+                        list_block.append(render_code_entry(result.danmaku_list[i], i));
+                    }
+                    $('.danmaku-num-label').text(result.danmaku_list.length);
                 }
             } else {
                 list_block.append('<div class="content-entry none">Load error.</div>');
@@ -146,6 +158,17 @@ function render_subtitles_entry(entry, created_year) {
                 <div class="detail-label">Subtitles</div>\
                 <div class="detail-label content subtitles" title="'+entry.content+'">'+entry.content+'</div>\
                 <div class="detail-label created">'+created_year+'</div>\
+            </div>'
+    return div;
+}
+
+function render_code_entry(entry, index) {
+    div = '<div class="pool-detail-entry">\
+                <div class="detail-label timestamp">'+dt.millisecondsToTime(entry.timestamp)+'</div>\
+                <div class="detail-label">Code</div>\
+                <div class="detail-label content code" title="'+entry.content+'">'+entry.content+'</div>\
+                <div class="detail-label created">'+entry.created_year+'</div>\
+                <div class="single-checkbox inline" data-index="'+index+'"></div>\
             </div>'
     return div;
 }

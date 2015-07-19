@@ -165,8 +165,6 @@ div.no-history {
 .comment-content {
     color: rgb(50,50,50);
     max-width: 100%;
-    max-height: 64px;
     white-space: pre-wrap;
     word-wrap: break-word;
-    overflow: hidden;
 }

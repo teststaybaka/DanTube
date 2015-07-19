@@ -965,7 +965,7 @@ class Feedback(ndb.Model):
   sender_nickname = ndb.StringProperty(required=True, indexed=False)
   sender = ndb.KeyProperty(kind='User', required=True, indexed=False)
 
-Video_Issues = ['Graphic sexual activity', 'Nudity', 'Animal abuse', 'Promotes hatred', 'Promotes terrorism', 'Drug abuse', 'Self injury', 'Child abuse', 'Misleading thumbnail', 'Misleading text', 'Scams/fraud', 'Infringe copyrights', 'Others']
+Video_Issues = ['Graphic sexual activity', 'Nudity', 'Animal abuse', 'Promotes hatred', 'Promotes terrorism', 'Drug abuse', 'Self injury', 'Child abuse', 'Misleading thumbnail', 'Misleading text', 'Scams/fraud', 'Infringe copyrights', 'Suspicious script', 'Others']
 class ReportVideo(ndb.Model):
   video = ndb.KeyProperty(kind='Video', required=True, indexed=False)
   video_title = ndb.StringProperty(required=True, indexed=False)
@@ -993,7 +993,7 @@ class ReportComment(ndb.Model):
   floorth = ndb.IntegerProperty(indexed=False)
   inner_floorth = ndb.IntegerProperty(indexed=False)
 
-Danmaku_Issues = ['Blocking screen', 'Misleading information', 'Suspicious code'] + Comment_Issues
+Danmaku_Issues = ['Blocking screen', 'Misleading information', 'Suspicious code danmaku'] + Comment_Issues
 class ReportDanmaku(ndb.Model):
   video = ndb.KeyProperty(kind='Video', required=True, indexed=False)
   video_title = ndb.StringProperty(required=True, indexed=False)

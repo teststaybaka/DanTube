@@ -8,7 +8,7 @@ HOT_SCORE_PER_COMMENT = 10
 HOT_SCORE_PER_LIKE = 10
 
 SUBTITLE_REG = re.compile(r'^\[\d+:\d{1,2}.\d{1,2}\].*$')
-CODE_REG = re.compile(r'.*(document|window|jQuery|\$).*')
+CODE_REG = re.compile(r'(^|.*[^a-zA-Z_$])(document|window|location|oldSetInterval|oldSetTimeout|XMLHttpRequest|XDomainRequest|jQuery|\$)([^a-zA-Z_$].*|$)')
 
 def video_clip_exist_required(handler):
     def check_exist(self, video_id):
@@ -663,13 +663,19 @@ class Danmaku(BaseHandler):
                 'message': 'Can not be empty.',
             }))
             return
+        elif CODE_REG.match(content):
+            self.response.out.write(json.dumps({
+                'error': True,
+                'message': 'Code contains invalid keywords.',
+            }))
+            return
         content = cgi.escape(content)
 
         clip = video.video_clips[clip_index-1].get()
         if not clip.code_danmaku_pool:
             code_danmaku_pool = models.CodeDanmakuPool()
         else:
-            code_danmaku_pool = clipd.code_danmaku_pool.get()
+            code_danmaku_pool = clip.code_danmaku_pool.get()
 
         danmaku = models.CodeDanmaku(index=code_danmaku_pool.counter, timestamp=timestamp, content=content, creator=user.key)
         code_danmaku_pool.danmaku_list.append(danmaku)

@@ -533,7 +533,7 @@ div.add-button, input.add-button {
     white-space: nowrap;
 }
 
-.detail-label.content.advanced, .detail-label.content.subtitles {
+.detail-label.content.advanced, .detail-label.content.subtitles, .detail-label.content.code {
     width: 380px;
 }
 

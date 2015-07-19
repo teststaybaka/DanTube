@@ -777,7 +777,12 @@ function Danmaku_Animation(ele) {
 		lTime = curTime;
 		var isOver = false;
 		if (isPlaying) {
-			isOver = ele.ref_danmaku.callback(deltaTime/1000);
+			try {
+				isOver = ele.ref_danmaku.callback(ele.element, deltaTime/1000);
+			} catch (err) {
+				console.log(err.name+': '+err.message);
+				isOver = true;
+			}
 		}
 
 		if (!ele.clear_request && !isOver) {
@@ -1046,7 +1051,7 @@ function danmaku_update() {
 		while (ref_danmaku = normal_danmaku_sequence.next()) {
 			if (ref_danmaku.type === 'Code') {
 				normal_danmaku_sequence.consume();
-				execute_code_danmaku(dt.unescapeHTML(ref_danmaku.content), null, null, null, null, null, null, null, null, null);
+				execute_code_danmaku(dt.unescapeHTML(ref_danmaku.content));
 				continue;
 			}
 
@@ -1944,10 +1949,10 @@ dt.onPlayerReady = function(event) {
 		}
 
 		var data = $(this).serialize();
-		if ($('#use-cur-timestamp').is(':checked')) {
+		if ($('#advanced-use-cur-timestamp').is(':checked')) {
 			data += '&'+$.param({timestamp: player.getCurrentTime()});
 		} else {
-			data += '&'+$.param({timestamp: $('#new-timestamp').val()});
+			data += '&'+$.param({timestamp: $('#advanced-timestamp').val()});
 		}
 
 		$.ajax({
@@ -2094,7 +2099,7 @@ dt.onPlayerReady = function(event) {
 
 		var code = $('#textarea-code-danmaku').val().trim();
 		dt.pop_ajax_message('Previewing', 'success');
-		execute_code_danmaku(code, null, null, null, null, null, null, null, null, null);
+		execute_code_danmaku(code);
 	});
 	$('#code-danmaku-form').submit(function() {
 		var button = document.querySelector('#code-danmaku-form .special-danmaku-button.special');
@@ -2107,10 +2112,10 @@ dt.onPlayerReady = function(event) {
 		}
 
 		var data = $(this).serialize();
-		if ($('#use-cur-timestamp').is(':checked')) {
+		if ($('#code-use-cur-timestamp').is(':checked')) {
 			data += '&'+$.param({timestamp: player.getCurrentTime()});
 		} else {
-			data += '&'+$.param({timestamp: $('#new-timestamp').val()});
+			data += '&'+$.param({timestamp: $('#code-timestamp').val()});
 		}
 
 		$.ajax({
@@ -2165,7 +2170,7 @@ function code_danmaku_form_check() {
 	if (!code) {
 		dt.pop_ajax_message('Please write some code.');
 		error = true;
-	} else if (/document|window|location|oldSetInterval|oldSetTimeout|XMLHttpRequest|XDomainRequest|jQuery|\$/.test(code)) {
+	} else if (/([^a-zA-Z_$]|^)(document|window|location|oldSetInterval|oldSetTimeout|XMLHttpRequest|XDomainRequest|jQuery|\$)([^a-zA-Z_$]|$)/.test(code)) {
 		dt.pop_ajax_message('Code contains invalid keywords. Please check the document.', 'error');
 		error = true;
 	}
@@ -2939,6 +2944,18 @@ $(document).ready(function() {
 			}
 		}
 	}
+
+	var gOldOnError = window.onerror;
+	window.onerror = function(errorMsg, url, lineNumber) {
+		var textarea_output = document.getElementById('textarea-danmaku-output');
+		textarea_output.value += errorMsg+'\n';
+		textarea_output.scrollTop = textarea_output.scrollHeight;
+		if (gOldOnError) {
+		// Call previous handler.
+			return gOldOnError(errorMsg, url, lineNumber);
+		}
+		return false;
+	};
 });
 
 function update_comments(page, video_id) {
@@ -3155,8 +3172,8 @@ function get_player_inner_pos_bottom() {
 	return (player_height + player_inner_height)/2;
 }
 
-function create_danmaku_element(content, update_callback) {
-	if (typeof update_callback !== 'function') throw {name: 'TypeError', message: 'update_callback must be a function'};
+function create_danmaku(content, update_callback) {
+	if (typeof update_callback !== 'function') throw {name: 'TypeError', message: 'The second parameter in create_danmaku() must be a function.'};
 	var new_danmaku = {
 		content: content,
 		callback: update_callback,
@@ -3185,7 +3202,7 @@ function code_all_clear() {
 	code_timeouts = [];
 }
 
-function execute_code_danmaku(code, document, window, jQuery, $, location, oldSetInterval, oldSetTimeout, XMLHttpRequest, XDomainRequest) {
+function execute_code_danmaku(code) {
 	try {
 		eval(code);
 	} catch (err) {
