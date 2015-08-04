@@ -56,9 +56,14 @@ class BaseHandler(webapp2.RequestHandler):
         return self.auth.get_user_by_session()
 
     @webapp2.cached_property
-    def user(self):
+    def user_key(self):
         u = self.user_info
-        return self.user_model.get_by_id(u['user_id']) if u else None
+        return self.user_model.get_key(u['user_id']) if u else None
+
+    @webapp2.cached_property
+    def user_detail_key(self):
+        u = self.user_info
+        return models.UserDetail.get_key(self.user_key) if u else None
 
     @webapp2.cached_property
     def user_model(self):
@@ -81,83 +86,83 @@ class BaseHandler(webapp2.RequestHandler):
         finally:
             self.session_store.save_sessions(self.response)
 
-    def render(self, tempname, context = {}):
-        user = self.user
+    def render(self, tempname, context={}):
         if not context.get('user'):
             context['user'] = {}
-        if user is not None:
+        if self.user_info:
+            if not self.user:
+                self.user = self.user_key.get()
             context['user']['is_auth'] = True
-            context['user'].update(user.get_public_info())
-            context['user'].update(user.get_private_info())
+            context['user'].update(self.user.get_private_info())
         else:
             context['user']['is_auth'] = False
 
-        message = self.session.get('message')
-        if message is not None:
-            context['message'] = message
-            self.session.pop('message')
         context['category'] = models.Video_Category
         context['subcategory'] = models.Video_SubCategory
         path = 'template/' + tempname + '.html'
         template = env.get_template(path)
         self.response.write(template.render(context))
     
-    def notify(self, notice, status=200, type='error'):
+    def notify(self, notice, tatus=200, type='error'):
         self.response.set_status(status)
         self.render('notice', {'notice': notice, 'type': type})
 
-    def get_page_size(self):
-        try:
-            page_size = int(self.request.get('page_size'))
-            if page_size < 0 or page_size > 100:
-                raise ValueError('Page size invalid')
-        except ValueError:
-            page_size = models.DEFAULT_PAGE_SIZE
-        return page_size
-
-    def get_page_number(self):
-        try:
-            page = int(self.request.get('page'))
-            if page < 1:
-                raise ValueError('Negative')
-        except ValueError:
-            page = 1
-        return page
+    def json_response(self, error, result={}):
+        self.response.headers['Content-Type'] = 'application/json'
+        result['error'] = error
+        self.response.write(json.dumps(result))
 
     def get_keywords(self):
         return models.ILLEGAL_LETTER.sub(' ', self.request.get('keywords').strip().lower())
 
-    def get_page_range(self, cur_page, total_pages, page_range=10):
-        cur_page = int(cur_page)
-        total_pages = int(total_pages)
-        if cur_page > total_pages:
-            max_page = total_pages
-            min_page = max(total_pages - page_range + 1, 1)
-        elif cur_page < 1:
-            min_page = 1
-            max_page = max(min_page + page_range - 1, total_pages)
-        else:
-            max_page = min(cur_page + 4, total_pages)
-            min_page = max(cur_page - 5, 1)
-            remain_page = page_range -(max_page - cur_page) - (cur_page - min_page) - 1
-            if remain_page > 0:
-                max_page = min(max_page + remain_page, total_pages);
-                min_page = max(min_page - remain_page, 1);
-        return {
-            'total_pages': total_pages,
-            'cur_page': cur_page,
-            'pages': range(min_page, max_page+1)
-        }
+    def get_ids(self):
+        ids = self.request.POST.getall('ids[]')
+        if len(ids) == 0:
+            raise ValueError('None id.')
+
+        seen = set()
+        seen_add = seen.add
+        return [x for x in ids if not (x in seen or seen_add(x))]
+    
+    def assemble_link(self, temp, users, add_link):
+        if temp != '':
+            user = models.User.query(models.User.nickname==temp[1:].strip()).get(keys_only=True)
+            if user:
+                if add_link:
+                    temp = '<a class="blue-link" target="_blank" href="'+models.User.get_space_url(user.id())+'">' + temp + '</a>'
+                users.append(user)
+        return temp
+
+    def at_users_content(self, content, add_link):
+        content = cgi.escape(content)
+        new_content = ''
+        state = 0
+        temp = ''
+        users = []
+        for i in xrange(0, len(content)):
+            if models.ILLEGAL_LETTER.match(content[i]) and state == 1:
+                state = 0
+                new_content += self.assemble_link(temp, add_link, users)
+                temp = ''
+
+            if content[i] == '@' and state == 0:
+                state = 1
+                temp += '@'
+            elif state == 0:
+                new_content += content[i]
+            else: # state == 1
+                temp += content[i]
+        new_content += self.assemble_link(temp, users, add_link)
+
+        seen = set()
+        seen_add = seen.add
+        return new_content, [x for x in users if not (x == user_key or x in seen or seen_add(x))]
+
 
 def login_required(handler):
-    """
-        Decorator that checks if there's a user associated with the current session.
-        Will also fail if there's no session present.
-    """
     def check_login(self, *args, **kwargs):
-        auth = self.auth
-        if not auth.get_user_by_session():
-            self.redirect(self.uri_for('signin'), abort=True)
+        if not self.user_info:
+            self.redirect(self.uri_for('signin'))
         else:
             return handler(self, *args, **kwargs)
  
@@ -165,14 +170,8 @@ def login_required(handler):
 
 def login_required_json(handler):
     def check_login(self, *args, **kwargs):
-        self.response.headers['Content-Type'] = 'application/json'
-        auth = self.auth
-        if not auth.get_user_by_session():
-            self.response.out.write(json.dumps({
-                'error': True,
-                'message': 'Please log in!'
-            }))
-            return
+        if not self.user_info:
+            self.json_response(True, {'message': 'Please log in!'})
         else:
             return handler(self, *args, **kwargs)
  
@@ -198,7 +197,7 @@ class MultiPartForm(object):
     def add_file(self, fieldname, filename, fileHandle, mimetype=None):
         """Add a file to be uploaded."""
         body = fileHandle.read()
-        if mimetype is None:
+        if not mimetype:
             mimetype = mimetypes.guess_type(filename)[0] or 'application/octet-stream'
         self.files.append((fieldname, filename, mimetype, body))
         return
@@ -243,361 +242,275 @@ class MultiPartForm(object):
 
 class Home(BaseHandler):
     def get(self):
-        context = {}
-        context['top_ten_videos'] = []
-        videos, total_page = models.Video.get_page(order=models.Video.hot_score, page=1, page_size=10)
-        uploaders = ndb.get_multi([video.uploader for video in videos])
+        cursor = models.Cursor()
+        cursor = models.Cursor(urlsafe=self.request.get('cursor'))
+        videos, cursor, more = models.Video.query(models.Video.category==category).order(-models.Video.hot_score).fetch_page(page_size, start_cursor=cursor)
+        context = {
+            'top_ten_videos': [],
+            'top_ten_cursor': cursor.urlsafe() if cursor else None,
+        }
         for i in xrange(0, len(videos)):
             video = videos[i]
-            uploader = uploaders[i]
             video_info = video.get_basic_info()
-            video_info['uploader'] = uploader.get_public_info()
             context['top_ten_videos'].append(video_info)
+
+        remains = 8
+        if self.user_info:
+            uper_keys = models.Subscription.query(ancestor=self.user_key).order(-models.Subscription.score).fetch(limit=remains, projection=['uper'])
+            upers = ndb.get_multi(uper_keys)
+            context = ['upers'] = []
+            for i in xrange(0, len(upers)):
+                uper = upers[i]
+                uper_info = uper.get_public_info()
+                context['upers'].append(uper_info)
+            remains -= len(upers)
+
+        context['blocks'] = []
+        total_categories = 0
+        for i in xrange(0, len(models.Video_Category)):
+            category = models.Video_Category[i]
+            subcategories = models.Video_SubCategory[category]
+            total_categories += len(subcategories)
+
+        used_cat = set()
+        while remains:
+            random_cat = random.randint(0, total_categories - 1)
+            if random_cat in used_cat:
+                continue
+
+            used_cat.add(random_cat)
+            counter = 0
+            for i in xrange(0, len(models.Video_Category)):
+                category = models.Video_Category[i]
+                subcategories = models.Video_SubCategory[category]
+                if counter >= len(subcategories):
+                    counter -= len(subcategories)
+                else:
+                    context['blocks'].append({
+                        'category': category,
+                        'subcategory': subcategories[counter],
+                    })
+                    remains -= 1
+                    break
+
         self.render('index', context)
 
-class Category(BaseHandler):
-    def get(self):
+    def second_level(self):
         category = self.request.route.name
-        context = {}
-        context['category_name'] = category
-        context['top_ten_videos'] = []
-        videos, total_page = models.Video.get_page(category=category, order=models.Video.hot_score, page=1, page_size=10)
-        uploaders = ndb.get_multi([video.uploader for video in videos])
-        for i in xrange(0, len(videos)):
-            video = videos[i]
-            uploader = uploaders[i]
-            video_info = video.get_basic_info()
-            video_info['uploader'] = uploader.get_public_info()
-            context['top_ten_videos'].append(video_info)
+        context = {'category_name': category}
         self.render('category', context)
 
-class Subcategory(BaseHandler):
-    def get(self):
+    def third_level(self):
         [category, subcategory] = self.request.route.name.split('-')
-        context = {}
-        context['category_name'] = category
-        context['subcategory_name'] = subcategory
-        context['top_ten_videos'] = []
-        videos, total_page = models.Video.get_page(category=category, subcategory=subcategory, order=models.Video.hot_score, page=1, page_size=10)
-        uploaders = ndb.get_multi([video.uploader for video in videos])
-        for i in xrange(0, len(videos)):
-            video = videos[i]
-            uploader = uploaders[i]
-            video_info = video.get_basic_info()
-            video_info['uploader'] = uploader.get_public_info()
-            context['top_ten_videos'].append(video_info)
+        context = {
+            'category_name': category,
+            'subcategory_name': subcategory,
+        }
         self.render('subcategory', context)
 
-class RandomVideo(BaseHandler):
-    def post(self):
-        self.response.headers['Content-Type'] = 'application/json'
+class LoadVideos(BaseHandler):
+    def subcategory(self):
         try:
-            size = int(self.request.get('size'))
-        except ValueError:
-            self.response.out.write(json.dumps({
-                'error': True,
-                'message': 'Size invalid'
-            }))
-            return
-        size = min(models.Video.get_video_count(), size)
-
-        try:
-            fetched = {}
-            result = {'error': False}
-            result['videos'] = []
-            max_id = models.Video.get_max_id()
-
-            for i in xrange(0, size):
-                while True:
-                    random_id = random.randint(1, max_id)
-                    if not fetched.get(random_id):
-                        video = models.Video.get_by_id('dt'+str(random_id))
-                        if video is not None:
-                            uploader = video.uploader.get()
-                            video_info = video.get_basic_info()
-                            video_info['uploader'] = uploader.get_public_info()
-                            result['videos'].append(video_info)
-                            fetched[random_id] = 1;
-                            break
-
-            self.response.out.write(json.dumps(result))
+            page_size = int(self.request.get('page-size'))
         except Exception, e:
-            logging.info('error occurred fetching random videos:'+str(e))
-            self.response.out.write(json.dumps({
-                'error': True,
-                'message': str(e)
-            }))
+            self.json_response(True, {'message': 'Page size invalid.'})
+            return
+
+        category = self.request.get('category')
+        subcategory = self.request.get('subcategory')
+        if category not in models.Video_Category or subcategory not in models.Video_SubCategory:
+            self.json_response(True, {'message': 'Invalid category.'})
+            return
+        category = category+'-'+subcategory
+
+        order = self.request.get('order')
+        if order == 'updated':
+            order = models.Video.updated
+        elif order == 'created':
+            order = models.Video.created
+        elif order == 'hot':
+            order = models.Video.hot_score
+
+        cursor = models.Cursor(urlsafe=self.request.get('cursor'))
+        videos, cursor, more = models.Video.query(models.Video.category==category).order(-order).fetch_page(page_size, start_cursor=cursor)
+        result = {
+            'videos': [],
+            'cursor': cursor.urlsafe() if cursor else None,
+        }
+        for i in xrange(0, len(videos)):
+            video = videos[i]
+            video_info = video.get_basic_info()
+            result['videos'].append(video_info)
+
+        self.json_response(False, result)
+
+    def uper(self):
+        try:
+            page_size = int(self.request.get('page-size'))
+        except ValueError:
+            self.json_response(True, {'message': 'Page size invalid.'})
+            return
+
+        try:
+            uper_key = ndb.Key('User', int(self.request.get('user_id')))
+        except ValueError:
+            self.json_response(True, {'message': 'Invalid id.'})
+            return
+
+        cursor = models.Cursor(urlsafe=self.request.get('cursor'))
+        videos, cursor, more = models.Video.query(models.Video.uploader==uper_key).order(-models.Video.updated).fetch_page(page_size, start_cursor=cursor)
+        result = {
+            'videos': [],
+            'cursor': cursor.urlsafe() if cursor else None,
+        }
+        for i in xrange(0, len(videos)):
+            video = videos[i]
+            video_info = video.get_basic_info()
+            result['videos'].append(video_info)
+
+        self.json_response(False, result)
 
 class FeelingLucky(BaseHandler):
     def get(self):
         max_id = models.Video.get_max_id()
         video = None
-        while video is None:
+        while not video:
             random_id = random.randint(1, max_id)
             video = models.Video.get_by_id('dt'+str(random_id))
         self.redirect(self.uri_for('watch', video_id=random_id))
 
-class CategoryVideo(BaseHandler):
-    def post(self):
-        # models.Video.fetch_page()
-        self.response.headers['Content-Type'] = 'application/json'
-        category = self.request.get('category').strip()
-        subcategory = self.request.get('subcategory').strip()
-
-        if (not (category in models.Video_Category)) or \
-            ((category in models.Video_Category) and (subcategory) and not (subcategory in models.Video_SubCategory[category]) ):
-            self.response.out.write(json.dumps({
-                'error': True,
-                'message': 'Invalid category/subcategory'
-            }))
-            return
-        # try:
-        #     if category:
-        #         for cat_name, url_name in dict((k,v[0]) for k,v in models.URL_NAME_DICT.items()).iteritems():
-        #             if url_name == category:
-        #                 category = cat_name
-        #                 break
-        #         if subcategory:
-        #             for subcat_name, url_name in models.URL_NAME_DICT[category][1].iteritems():
-        #                 if url_name == subcategory:
-        #                     subcategory = subcat_name
-        #                     break
-        #         else:
-        #             subcategory = ""
-        #     else:
-        #         category = ""
-        # except (KeyError, BadValueError) as e:
-        #     self.response.out.write(json.dumps({
-        #         'error': True,
-        #         'message': 'Invalid category/subcategory'
-        #     }))
-        #     return
-
-        order_str = self.request.get('order').strip()
-        if order_str == 'hits': # ranking
-            order = models.Video.hits
-        elif order_str == 'hot_score':
-            order = models.Video.hot_score
-        elif order_str == 'created': # newest upload
-            order = models.Video.created
-        elif order_str == 'last_updated': # neweset activity
-            order = models.Video.last_updated
-        else:
-            self.response.out.write(json.dumps({
-                'error': True,
-                'message': 'Invalid order'
-            }))
-            return
-
-        page = self.get_page_number()
-        page_size = self.get_page_size()
-
-        # videos, more = models.Video.fetch_page(category, subcategory, order, page)
-        videos, total_pages = models.Video.get_page(category=category, subcategory=subcategory, order=order, page=page, page_size=page_size)
-
-        # try:
-        #     videos, more = models.Video.fetch_page(category, subcategory, order, page)
-        # except Exception, e:
-        #     logging.info(e)
-        #     self.response.out.write(json.dumps({
-        #         'error': True,
-        #         'message': str(e)
-        #     }))
-        #     return
-
-        # try:
-        #     limit = int(self.request.get('limit'))
-        # except ValueError:
-        #     limit = len(videos)
-
-        result = {'error': False}
-        result['videos'] = []
-        uploaders = ndb.get_multi([video.uploader for video in videos])
-        for i in xrange(0, len(videos)): # videos[0:limit]:
-            video = videos[i]
-            uploader = uploaders[i]
-            video_info = video.get_basic_info()
-            video_info['uploader'] = uploader.get_public_info()
-            result['videos'].append(video_info)
-        result['total_pages'] = total_pages
-
-        self.response.out.write(json.dumps(result))
-
 class Search(BaseHandler):
     def get(self):
-        # all_videos = models.Video.query().fetch()
-        # for video in all_videos:
-        #     video.create_index('videos_by_created', models.time_to_seconds(video.created))
-        #     video.create_index('videos_by_hits', video.hits)
-        #     video.create_index('videos_by_favors', video.favors)
-        #     video.create_index('videos_by_user' + str(video.uploader.id()), models.time_to_seconds(video.created) )
-            
-        page_size = models.DEFAULT_PAGE_SIZE
-        page = self.get_page_number()
+        context = {
+            'keywords': self.get_keywords(),
+            'order': self.request.get('order'),
+        }
+        category = self.request.get('category')
+        if category in models.Video_Category:
+            context['cur_category'] = category
+            subcategory = self.request.get('subcategory')
+            if subcategory in models.Video_SubCategory[category]:
+                context['cur_subcategory'] = subcategory
 
-        context = {}
+        self.render('search', context)
+
+    def post(self):
+        page_size = models.STANDARD_PAGE_SIZE
         keywords = self.get_keywords()
         if not keywords:
             query_string = ''
         else:
             query_string = 'content: ' + keywords
-        context['keywords'] = keywords
         
-        category = self.request.get('category').strip()
+        category = self.request.get('category')
         if category in models.Video_Category:
-            context['cur_category'] = category
             if query_string:
                 query_string += ' AND '
-            query_string += 'category: \"' + category + '\"'
+            query_string += 'category: "' + category + '"'
 
-            subcategory = self.request.get('subcategory').strip()
+            subcategory = self.request.get('subcategory')
             if subcategory in models.Video_SubCategory[category]:
-                context['cur_subcategory'] = subcategory
-                query_string += ' AND subcategory: \"' + subcategory + '\"'
-                                   
-        order = self.request.get('order').strip()
+                query_string += ' AND subcategory: "' + subcategory + '"'
+
+        order = self.request.get('order')
         if order == 'hits':
             index = search.Index(name='videos_by_hits')
+        elif order == 'likes':
+            index = search.Index(name='videos_by_likes')
         elif order == 'created':
             index = search.Index(name='videos_by_created')
-        elif order == 'favors':
-            index = search.Index(name='videos_by_favors')
         else:
-            order = 'hits'
-            index = search.Index(name='videos_by_hits')
-        context['order'] = order
+            self.json_response(True, {'message': 'Invalid order.'})
+            return
 
-        page =  min(page, math.ceil(models.MAX_QUERY_RESULT/float(page_size)) )
-        offset = (page - 1) * page_size
-        context['videos'] = []
+        context{'videos': []}
+        cursor = search.Cursor(web_safe_string=self.request.get('cursor'))
         try:
-            options = search.QueryOptions(offset=offset, limit=page_size)
+            options = search.QueryOptions(cursor=cursor, limit=page_size, ids_only=True)
             query = search.Query(query_string=query_string, options=options)
             result = index.search(query)
-            total_found = min(result.number_found, models.MAX_QUERY_RESULT)
-            total_pages = math.ceil(total_found/float(page_size))
 
+            cursor = result.cursor
+            context['cursor'] = cursor.web_safe_string if cursor else None
             videos = ndb.get_multi([ndb.Key(urlsafe=video_doc.doc_id) for video_doc in result.results])
-            uploaders = ndb.get_multi([video.uploader for video in videos])
             for i in xrange(0, len(videos)):
                 video = videos[i]
                 video_info = video.get_basic_info()
-                uploader = uploaders[i]
-                video_info['uploader'] = uploader.get_public_info()
                 context['videos'].append(video_info)
 
-            context['total_found'] = total_found
-            context.update(self.get_page_range(page, total_pages) )
-            # logging.info(videos)
-            self.render('search', context)
+            self.json_response(False, context)
         except Exception, e:
             logging.info("search failed")
             logging.info(e)
-            self.notify('Video search error.');
-
-        # total_pages = -(-total_videos // page_size)
-
-        # result = index.search("")
-        # logging.info(result.number_found)
-        # for doc in result.results:
-        #     logging.info(doc)
-
-        # key_words_ori = self.request.get('keywords')
-        # logging.info(key_words_ori)
-        # self.render('search', {'keywords': key_words_ori})
+            self.json_response(True, {'message': 'Video search error.'});
 
 class SearchPlaylist(BaseHandler):
     def get(self):
-        page_size = models.DEFAULT_PAGE_SIZE
-        page = self.get_page_number()
+        context = {'keywords': self.get_keywords()}
+        self.render('search_playlist', context)
 
-        context = {}
+    def post(self):
+        page_size = models.STANDARD_PAGE_SIZE
         keywords = self.get_keywords()
         if not keywords:
             query_string = ''
         else:
             query_string = 'content: ' + keywords
-        context['keywords'] = keywords
 
+        context{'playlists': []}
         index = search.Index(name='playlists_by_modified')
-        page =  min(page, math.ceil(models.MAX_QUERY_RESULT/float(page_size)) )
-        offset = (page - 1) * page_size
-        context['playlists'] = []
+        cursor = search.Cursor(web_safe_string=self.request.get('cursor'))
         try:
-            options = search.QueryOptions(offset=offset, limit=page_size)
+            options = search.QueryOptions(cursor=cursor, limit=page_size, ids_only=True)
             query = search.Query(query_string=query_string, options=options)
             result = index.search(query)
-            total_found = min(result.number_found, models.MAX_QUERY_RESULT)
-            total_pages = math.ceil(total_found/float(page_size))
 
+            cursor = result.cursor
+            context['cursor'] = cursor.web_safe_string if cursor else None
             playlists = ndb.get_multi([ndb.Key(urlsafe=playlist_doc.doc_id) for playlist_doc in result.results])
-            creators = ndb.get_multi([playlist.creator for playlist in playlists])
             for i in xrange(0, len(playlists)):
                 playlist = playlists[i]
-                playlist_info = playlist.get_basic_info()
-                creator = creators[i]
-                playlist_info['creator'] = creator.get_public_info()
-                playlist_info['videos'] = []
-
-                videos_limit = min(9, len(playlist.videos))
-                video_keys = []
-                for i in xrange(0, videos_limit):
-                    video_keys.append(playlist.videos[i])
-                videos = ndb.get_multi(video_keys)
-                for i in xrange(0, len(videos)):
-                    video = videos[i]
-                    video_info = video.get_basic_info()
-                    video_info['index'] = i + 1
-                    playlist_info['videos'].append(video_info)
-
+                playlist_info = playlist.get_info()
                 context['playlists'].append(playlist_info)
 
-            context['total_found'] = total_found
-            context.update(self.get_page_range(page, total_pages) )
-            self.render('search_playlist', context)
+            self.json_response(False, context)
         except Exception, e:
             logging.info("playlist search failed")
             logging.info(e)
-            self.notify('Playlist search error.');
+            self.json_response(True, {'message': 'Playlist search error.'});
         
 class SearchUPer(BaseHandler):
     def get(self):
-        # all_users = models.User.query().fetch()
-        # for user in all_users:
-        #     user.create_index()
-        
-        page_size = models.DEFAULT_PAGE_SIZE
-        page = self.get_page_number()
+        context = {'keywords': self.get_keywords()}
+        self.render('search_uper', context)
 
-        context = {}
+    def post(self):
+        page_size = models.STANDARD_PAGE_SIZE
         keywords = self.get_keywords()
         if not keywords:
             query_string = ''
         else:
             query_string = 'content: ' + keywords
-        context['keywords'] = keywords
 
+        context{'upers': []}
         index = search.Index(name='upers_by_created')
-        page =  min(page, math.ceil(models.MAX_QUERY_RESULT/float(page_size)) )
-        offset = (page - 1) * page_size
-        context['upers'] = []
+        cursor = search.Cursor(web_safe_string=self.request.get('cursor'))
         try:
-            options = search.QueryOptions(offset=offset, limit=page_size)
+            options = search.QueryOptions(cursor=cursor, limit=page_size, ids_only=True)
             query = search.Query(query_string=query_string, options=options)
             result = index.search(query)
-            total_found = min(result.number_found, models.MAX_QUERY_RESULT)
-            total_pages = math.ceil(total_found/float(page_size))
 
+            cursor = result.cursor
+            context['cursor'] = cursor.web_safe_string if cursor else None
             upers = ndb.get_multi([ndb.Key(urlsafe=uper_doc.doc_id) for uper_doc in result.results])
+            upers_detail = ndb.get_multi([models.UserDetail.get_key(uper.key)  for uper in upers])
             for i in xrange(0, len(upers)):
                 uper = upers[i]
                 uper_info = uper.get_public_info(self.user)
-                uper_info.update(uper.get_statistic_info())
+                uper_info.update(upers_detail.get_detail_info())
                 context['upers'].append(uper_info)
 
-            context['total_found'] = total_found
-            context.update(self.get_page_range(page, total_pages) )
-            self.render('search_uper', context)
+            self.json_response(False, context)
         except Exception, e:
             logging.info(e)
-            self.notify('UPer search error.');
+            self.json_response(False, {'message': 'UPer search error.'});

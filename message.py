@@ -3,38 +3,44 @@ from views import *
 class Message(BaseHandler):
     @login_required
     def get(self):
-        user = self.user
-        page_size = 20
-        page = self.get_page_number()
+        self.user = user = self.user_key.get()
+        context = {}
+        context['user'] = {'new_messages': user.new_messages}
+        self.render('message', context)
 
-        thread_keys = models.MessageThread.query(ndb.AND(ndb.OR(models.MessageThread.sender==user.key, models.MessageThread.receiver==user.key), models.MessageThread.delete_user!=user.key)) \
-                                                    .order(models.MessageThread.delete_user, -models.MessageThread.updated, models.MessageThread.key).fetch(offset=(page-1)*page_size, limit=page_size, keys_only=True)
-        threads = ndb.get_multi(thread_keys)
+    @login_required_json
+    def post(self):
+        user_key = self.user_key
+        page_size = models.MEDIUM_PAGE_SIZE
+        
+        cursor = models.Cursor(urlsafe=self.request.get('cursor'))
+        threads, cursor, more = models.MessageThread.query(models.MessageThread.users==user_key).order(-models.MessageThread.updated).fetch_page(page_size, start_cursor=cursor)
         context = {
-            'threads_counter': user.threads_counter,
-            'new_messages': user.new_messages,
             'entries': [],
+            'cursor': cursor.urlsafe() if cursor else None,
         }
         partner_keys = []
         for i in xrange(0, len(threads)):
             thread = threads[i]
-            thread_dict = {}
-            thread_dict['id'] = thread.key.id()
-            thread_dict['subject'] = thread.subject
-            thread_dict['last_message'] = thread.messages[-1].content
-            thread_dict['updated'] = thread.updated.strftime("%Y-%m-%d %H:%M")
-            if thread.sender == user.key:
-                partner_keys.append(thread.receiver)
+            last_message = thread.message[-1]
+            thread_dict = {
+                'id': thread.key.id(),
+                'subject': thread.subject,
+                'last_message': last_message.content,
+                'updated': thread.updated.strftime("%Y-%m-%d %H:%M"),
+            }
+            if thread.is_sender(user_key):
                 thread_dict['is_sender'] = True
                 thread_dict['unread'] = False
             else:
-                partner_keys.append(thread.sender)
                 thread_dict['is_sender'] = False
                 if thread.new_messages > 0:
                     thread_dict['new_messages'] = thread.new_messages
                     thread_dict['unread'] = True
                 else:
                     thread_dict['unread'] = False
+
+            partner_keys.append(thread.get_partner_key(user_key))
             context['entries'].append(thread_dict)
 
         partners = ndb.get_multi(partner_keys)
@@ -42,8 +48,7 @@ class Message(BaseHandler):
             partner = partners[i]
             context['entries'][i]['partner'] = partner.get_public_info()
 
-        context.update(self.get_page_range(page, math.ceil(user.threads_counter/float(page_size))))
-        self.render('message', context)
+        self.json_response(False, context)
 
 class Compose(BaseHandler):
     @login_required
@@ -52,102 +57,49 @@ class Compose(BaseHandler):
 
     @login_required_json
     def post(self):
-        user = self.user
         receiver_nickname = self.request.get('receiver').strip()
         if not receiver_nickname:
-            self.response.out.write(json.dumps({
-                'error': True,
-                'message': 'Receiver cannot be empty.'
-            }))
-            return
-        elif receiver_nickname == user.nickname:
-            self.response.out.write(json.dumps({
-                'error': True,
-                'message': 'Receiver cannot be self.'
-            }))
+            self.json_response(True, {'message': 'Receiver cannot be empty.'})
             return
 
         subject = self.request.get('subject').strip()
         if not subject:
-            self.response.out.write(json.dumps({
-                'error': True,
-                'message': 'Subject cannot be empty.'
-            }))
+            self.json_response(True, {'message': 'Subject cannot be empty.'})
             return
         elif len(subject) > 400:
-            self.response.out.write(json.dumps({
-                'error': True,
-                'message': 'Subject is too long.'
-            }))
+            self.json_response(True, {'message': 'Subject is too long.'})
             return
 
         content = self.request.get('content').strip()
         if not content:
-            self.response.out.write(json.dumps({
-                'error': True,
-                'message': 'Content cannot be empty.'
-            }))
+            self.json_response(True, {'message': 'Content cannot be empty.'})
             return
         elif len(content) > 2000:
-            self.response.out.write(json.dumps({
-                'error': True,
-                'message': 'Content is too long.'
-            }))
+            self.json_response(True, {'message': 'Content is too long.'})
             return
 
+        user_key = self.user_key
         receiver = models.User.query(models.User.nickname==receiver_nickname).get()
         if not receiver:
-            self.response.out.write(json.dumps({
-                'error': True,
-                'message': 'Receiver not found.'
-            }))
+            self.json_response(True, {'message': 'Receiver not found.'})
+            return
+        elif receiver.key == user_key:
+            self.json_response(True, {'message': 'Receiver cannot be self.'})
             return
 
-        message = models.Message(sender=user.key, content=content, when=datetime.now())
-        message_thread = models.MessageThread(messages=[message], subject=subject, sender=user.key, receiver=receiver.key, new_messages=0, updated=message.when)
-        message_thread.new_messages += 1
-        user.threads_counter += 1
-        receiver.threads_counter += 1
+        message = models.Message(sender=user_key, content=content, when=datetime.now())
+        thread = models.MessageThread(messages=[message], subject=subject, users=[user_key, receiver.key], users_backup=[user_key, receiver.key], new_messages=0, updated=message.when)
+        thread.new_messages += 1
         receiver.new_messages += 1
-        ndb.put_multi([message_thread, user, receiver])
+        ndb.put_multi_async([thread, receiver])
         
-        self.response.out.write(json.dumps({
-            'error': False,
-            'message':'Message sent!'
-        }))
-
-def message_author_required_json(handler):
-    def check_message_author(self, thread_id):
-        self.response.headers['Content-Type'] = 'application/json'
-        user = self.user
-        thread = models.MessageThread.get_by_id(int(thread_id))
-        if not thread:
-            self.response.out.write(json.dumps({
-                'error': True,
-                'message': "Message does not exist.",
-            }))
-            return
-
-        if user.key == thread.delete_user or (thread.sender != user.key and thread.receiver != user.key):
-            self.response.out.write(json.dumps({
-                'error': True,
-                'message': "Message does not exist.",
-            }))
-            return
-
-        return handler(self, thread)
-
-    return check_message_author
+        self.json_response(False, {'message':'Message sent!'})
 
 def message_author_required(handler):
     def check_message_author(self, thread_id):
-        user = self.user
+        user_key = self.user_key
         thread = models.MessageThread.get_by_id(int(thread_id))
-        if not thread:
-            self.notify("Message does not exist.");
-            return
-
-        if user.key == thread.delete_user or (thread.sender != user.key and thread.receiver != user.key):
+        if not thread or user_key not in thread.users:
             self.notify("Message does not exist.");
             return
 
@@ -155,16 +107,32 @@ def message_author_required(handler):
  
     return check_message_author
 
+def message_author_required_json(handler):
+    def check_message_author(self, thread_id):
+        user_key = self.user_key
+        thread = models.MessageThread.get_by_id(int(thread_id))
+        if not thread or user_key not in thread.users:
+            self.json_response(True, {'message': "Message does not exist."})
+            return
+
+        return handler(self, thread)
+
+    return check_message_author
+
 class Detail(BaseHandler):
     @login_required
     @message_author_required
     def get(self, thread):
-        user = self.user
+        user_key = self.user_key
+        partner_key = thread.get_partner_key(user_key)
+        user, partner = ndb.get_multi([user_key, partner_key])
+        self.user = user
 
-        context = {}
-        context['thread_id'] = thread.key.id()
-        context['subject'] = thread.subject
-        context['messages'] = []
+        context = {
+            'thread_id': thread.key.id(),
+            'subject': thread.subject,
+            'messages': [],
+        }
         for msg in thread.messages:
             message = {}
             if msg.sender == user.key:
@@ -175,171 +143,150 @@ class Detail(BaseHandler):
             message['when'] = msg.when.strftime("%Y-%m-%d %H:%M")
             context['messages'].append(message)
 
-        if thread.receiver == user.key:
+        if not thread.is_sender(user_key) and thread.new_messages != 0:
             user.new_messages -= thread.new_messages
+            if user.new_messages < 0:
+                user.new_messages = 0
             thread.new_messages = 0
-            ndb.put_multi([thread, user])
-            partner = thread.sender.get()
-        else:
-            partner = thread.receiver.get()
+            ndb.put_multi_async([thread, user])
+        
         context['partner'] = partner.get_public_info()
-
         self.render('message_detail', context)
 
     @login_required_json
     @message_author_required_json
     def post(self, thread):
-        user = self.user
-
         content = self.request.get('content').strip()
         if not content:
-            self.response.out.write(json.dumps({
-                'error': True,
-                'message': 'Content cannot be empty.'
-            }))
+            self.json_response(True, {'message': 'Content cannot be empty.'})
             return
         elif len(content) > 2000:
-            self.response.out.write(json.dumps({
-                'error': True,
-                'message': 'Content is too long.'
-            }))
+            self.json_response(True, {'message': 'Content is too long.'})
             return
 
-        if thread.receiver == user.key:
-            user.new_messages -= thread.new_messages
-            thread.receiver = thread.sender
-            thread.sender = user.key
-            thread.new_messages = 0
+        user_key = self.user_key
+        partner_key = thread.get_partner_key(user_key)
 
-        message = models.Message(sender=user.key, content=content, when=datetime.now())
+        message = models.Message(sender=user_key, content=content, when=datetime.now())
         thread.messages.append(message)
         thread.new_messages += 1
         thread.updated = message.when
         
-        partner = thread.receiver.get()
-        if thread.delete_user:
-            thread.delete_user = None
-            partner.threads_counter += 1
+        partner = partner_key.get()
+        if partner.key not in thread.users:
+            thread.users.append(partner.key)
             partner.new_messages += thread.new_messages
         else:
             partner.new_messages += 1
 
-        ndb.put_multi([thread, partner, user])
-
-        self.response.out.write(json.dumps({
-            'error': False,
+        ndb.put_multi_async([thread, partner])
+        self.json_response(False, {
             'message': 'Message sent.',
             'when': message.when.strftime("%Y-%m-%d %H:%M"),
-            'content': message.content
-        }))
+            'content': message.content,
+        })
 
 class DeleteMessage(BaseHandler):
     @login_required_json
     def post(self):
-        user = self.user
-
-        ids = self.request.POST.getall('ids[]')
-        if len(ids) == 0:
-            self.response.out.write(json.dumps({
-                'error': True,
-                'message': 'No message selected.'
-            }))
+        try:
+            ids = self.get_ids()
+            threads = ndb.get_multi([ndb.Key('MessageThread', int(identifier)) for identifier in ids])
+        except ValueError:
+            self.json_response(True, {'message': 'Invalid id.'})
             return
 
-        deleted_ids = []
+        user = self.user_key.get()
         put_list = []
         for i in xrange(0, len(ids)):
-            try:
-                thread_id = int(ids[i])
-                thread = models.MessageThread.get_by_id(thread_id)
-                if not thread or user.key == thread.delete_user or (thread.sender != user.key and thread.receiver != user.key):
-                    raise Exception('error')
-            except Exception, e:
+            thread = threads[i]
+            if not thread or user.key not in thread.users:
                 continue
 
-            user.threads_counter -= 1
-            if user.key == thread.receiver:
+            if not thread.is_sender(user.key):
                 user.new_messages -= thread.new_messages # In case, user has unread new messages when deleting
 
-            if thread.delete_user: # The other user has already deleted the message
-                thread.key.delete()
+            partner_key = thread.get_partner_key(user.key)
+            if partner_key not in thread.users: # The other user has already deleted the message
+                thread.key.delete_async()
             else:
-                thread.delete_user = user.key
+                thread.users.remove(user.key)
                 put_list.append(thread)
-            deleted_ids.append(thread_id)
-        
-        if len(deleted_ids) == 0:
-            self.response.out.write(json.dumps({
-                'error': True,
-                'message': 'No message deleted.'
-            }))
-            return
-        ndb.put_multi([user] + put_list)
 
-        self.response.out.write(json.dumps({
-            'error': False,
-            'message': deleted_ids,
-        }))
+        if user.new_messages < 0:
+            user.new_messages = 0
+        ndb.put_multi_async([user] + put_list)
+        self.json_response(False)
 
 class Mentioned(BaseHandler):
     @login_required
     def get(self):
-        user = self.user
+        user = self.user_key.get()
+        self.user = user
         new_mentions = user.new_mentions
         user.new_mentions = 0
-        user.put()
+        user.put_async()
         self.render('mentioned_me', {'new_mentions': new_mentions})
 
     @login_required_json
     def post(self):
-        user = self.user
-        page_size = 20
-
-        # urlsafe = self.request.get('cursor')
-        # logging.info(urlsafe)
-        # if urlsafe:
-        result = {'error': False}
-        result['entries'] = []
+        user_key = self.user_key
+        page_size = models.MEDIUM_PAGE_SIZE
 
         cursor = models.Cursor(urlsafe=self.request.get('cursor'))
-        comments, cursor, more = models.MentionedComment.query(models.MentionedComment.receivers==user.key).order(-models.MentionedComment.created, models.MentionedComment.key).fetch_page(page_size, start_cursor=cursor)
-        senders = ndb.get_multi([comment.sender for comment in comments])
-        for i in xrange(0, len(comments)):
-            comment = comments[i]
-            sender = senders[i]
-            comment_info = {
-                'sender': sender.get_public_info(),
-                'type': comment.comment_type,
-                'timestamp': comment.timestamp,
-                'floorth': comment.floorth,
-                'inner_floorth': comment.inner_floorth,
-                'content': comment.content,
-                'created': comment.created.strftime("%Y-%m-%d %H:%M"),
-                'video_title': comment.video_title,
-                'video_url': '/video/'+comment.video.id(),
-                'clip_index': comment.clip_index,
-            }
-            result['entries'].append(comment_info)
-        if not cursor:
-            result['cursor'] = ''
-        else:
-            result['cursor'] = cursor.urlsafe()
+        records, cursor, more = models.MentionedRecord.query(models.MentionedRecord.receivers==user_key).order(-models.MentionedRecord.created).fetch_page(page_size, start_cursor=cursor)
+        targets = ndb.get_multi([record.target for record in records])
+
+        result = {
+            'entries': [],
+            'cursor': cursor.urlsafe() if cursor else None,
+        }
+        for i in xrange(0, len(records)):
+            target_key = records[i].target
+            # if target_key.kind() == 'Video':
+            #     video = targets[i]
+            #     if not video:
+            #         video_info = models.Video.get_deleted_video_info()
+            #     else:
+            #         video_info = video.get_basic_info()
+            #     video_info['entry_type'] = 'Video'
+            #     result['entries'].append(video_info)
+            if target_key.kind() == 'Comment':
+                comment = targets[i]
+                if not comment:
+                    comment_info = models.Comment.get_deleted_content()
+                else:
+                    comment_info = comment.get_content()
+                comment_info['entry_type'] = 'Comment'
+                result['entries'].append(comment_info)
+            elif target_key.kind() == 'DanmakuRecord':
+                danmaku_record = targets[i]
+                danmaku_info = danmaku_record.get_content()
+                danmaku_info['entry_type'] = 'Danmaku'
+                result['entries'].append(danmaku_info)
         
-        self.response.out.write(json.dumps(result))
+        self.json_response(False, result)
 
 class Notifications(BaseHandler):
     @login_required
     def get(self):
-        user = self.user
-        page_size = 20
-        page = self.get_page_number()
-
+        self.user = user = self.user_key.get()
         context = {}
-        context['new_notifications'] = user.new_notifications
-        context['entries'] = []
+        context['user'] = {'new_notifications': user.new_notifications}
+        self.render('notifications', context)
 
-        notification_keys = models.Notification.query(models.Notification.receiver==user.key).order(-models.Notification.created, models.Notification.key).fetch(offset=(page-1)*page_size, limit=page_size, keys_only=True)
-        notifications = ndb.get_multi(notification_keys)
+    @login_required_json
+    def post(self):
+        user_key = self.user_key
+        page_size = models.MEDIUM_PAGE_SIZE
+
+        cursor = models.Cursor(urlsafe=self.request.get('cursor'))
+        notifications, cursor, more = models.Notification.query(models.Notification.receiver==user_key).order(-models.Notification.created, models.Notification.key).fetch_page(page_size, start_cursor=cursor)
+
+        context = {
+            'entries': [],
+            'cursor': cursor.urlsafe() if cursor else None,
+        }
         for i in xrange(0, len(notifications)):
             notification = notifications[i]
             note_info = {
@@ -352,82 +299,54 @@ class Notifications(BaseHandler):
             }
             context['entries'].append(note_info)
         
-        context.update(self.get_page_range(page, math.ceil(user.notification_counter/float(page_size))))
-        self.render('notifications', context)
+        self.json_response(False, context)
 
 class ReadNotification(BaseHandler):
     @login_required_json
     def post(self):
-        user = self.user
         try:
             note_id = int(self.request.get('id'))
+            note = models.Notification.get_by_id(note_id)
+            if not note:
+                raise Exception('Not found.')
         except Exception, e:
-            self.response.out.write(json.dumps({
-                'error': True,
-                'message': 'Invalid id.'
-            }))
+            self.json_response(True, {'message': 'Invalid id.'})
             return
 
-        note = models.Notification.get_by_id(note_id)
-        if not note:
-            self.response.out.write(json.dumps({
-                'error': True,
-                'message': 'No notification found.'
-            }))
-            return
-        elif note.read:
-            self.response.out.write(json.dumps({
-                'error': True,
-                'message': 'Notification already read.'
-            }))
+        if note.read:
+            self.json_response(False)
             return
 
+        user = self.user_key.get()
         note.read = True
-        if user.new_notifications != 0:
-            user.new_notifications -= 1
-        ndb.put_multi([note, user])
+        user.new_notifications -= 1
+        if user.new_notifications < 0:
+            user.new_notifications = 0
 
-        self.response.out.write(json.dumps({
-            'error': False,
-        }))
+        ndb.put_multi_async([note, user])
+        self.json_response(False)
 
 class DeleteNotifications(BaseHandler):
     @login_required_json
     def post(self):
-        user = self.user
-        ids = self.request.POST.getall('ids[]')
-        if len(ids) == 0:
-            self.response.out.write(json.dumps({
-                'error': True,
-                'message': 'No notification selected.'
-            }))
+        try:
+            ids = self.get_ids()
+            notifications = ndb.get_multi([ndb.Key('Notification', int(identifier)) for identifier in ids])
+        except ValueError:
+            self.json_response(True, {'message': 'Invalid id.'})
             return
 
-        deleted_ids = []
+        user = self.user_key.get()
         for i in xrange(0, len(ids)):
-            try:
-                note_id = int(ids[i])
-                note = models.Notification.get_by_id(note_id)
-                if note is None or note.receiver.id() != user.key.id():
-                    raise Exception('error')
-            except Exception, e:
+            note = notifications[i]
+            if not note or note.receiver != user.key:
                 continue
 
             if not note.read:
                 user.new_notifications -= 1
-            user.notification_counter -= 1
-            deleted_ids.append(note_id)
-            note.key.delete()
+            note.key.delete_async()
 
-        if len(deleted_ids) == 0:
-            self.response.out.write(json.dumps({
-                'error': True,
-                'message': 'No notification deleted.'
-            }))
-            return
-        user.put()
-
-        self.response.out.write(json.dumps({
-            'error': False,
-            'message': deleted_ids,
-        }))
+        if user.new_notifications < 0:
+            user.new_notifications = 0
+        user.put_async()
+        self.json_response(False)

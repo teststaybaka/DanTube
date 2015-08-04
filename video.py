@@ -42,65 +42,21 @@ def ISO_8601_to_seconds(duration):
 
 def video_author_required(handler):
     def check_author(self, video_id):
-        video = models.Video.get_by_id('dt'+video_id)
-        if video is None or video.uploader != self.user.key:
+        user, video = ndb.get_multi([self.user_key, ndb.Key('Video', video_id)])
+        self.user = user
+        if not video or video.uploader != user.key:
             self.notify('You are not allowed to edit this video.')
-        else:
-            return handler(self, video)
-
-    return check_author
-
-def video_author_required_json(handler):
-    def check_author(self, video_id):
-        self.response.headers['Content-Type'] = 'application/json'
-        video = models.Video.get_by_id('dt'+video_id)
-        if video is None or video.uploader != self.user.key:
-            self.response.out.write(json.dumps({
-                'error': True,
-                'message': 'You are not allowed to edit this video.',
-            }))
-        else:
-            return handler(self, video)
-
-    return check_author
-
-def pool_index_required_json(handler):
-    def get_pool_index(self, video_id):
-        self.response.headers['Content-Type'] = 'application/json'
-        video = models.Video.get_by_id('dt'+video_id)
-        if video is None or video.uploader != self.user.key:
-            self.response.out.write(json.dumps({
-                'error': True,
-                'message': 'You are not allowed to edit this video.',
-            }))
             return
 
-        try:
-            clip_index = int(self.request.get('index'))
-        except ValueError:
-            clip_index = 1
-        if clip_index < 1 or clip_index > len(video.video_clips):
-            self.response.out.write(json.dumps({
-                'error': True,
-                'message': 'Video not found or deleted.'
-            }))
-            return
-        clip = video.video_clips[clip_index-1].get()
+        return handler(self, video, user)
 
-        try:
-            pool_index = int(self.request.get('pool_index'))
-        except ValueError:
-            pool_index = 1
-
-        return handler(self, video, clip, pool_index)
-
-    return get_pool_index
+    return check_author
 
 class CoverUpload(BaseHandler, blobstore_handlers.BlobstoreUploadHandler):
     def post(self):
         self.response.headers['Content-Type'] = 'text/plain'
         upload = self.get_uploads('coverImage')
-        if upload == []:
+        if not upload:
             self.response.out.write('error')
             return
 
@@ -128,57 +84,49 @@ class VideoUpload(BaseHandler):
     @login_required
     @video_author_required
     def edit(self, video):
-        self.render('edit_video', {'video':video.get_full_info()})
+        clips = models.VideoClip.query(models.VideoClip.video==video.key).order(models.VideoClip.index).fetch()
+        context = video.get_full_info()
+        context['clips'] = []
+        for i in xrange(0, len(clips)):
+            clip = clips[i]
+            clip_info = {
+                'index': clip.index,
+                'title': clip.title,
+                'raw_url': clip.raw_url,
+                'subintro': clip.subintro,
+                'source': clip.source,
+            }
+            context['clips'].append(clip_info)
+
+        self.render('edit_video', context)
 
     def field_check(self):
         self.title = self.request.get('total-title').strip()
         if not self.title:
-            return {
-                'error': True,
-                'message': 'Title must not be empty!'
-            }
+            raise Exception('Title must not be empty!')
         elif len(self.title) > 400:
-            return {
-                'error': True,
-                'message': 'Title is too long!'
-            }
+            raise Exception('Title is too long!')
 
-        self.category = self.request.get('category').strip()
+        self.category = self.request.get('category')
         if not self.category:
-            return {
-                'error': True,
-                'message': 'Category must not be empty!'
-            }
-        self.subcategory = self.request.get('subcategory').strip()
+            raise Exception('Category must not be empty!')
+
+        self.subcategory = self.request.get('subcategory')
         if not self.subcategory:
-            return {
-                'error': True,
-                'message': 'Subcategory must not be empty!'
-            }
+            raise Exception('Subcategory must not be empty!')
+            
         if not ((self.category in models.Video_Category) and (self.subcategory in models.Video_SubCategory[self.category])):
-            return {
-                'error': True,
-                'message': 'Category mismatch!'
-            }
+            raise Exception('Category mismatch!')
 
-        self.description = self.request.get('description').strip()
-        if not self.description:
-            return {
-                'error': True,
-                'message': 'Description must not be empty!'
-            }
-        elif len(self.description) > 2000:
-            return {
-                'error': True,
-                'message': 'Description is too long!'
-            }
+        self.intro = self.request.get('description').strip()
+        if not self.intro:
+            raise Exception('Description must not be empty!')
+        elif len(self.intro) > 2000:
+            raise Exception('Description is too long!')
 
-        self.video_type = self.request.get('video-type-option').strip()
+        self.video_type = self.request.get('video-type-option')
         if not self.video_type:
-            return {
-                'error': True,
-                'message': 'Video type must not be empty!'
-            }
+            raise Exception('Video type must not be empty!')
 
         self.tags_ori = self.request.get('tags').split(',')
         self.tags = []
@@ -186,67 +134,39 @@ class VideoUpload(BaseHandler):
             tag = self.tags_ori[i].strip()
             if tag:
                 if len(tag) > 100:
-                    return {
-                        'error': True,
-                        'message': 'Tags are too long!'
-                    }
+                    raise Exception('Tags are too long!')
                 elif models.ILLEGAL_REGEX.match(tag):
-                    return {
-                        'error': True,
-                        'message': 'Tags have illegal letters!'
-                    }
-                self.tags.append(self.tags_ori[i].strip())
+                    raise Exception('Tags have illegal letters!')
+                self.tags.append(tag)
         if len(self.tags) == 0:
-            return {
-                'error': True,
-                'message': 'Tags must not be empty!'
-            }
-        elif len(self.tags) > 20:
-            return {
-                'error': True,
-                'message': 'Too many tags!'
-            }
+            raise Exception('Tags must not be empty!')
+        elif len(self.tags) > 10:
+            raise Exception('Too many tags!')
 
-        self.allow_tag_add = self.request.get('allow-add').strip()
-        if self.allow_tag_add:
-            self.allow_tag_add = True
-        else:
-            self.allow_tag_add = False
+        self.allow_tag_add = bool(self.request.get('allow-add'))
 
         self.durations = []
         self.sources = []
         self.vids = []
         self.raw_urls = self.request.POST.getall('video-url[]')
         if len(self.raw_urls) == 0:
-            return {
-                'error': True,
-                'message': 'You must submit at least one video!'
-            }
-        elif len(self.raw_urls) > 500:
-            return {
-                'error': True,
-                'message': 'Too many parts!'
-            }
+            raise Exception('You must submit at least one video!')
+        elif len(self.raw_urls) > 1000:
+            raise Exception('message': 'Too many parts!')
+
         for i in xrange(0, len(self.raw_urls)):
-            raw_url = self.raw_urls[i].strip();
+            self.raw_urls[i] = self.raw_urls[i].strip();
+            raw_url = self.raw_urls[i]
             if not raw_url:
-                return {
-                    'error': True,
-                    'message': 'invalid url',
-                    'index': i,
-                }
+                raise Exception('invalid url:'+str(i))
             else:
                 res = models.VideoClip.parse_url(raw_url)
                 youtube_api_url = YOUTUBE_API_URL + '/videos?key=' + YOUTUBE_API_KEY + '&id=' + res['vid'] + '&part=contentDetails'
                 if i == 0:
                     youtube_api_url += ',snippet'
                 vlist = json.load(urllib2.urlopen(youtube_api_url))['items']
-                if len(vlist) < 1:
-                    return {
-                        'error': True,
-                        'message': 'invalid url',
-                        'index': i,
-                    }
+                if len(vlist) == 0:
+                    raise Exception('invalid url:'+str(i))
                 self.sources.append(res['source'])
                 self.vids.append(res['vid'])
                 vinfo = vlist[0]
@@ -264,38 +184,31 @@ class VideoUpload(BaseHandler):
                     else:
                         self.default_thumbnail += ':mq'
 
-
-        self.subtitles = self.request.POST.getall('sub-title[]')
-        for i in xrange(0, len(self.subtitles)):
-            subtitle = self.subtitles[i].strip()
-            if len(subtitle) > 400:
-                return {
-                    'error': True,
-                    'message': 'Sub title too long!',
-                }
+        self.clip_titles = self.request.POST.getall('sub-title[]')
+        for i in xrange(0, len(self.clip_titles)):
+            self.clip_titles[i] = self.clip_titles[i].strip()
+            if len(self.clip_titles[i]) > 400:
+                raise Exception('Sub title too long!')
 
         self.subintros = self.request.POST.getall('sub-intro[]')
         for i in xrange(0, len(self.subintros)):
-            subintro = self.subintros[i]
+            self.subintros[i] = self.subintros[i].strip()
             if len(subintro) > 2000:
-                return {
-                    'error': True,
-                    'message': 'Sub intro too long!',
-                }
+                raise Exception('Sub intro too long!')
 
         self.indices = self.request.POST.getall('index[]')
         for i in xrange(0, len(self.indices)):
             try:
-                index = int(self.indices[i])
+                self.indices[i] = int(self.indices[i].strip())
             except Exception, e:
-                return {
-                    'error': True,
-                    'message': 'Index error.',
-                }
-
-        return {'error': False}
+                raise Exception('Index error.')
 
     def thumbnail_upload(self):
+        self.thumbnail_field = self.request.POST.get('thumbnail')
+        self.thumbnail_key = None
+        if not self.thumbnail_field:
+            return
+
         try:
             im = Image.open(self.thumbnail_field.file)
             # mypalette = frame.getpalette()
@@ -351,118 +264,89 @@ class VideoUpload(BaseHandler):
 
     @login_required_json
     def submit_post(self):
-        user = self.user
-
-        res = self.field_check()
-        if res['error']:
-            self.response.out.write(json.dumps(res))
+        try:
+            self.field_check()
+            self.thumbnail_upload()
+        except Exception, e:
+            self.json_response(True, {'message': str(e)})
             return
 
-        self.thumbnail_field = self.request.POST.get('thumbnail')
-        self.thumbnail_key = None
-        if self.thumbnail_field != '':
-            try:
-                self.thumbnail_upload()
-            except Exception, e:
-                self.response.out.write(json.dumps({
-                    'error': True,
-                    'message': str(e),
-                }))
-                return
+        user, user_detail = ndb.get_multi([self.user_key, self.user_detail_key])
+        try:
+            video = models.Video.Create(
+                user=user,
+                intro=self.intro,
+                title=self.title,
+                category=self.category,
+                subcategory=self.subcategory,
+                video_type=self.video_type,
+                duration=sum(self.durations),
+                thumbnail=self.thumbnail_key,
+                default_thumbnail=self.default_thumbnail,
+                tags=self.tags,
+                allow_tag_add=self.allow_tag_add
+            )
+        except Exception, e:
+            self.json_response(True, {'message': str(e)})
+            return
 
-        self.video_clips = []
+        video_clips = []
         for i in xrange(0, len(self.raw_urls)):
             video_clip = models.VideoClip(
-                subintro=self.subintros[i], 
-                duration=self.durations[i], 
+                parent=video.key,
+                index=i,
+                title=self.clip_titles[i],
+                subintro=self.subintros[i],
+                duration=self.durations[i],
                 raw_url=self.raw_urls[i],
                 source=self.sources[i],
                 vid=self.vids[i]
             )
-            self.video_clips.append(video_clip)
-        ndb.put_multi(self.video_clips)
+            video_clips.append(video_clip)
 
-        try:
-            video = models.Video.Create(
-                user = user,
-                description = self.description,
-                title = self.title,
-                category = self.category,
-                subcategory = self.subcategory,
-                video_type = self.video_type,
-                duration = sum(self.durations),
-                tags = self.tags,
-                allow_tag_add = self.allow_tag_add,
-                thumbnail = self.thumbnail_key,
-                default_thumbnail = self.default_thumbnail,
-                subtitles = self.subtitles,
-                video_clips = [clip.key for clip in self.video_clips],
-            )
-        except Exception, e:
-            for i in xrange(0, len(self.video_clips)):
-                self.video_clips[i].key.delete()
-            self.response.out.write(json.dumps({
-                'error': True,
-                'message': str(e),
-            }))
-            return
+        models.video.create_index('videos_by_created', time_to_seconds(video.created))
+        models.video.create_index('videos_by_hits', video.hits)
+        models.video.create_index('videos_by_likes', video.likes)
 
-        upload_record = models.ActivityRecord(creator=user.key, activity_type='upload', video=video.key, content=video.description)
-        user.videos_submitted += 1
-        ndb.put_multi([upload_record, user])
-
-        self.response.out.write(json.dumps({
-            'error': False,
-            'message': 'Video submitted successfully!'
-        }))
+        user_detail.videos_submitted += 1
+        subscriptions = models.Subscription.query(models.Subscription.uper==self.user_key).fetch(keys_only=True)
+        subscribers = [subscription.parent() for subscription in subscriptions]
+        for i in xrange(0, len(subscribers)):
+            subscribers[i].new_subscriptions += 1
+            
+        ndb.put_multi_async([user_detail] + subscribers + video_clips)
+        self.json_response(False)
 
     @login_required_json
-    @video_author_required_json
-    def edit_post(self, video):
-        user = self.user
-        res = self.field_check()
-        if res['error']:
-            self.response.out.write(json.dumps(res))
+    def edit_post(self, video_id):
+        video = models.Video.get_by_id(video_id)
+        if not video or video.uploader != user_key:
+            self.json_response(True, {'message': 'You are not allowed to edit this video.'})
             return
 
-        self.allowPost = self.request.get('allow-post').strip()
-        if self.allowPost:
-            self.allowPost = True
-        else:
-            self.allowPost = False
-
-        self.thumbnail_field = self.request.POST.get('thumbnail')
-        self.thumbnail_key = None
-        if self.thumbnail_field != '':
-            try:
-                self.thumbnail_upload()
-            except Exception, e:
-                self.response.out.write(json.dumps({
-                    'error': True,
-                    'message': str(e),
-                }))
-                return
+        self.allow_post = bool(self.request.get('allow-post'))
+        try:
+            self.field_check()
+            self.thumbnail_upload()
+        except Exception, e:
+            self.json_response(True, {'message': str(e)})
+            return
 
         reindex = False
-        changed = False
-        if video.description != self.description:
-            video.description = self.description
-            changed = True
-            reindex = True
-
         if video.title != self.title:
             video.title = self.title
-            changed = True
+            reindex = True
+
+        if video.intro != self.intro:
+            video.intro = self.intro
             reindex = True
 
         if video.category != self.category:
             video.category = self.category
-            changed = True
             reindex = True
 
         if video.subcategory != self.subcategory:
             video.subcategory = self.subcategory
-            changed = True
             reindex = True
 
         if video.video_type != self.video_type:
@@ -470,286 +354,291 @@ class VideoUpload(BaseHandler):
 
         if video.tags != self.tags:
             video.tags = self.tags
-            changed = True
             reindex = True
 
         if video.allow_tag_add != self.allow_tag_add:
             video.allow_tag_add = self.allow_tag_add
-            changed = True
 
-        if self.thumbnail_key != None:
-            if video.thumbnail != None:
+        if self.thumbnail_key:
+            if video.thumbnail:
                 images.delete_serving_url(video.thumbnail)
                 models.blobstore.BlobInfo(video.thumbnail).delete()
             video.thumbnail = self.thumbnail_key
-            changed = True
+            if video.playlist_belonged:
+                playlist = video.playlist_belonged.get()
+                if playlist.first_video == video.key:
+                    playlist.set_first_video(video)
+                    playlist.put_async()
 
-        if video.video_clip_titles != self.subtitles:
-            video.video_clip_titles = self.subtitles
-            changed = True
-
+        ori_clips = models.VideoClip.query(models.VideoClip.video==video.key).order(models.VideoClip.index).fetch()
         new_clips = []
-        ori_clips = ndb.get_multi(video.video_clips)
         used_clips = {}
         video_duration = 0
         for i in xrange(0, len(self.indices)):
-            index = int(self.indices[i])
+            index = self.indices[i]
             if index != -1:
                 clip = ori_clips[index]
-                if clip.subintro != self.subintros[i]:
-                    clip.subintro = self.subintros[i]
-                if clip.raw_url != self.raw_urls[i]:
-                    clip.raw_url = self.raw_urls[i]
-                if clip.source != self.sources[i]:
-                    clip.source = self.sources[i]
-                if clip.vid != self.vids[i]:
-                    clip.vid = self.vids[i]
-                if clip.duration != self.durations[i]:
-                    clip.duration = self.durations[i]
-                clip.put()
+                clip.index = i
+                clip.title = self.clip_titles[i]
+                clip.subintro = self.subintros[i]
+                clip.raw_url = self.raw_urls[i]
+                clip.source = self.sources[i]
+                clip.vid = self.vids[i]
+                clip.duration = self.durations[i]
+
                 video_duration += clip.duration
-                new_clips.append(clip.key)
                 used_clips[index] = 1
+                new_clips.append(clip)
             else:
                 clip = models.VideoClip(
-                    subintro=self.subintros[i], 
-                    duration=self.durations[i], 
+                    parent=video.key,
+                    index=i,
+                    title=self.clip_titles[i],
+                    subintro=self.subintros[i],
+                    duration=self.durations[i],
                     raw_url=self.raw_urls[i],
                     source=self.sources[i],
                     vid=self.vids[i]
                 )
-                clip.put()
                 video_duration += clip.duration
-                new_clips.append(clip.key)
+                new_clips.append(clip)
 
-        if video.video_clips != new_clips:
-            # logging.info('not the same')
+        if ori_clips != new_clips:
             for i in xrange(0, len(ori_clips)):
                 if not used_clips.get(i):
-                    ori_clips[i].key.delete()
-            video.video_clips = new_clips
-            changed = True
+                    ori_clips[i].Delete()
 
-        if changed:
-            video.duration = video_duration
-            edit_record = models.ActivityRecord(creator=user.key, activity_type='edit', video=video.key, content=video.description, public=self.allowPost)
-            ndb.put_multi([video, edit_record])
+        video.duration = video_duration
+        if self.allow_post:
+            video.created = datetime.now()
+            subscriptions = models.Subscription.query(models.Subscription.uper==self.user_key).fetch(keys_only=True)
+            subscribers = [subscription.parent() for subscription in subscriptions]
+            for i in xrange(0, len(subscribers)):
+                subscribers[i].new_subscriptions += 1
+        else:
+            subscribers = []
+        ndb.put_multi_async([video] + subscribers + new_clips)
 
         if reindex:
-            video.create_index('videos_by_created', models.time_to_seconds(video.created) )
-            video.create_index('videos_by_hits', video.hits )
-            video.create_index('videos_by_favors', video.favors )
-            video.create_index('videos_by_user' + str(video.uploader.id()), models.time_to_seconds(video.created) )
+            video.create_index('videos_by_created', models.time_to_seconds(video.created))
+            video.create_index('videos_by_hits', video.hits)
+            video.create_index('videos_by_likes', video.likes)
+        elif self.allow_post:
+            video.create_index('videos_by_created', models.time_to_seconds(video.created))
 
-        self.response.out.write(json.dumps({
-            'error': False,
-            'message': 'Video updated successfully!'
-        }))
+        self.json_response(False)
 
 class AddTag(BaseHandler):
     @login_required_json
     def post(self, video_id):
-        video = models.Video.get_by_id('dt'+video_id)
+        video = models.Video.get_by_id(video_id)
         if not video:
-            self.response.out.write(json.dumps({
-                'error': True,
-                'message': 'Video not found.'
-            }))
+            self.json_response(True, {'message': 'Video not found.'})
             return
+
         if not video.allow_tag_add:
-            self.response.out.write(json.dumps({
-                'error': True,
-                'message': 'You are not allowed to add more tags to this video.'
-            }))
+            self.json_response(True, {'message': 'You are not allowed to add more tags to this video.'})
             return
 
         new_tag = self.request.get('new-tag').strip()
         if not new_tag:
-            self.response.out.write(json.dumps({
-                'error': True,
-                'message': 'Empty tag.'
-            }))
+            self.json_response(True, {'message': 'Empty tag.'})
             return
         elif len(new_tag) > 100:
-            self.response.out.write(json.dumps({
-                'error': True,
-                'message': 'Tag too long.'
-            }))
+            self.json_response(True, {'message': 'Tag too long.'})
             return
         elif models.ILLEGAL_REGEX.match(new_tag):
-            self.response.out.write(json.dumps({
-                'error': True,
-                'message': 'Tag has illegal letters.'
-            }))
+            self.json_response(True, {'message': 'Tag has illegal letters.'})
             return
         elif new_tag in video.tags:
-            self.response.out.write(json.dumps({
-                'error': True,
-                'message': 'Tag already existed.'
-            }))
+            self.json_response(True, {'message': 'Tag already existed.'})
             return
 
-        if len(video.tags) >= 20:
-            self.response.out.write(json.dumps({
-                'error': True,
-                'message': 'Can not add more tags.'
-            }))
+        if len(video.tags) >= 10:
+            self.json_response(True, {'message': 'Can not add more tags.'})
             return
 
         video.tags.append(new_tag)
-        video.put()
-        video.create_index('videos_by_created', models.time_to_seconds(video.created) )
-        video.create_index('videos_by_hits', video.hits )
-        video.create_index('videos_by_favors', video.favors )
-        video.create_index('videos_by_user' + str(video.uploader.id()), models.time_to_seconds(video.created) )
-        self.response.out.write(json.dumps({
-            'error': False,
-            'message': 'Video updated successfully!'
-        }))
+        video.put_async()
+        video.create_index('videos_by_created', models.time_to_seconds(video.created))
+        video.create_index('videos_by_hits', video.hits)
+        video.create_index('videos_by_likes', video.likes)
+        
+        self.json_response(False)
 
 class DeleteVideo(BaseHandler):
     @login_required_json
     def post(self):
-        user = self.user
-        ids = self.request.POST.getall('ids[]')
-        if len(ids) == 0:
-            self.response.out.write(json.dumps({
-                'error': True,
-                'message': 'No video selected.'
-            }))
+        try:
+            ids = self.get_ids()
+        except ValueError:
+            self.json_response(True, {'message': 'Invalid id.'})
             return
 
+        videos = ndb.get_multi([ndb.Key('Video', identifier) for identifier in ids])
         deleted_ids = []
         for i in xrange(0, len(ids)):
-            video_id = ids[i]
-            video = models.Video.get_by_id('dt'+video_id)
-            if video is None or video.uploader != user.key:
+            video = videos[i]
+            if not video or video.uploader != self.user_key:
                 continue
 
-            user.videos_favored -= video.favors
             video.Delete()
             deleted_ids.append(video_id)
 
-        if len(deleted_ids) == 0:
-            self.response.out.write(json.dumps({
-                'error': True,
-                'message': 'No video deleted.'
-            }))
-            return
-        user.videos_submitted -= len(deleted_ids)
-        user.put()
-
-        self.response.out.write(json.dumps({
-            'error': False,
-            'message': deleted_ids,
-        }))
+        user_detail = self.user_detail_key.get()
+        user_detail.videos_submitted -= len(deleted_ids)
+        user_detail.put_async()
+        self.json_response(False)
 
 class ManageVideo(BaseHandler):
-    @login_required
+    @login_required:
     def get(self):
-        user = self.user
-        page_size = models.DEFAULT_PAGE_SIZE
-        page = self.get_page_number()
+        context = {
+            'order': self.request.get('order'),
+            'video_keywords': self.get_keywords(),
+        }
+        self.render('manage_video', context)
 
-        context = {}
-        context['videos'] = []
+    @login_required
+    def post(self):
+        user_key = self.user_key
+        page_size = models.STANDARD_PAGE_SIZE
 
+        cursor_string = self.request.get('cursor')
         keywords = self.get_keywords()
-        order = self.request.get('order').strip()
-        if keywords:
-            context['order'] = 'created'
-            context['video_keywords'] = keywords
-            query_string = 'content: ' + keywords
-            page =  min(page, math.ceil(models.MAX_QUERY_RESULT/float(page_size)) )
-            offset = (page - 1)*page_size
+        order = self.request.get('order')
+        context = {'videos': []}
+        if order != 'created' or keywords:
+            if order == 'hits':
+                index = search.Index(name='videos_by_hits')
+            elif order == 'likes':
+                index = search.Index(name='videos_by_likes')
+            elif order == 'created':
+                index = search.Index(name='videos_by_created')
+            else:
+                self.json_response(True, {'message': 'Invalid order.'})
+                return
+
+            if keywords:
+                query_string = 'content: ' + keywords + ' AND uper: "' + str(user_key.id()) + '"'
+            else:
+                query_string = 'uper: "' + str(user_key.id()) + '"'
+
             try:
-                options = search.QueryOptions(offset=offset, limit=page_size)
+                cursor = search.Cursor(web_safe_string=cursor_string)
+                options = search.QueryOptions(cursor=cursor, limit=page_size, ids_only=True)
                 query = search.Query(query_string=query_string, options=options)
-                index = search.Index(name='videos_by_user' + str(user.key.id()))
-                result = index.search(query)                
-                total_found = min(result.number_found, models.MAX_QUERY_RESULT)
-                total_pages = math.ceil(total_found/float(page_size))
+                result = index.search(query)
+
+                cursor = result.cursor
+                context['cursor'] = cursor.web_safe_string if cursor else None
                 videos = ndb.get_multi([ndb.Key(urlsafe=video_doc.doc_id) for video_doc in result.results])
             except Exception, e:
-                self.notify('Search error.')
+                self.json_response(True, 'Search error.')
                 return
         else:
-            context['order'] = order
-            context['video_keywords'] = ''
-            if order == 'hits': # most viewed
-                order = models.Video.hits
-            elif order == 'created': # newest uplooad
-                order = models.Video.created
-            elif order == 'favors': # most favors
-                order = models.Video.favors
-            else:
-                context['order'] = 'created'
-                order = models.Video.created
-            
-            total_found = user.videos_submitted
-            total_pages = math.ceil(total_found/float(page_size))
-            videos = []
-            if total_found != 0 and page <= total_pages:
-                offset = (page - 1) * page_size
-                videos = models.Video.query(models.Video.uploader==self.user.key).order(-order).fetch(offset=offset, limit=page_size)
+            cursor = models.Cursor(urlsafe=cursor_string)
+            videos, cursor, more = models.Video.query(models.Video.uploader==user_key).order(-models.Video.created).fetch_page(page_size, start_cursor=cursor)
+            context['cursor'] = cursor.urlsafe() if cursor else None
         
-        # logging.info(videos)
         for i in xrange(0, len(videos)):
-            # logging.info(videos[i])
             video = videos[i]
             video_info = video.get_basic_info()
-            if video.playlist_belonged != None:
+            if video.playlist_belonged:
                 playlist = video.playlist_belonged.get()
                 video_info['playlist_title'] = playlist.title
             context['videos'].append(video_info)
 
-        context['total_found'] = total_found
-        context.update(self.get_page_range(page, total_pages))
-        self.render('manage_video', context)
+        self.json_response(False, context)
 
 class ManageDanmaku(BaseHandler):
     @login_required
     @video_author_required
     def get(self, video):
-        user = self.user
-        context = {
-            'title': video.title,
-            'id_num': video.key.id().replace('dt', ''),
-            'clips': [],
-        }
-        clips = ndb.get_multi(video.video_clips)
+        clips = models.VideoClip.query(ancestor=video.key).order(models.VideoClip.index).fetch()
+        if not clips:
+            self.notify('Video not found')
+            return
+
+        context = video.get_basic_info()
+        context{'clips': []}
+        put_list = []
         for i in xrange(0, len(clips)):
             clip = clips[i]
+            if clip.refresh:
+                danmaku_num = 0
+                danmaku_pools = ndb.get_multi(clip.danmaku_pools)
+                for danmaku_pool in danmaku_pools:
+                    danmaku_num += len(danmaku_pool.danmaku_list)
+                clip.danmaku_num = danmaku_num
+
+                advanced_danmaku_num = 0
+                if clip.advanced_danmaku_pool:
+                    advanced_danmaku_pool = clip.advanced_danmaku_pool.get()
+                    advanced_danmaku_num += len(advanced_danmaku_pool.danmaku_list)
+                clip.advanced_danmaku_num = advanced_danmaku_num
+
+                code_danmaku_num = 0
+                if clip.code_danmaku_pool:
+                    code_danmaku_pool = clip.code_danmaku_pool.get()
+                    code_danmaku_num += len(code_danmaku_pool.danmaku_list)
+                clip.code_danmaku_num = code_danmaku_num
+
+                clip.refresh = False
+                put_list.append(clip)
+
             context['clips'].append({
-                'title': video.video_clip_titles[i],
+                'title': clip.title,
                 'danmaku_num': clip.danmaku_num,
                 'advanced_danmaku_num': clip.advanced_danmaku_num,
                 'subtitles_num': len(clip.subtitle_danmaku_pools),
                 'code_num': clip.code_danmaku_num,
             })
+
+        ndb.put_multi_async(put_list)
         self.render('manage_danmaku', context)
+
+def pool_required_json(handler):
+    def check_index(self, video_id):
+        video = models.Video.get_by_id(video_id)
+        if not video or video.uploader != self.user_key:
+            self.json_response(True, {'message': 'You are not allowed to edit this video.',})
+            return
+
+        clip = models.VideoClip.query(models.VideoClip.index==clip_index, ancestor=video.key).get()
+        if not clip:
+            self.json_response(True, {'message': 'Video not found or deleted.'})
+            return
+
+        try:
+            pool_index = int(self.request.get('pool_index')) - 1
+        except ValueError:
+            pool_index = 0
+
+        return handler(self, video, clip, pool_index)
+
+    return check_index
 
 class ManageDanmakuDetail(BaseHandler):
     @login_required
     @video_author_required
     def get(self, video):
-        user = self.user
         try:
-            clip_index = int(self.request.get('index'))
+            clip_index = int(self.request.get('index')) - 1
         except ValueError:
-            clip_index = 1
-        if clip_index < 1 or clip_index > len(video.video_clips):
-            self.response.out.write(json.dumps({
-                'error': True,
-                'message': 'Video not found or deleted.'
-            }))
+            clip_index = 0
+
+        clip = models.VideoClip.query(models.VideoClip.index==clip_index, ancestor=video.key).get()
+        if not clip:
+            self.notify('Video not found or deleted.')
             return
-        clip = video.video_clips[clip_index-1].get()
+
         context = {
+            'id': video.key.id(),
+            'url': Video.get_video_url(video.key.id()),
             'title': video.title,
-            'id_num': video.key.id().replace('dt', ''),
             'clip_index': clip_index,
-            'clip_title': video.video_clip_titles[clip_index-1],
+            'clip_title': clip.title,
             'danmaku_num': clip.danmaku_num,
             'danmaku_list_range': range(0, len(clip.danmaku_pools)),
             'advanced_danmaku_pool': clip.advanced_danmaku_pool,
@@ -760,91 +649,69 @@ class ManageDanmakuDetail(BaseHandler):
         self.render('manage_danmaku_detail', context)
 
     @login_required_json
-    @pool_index_required_json
+    @pool_required_json
     def post(self, video, clip, pool_index):
-        pool_type = self.request.get('pool_type').strip()
+        pool_type = self.request.get('pool_type')
         try:
             if pool_type == 'danmaku':
                 danmaku_pool = clip.danmaku_pools[pool_index-1].get()
-                self.response.out.write(json.dumps({
-                    'error': False,
+                self.json_response(False,  {
                     'danmaku_list': [Danmaku.format_danmaku(danmaku, danmaku_pool) for danmaku in danmaku_pool.danmaku_list]
-                }))
+                })
             elif pool_type == 'advanced':
                 advanced_danmaku_pool = clip.advanced_danmaku_pool.get()
-                self.response.out.write(json.dumps({
-                    'error': False,
+                self.json_response(False, {
                     'danmaku_list': [Danmaku.format_advanced_danmaku(danmaku, advanced_danmaku_pool) for danmaku in advanced_danmaku_pool.danmaku_list]
-                }))
+                })
             elif pool_type == 'subtitles':
                 subtitle_danmaku_pool = clip.subtitle_danmaku_pools[pool_index-1].get()
-                self.response.out.write(json.dumps({
-                    'error': False,
+                self.json_response(False, {
                     'subtitles_list': Subtitles.format_subtitles(subtitle_danmaku_pool)
-                }))
+                })
             elif pool_type == 'code':
                 code_danmaku_pool = clip.code_danmaku_pool.get()
-                self.response.out.write(json.dumps({
-                    'error': False,
+                self.json_response(False, {
                     'danmaku_list': [Danmaku.format_code_danmaku(danmaku, code_danmaku_pool) for danmaku in code_danmaku_pool.danmaku_list]
-                }))
+                })
+            else:
+                raise IndexError('Invalid type')
         except IndexError:
-            self.response.out.write(json.dumps({
-                'error': True,
-                'message': 'Index out of range.'
-            }))
+            self.json_response(True, {'message': 'Index out of range.'})
 
     @login_required_json
-    @pool_index_required_json
+    @pool_required_json
     def drop(self, video, clip, pool_index):
-        pool_type = self.request.get('pool_type').strip()
+        pool_type = self.request.get('pool_type')
         try:
             if pool_type == 'danmaku':
                 danmaku_pool = clip.danmaku_pools.pop(pool_index-1)
-                danmaku_pool.delete()
-                self.response.out.write(json.dumps({
-                    'error': False,
-                }))
+                danmaku_pool.delete_async()
             elif pool_type == 'advanced':
-                clip.advanced_danmaku_pool.delete()
+                clip.advanced_danmaku_pool.delete_async()
                 clip.advanced_danmaku_pool = None
-                self.response.out.write(json.dumps({
-                    'error': False,
-                }))
             elif pool_type == 'subtitles':
                 subtitle_danmaku_pool = clip.subtitle_danmaku_pools.pop(pool_index-1)
-                subtitle_danmaku_pool.delete()
+                subtitle_danmaku_pool.delete_async()
                 clip.subtitle_names.pop(pool_index-1)
-                self.response.out.write(json.dumps({
-                    'error': False,
-                }))
             elif pool_type == 'code':
-                clip.code_danmaku_pool.delete()
+                clip.code_danmaku_pool.delete_async()
                 clip.code_danmaku_pool = None
-                self.response.out.write(json.dumps({
-                    'error': False,
-                }))
-            clip.put()
+            clip.put_async()
+            self.json_response(False)
         except IndexError:
-            self.response.out.write(json.dumps({
-                'error': True,
-                'message': 'Index out of range.'
-            }))
+            self.json_response(True, {'message': 'Index out of range.'})
 
     @login_required_json
-    @pool_index_required_json
+    @pool_required_json
     def delete(self, video, clip, pool_index):
         try:
             idxs = [int(index) for index in self.request.POST.getall('danmaku_index[]')]
         except ValueError:
-            self.response.out.write(json.dumps({
-                'error': True,
-                'message': 'Invalid indices.'
-            }))
+            self.json_response(True, {'message': 'Invalid indices.'})
             return
         idxs.sort(reverse=True)
 
-        pool_type = self.request.get('pool_type').strip()
+        pool_type = self.request.get('pool_type')
         if pool_type == 'danmaku':
             danmaku_pool = clip.danmaku_pools[pool_index-1].get()
         elif pool_type == 'advanced':
@@ -852,23 +719,13 @@ class ManageDanmakuDetail(BaseHandler):
         elif pool_type == 'code':
             danmaku_pool = clip.code_danmaku_pool.get()
         else:
-            self.response.out.write(json.dumps({
-                'error': True,
-                'message': 'Invalid type.'
-            }))
+            self.json_response(True, {'message': 'Invalid type.'})
             return
 
         try:
             for index in idxs:
                 danmaku_pool.danmaku_list.pop(index)
-            danmaku_pool.put()
-            
-            self.response.out.write(json.dumps({
-                'error': False,
-                'message': 'Danmaku deleted.'
-            }))
+            danmaku_pool.put_async()
+            self.json_response(False, {'message': 'Danmaku deleted.'})
         except IndexError:
-            self.response.out.write(json.dumps({
-                'error': True,
-                'message': 'Index out of range.'
-            }))
+            self.json_response(True, {'message': 'Index out of range.'})

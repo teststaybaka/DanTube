@@ -185,18 +185,17 @@ $(document).ready(function() {
                 contentType: false,
                 processData: false,
                 success: function(result) {
-                    console.log(result);
+                    $('#change-applying').removeClass('show');
                     if (!result.error) {
                         // uploadImage(result.url, dataURL);
                         dt.pop_ajax_message('Change applied successfully!', 'success');
-                        setTimeout(function(){
+                        setTimeout(function() {
                             window.location.replace('/account'); 
                         }, 1500);
                     } else {
                         dt.pop_ajax_message(result.message, 'error');
                         button.disabled = false;
                     }
-                    $('#change-applying').removeClass('show');
                 },
                 error: function (xhr, ajaxOptions, thrownError) {
                     console.log(xhr.status);

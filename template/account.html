@@ -72,7 +72,7 @@
         </div>
         <div id="account-detail">
             <div class="detail-entry" id="account-email">{{ user.email }}
-                {% if user.verified %}
+                {% if user.level != 1 %}
                 <div id="verified-icon" title="Email verified"></div>
                 {% else %}
                 <div class="blue-link" id="resend-email-link">Resend email</div>

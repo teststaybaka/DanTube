@@ -3,12 +3,11 @@ import re
 
 def playlist_author_required(handler):
     def check_author(self, playlist_id):
-        user = self.user
         playlist = models.PlayList.get_by_id(int(playlist_id))
         if not playlist:
             self.notify('Playlist not found.')
             return
-        elif user.key != playlist.creator:
+        elif self.user_key != playlist.creator:
             self.notify('You are not allowed to edit this list.')
             return
         
@@ -18,19 +17,13 @@ def playlist_author_required(handler):
 
 def playlist_author_required_json(handler):
     def check_author(self, playlist_id):
-        user = self.user
+        user_key = self.user_key
         playlist = models.PlayList.get_by_id(int(playlist_id))
         if not playlist:
-            self.response.out.write(json.dumps({
-                'error': True, 
-                'message': 'Playlist not found.'
-            }))
+            self.json_response(True,  {'message': 'Playlist not found.'})
             return
-        elif self.user.key != playlist.creator:
-            self.response.out.write(json.dumps({
-                'error': True,
-                'message': 'You are not allowed to edit this list.'
-            }))
+        elif user_key != playlist.creator:
+            self.json_response(True, {'message': 'You are not allowed to edit this list.'})
             return
 
         return handler(self, playlist)
@@ -40,327 +33,314 @@ def playlist_author_required_json(handler):
 class ManagePlaylist(BaseHandler):
     @login_required
     def get(self):
-        user = self.user
-        page_size = models.DEFAULT_PAGE_SIZE
-        page = self.get_page_number()
+        context = {'list_keywords': self.get_keywords()}
+        self.render('manage_playlist', context)
 
-        context = {}
-        context['playlists'] = []
+    @login_required_json
+    def post(self):
+        user_key = self.user_key
+        page_size = models.STANDARD_PAGE_SIZE
 
+        context = {'playlists': []}
         keywords = self.get_keywords()
+        cursor_string = self.request.get('cursor')
         if keywords:
-            context['list_keywords'] = keywords
-            query_string = 'content: ' + keywords
-            page =  min(page, math.ceil(models.MAX_QUERY_RESULT/float(page_size)) )
-            offset = (page - 1)*page_size
+            query_string = 'content: ' + keywords + ' AND uper: "' + user_key.id() + '"'
             try:
-                options = search.QueryOptions(offset=offset, limit=page_size)
+                cursor = search.Cursor(web_safe_string=cursor_string)
+                options = search.QueryOptions(cursor=cursor, limit=page_size, ids_only=True)
                 query = search.Query(query_string=query_string, options=options)
-                index = search.Index(name='playlists_by_user' + str(user.key.id()))
-                result = index.search(query)                
-                total_found = min(result.number_found, models.MAX_QUERY_RESULT)
-                total_pages = math.ceil(total_found/float(page_size))
+                index = search.Index(name='playlists_by_modified')
+                result = index.search(query)
+
+                cursor = result.cursor
+                context['cursor'] = cursor.web_safe_string if cursor else None
                 playlists = ndb.get_multi([ndb.Key(urlsafe=list_doc.doc_id) for list_doc in result.results])
             except Exception, e:
-                self.notify('Search error.')
+                logging.info('search error: '+e)
+                self.json_response(True, {'message': 'Search failed.'})
                 return
         else:
-            total_found = user.playlists_created
-            total_pages = math.ceil(total_found/float(page_size))
-            playlists = []
-            if total_found != 0 and page <= total_pages:
-                offset = (page - 1) * page_size
-                playlists = models.PlayList.query(models.PlayList.creator==self.user.key).order(-models.PlayList.modified).fetch(offset=offset, limit=page_size)
+            cursor = models.Cursor(urlsafe=cursor_string)
+            playlists, cursor, more = models.PlayList.query(models.PlayList.creator==user_key).order(-models.PlayList.modified).fetch_page(page_size, start_cursor=cursor)
+            context['cursor'] = cursor.urlsafe() if cursor else None
 
         for i in xrange(0, len(playlists)):
             playlist = playlists[i]
             info = playlist.get_basic_info()
             context['playlists'].append(info)
 
-        context['total_found'] = total_found
-        context.update(self.get_page_range(page, total_pages) )
-        self.render('manage_playlist', context)
+        self.json_response(False, context)
 
 class PlaylistInfo(BaseHandler):
     def check_params(self):
         self.title = self.request.get('title').strip()
         if not self.title:
-            return {
-                'error': True,
-                'message': 'Title can\'t be empty.'
-            }
+            raise Exception('Title can\'t be empty.')
         elif len(self.title) > 400:
-            return {
-                'error': True,
-                'message': 'Title too long.'
-            }
+            raise Exception('Title too long.')
 
         self.intro = self.request.get('intro').strip()
         if len(self.intro) > 2000:
-            return {
-                'error': True,
-                'message': 'Introduction too long.'
-            }
-
-        return {
-            'error': False,
-        }
+            raise Exception('Introduction too long')
 
     @login_required_json
     def create(self):
-        res = self.check_params()
-        if res['error']:
-            self.response.out.write(json.dumps(res))
+        try:
+            self.check_params()
+        except Exception, e:
+            self.json_response(True, {'message': str(e)})
             return
 
-        try:
-            models.PlayList.Create(user=self.user, title=self.title, intro=self.intro)
-        except Exception, e:
-            self.response.out.write(json.dumps({
-                'error': True,
-                'message': str(e)
-            }))
-            return
-        
-        self.response.out.write(json.dumps({
-            'error': False,
-        }))
+        playlist = PlayList(creator=user.key, title=title, intro=intro)
+        playlist.put()
+        list_detail = models.PlayListDetail(id='lv'+str(playlist.key.id()))
+        list_detail.put_async()
+        # user.playlists_created += 1
+        # user.put_async()
+        playlist.create_index()
+
+        self.json_response(False)
 
     @login_required_json
     @playlist_author_required_json
     def edit(self, playlist):
-        res = self.check_params()
-        if res['error']:
-            self.response.out.write(json.dumps(res))
+        try:
+            self.check_params()
+        except Exception, e:
+            self.json_response(True, {'message': str(e)})
             return
 
-        try:
-            playlist.change_info(title=self.title, intro=self.intro)
-        except Exception, e:
-            self.response.out.write(json.dumps({
-                'error': True,
-                'message': str(e)
-            }))
-            return
-        
-        self.response.out.write(json.dumps({
-            'error': False,
-        }))
+        changed = False
+        if playlist.title != self.title:
+            playlist.title = self.title
+            changed = True
+
+        if playlist.intro != self.intro:
+            playlist.intro = self.intro
+            changed = True
+
+        if changed:
+            playlist.modified = datetime.now()
+            playlist.put_async()
+            playlist.create_index()
+
+        self.json_response(False)
 
 class DeletePlaylist(BaseHandler):
     @login_required_json
     def post(self):
-        user = self.user
-        ids = self.request.POST.getall('ids[]')
-        deleted_ids = []
+        user_key = self.user_key
+        try:
+            ids = self.get_ids()
+            playlists = ndb.get_multi([ndb.Key('Playlist', int(identifier)) for identifier in ids])
+            lists_detail = ndb.get_multi([models.PlayList.get_detail_key(playlist.key) for playlist in playlists])
+        except ValueError:
+            self.json_response(True, {'message': 'Invalid id'})
+            return
+
         for i in xrange(0, len(ids)):
-            try:
-                playlist = models.PlayList.get_by_id(int(ids[i]))
-                if (not playlist) or user.key != playlist.creator:
-                    raise Exception('Error')
-            except Exception, e:
+            playlist = playlists[i]
+            list_detail = lists_detail[i]
+            if not playlist or user_key != playlist.creator:
                 continue
 
-            playlist.Delete()
-            deleted_ids.append(ids[i])
+            videos = models.get_multi(list_detail.videos)
+            for j in xrange(0, len(videos)):
+                video = videos[j]
+                video.playlist_belonged = None
+            ndb.put_multi_async(videos)
 
-        if len(deleted_ids) == 0:
-            self.response.out.write(json.dumps({
-                'error': True,
-                'message': 'No list deleted.'
-            }))
-            return
-        user.playlists_created -= len(deleted_ids)
-        user.put()
+            playlist.delete_index()
+            lists_detail.key.delete_async()
+            playlist.key.delete_async()
 
-        self.response.out.write(json.dumps({
-            'error': False, 
-            'message': deleted_ids
-        }))
+        # user.playlists_created -= len(deleted_ids)
+        # user.put_async()
+        self.json_response(False)
 
 class EditPlaylist(BaseHandler):
     @login_required
     @playlist_author_required
     def get(self, playlist):
-        user = self.user
-        page_size = models.DEFAULT_PAGE_SIZE
-        page = self.get_page_number()
+        context = {'playlist': playlist.get_basic_info()}
+        self.render('edit_playlist', context)
+
+    @login_required_json
+    @playlist_author_required_json
+    def post(self, playlist):
+        page_size = models.STANDARD_PAGE_SIZE
+        try:
+            page = int(self.request.get('cursor'))
+        except ValueError:
+            page = 1
+
+        list_detail = models.PlayList.get_detail_key(playlist.key).get()
+        offset = (page - 1)*page_size
+        video_keys = []
+        if not self.request.get('descending'):
+            for i in xrange(offset, min(len(list_detail.videos), offset + page_size)):
+                video_keys.append(list_detail.videos[i])
+        else:
+            for i in reversed(xrange(max(len(list_detail.videos) - offset - page_size, 0), len(list_detail.videos) - offset)):
+                video_keys.append(list_detail.videos[i])
+        videos = ndb.get_multi(video_keys)
 
         context = {
-            'playlist': playlist.get_basic_info()
+            'videos': [],
+            'cursor': page + 1,
         }
-        context['videos'] = []
-
-        requested_videos = []
-        base = (page - 1)*page_size;
-        for i in xrange(0, page_size):
-            if base + i >= len(playlist.videos):
-                break
-            requested_videos.append(playlist.videos[base + i])
-
-        videos = ndb.get_multi(requested_videos)
         for i in xrange(0, len(videos)):
             video = videos[i]
             video_info = video.get_basic_info()
-            video_info['index'] = i + base + 1;
+            video_info['index'] = offset+i
             context['videos'].append(video_info)
 
-        context.update(self.get_page_range(page, math.ceil(len(playlist.videos)/float(page_size)) ) )
-        self.render('edit_playlist', context=context)
+        self.json_response(False, context)
 
 class SearchVideo(BaseHandler):
     @login_required_json
     def post(self):
-        user = self.user
-        page_size = models.DEFAULT_PAGE_SIZE
-        page = self.get_page_number()
-
-        context = {'error': False}
-        context['videos'] = []
+        user_key = self.user_key
+        page_size = models.STANDARD_PAGE_SIZE
 
         keywords = self.get_keywords()
-        res = re.match(r'dt(\d+)', keywords)
+        cursor_string = self.request.get('cursor')
+        res = re.match(r'dt\d+', keywords)
+        context = {'videos': []}
         if res:
-            video_id = res.group(1)
-            video = models.Video.get_by_id('dt' + video_id)
+            video_id = res.group(0)
+            video = models.Video.get_by_id(video_id)
             videos = []
-            if video and video.uploader.id() == user.key.id():
+            if video and video.uploader == user_key:
                 videos = [video]
-            total_pages = 1
+            context['cursor'] = None
         elif keywords:
-            query_string = 'content: ' + keywords
-            page =  min(page, math.ceil(models.MAX_QUERY_RESULT/float(page_size)) )
-            offset = (page - 1)*page_size
+            query_string = 'content: ' + keywords + ' AND uper: ' +user_key.id()
             try:
-                options = search.QueryOptions(offset=offset, limit=page_size)
+                cursor = search.Cursor(web_safe_string=cursor_string)
+                options = search.QueryOptions(cursor=cursor, limit=page_size, ids_only=True)
                 query = search.Query(query_string=query_string, options=options)
-                index = search.Index(name='videos_by_user' + str(user.key.id()))
-                result = index.search(query)                
-                total_found = min(result.number_found, models.MAX_QUERY_RESULT)
-                total_pages = math.ceil(total_found/float(page_size))
+                index = search.Index(name='videos_by_created')
+                result = index.search(query)
+
+                cursor = result.cursor
+                context['cursor'] = cursor.web_safe_string if cursor else None
                 videos = ndb.get_multi([ndb.Key(urlsafe=video_doc.doc_id) for video_doc in result.results])
             except Exception, e:
-                self.response.out.write(json.dumps({
-                    'error': True, 
-                    'message': 'Search error.'
-                }))
+                self.json_response(True, {'message': 'Search error.'})
                 return
         else:
-            total_found = user.videos_submitted
-            total_pages = math.ceil(total_found/float(page_size))
-            videos = []
-            if total_found != 0 and page <= total_pages:
-                offset = (page - 1) * page_size
-                videos = models.Video.query(models.Video.uploader==self.user.key).order(-models.Video.created).fetch(offset=offset, limit=page_size)
+            cursor = models.Cursor(urlsafe=cursor_string)
+            videos, cursor, more = models.Video.query(models.Video.uploader==self.user_key).order(-models.Video.created).fetch_page(page_size, start_cursor=cursor)
+            context['cursor'] = cursor.urlsafe() if cursor else None
         
-        # logging.info(videos)
         for i in xrange(0, len(videos)):
-            # logging.info(videos[i])
             video = videos[i]
             video_info = video.get_basic_info()
-            if video.playlist_belonged != None:
+            if video.playlist_belonged:
                 video_info['belonged'] = True
             else:
                 video_info['belonged'] = False
             context['videos'].append(video_info)
 
-        context['cur_page'] = page
-        context['total_pages'] = total_pages
-        self.response.out.write(json.dumps(context))
+        self.json_response(False, context)
 
 class AddVideo(BaseHandler):
     @login_required_json
     @playlist_author_required_json
     def post(self, playlist):
-        user = self.user
-        ids = self.request.POST.getall('ids[]')
-        added_ids = []
+        user_key = self.user_key
+        try:
+            ids = get_ids()
+            videos = ndb.get_multi([ndb.Key('Video', identifier) for identifier in ids])
+        except ValueError:
+            self.json_response(True, {'message': 'Invalid id'})
+            return
+
+        list_detail = models.PlayList.get_detail_key(playlist.key).get()
         put_list = []
         for i in xrange(0, len(ids)):
-            video_id = ids[i]
-            video = models.Video.get_by_id('dt'+video_id)
-            if (not video) or video.playlist_belonged != None or video.uploader != user.key or len(playlist.videos) > 2000:
+            video = videos[i]
+            if not video or video.playlist_belonged or video.uploader != user_key:
                 continue
 
+            if not list_detail.videos:
+                playlist.set_first_video(video)
+            list_detail.videos.append(video.key)
             video.playlist_belonged = playlist.key
             put_list.append(video)
-            playlist.videos.append(video.key)
-            added_ids.append(video_id)
 
-        if len(added_ids) == 0:
-            self.response.out.write(json.dumps({
-                'error': True,
-                'message': 'No video added.'
-            }))
+        playlist.videos_num = len(list_detail.videos)
+        if playlist.videos_num > 1000:
+            self.json_response(True, {'message': 'Too many videos in one playlist.'})
             return
-        playlist.modified = datetime.now()
-        ndb.put_multi([playlist] + put_list)
 
-        self.response.out.write(json.dumps({
-            'error': False, 
-            'message': added_ids
-        }))
+        playlist.modified = datetime.now()
+        ndb.put_multi_async([playlist, list_detail] + put_list)
+        playlist.create_index()
+
+        self.json_response(False)
 
 class RemoveVideo(BaseHandler):
     @login_required_json
     @playlist_author_required_json
     def post(self, playlist):
-        user = self.user
-        ids = self.request.POST.getall('ids[]')
-        deleted_ids = []
+        user_key = self.user_key
+        try:
+            ids = get_ids()
+            videos = ndb.get_multi([ndb.Key('Video', identifier) for identifier in ids])
+        except ValueError:
+            self.json_response(True, {'message': 'Invalid id'})
+            return
+
+        list_detail = models.PlayList.get_detail_key(playlist.key).get()
         put_list = []
         for i in xrange(0, len(ids)):
-            video_id = ids[i]
-            video = models.Video.get_by_id('dt'+video_id)
-            if (not video) or video.playlist_belonged.id() != playlist.key.id() or video.uploader.id() != user.key.id():
+            video = videos[i]
+            if not video or video.playlist_belonged != playlist.key or video.uploader != user_key:
                 continue
 
             try:
-                idx = playlist.videos.index(video.key)
-                playlist.videos.pop(idx)
-                video.playlist_belonged = None
-                put_list.append(video)
-                deleted_ids.append(video_id)
-            except Exception, e:
+                list_detail.videos.remove(video.key)
+            except ValueError:
                 continue
+            video.playlist_belonged = None
+            put_list.append(video)
 
-        if len(deleted_ids) == 0:
-            self.response.out.write(json.dumps({
-                'error': True,
-                'message': 'No video removed.'
-            }))
-            return
+        if not list_detail.videos:
+            playlist.reset_first_video()
+        elif playlist.first_video != list_detail.videos[0]:
+            playlist.set_first_video(list_detail.videos[0].get())
+
+        playlist.videos_num = len(list_detail.videos)
         playlist.modified = datetime.now()
-        ndb.put_multi([playlist] + put_list)
+        ndb.put_multi_async([playlist, list_detail] + put_list)
+        playlist.create_index()
 
-        self.response.out.write(json.dumps({
-            'error': False, 
-            'message': deleted_ids
-        }))
+        self.json_response(False)
 
 class MoveVideo(BaseHandler):
     @login_required_json
     @playlist_author_required_json
     def post(self, playlist):
-        user = self.user
         try:
             ori_idx = int(self.request.get('ori_idx')) - 1
             target_idx = int(self.request.get('target_idx')) - 1
-            if ori_idx < 0 or ori_idx >= len(playlist.videos) or target_idx < 0 or target_idx >= len(playlist.videos):
+            list_detail = models.PlayList.get_detail_key(playlist.key).get()
+            if ori_idx < 0 or ori_idx >= len(list_detail.videos) or target_idx < 0 or target_idx >= len(list_detail.videos) or ori_idx == target_idx:
                 raise ValueError('Invalid')
         except ValueError:
-            self.response.out.write(json.dumps({
-                'error': True, 
-                'message': 'Index value error.'
-            }))
+            self.json_response(True, {'message': 'Index value error.'})
             return
 
-        if ori_idx != target_idx:
-            temp_key = playlist.videos.pop(ori_idx)
-            playlist.videos.insert(target_idx, temp_key)
-            playlist.modified = datetime.now()
-            playlist.put()
+        temp_key = list_detail.videos.pop(ori_idx)
+        list_detail.videos.insert(target_idx, temp_key)
+        if playlist.first_video != list_detail.videos[0]:
+            playlist.set_first_video(list_detail.videos[0].get())
+        
+        playlist.modified = datetime.now()
+        ndb.put_multi_async([playlist, list_detail])
+        playlist.create_index()
 
-        self.response.out.write(json.dumps({
-            'error': False, 
-        }))
+        self.json_response(False)

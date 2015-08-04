@@ -1,177 +1,163 @@
 from views import *
 
-def host_required(handler):
+def host_info(handler):
     def check_host(self, user_id):
-        host = self.user_model.get_by_id(int(user_id))
-        if not host:
-            self.notify('404 not found.', 404)
-            return
+        host_id = int(host_id)
+        host_key = self.user_model.get_key(host_id)
+        host_detail_key = models.UserDetail.get_key(host_key)
+        if self.user_info:
+            host, host_detail, user = ndb.get_multi([host_key, host_detail_key, self.user_key])
+            self.user = user
+            if not host:
+                self.notify('404 not found.', 404)
+                return
 
-        return handler(self, host)
+            try:
+                index = host_detail.recent_visitors.index(user.key)
+                host_detail.recent_visitors.pop(index)
+                host_detail.visitor_snapshots.pop(index)
+            except ValueError:
+                logging.info('not found')
+            host_detail.recent_visitors.append(user.key)
+            host_detail.visitor_snapshots.append(user.create_snapshot())
+            if len(host_detail.recent_visitors) > 8:
+                host_detail.recent_visitors.pop(0)
+                host_detail.visitor_snapshots.pop(0)
+            host_detail.space_visited += 1
+            host_detail.put_async()
+        else:
+            host, host_detail = ndb.get_multi([host_key, host_detail_key])
+            if not host:
+                self.notify('404 not found.', 404)
+                return
 
-    return check_host
+            host_detail.space_visited += 1
+            host_detail.put_async()
 
-def host_required_json(handler):
-    def check_host(self, user_id):
-        host = self.user_model.get_by_id(int(user_id))
-        if not host:
-            self.response.out.write(json.dumps({
-                'error': True,
-                'message': 'User not found.',
-            }))
-            return
+        context = {}
+        context['host'] = host.get_public_info()
+        context['host'].update(host_detail.get_detail_info())
+        context['host'].update(host_detail.get_visitor_info())
+        if self.user_info:
+            context['host']['subscribed'] = bool(models.Subscription.query(models.Subscription.uper==host.key, ancestor=user.key).get(keys_only=True))
+        else:
+            context['host']['subscribed'] = False
 
-        return handler(self, host)
+        return handler(self, context)
 
     return check_host
 
 class Space(BaseHandler):
-    @host_required
-    def get(self, host):
-        page_size = models.DEFAULT_PAGE_SIZE
-        page = self.get_page_number()
+    @host_info
+    def get(self, context):
+        self.render('space', context)
 
-        if not self.user:
-            host.space_visited += 1
-            host.put()
-        elif host.key != self.user.key:
-            try:
-                idx = host.recent_visitors.index(self.user.key)
-                host.recent_visitors.pop(idx)
-            except ValueError:
-                logging.info('not found')
-            host.recent_visitors.append(self.user.key)
-            if len(host.recent_visitors) > 8:
-                host.recent_visitors.pop(0)
-            host.space_visited += 1
-            host.put()
-
-        context = {}
-        context['videos'] = []
-
-        total_found = host.videos_submitted
-        total_pages = math.ceil(total_found/float(page_size))
-        videos = []
-        if total_found != 0 and page <= total_pages:
-            offset = (page - 1) * page_size
-            videos = models.Video.query(models.Video.uploader==host.key).order(-models.Video.created).fetch(offset=offset, limit=page_size)
+    def post(self, user_id):
+        host_key = self.user_model.get_key(int(user_id))
+        page_size = models.STANDARD_PAGE_SIZE
         
-        # logging.info(videos)
+        cursor = models.Cursor(urlsafe=self.request.get('cursor'))
+        videos, cursor, more = models.Video.query(models.Video.uploader==host_key).order(-models.Video.created).fetch_page(page_size, start_cursor=cursor)
+        
+        context = {
+            'videos': [],
+            'cursor': cursor.urlsafe() if cursor else None,
+        }
         for i in xrange(0, len(videos)):
-            # logging.info(videos[i])
             video = videos[i]
             video_info = video.get_basic_info()
             context['videos'].append(video_info)
 
-        context['host'] = host.get_public_info(self.user)
-        context['host'].update(host.get_statistic_info())
-        context['host'].update(host.get_visitor_info())
-        context.update(self.get_page_range(page, total_pages) )
-        self.render('space', context)
+        self.json_response(False, context)
 
 class SpacePlaylist(BaseHandler):
-    @host_required
-    def get(self, host):
-        page_size = models.DEFAULT_PAGE_SIZE
-        page = self.get_page_number()
-
-        context = {}
-        context['playlists'] = []
-        total_found = host.playlists_created
-        total_pages = math.ceil(total_found/float(page_size))
-        playlists = models.PlayList.query(models.PlayList.creator==host.key).order(-models.PlayList.modified).fetch(offset=(page-1)*page_size, limit=page_size)
-        
-        for i in xrange(0, len(playlists)):
-            playlist = playlists[i]
-            info = playlist.get_basic_info()
-            context['playlists'].append(info)
-
-        context['host'] = host.get_public_info(self.user)
-        context['host'].update(host.get_statistic_info())
-        context['host'].update(host.get_visitor_info())
-        context.update(self.get_page_range(page, total_pages))
+    @host_info
+    def get(self, context):
         self.render('space_playlist', context)
 
+    def post(self, user_id):
+        host_key = self.user_model.get_key(int(user_id))
+        page_size = models.STANDARD_PAGE_SIZE
+
+        cursor = models.Cursor(urlsafe=self.request.get('cursor'))
+        playlists, cursor, more = models.PlayList.query(models.PlayList.creator==host_key).order(-models.PlayList.modified).fetch_page(page_size, start_cursor=cursor)
+
+        context = {
+            'playlists': [],
+            'cursor': cursor.urlsafe() if cursor else None,
+        }
+        for i in xrange(0, len(playlists)):
+            playlist = playlists[i]
+            info = playlist.get_info()
+            context['playlists'].append(info)
+
+        self.json_response(False, context)
+
 class FeaturedUpers(BaseHandler):
-    @host_required
-    def get(self, host):
-        page_size = 20;
-        page = self.get_page_number()
-
-        context = {'users': []}
-        total_found = len(host.subscriptions)
-        total_pages = math.ceil(total_found/float(page_size))
-        user_keys = []
-        offset = (page-1)*page_size
-        for i in xrange(0, page_size):
-            if i+offset >= total_found:
-                break
-            user_keys.append(host.subscriptions[i+offset])
-        
-        users = ndb.get_multi(user_keys)
-        for i in xrange(0, len(users)):
-            user = users[i]
-            info = user.get_public_info()
-            info.update(user.get_statistic_info())
-            context['users'].append(info)
-
-        context['host'] = host.get_public_info(self.user)
-        context['host'].update(host.get_statistic_info())
-        context['host'].update(host.get_visitor_info())
-        context.update(self.get_page_range(page, total_pages))
+    @host_info
+    def get(self, context):
         self.render('space_upers', context)
+
+    def post(self, user_id):
+        host_key = self.user_model.get_key(int(user_id))
+        page_size = models.MEDIUM_PAGE_SIZE
+
+        cursor = models.Cursor(urlsafe=self.request.get('cursor'))
+        uper_keys, cursor, more = models.Subscription.query(ancestor=host_key).order(-models.Subscription.score).fetch_page(page_size, start_cursor=cursor, projection=['uper'])
+        upers = ndb.get_multi(uper_keys)
+
+        if self.user_info:
+            subscribed_keys = models.Subscription.query(ancestor=self.user_key).order(-models.Subscription.score).fetch(projection=['uper'])
+        else:
+            subscribed_keys = []
+
+        context = {
+            'upers': [],
+            'cursor': cursor.urlsafe() if cursor else None,
+        }
+        for i in xrange(0, len(upers)):
+            uper = upers[i]
+            info = uper.get_public_info()
+            if uper.key in subscribed_keys:
+                info['subscribed'] = True
+            else:
+                info['subscribed'] = False
+            context['upers'].append(info)
+
+        self.json_response(False, context)
 
 class Subscribe(BaseHandler):
     @login_required_json
-    @host_required_json
-    def post(self, host):
-        user = self.user
-        if user == host:
-            self.response.out.write(json.dumps({
-                'error': True,
-                'message': 'You can\'t subscribe to yourself.'
-            }))
+    def post(self, user_id):
+        user_key = self.user_key
+        host_key = self.user_model.get_key(int(user_id))
+        if user_key == host_key:
+            self.json_response(True, {'message': 'You can\'t subscribe to yourself.'})
             return
 
-        if host.key in user.subscriptions:
-            self.response.out.write(json.dumps({
-                'error': True,
-                'change': True,
-                'message': 'Already subscribed.'
-            }))
+        host = host_key.get()
+        if not host:
+            self.json_response(True, {'message': 'User not found.'})
             return
 
-        if len(user.subscriptions) >= 1000:
-            self.response.out.write(json.dumps({
-                'error': True,
-                'message': 'You have reached the limit of subscriptions.'
-            }))
-            return
-    
-        user.subscriptions.append(host.key)
-        host.subscribers_counter += 1
-        ndb.put_multi([user, host])
+        is_new = models.Subscription.unique_create(host.key, user_key)
+        if is_new:
+            host.subscribers_counter += 1
+            host.put_async()
 
-        self.response.out.write(json.dumps({
-            'error': False
-        }))
+        self.json_response(False)
 
 class Unsubscribe(BaseHandler):
     @login_required_json
-    @host_required_json
-    def post(self, host):
-        user = self.user
-        try:
-            user.subscriptions.remove(host.key)
-            host.subscribers_counter -= 1
-            ndb.put_multi([user, host])
+    def post(self, user_id):
+        user_key = self.user_key
+        host_key = self.user_model.get_key(int(user_id))
 
-            self.response.out.write(json.dumps({
-                'error': False
-            }))
-        except ValueError:
-            self.response.out.write(json.dumps({
-                'error': True,
-                'change': True,
-                'message': 'You didn\'t subscribe to the user.'
-            }))
+        subscription = models.Subscription.query(models.Subscription.uper==host_key, ancestor=user_key).get(keys_only=True)
+        if subscription:
+            subscription.delete_async()
+            host = host_key.get()
+            host.subscribers_counter -= 1
+            host.put_async()
+
+        self.json_response(False)

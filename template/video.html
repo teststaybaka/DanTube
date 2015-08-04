@@ -403,7 +403,7 @@
             {% for name in subtitle_names %}
             <label class="check-label subtitle">
               <div class="pseudo-checkbox"></div>
-              <input type="checkbox" id="show-colored-checkbox" class="hidden" data-index="{{ loop.index }}">
+              <input type="checkbox" id="show-colored-checkbox" class="hidden" data-id="{{ subtitle_pool_ids[loop.index0] }}">
               <span>{{ name }}</span>
             </label>
             {% endfor %}
@@ -515,7 +515,7 @@
           <label class="advanced-danmaku-label">Position options</label>
           <label class="check-label as-percent">
             <div class="pseudo-checkbox"></div>
-            <input type="checkbox" class="hidden" tabindex="1" name="as-percent">
+            <input type="checkbox" class="hidden" name="as-percent">
             <span>As percent</span>
           </label>
           <label class="check-label">
@@ -556,7 +556,7 @@
           </div>
           <label class="check-label">
             <div class="pseudo-checkbox checked"></div>
-            <input type="checkbox" class="hidden" id="advanced-use-cur-timestamp" tabindex="1" checked="checked">
+            <input type="checkbox" class="hidden" id="advanced-use-cur-timestamp" checked="checked">
             <span>Use current timestamp</span>
           </label>
         </div>
@@ -616,7 +616,7 @@
           </div>
           <label class="check-label">
             <div class="pseudo-checkbox checked"></div>
-            <input type="checkbox" class="hidden" id="code-use-cur-timestamp" tabindex="1" checked="checked">
+            <input type="checkbox" class="hidden" id="code-use-cur-timestamp" checked="checked">
             <span>Use current timestamp</span>
           </label>
         </div>
