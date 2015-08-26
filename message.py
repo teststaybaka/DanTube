@@ -4,8 +4,7 @@ class Message(BaseHandler):
     @login_required
     def get(self):
         self.user = user = self.user_key.get()
-        context = {}
-        context['user'] = {'new_messages': user.new_messages}
+        context = {'new_messages': user.new_messages}
         self.render('message', context)
 
     @login_required_json
@@ -17,12 +16,12 @@ class Message(BaseHandler):
         threads, cursor, more = models.MessageThread.query(models.MessageThread.users==user_key).order(-models.MessageThread.updated).fetch_page(page_size, start_cursor=cursor)
         context = {
             'entries': [],
-            'cursor': cursor.urlsafe() if cursor else None,
+            'cursor': cursor.urlsafe() if more else '',
         }
         partner_keys = []
         for i in xrange(0, len(threads)):
             thread = threads[i]
-            last_message = thread.message[-1]
+            last_message = thread.messages[-1]
             thread_dict = {
                 'id': thread.key.id(),
                 'subject': thread.subject,
@@ -91,7 +90,7 @@ class Compose(BaseHandler):
         thread = models.MessageThread(messages=[message], subject=subject, users=[user_key, receiver.key], users_backup=[user_key, receiver.key], new_messages=0, updated=message.when)
         thread.new_messages += 1
         receiver.new_messages += 1
-        ndb.put_multi_async([thread, receiver])
+        ndb.put_multi([thread, receiver])
         
         self.json_response(False, {'message':'Message sent!'})
 
@@ -148,7 +147,7 @@ class Detail(BaseHandler):
             if user.new_messages < 0:
                 user.new_messages = 0
             thread.new_messages = 0
-            ndb.put_multi_async([thread, user])
+            ndb.put_multi([thread, user])
         
         context['partner'] = partner.get_public_info()
         self.render('message_detail', context)
@@ -179,7 +178,7 @@ class Detail(BaseHandler):
         else:
             partner.new_messages += 1
 
-        ndb.put_multi_async([thread, partner])
+        ndb.put_multi([thread, partner])
         self.json_response(False, {
             'message': 'Message sent.',
             'when': message.when.strftime("%Y-%m-%d %H:%M"),
@@ -208,24 +207,23 @@ class DeleteMessage(BaseHandler):
 
             partner_key = thread.get_partner_key(user.key)
             if partner_key not in thread.users: # The other user has already deleted the message
-                thread.key.delete_async()
+                thread.key.delete()
             else:
                 thread.users.remove(user.key)
                 put_list.append(thread)
 
         if user.new_messages < 0:
             user.new_messages = 0
-        ndb.put_multi_async([user] + put_list)
+        ndb.put_multi([user] + put_list)
         self.json_response(False)
 
 class Mentioned(BaseHandler):
     @login_required
     def get(self):
-        user = self.user_key.get()
-        self.user = user
+        self.user = user = self.user_key.get()
         new_mentions = user.new_mentions
         user.new_mentions = 0
-        user.put_async()
+        user.put()
         self.render('mentioned_me', {'new_mentions': new_mentions})
 
     @login_required_json
@@ -239,30 +237,27 @@ class Mentioned(BaseHandler):
 
         result = {
             'entries': [],
-            'cursor': cursor.urlsafe() if cursor else None,
+            'cursor': cursor.urlsafe() if more else '',
         }
         for i in xrange(0, len(records)):
             target_key = records[i].target
             # if target_key.kind() == 'Video':
             #     video = targets[i]
             #     if not video:
-            #         video_info = models.Video.get_deleted_video_info()
+            #         video_info = models.Video.get_deleted_video_info(record.target)
             #     else:
             #         video_info = video.get_basic_info()
             #     video_info['entry_type'] = 'Video'
             #     result['entries'].append(video_info)
             if target_key.kind() == 'Comment':
                 comment = targets[i]
-                if not comment:
-                    comment_info = models.Comment.get_deleted_content()
-                else:
-                    comment_info = comment.get_content()
-                comment_info['entry_type'] = 'Comment'
+                comment_info = comment.get_content()
+                comment_info['type'] = 'comment'
                 result['entries'].append(comment_info)
             elif target_key.kind() == 'DanmakuRecord':
                 danmaku_record = targets[i]
                 danmaku_info = danmaku_record.get_content()
-                danmaku_info['entry_type'] = 'Danmaku'
+                danmaku_info['type'] = 'danmaku'
                 result['entries'].append(danmaku_info)
         
         self.json_response(False, result)
@@ -271,8 +266,7 @@ class Notifications(BaseHandler):
     @login_required
     def get(self):
         self.user = user = self.user_key.get()
-        context = {}
-        context['user'] = {'new_notifications': user.new_notifications}
+        context = {'new_notifications': user.new_notifications}
         self.render('notifications', context)
 
     @login_required_json
@@ -285,7 +279,7 @@ class Notifications(BaseHandler):
 
         context = {
             'entries': [],
-            'cursor': cursor.urlsafe() if cursor else None,
+            'cursor': cursor.urlsafe() if more else '',
         }
         for i in xrange(0, len(notifications)):
             notification = notifications[i]
@@ -323,7 +317,7 @@ class ReadNotification(BaseHandler):
         if user.new_notifications < 0:
             user.new_notifications = 0
 
-        ndb.put_multi_async([note, user])
+        ndb.put_multi([note, user])
         self.json_response(False)
 
 class DeleteNotifications(BaseHandler):
@@ -344,9 +338,9 @@ class DeleteNotifications(BaseHandler):
 
             if not note.read:
                 user.new_notifications -= 1
-            note.key.delete_async()
+            note.key.delete()
 
         if user.new_notifications < 0:
             user.new_notifications = 0
-        user.put_async()
+        user.put()
         self.json_response(False)

@@ -21,10 +21,10 @@
     {% block navigation %}
     <div id="user-bar-background">
         <div id="user-bar" class="container">
-            <a id="logo" class="left" href="{{ uri_for('home') }}">DanTube</a>
-            <a class="navi left" id="feeling-lucky" href="{{ uri_for('feeling_lucky') }}">I'm feeling lucky!</a>
-            {% if user.is_auth %}
-            <div id="portrait" class="right" data-id="{{ user.id }}">
+            <a id="logo" class="navi-left" href="{{ uri_for('home') }}">DanTube</a>
+            <a class="navi navi-left" id="feeling-lucky" href="{{ uri_for('feeling_lucky') }}">I'm feeling lucky!</a>
+            {% if user %}
+            <div id="portrait" class="navi-right" data-id="{{ user.id }}">
                 <a id="portrait-link" href="{{ uri_for('account') }}">
                     <img id="portrait-img" src="{{ user.avatar_url_small }}">
                 </a>
@@ -37,7 +37,7 @@
                         <a href="{{ uri_for('message') }}" id="user-message" class="normal-link">Messages<div id="user-message-new-num">{{ user.new_messages_99 }}</div></a>
                     </div>
                     <div id="user-box-bottom-line" class="container">
-                        <a href="{{ uri_for('account') }}" id="user-config">
+                        <a href="{{ uri_for('change_info') }}" id="user-config">
                             <span id="user-config-icon"></span>
                             <span id="user-config-text">Settings</span>
                         </a>
@@ -45,13 +45,13 @@
                     </div>
                 </div>
             </div>
-            <a href="{{ uri_for('subscriptions_quick') }}" id="user-subscriptions" class="navi right normal-link">Subscriptions<div id="user-subscriptions-new-num"></div></a>
-            <a href="{{ uri_for('favorites') }}" class="navi right normal-link">Favorites</a>
-            <a href="{{ uri_for('history') }}" class="navi right normal-link">History</a>
-            <a href="{{ uri_for('submit') }}" class="navi right normal-link">Submit</a>
+            <a href="{{ uri_for('subscriptions_quick') }}" id="user-subscriptions" class="navi navi-right normal-link">Subscriptions<div id="user-subscriptions-new-num">{{ user.new_subscriptions_99 }}</div></a>
+            <a href="{{ uri_for('likes') }}" class="navi navi-right normal-link">Likes</a>
+            <a href="{{ uri_for('history') }}" class="navi navi-right normal-link">History</a>
+            <a href="{{ uri_for('submit') }}" class="navi navi-right normal-link">Submit</a>
             {% else %}
-            <a href="{{ uri_for('signup') }}" id="signup-nav-button" class="navi right normal-link">Sign up</a>
-            <a href="{{ uri_for('signin') }}" id="signin-nav-button" class="navi right normal-link">Sign in</a>
+            <a href="{{ uri_for('signup') }}" id="signup-nav-button" class="navi navi-right normal-link">Sign up</a>
+            <a href="{{ uri_for('signin') }}" id="signin-nav-button" class="navi navi-right">Sign in</a>
             {% endif %}
         </div>
     </div>
@@ -76,6 +76,12 @@
             </div> -->
             <form id="search-form" method="get" {% block search_url %}action="{{ uri_for('search') }}"{% endblock %}>
                 <input type="text" name="keywords" id="search-input" value="{{ keywords }}" tabindex="3">
+                {% if order %}<input type="text" class="hidden" name="order" value="{{ order }}">{% endif %}
+                {% if cur_category %}<input type="text" class="hidden" name="category" value="{{ cur_category }}">{% endif %}
+                {% if cur_subcategory %}<input type="text" class="hidden" name="subcategory" value="{{ cur_subcategory }}">{% endif %}
+                {% if playlist_type %}<input type="text" class="hidden" name="type" value="{{ playlist_type }}">{% endif %}
+                {% if playlist_min %}<input type="text" class="hidden" name="min" value="{{ playlist_min }}">{% endif %}
+                {% if playlist_max %}<input type="text" class="hidden" name="max" value="{{ playlist_max }}">{% endif %}
                 <input type="submit" id="search-button" value="">
             </form>
         </div>

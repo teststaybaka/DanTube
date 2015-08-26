@@ -2,109 +2,48 @@
 {% block head %}
 {{ super() }}
 <link rel="stylesheet" href="/static/search.css" type="text/css" />
+<script src="/static/search.js" language="JavaScript" type="text/javascript"></script>
 {% endblock %}
 
 {% block body %}
-{% block search_scope %}
 <div class="search-scope-line">
     <a class="search-scope active">Videos</a>
     <a class="search-scope" href="{{ uri_for('search_playlist') }}?keywords={{ keywords }}">Playlists</a>
     <a class="search-scope" href="{{ uri_for('search_uper') }}?keywords={{ keywords }}">UPers</a>
 </div>
 <div class="search-scope-line">
-    <a class="search-scope {% if not cur_category %}active{% endif %}" {% if cur_category %}href="{{ uri_for('search') }}?keywords={{ keywords }}&order={{ order }}"{% endif %}>All</a>
+    <a class="search-scope {% if not cur_category %}active{% endif %}" {% if cur_category %}href="?keywords={{ keywords }}&order={{ order }}"{% endif %}>All</a>
     {% for key in category %}
-        <a class="search-scope {% if key == cur_category %}active{% endif %}" {% if key != cur_category %}href="{{ uri_for('search') }}?keywords={{ keywords }}&order={{ order }}&category={{ key }}"{% endif %}>{{ key }}</a>
+        <a class="search-scope {% if key == cur_category %}active{% endif %}" {% if key != cur_category %}href="?keywords={{ keywords }}&order={{ order }}&category={{ key }}"{% endif %}>{{ key }}</a>
     {% endfor %}
 </div>
 {% if cur_category %}
 <div class="search-scope-line">
-    <a class="search-scope {% if not cur_subcategory %}active{% endif %}" {% if cur_subcategory %}href="{{ uri_for('search') }}?keywords={{ keywords }}&order={{ order }}&category={{ cur_category }}"{% endif %}>All</a>
+    <a class="search-scope {% if not cur_subcategory %}active{% endif %}" {% if cur_subcategory %}href="?keywords={{ keywords }}&order={{ order }}&category={{ cur_category }}"{% endif %}>All</a>
     {% for val in subcategory[cur_category] %}
-        <a class="search-scope {% if val == cur_subcategory %}active{% endif %}" {% if val != cur_subcategory %}href="/search?keywords={{ keywords }}&order={{ order }}&category={{ cur_category }}&subcategory={{ val }}"{% endif %}>{{ val }}</a>
+        <a class="search-scope {% if val == cur_subcategory %}active{% endif %}" {% if val != cur_subcategory %}href="?keywords={{ keywords }}&order={{ order }}&category={{ cur_category }}&subcategory={{ val }}"{% endif %}>{{ val }}</a>
     {% endfor %}
 </div>
 {% endif %}
-{% endblock %}
 
 <div class="search-scope-line container">
-    {% block search_subtitle_line %}
-    <div class="search-result-num">Found <span class="commas_number">{{ total_found }}</span> videos.</div>
-    <div id="view-method-block">
-        <label id="view-method-label">Sorted by:</label>
-        <div id="view-method">
-            {% if order == "created" %}
-            <div class="selected">Newest</div>
-            {% elif order == "hits" %}
-            <div class="selected">Most viewed</div>
-            {% elif order == "favors" %}
-            <div class="selected">Most favored</div>
-            {% endif %}
-            <div class="option">
-                <a class="option-entry" href="{{ uri_for('search') }}?order=created&category={{ cur_category }}&subcategory={{ cur_subcategory }}&keywords={{ keywords }}">Newest</a>
-                <a class="option-entry" href="{{ uri_for('search') }}?order=hits&category={{ cur_category }}&subcategory={{ cur_subcategory }}&keywords={{ keywords }}">Most viewed</a>
-                <a class="option-entry" href="{{ uri_for('search') }}?order=favors&category={{ cur_category }}&subcategory={{ cur_subcategory }}&keywords={{ keywords }}">Most favored</a>
-            </div>
-        </div>
-    </div>
-    {% endblock %}
-</div>
-{% if total_pages == 0 %}
-<div class="content-entry no-result">
-    No result found. Please try other keywords.
-</div>
-{% else %}
-    {% block search_result %}
-    {% for video in videos %}
-    <div class="content-entry">
-        <div class="video-img-uper">
-            <a class="video-img" target="_blank" href="{{ video.url }}">
-                <img class="video-img" src="{{ video.thumbnail_url }}">
-                <div class="preview-time">{{ video.duration }}</div>
-            </a>
-            <div class="uper-line">
-                <label>UPer: </label>
-                <a href="{{ video.uploader.space_url }}" target="_blank" class="video-uploader blue-link">{{ video.uploader.nickname }}</a>
-            </div>
-        </div>
-        <div class="video-info">
-            <div>
-                <div class="video-category">Anime</div>
-                <div class="video-category-arrow"></div>
-                <div class="video-category">Continuing Anime</div>
-                <div class="video-time">{{ video.created }}</div>
-            </div>
-            <div class="video-title">
-                <a href="{{ video.url }}" class="video-title normal-link">{{ video.title }}</a>
-            </div>
-            <div class="video-statistic">
-                <div class="video-statistic-entry">Views: <span class="commas_number">{{ video.hits }}</span></div>
-                <div class="video-statistic-entry">Favors: <span class="commas_number">{{ video.favors }}</span></div>
-                <div class="video-statistic-entry">Comments: <span class="commas_number">{{ video.comment_counter }}</span></div>
-                <div class="video-statistic-entry">Bullets: <span class="commas_number">{{ video.bullets }}</span></div>
-            </div>
-            <div class="video-description">{{ video.description }}</div>
-            <div class="video-tags">
-                {% for tag in video.tags %}
-                <a class="tag-entry" href="{{ uri_for('search') }}?keywords={{ tag }}">{{ tag }}</a>
-                {% endfor %}
-            </div>
-        </div>
-    </div>
-    {% endfor %}
-    {% endblock %}
-    <div class="search-pagination-line">
-        {% if cur_page > 1%}
-            <a class="page-change" href="?keywords={{ keywords }}&order={{ order }}&category={{ cur_category }}&subcategory={{ cur_subcategory }}&page=1"><<</a>
-            <a class="page-change" href="?keywords={{ keywords }}&order={{ order }}&category={{ cur_category }}&subcategory={{ cur_subcategory }}&page={{ cur_page - 1 }}"><</a>
+    <div class="search-result-num">Found <span class="commas_number">0</span> video<span class="plural"></span>.</div>
+    <div id="view-method">
+        {% if order == "hits" %}
+        <div class="selected">Most viewed</div>
+        {% elif order == "likes" %}
+        <div class="selected">Most liked</div>
+        {% else %}
+        <div class="selected">Newest</div>
         {% endif %}
-        {% for p in pages %}
-            <a class="page-num {% if p == cur_page %}active{% endif %}" href="?keywords={{ keywords }}&order={{ order }}&category={{ cur_category }}&subcategory={{ cur_subcategory }}&page={{ p }}">{{ p }}</a>
-        {% endfor %}
-        {% if cur_page < total_pages %}
-            <a class="page-change" href="?keywords={{ keywords }}&order={{ order }}&category={{ cur_category }}&subcategory={{ cur_subcategory }}&page={{ cur_page + 1 }}">></a>
-            <a class="page-change" href="?keywords={{ keywords }}&order={{ order }}&category={{ cur_category }}&subcategory={{ cur_subcategory }}&page={{ total_pages }}">>></a>
-        {% endif %}
+        <div class="option">
+            <a class="option-entry" href="{{ uri_for('search') }}?order=created&category={{ cur_category }}&subcategory={{ cur_subcategory }}&keywords={{ keywords }}">Newest</a>
+            <a class="option-entry" href="{{ uri_for('search') }}?order=hits&category={{ cur_category }}&subcategory={{ cur_subcategory }}&keywords={{ keywords }}">Most viewed</a>
+            <a class="option-entry" href="{{ uri_for('search') }}?order=likes&category={{ cur_category }}&subcategory={{ cur_subcategory }}&keywords={{ keywords }}">Most liked</a>
+        </div>
     </div>
-{% endif %}
+    <label id="view-method-label">Sorted by:</label>
+</div>
+<div class="result-container">
+</div>
 {% endblock %}

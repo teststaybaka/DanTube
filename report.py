@@ -12,7 +12,7 @@ class Contact(BaseHandler):
             self.json_response(True, {'message': 'Category must not be empty!',})
             return
         elif category not in models.Feedback_Category:
-            self.json_response(True, {'message': 'Category mismatch!'})
+            self.json_response(True, {'message': 'Category invalid!'})
             return
 
         subject = self.request.get('subject').strip()
@@ -37,18 +37,13 @@ class Contact(BaseHandler):
             subject = subject,
             description = description,
         )
-        feedback.put_async()
+        feedback.put()
         
         self.json_response(False)
 
 class Report(BaseHandler):
     @login_required_json
-    def video(self, video_id):
-        try:
-            clip_index = int(self.request.get('index')) - 1
-        except ValueError:
-            clip_index = 0
-
+    def video(self, video_id, clip_id):
         issue = self.request.get('issue')
         if not issue:
             self.json_response(True, {'message': 'Issue must not be empty!'})
@@ -59,18 +54,17 @@ class Report(BaseHandler):
 
         description = self.request.get('description').strip()
         report = models.ReportVideo(
-            video = ndb.Key('Video', video_id)
-            clip_index = clip_index,
+            video_clip = ndb.Key('VideoClip', int(clip_id), parent=ndb.Key('Video', video_id)),
             issue = issue,
             description = description,
             reporter = self.user_key,
         )
-        report.put_async()
+        report.put()
 
         self.json_response(False)
 
     @login_required_json
-    def comment(self, video_id):
+    def comment(self, video_id, clip_id):
         issue = self.request.get('issue')
         if not issue:
             self.json_response(True, {'message': 'Issue must not be empty!'})
@@ -86,10 +80,16 @@ class Report(BaseHandler):
             return
 
         video_key = ndb.Key('Video', video_id)
-        comment_key = models.Comment.get_key(comment_id, video_key)
+        comment_key = ndb.Key('Comment', comment_id, parent=video_key)
         is_inner = self.request.get('is_inner')
         if is_inner:
-            comment_key = models.InnerComment.get_key(inner_comment_id, comment_key)
+            try:
+                inner_comment_id = int(self.request.get('inner_comment_id'))
+            except Exception:
+                self.json_response(True, {'message': 'Invalid id'})
+                return
+
+            comment_key = ndb.Key('Comment', inner_comment_id, parent=ndb.Key('Comment', comment_id))
 
         comment = comment_key.get()
         if not comment or comment.deleted:
@@ -98,7 +98,7 @@ class Report(BaseHandler):
             
         description = self.request.get('description').strip()
         report = models.ReportComment(
-            video = video_key
+            video = video_key,
             issue = issue,
             description = description,
             reporter = self.user_key,
@@ -106,17 +106,12 @@ class Report(BaseHandler):
             content = comment.content,
             user = comment.creator,
         )
-        report.put_async()
+        report.put()
 
         self.json_response(False)
 
     @login_required_json
-    def danmaku(self, video_id, clip_index):
-        try:
-            clip_index = int(self.request.get('index')) - 1
-        except ValueError:
-            clip_index = 0
-
+    def danmaku(self, video_id, clip_id):
         issue = self.request.get('issue')
         if not issue:
             self.json_response(True, {'message': 'Issue must not be empty!'})
@@ -161,8 +156,7 @@ class Report(BaseHandler):
 
         description = self.request.get('description').strip()
         report = models.ReportDanmaku(
-            video = ndb.Key('Video', video_id),
-            clip_index = clip_index,
+            video_clip = ndb.Key('VideoClip', int(clip_id), parent=ndb.Key('Video', video_id)),
             issue = issue,
             description = description,
             reporter = self.user_key,
@@ -171,6 +165,6 @@ class Report(BaseHandler):
             content = danmaku.content,
             user = danmaku.creator,
         )
-        report.put_async()
+        report.put()
 
         self.json_response(False)

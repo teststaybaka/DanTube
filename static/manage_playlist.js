@@ -1,15 +1,58 @@
 (function(dt, $) {
 $(document).ready(function() {
+    dt.scrollUpdate(window.location.href, {}, 'content-entry', $('.manage-playlists-container'), function(result) {
+        if (result.total_found) {
+            $('#sub-title .commas_number').text(dt.numberWithCommas(result.total_found));
+            if (result.total_found > 1) $('#sub-title .plural').text('s');
+        }
+
+        var div = '';
+        for (var i = 0; i < result.playlists.length; i++) {
+            var playlist = result.playlists[i];
+            div += '<div class="content-entry '+playlist.id+'">\
+                        <a class="video-img" href="'+playlist.url+'" target="_blank">\
+                            <img src="'+playlist.thumbnail_url+'">\
+                            <div class="video-num-box">\
+                                <div class="vertical-align-relative">\
+                                    <div class="video-num">'+playlist.videos_num+'</div>\
+                                    <div class="video-num">Video'
+                                    if (playlist.videos_num > 1) {
+                                        div += 's'
+                                    }
+                                    if (playlist.type === 'Primary') {
+                                        div += '(*)'
+                                    }
+                                    div += '</div>\
+                                </div>\
+                            </div>\
+                        </a>\
+                        <div class="list-info">\
+                            <div class="info-line">\
+                                <a class="video-title normal-link" href="'+playlist.url+'" target="_blank">'+playlist.title+'</a>\
+                            </div>\
+                            <div class="info-line">\
+                                <div class="list-intro">'+playlist.intro+'</div>\
+                            </div>\
+                            <div class="info-line">\
+                                <a class="blue-link edit-button" href="/account/playlists/edit/'+playlist.id+'">[Edit Playlist]</a>\
+                            </div>\
+                        </div>\
+                        <div class="single-checkbox" data-id="'+playlist.id+'" data-title="'+playlist.title+'"></div>\
+                    </div>'
+        }
+        return div;
+    });
+
     $('#playlist-create-button').click(function() {
-        $('#playlist-create-dropdown').addClass('show');
+        $('#playlist-create-dropdown').removeClass('hidden');
     });
 
     $('div.create-button').click(function() {
-        $('#playlist-create-dropdown').removeClass('show');
+        $('#playlist-create-dropdown').addClass('hidden');
     });
 
     $('#playlist-create-button-box').submit(function(evt) {
-        $("input.create-button").prop('disabled', true);
+        $(".create-button.special").prop('disabled', true);
 
         var error = false;
         var title = $('#playlist-title-input').val().trim();
@@ -35,7 +78,7 @@ $(document).ready(function() {
         }
 
         if (error) {
-            $("input.create-button").prop('disabled', false);
+            $(".create-button.special").prop('disabled', false);
             return false;
         }
 
@@ -48,19 +91,19 @@ $(document).ready(function() {
                 console.log(result);
                 if (!result.error) {
                     dt.pop_ajax_message('A new playlist is created!', 'success');
-                    $('#playlist-create-dropdown').removeClass('show');
+                    $('#playlist-create-dropdown').addClass('hidden');
                     setTimeout(function(){
                         window.location.reload();
                     }, 3000);
                 } else {
                     dt.pop_ajax_message(result.message, 'error');
-                    $("input.create-button").prop('disabled', false);
+                    $(".create-button.special").prop('disabled', false);
                 }
             },
             error: function (xhr, ajaxOptions, thrownError) {
                 console.log(xhr.status);
                 console.log(thrownError);
-                $("input.create-button").prop('disabled', false);
+                $(".create-button.special").prop('disabled', false);
                 dt.pop_ajax_message(xhr.status+' '+thrownError, 'error');
             }
         });

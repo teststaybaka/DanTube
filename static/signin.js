@@ -1,5 +1,42 @@
 (function(dt, $) {
 $(document).ready(function() {
+    $('#send-veri').click(function() {
+        var veri_link = $(this);
+        if (veri_link.hasClass('disabled')) return
+
+        veri_link.removeClass('blue-link')
+                .addClass('disabled')
+                .text('Sending...');
+        $.ajax({
+            type: "POST",
+            url: "/verify",
+            data: $('#signinform').serialize(),
+            success: function(result) {
+                console.log(result);
+                if(!result.error) {
+                    dt.pop_ajax_message('Verfiication email sent. Please check it to activate your account!', 'success');
+                    setTimeout(function(){
+                        window.location.replace('/'); 
+                    }, 3000);
+                    veri_link.remove();
+                } else {
+                    dt.pop_ajax_message(result.message, 'error');
+                    veri_link.addClass('blue-link')
+                            .removeClass('disabled')
+                            .text('Send verification');
+                }
+            },
+            error: function (xhr, ajaxOptions, thrownError) {
+                console.log(xhr.status);
+                console.log(thrownError);
+                veri_link.addClass('blue-link')
+                        .removeClass('disabled')
+                        .text('Send verification');
+                dt.pop_ajax_message(xhr.status+' '+thrownError, 'error');
+            },
+        });
+    });
+
     $('#signinform').submit(function(evt) {
         // evt.preventDefault();
         $('#signin_up-header').addClass('loading');
@@ -16,7 +53,11 @@ $(document).ready(function() {
                 if(!result.error) {
                     dt.pop_ajax_message('Sign in successfully! Redirecting to home page in 3 seconds...', 'success');
                     setTimeout(function(){
-                        window.location.replace('/'); 
+                        if (document.referrer && document.referrer !== window.location.href) {
+                            window.location.replace(document.referrer);
+                        } else {
+                            window.location.replace('/');
+                        }
                     }, 3000);
                 } else {
                     dt.pop_ajax_message(result.message, 'error');

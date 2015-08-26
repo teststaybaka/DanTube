@@ -1,38 +1,39 @@
-{% extends "template/account.html" %}
+{% extends "template/account_base.html" %}
 {% block head %}
 {{ super() }}
 <link rel="stylesheet" href="/static/manage_video.css" type="text/css" />
+<script src="/static/manage_video.js" language="JavaScript" type="text/javascript"></script>
 {% endblock %}
 
-{% block overview_active %}{% endblock %}
 {% block videos_active %}active{% endblock %}
 
 {% block topTitle %}
-<a class="top-title active" href="">
+<a class="top-title active" href="{{ uri_for('manage_video') }}">
     <div class="top-title-dot"></div>
     Videos
 </a>
 {% endblock %}
 
 {% block detail %}
-<div id="sub-title-line" class="container">
-    <div id="sub-title"><span class="commas_number">{{ total_found }}</span> Video{% if total_found > 1 %}s{% endif %}</div>
-    <form class="sub-search-block" method="get" action="{{ uri_for('manage_video') }}">
+<div id="sub-title-line">
+    <div id="sub-title"><span class="commas_number">{{ user.videos_submitted }}</span> Video<span class="plural">{% if user.videos_submitted > 1 %}s{% endif %}</span></div>
+    <form class="sub-search-block" method="get" action="">
+        <input class="hidden" type="text" name="order" value="{{ video_order }}">
         <input class="sub-search-input" type="text" name="keywords" placeholder="Search Videos" value="{{ video_keywords }}" tabindex="1">
         <input type="submit" class="sub-search-button" value="">
     </form>
     <div id="view-method">
-        {% if order == "created" %}
-        <div class="selected">Newest</div>
-        {% elif order == "hits" %}
+        {% if video_order == "hits" %}
         <div class="selected">Most viewed</div>
-        {% elif order == "favors" %}
-        <div class="selected">Most favored</div>
+        {% elif video_order == "likes" %}
+        <div class="selected">Most liked</div>
+        {% else %}
+        <div class="selected">Newest</div>
         {% endif %}
         <div class="option">
-            <a class="option-entry" href="{{ uri_for('manage_video') }}?order=created">Newest</a>
-            <a class="option-entry" href="{{ uri_for('manage_video') }}?order=hits">Most viewed</a>
-            <a class="option-entry" href="{{ uri_for('manage_video') }}?order=favors">Most favored</a>
+            <a class="option-entry" href="?order=created&keywords={{ video_keywords }}">Newest</a>
+            <a class="option-entry" href="?order=hits&keywords={{ video_keywords }}">Most viewed</a>
+            <a class="option-entry" href="?order=likes&keywords={{ video_keywords }}">Most liked</a>
         </div>
     </div>
     <label id="view-method-label">Sorted by:</label>
@@ -46,58 +47,7 @@
     </div>
 </div>
 <div class="submitted-video-container">
-    {% if total_pages == 0 %}
-    <div class="content-entry none">No videos found.</div>
-    {% endif %}
-    {% for video in videos %}
-    <div class="content-entry {{ video.id_num }}">
-        <a class="video-img" href="{{ video.url }}" target="_blank">
-            <img class="video-img" src="{{ video.thumbnail_url }}">
-        </a>
-        <div class="video-info">
-            <div>
-                <div class="video-category">{{ video.category }}</div>
-                <div class="video-category-arrow"></div>
-                <div class="video-category">{{ video.subcategory }}</div>
-                <div class="video-time">{{ video.created }}</div>
-            </div>
-            <div class="video-title">
-                <a href="{{ video.url }}" class="video-title normal-link" target="_blank">{{ video.title }}</a>
-            </div>
-            <div class="video-playlist">
-                <label>Playlist: </label>
-                <label class="list-title">{% if video.playlist_title %}{{ video.playlist_title }}{% else %}Not listed{% endif %}</label>
-            </div>
-            <div class="video-statistic">
-                <div class="video-statistic-entry">Views: <span class="commas_number">{{ video.hits }}</span></div>
-                <div class="video-statistic-entry">Favors: <span class="commas_number">{{ video.favors }}</span></div>
-                <div class="video-statistic-entry">Comments: <span class="commas_number">{{ video.comment_counter }}</span></div>
-                <div class="video-statistic-entry">Bullets: <span class="commas_number">{{ video.bullets }}</span></div>
-            </div>
-            <div class="video-edit">
-                <a href="{{ uri_for('edit_video', video_id=video.id_num) }}" class="blue-link edit-entry">[Edit Video]</a>
-                <a href="{{ uri_for('manage_danmaku', video_id=video.id_num) }}" class="blue-link edit-entry">[Manage Danmaku]</a>
-            </div>
-        </div>
-        <div class="single-checkbox" data-id="{{ video.id_num }}" data-title="{{ video.title }}"></div>
-    </div>
-    {% endfor %}
 </div>
-{% if total_pages != 0 %}
-<div class="pagination-line">
-  {% if cur_page > 1 %}
-    <a class="page-change" href="?keywords={{ video_keywords }}&order={{ order }}&page=1"><<</a>
-    <a class="page-change" href="?keywords={{ video_keywords }}&order={{ order }}&page={{ cur_page - 1 }}"><</a>
-  {% endif %}
-  {% for p in pages %}
-    <a class="page-num {% if p == cur_page %}active{% endif %}" href="?keywords={{ video_keywords }}&order={{ order }}&page={{ p }}">{{ p }}</a>
-  {% endfor %}
-  {% if cur_page < total_pages %}
-    <a class="page-change" href="?keywords={{ video_keywords }}&order={{ order }}&page={{ cur_page + 1 }}">></a>
-    <a class="page-change" href="?keywords={{ video_keywords }}&order={{ order }}&page={{ total_pages }}">>></a>
-  {% endif %}
-</div>
-{% endif %}
 {% endblock %}
 
 {% block popup_window %}
@@ -108,9 +58,28 @@
             <div class="ajax-icon warning"></div>
             <div class="delete-confirm-message">Are you sure to delete the following video(s)?</div>
             <div class="delete-target-name">sdf</div>
-            <div class="delete-buttons-line container">
-                <input class="inline-button special delete-button" type="button" value="Delete">
+            <div class="delete-buttons-line">
                 <div class="inline-button delete-button">Cancel</div>
+                <input class="inline-button special delete-button" type="button" value="Delete">
+            </div>
+        </div>
+    </div>
+</div>
+<div class="popup-window-container add-to">
+    <div class="popup-window-center wide">
+        <div class="popup-window-padding"></div>
+        <div class="popup-window-box add-search">
+            <div class="add-search-title-line">
+                <div class="add-search-title">Select a playlist to add to</div>
+                <form id="search-playlist-form" class="sub-search-block none-float" method="POST" action="{{ uri_for('manage_playlist') }}">
+                    <input class="sub-search-input popup" type="text" name="keywords" placeholder="" tabindex="1">
+                    <input type="submit" class="sub-search-button" value="">
+                </form>
+            </div>
+            <div class="popup-playlist-container"></div>
+            <div class="choose-buttons-line">
+                <div class="inline-button add-button">Cancel</div>
+                <input class="inline-button special add-button" type="button" value="Add">
             </div>
         </div>
     </div>

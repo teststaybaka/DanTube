@@ -1,10 +1,9 @@
-{% extends "template/account.html" %}
+{% extends "template/account_base.html" %}
 {% block head %}
 {{ super() }}
 <link rel="stylesheet" href="/static/manage_video.css" type="text/css" />
 {% endblock %}
 
-{% block overview_active %}{% endblock %}
 {% block videos_active %}active{% endblock %}
 
 {% block topTitle %}
@@ -19,8 +18,8 @@
 {% endblock %}
 
 {% block detail %}
-<div id="sub-title-line" class="container">
-    <a id="sub-title" class="normal-link" href="{{ uri_for('watch', video_id=id_num) }}" target="_blank">{{ title }}</a>
+<div id="sub-title-line">
+    <a id="sub-title" class="normal-link" href="{{ video_url }}" target="_blank">{{ title }}</a>
 </div>
 <div class="danmaku-clip-list">
     <div class="danmaku-table-line label-line">
@@ -33,8 +32,7 @@
     {% for clip in clips %}
     <div class="danmaku-table-line line">
         <div class="table-label subtitle">
-            <a class="normal-link" href="{{ uri_for('watch', video_id=id_num) }}?index={{ loop.index }}" target="_blank">
-            {{ clip.title }}
+            <a class="normal-link" href="{{ video_url }}?index={{ loop.index }}" target="_blank">
             {% if clip.title %}
                 {{ loop.index }}. {{ clip.title }}
             {% else %}
@@ -46,7 +44,7 @@
         <div class="table-label">{{ clip.advanced_danmaku_num }}</div>
         <div class="table-label">{{ clip.subtitles_num }}</div>
         <div class="table-label">{{ clip.code_num }}</div>
-        <a class="table-label action blue-link" href="{{ uri_for('manage_danmaku_detail', video_id=id_num) }}?index={{ loop.index }}">[Check]</a>
+        <a class="table-label action blue-link" href="{{ uri_for('manage_danmaku_detail', video_id=id, clip_id=clip.id) }}">[Check]</a>
     </div>
     {% endfor %}
 </div>

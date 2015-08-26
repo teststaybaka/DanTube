@@ -1,4 +1,5 @@
 from google.appengine.ext import ndb
+from google.appengine.api.datastore_errors import TransactionFailedError
 from google.appengine.datastore.datastore_query import Cursor
 from google.appengine.api import search
 import webapp2_extras.appengine.auth.models
@@ -30,31 +31,72 @@ ILLEGAL_LETTER = re.compile(r"[&@.,?!:/\\\"'<>]")
 
 class BlobCollection(ndb.Model):
   blob = ndb.BlobKeyProperty(required=True, indexed=False)
+  created = ndb.DateTimeProperty(auto_now_add=True, indexed=False)
 
   def Delete(self):
     images.delete_serving_url(self.blob)
     blobstore.BlobInfo(self.blob).delete_async()
 
+class UserToken(ndb.Model):
+  subject = ndb.StringProperty(required=True, indexed=False)
+  token = ndb.StringProperty(required=True, indexed=False)
+  created = ndb.DateTimeProperty(auto_now_add=True, indexed=False)
+  updated = ndb.DateTimeProperty(auto_now=True, indexed=False)
+
+  @classmethod
+  def get_key(cls, user_id, subject, token):
+    return ndb.Key(cls, '%s.%s.%s' % (str(user_id), subject, token), parent=User.get_key(user_id))
+
+  @classmethod
+  def create(cls, user_id, subject, token=None):
+    token = token or security.generate_random_string(entropy=128)
+    key = cls.get_key(user_id, subject, token)
+    entity = cls(key=key, subject=subject, token=token)
+    entity.put()
+    return entity
+
+  @classmethod
+  def get(cls, user_id=None, subject=None, token=None):
+    if user_id and subject and token:
+      return cls.get_key(user_id, subject, token).get()
+
+    # assert subject and token, \
+    #     'subject and token must be provided to UserToken.get().'
+    # return cls.query(cls.subject == subject, cls.token == token).get()
+    return None
+
+  @classmethod
+  def fetch_tokens(cls, user_key, subject):
+    all_tokens = cls.query(ancestor=user_key).fetch()
+    res_tokens = []
+    for token in all_tokens:
+      if token.subject == subject:
+        res_tokens.append(token)
+
+    return res_tokens
+
 class UserSnapshot(ndb.Model):
   nickname = ndb.StringProperty(required=True, indexed=False)
-  default_avatar = ndb.IntegerProperty(required=True, indexed=False)
-  avatar = ndb.BlobKeyProperty(required=True, indexed=False)
+  avatar_url_small = ndb.StringProperty(required=True, indexed=False)
 
   def get_snapshot_info(self, user_key):
     snapshot_info = {
-      'id': user_key.id(),
-      'space_url': cls.get_space_url(user_key.id()),
-      'nickname': nickname,
+      'id': user_key.id() if user_key else '',
+      'space_url': User.get_space_url(user_key.id()) if user_key else '',
+      'nickname': self.nickname,
+      'avatar_url_small': self.avatar_url_small,
     }
-    snapshot_info['avatar_url'], snapshot_info['avatar_url_small'] = User.get_avatar_url(default_avatar, avatar)
+    return snapshot_info
 
 class UserDetail(ndb.Model):
-  intro = ndb.TextProperty(indexed=False)
+  intro = ndb.TextProperty(required=True, default='',indexed=False)
   spacename = ndb.StringProperty(indexed=False)
   css_file = ndb.BlobKeyProperty(indexed=False)
   recent_visitors = ndb.KeyProperty(kind='User', repeated=True, indexed=False)
   visitor_snapshopts = ndb.LocalStructuredProperty(UserSnapshot, repeated=True, indexed=False)
   bullets = ndb.IntegerProperty(required=True, default=0, indexed=False)
+  playlists_created = ndb.IntegerProperty(required=True, default=0, indexed=False)
+  subscription_counter = ndb.IntegerProperty(required=True, default=0, indexed=False)
 
   videos_submitted = ndb.IntegerProperty(required=True, default=0, indexed=False)
   videos_watched = ndb.IntegerProperty(required=True, default=0, indexed=False)
@@ -64,15 +106,18 @@ class UserDetail(ndb.Model):
     detail_info = {
       'intro': self.intro,
       'spacename': self.spacename,
-      'bullets': self.bullets,
+      'playlists_created': self.playlists_created,
+      'subscription_counter': self.subscription_counter,
+
       'videos_submitted': self.videos_submitted,
       'videos_watched': self.videos_watched,
       'space_visited': self.space_visited,
+      'bullets': self.bullets,
     }
     if self.css_file:
-      public_info['space_css'] = str(self.css_file)
+      detail_info['space_css'] = str(self.css_file)
     else:
-      public_info['space_css'] = ''
+      detail_info['space_css'] = ''
 
     return detail_info
 
@@ -87,23 +132,27 @@ class UserDetail(ndb.Model):
 
   @classmethod
   def Create(cls, user_key):
-    user_detail = cls(id='ud'+str(user_key.id()))
-    user_detail.put_async()
-
-  @classmethod
-  def get_key(cls, user_key):
-    return ndb.Key(cls, 'ud'+str(user_key.id()))
+    user_detail = cls(key=cls.get_key(user_key))
+    user_detail.put()
 
 class User(webapp2_extras.appengine.auth.models.User):
-  level = ndb.IntegerProperty(required=True, default=1, indexed=False)
+  token_model = UserToken
+
+  email = ndb.StringProperty(required=True, indexed=False)
+  password = ndb.StringProperty(required=True, indexed=False)
   nickname = ndb.StringProperty(required=True)
+  level = ndb.IntegerProperty(required=True, default=1, indexed=False)
   avatar = ndb.BlobKeyProperty(indexed=False)
-  default_avatar = ndb.IntegerProperty(default=1, choices=[1,2,3,4,5,6], indexed=False)
+  avatar_url = ndb.StringProperty(required=True, indexed=False)
+  created = ndb.DateTimeProperty(auto_now_add=True, indexed=False)
+  updated = ndb.DateTimeProperty(auto_now_add=True, indexed=False)
 
   new_messages = ndb.IntegerProperty(required=True, default=0, indexed=False)
   new_mentions = ndb.IntegerProperty(required=True, default=0, indexed=False)
   new_notifications = ndb.IntegerProperty(required=True, default=0, indexed=False)
   new_subscriptions = ndb.IntegerProperty(required=True, default=0, indexed=False)
+  check_new_subscription = ndb.BooleanProperty(required=True, default=False, indexed=False)
+  last_subscription_check = ndb.DateTimeProperty(auto_now_add=True, indexed=False)
   subscribers_counter = ndb.IntegerProperty(required=True, default=0, indexed=False)
 
   @classmethod
@@ -111,18 +160,18 @@ class User(webapp2_extras.appengine.auth.models.User):
     return ndb.Key(cls, user_id)
 
   @classmethod
+  def get_detail_key(cls, user_key):
+    return ndb.Key('UserDetail', 'ud'+str(user_key.id()))
+
+  @classmethod
   def get_space_url(cls, user_id):
     return '/user/' + str(user_id)
 
-  @classmethod
-  def get_avatar_url(cls, default_avatar, avatar):
+  def get_avatar_url_small(self):
     if self.avatar:
-      url = images.get_serving_url(self.avatar)
-      url_small = images.get_serving_url(self.avatar, size=64)
+      return self.avatar_url+'=s64'
     else:
-      url = '/static/emoticons_img/default_avatar' + str(self.default_avatar) + '.png'
-      url_small = public_info['avatar_url']
-    return url, url_small
+      return self.avatar_url
 
   def get_public_info(self):
     public_info = {
@@ -132,24 +181,35 @@ class User(webapp2_extras.appengine.auth.models.User):
       'created': self.created.strftime("%Y-%m-%d %H:%M"),
       'space_url': User.get_space_url(self.key.id()),
       'subscribers_counter': self.subscribers_counter,
+      'avatar_url': self.avatar_url,
+      'avatar_url_small': self.get_avatar_url_small(),
     }
-    public_info['avatar_url'], public_info['avatar_url_small'] = User.get_avatar_url(self.default_avatar, self.avatar)
     return public_info
 
   def get_private_info(self):
+    if self.check_new_subscription:
+      self.check_new_subscription = False
+      subscriptions = Subscription.query(ancestor=self.key).fetch(projection=['uper'])
+      uper_keys = [subscription.uper for subscription in subscriptions]
+      if uper_keys:
+        self.new_subscriptions = Video.query(ndb.AND(Video.uploader.IN(uper_keys), -Video.created < -self.last_subscription_check)).count()
+      else:
+        self.new_subscriptions = 0
+      self.put()
+
     private_info = {
       'email': self.email,
       'new_mentions_99': number_upper_limit_99(self.new_mentions),
       'new_notifications_99': number_upper_limit_99(self.new_notifications),
       'new_messages_99': number_upper_limit_99(self.new_messages),
-      'new_subscriptions': number_upper_limit_99(self.new_subscriptions),
+      'new_subscriptions_99': number_upper_limit_99(self.new_subscriptions),
     }
     info = self.get_public_info()
     info.update(private_info)
     return info
 
   def create_snapshot(self):
-    return UserSnapshot(nickname=self.nickname, default_avatar=self.default_avatar, avatar=self.avatar)
+    return UserSnapshot(nickname=self.nickname, avatar_url_small=self.get_avatar_url_small())
 
   def delete_index(self):
     index = search.Index(name='upers_by_created')
@@ -157,7 +217,7 @@ class User(webapp2_extras.appengine.auth.models.User):
 
   def create_index(self, intro):
     index = search.Index(name='upers_by_created')
-    searchable = " ".join([self.nickname, intro[:200]]);
+    searchable = " ".join([self.nickname, intro[:300]]);
     doc = search.Document(
       doc_id = self.key.urlsafe(), 
       fields = [
@@ -165,13 +225,13 @@ class User(webapp2_extras.appengine.auth.models.User):
       ],
       rank = time_to_seconds(self.created),
     )
-    try:
-      add_result = index.put(doc)
-    except search.Error:
-      logging.info('failed to create upers_by_created index for user %s' % (self.key.id()))
+    add_result = index.put(doc)
 
   def set_password(self, raw_password):
-    self.password = security.generate_password_hash(raw_password, length=32, pepper='xxx-dantube-pepper')
+    self.password = security.generate_password_hash(raw_password, length=12)
+
+  def auth_password(self, raw_password):
+    return security.check_password_hash(raw_password, self.password)
 
   @classmethod
   def validate_nickname(cls, nickname):
@@ -183,10 +243,6 @@ class User(webapp2_extras.appengine.auth.models.User):
       return None
     if len(nickname) > 50:
       logging.info('nickname 3')
-      return None
-    res = cls.query(cls.nickname==nickname).get()
-    if res:
-      logging.info('nickname 4')
       return None
     return nickname
 
@@ -219,17 +275,21 @@ class User(webapp2_extras.appengine.auth.models.User):
     return email
 
   @classmethod
+  def check_unique(cls, name, value):
+    return bool(ndb.Key(cls.unique_model, '%s.%s:%s' % (cls.__name__, name, value)).get())
+
+  @classmethod
+  def delete_unique(cls, name, value):
+    ndb.Key(cls.unique_model, '%s.%s:%s' % (cls.__name__, name, value)).delete()
+
+  @classmethod
+  def create_unique(cls, name, value):
+    return cls.unique_model.create('%s.%s:%s' % (cls.__name__, name, value))
+
+  @classmethod
   def create_pwdreset_token(cls, user_id):
     entity = cls.token_model.create(user_id, 'pwdreset')
     return entity.token
-
-  @classmethod
-  def validate_pwdreset_token(cls, user_id, token):
-    return cls.validate_token(user_id, 'pwdreset', token)
-
-  @classmethod
-  def delete_pwdreset_token(cls, user_id, token):
-    cls.token_model.get_key(user_id, 'pwdreset', token).delete()
 
   @classmethod
   def get_token_key(cls, user_id, token, subject='auth'):
@@ -249,7 +309,7 @@ Video_Category = ['Anime', 'Music', 'Dance', 'Game', 'Entertainment', 'Techs', '
 Video_SubCategory = {'Anime': ['Continuing Anime', 'Finished Anime', 'MAD/AMV/GMV', 'MMD/3D', 'Original/Voice Acting', 'General']
                   , 'Music': ['Music Sharing', 'Cover Version', 'Instrument Playing', 'VOCALOID/UTAU', 'Music Selection', 'Sound Remix']
                   , 'Dance': ['Dance']
-                  , 'Game': ['Game Video', 'Game Guides/Commentary', 'Eletronic Sports', 'Mugen']
+                  , 'Game': ['Game Video', 'Walkthrough/Guides', 'Eletronic Sports', 'Mugen']
                   , 'Entertainment': ['Funny Video', 'Animal Planet', 'Tasty Food', 'Entertainment TV Show']
                   , 'Techs': ['Documentary', 'Various Techs', 'Tech Intro', 'Online Courses']
                   , 'Sports': ['Amazing Human', 'Sports Video', 'Tournament']
@@ -283,7 +343,7 @@ URL_NAME_DICT = {
   'Game': ['game', {
     # Subcategories of Game
     'Game Video': 'video',
-    'Game Guides/Commentary': 'guides',
+    'Walkthrough/Guides': 'guides',
     'Eletronic Sports': 'esports',
     'Mugen': 'mugen',
   }],
@@ -326,44 +386,50 @@ MAX_QUERY_RESULT = 1000
 STANDARD_PAGE_SIZE = 10
 MEDIUM_PAGE_SIZE = 20
 
-class PlayListDetail(ndb.Model):
-  videos = ndb.KeyProperty(kind='Video', repeated=True)
+class PlaylistDetail(ndb.Model):
+  videos = ndb.KeyProperty(kind='Video', repeated=True, indexed=False)
 
-class PlayList(ndb.Model):
+Playlist_Type = ['Primary', 'Custom']
+class Playlist(ndb.Model):
   modified = ndb.DateTimeProperty(auto_now_add=True)
   creator = ndb.KeyProperty(kind='User', required=True)
   title = ndb.StringProperty(required=True, indexed=False)
+  playlist_type = ndb.StringProperty(required=True, choices=Playlist_Type)
   intro = ndb.TextProperty(required=True, default='', indexed=False)
-  url = ndb.StringProperty(indexed=False)
   first_video = ndb.KeyProperty(kind='Video', indexed=False)
   thumbnail_url = ndb.StringProperty(indexed=False)
-  thumbnail_url_hq = ndb.StringProperty(indexed=False)
+  # thumbnail_url_hq = ndb.StringProperty(indexed=False)
   videos_num = ndb.IntegerProperty(required=True, default=0, indexed=False)
 
   @classmethod
   def get_detail_key(cls, list_key):
-    return ndb.Key('PlayListDetail', 'lv'+str(list_key.id()))
+    return ndb.Key('PlaylistDetail', 'lv'+str(list_key.id()))
 
   def get_info(self):
     basic_info = {
+      'id': self.key.id(),
       'videos_num': self.videos_num,
       'title': self.title, 
-      'intro': self.intro,
-      'id': self.key.id(),
-      'url': Video.get_video_url(self.first_video.id()) if self.first_video else None,
+      'type': self.playlist_type,
+      'intro': self.intro[:300],
       'thumbnail_url': self.thumbnail_url if self.thumbnail_url else '/static/img/empty_list.png',
-      'thumbnail_url_hq': self.thumbnail_url_hq if self.thumbnail_url_hq else '/static/img/empty_list.png',
+      # 'thumbnail_url_hq': self.thumbnail_url_hq if self.thumbnail_url_hq else '/static/img/empty_list.png',
+      'modified': self.modified.strftime("%Y-%m-%d %H:%M"),
     }
+    if self.playlist_type == 'Primary':
+      basic_info['url'] = Video.get_video_url(self.first_video.id()) if self.first_video else '',
+    else:
+      basic_info['url'] = Video.get_video_url(self.first_video.id(), self.key.id()) if self.first_video else '',
     return basic_info
 
   def set_first_video(self, video):
     self.first_video = video.key
-    self.thumbnail_url, self.thumbnail_url_hq = video.get_thumbnail_url()
+    self.thumbnail_url = video.get_thumbnail_url()
 
   def reset_first_video(self):
     self.first_video = None
     self.thumbnail_url = None
-    self.thumbnail_url_hq = None
+    # self.thumbnail_url_hq = None
 
   def delete_index(self):
     index = search.Index(name='playlists_by_modified')
@@ -371,104 +437,18 @@ class PlayList(ndb.Model):
 
   def create_index(self):
     index = search.Index(name='playlists_by_modified')
-    searchable = " ".join([self.title, self.intro[:200]]);
+    searchable = " ".join([self.title, self.intro[:300]]);
     doc = search.Document(
-      doc_id = self.key.urlsafe(), 
+      doc_id = self.key.urlsafe(),
       fields = [
         search.TextField(name='content', value=searchable.lower()),
-        search.AtomField(name='uper', value=self.creator.id()),
+        search.AtomField(name='uper', value=str(self.creator.id())),
+        search.AtomField(name='type', value=self.playlist_type),
+        search.NumberField(name='videos', value=self.videos_num),
       ],
       rank = time_to_seconds(self.modified),
     )
-    try:
-      add_result = index.put(doc)
-    except search.Error:
-      logging.info('failed to create %s index for playlist %s' % (index_name, self.key.id()))
-
-class VideoClip(ndb.Model):
-  index = ndb.IntegerProperty(required=True)
-  title = ndb.StringProperty(required=True)
-  subintro = ndb.TextProperty(default='', required=True, indexed=False)
-  raw_url = ndb.StringProperty(indexed=False)
-  vid = ndb.StringProperty(required=True, indexed=False)
-  duration = ndb.IntegerProperty(required=True, indexed=False, default=0)
-  source = ndb.StringProperty(required=True, choices=['youtube'], indexed=False)
-
-  danmaku_num = ndb.IntegerProperty(required=True, default=0, indexed=False)
-  danmaku_pools = ndb.KeyProperty(kind='DanmakuPool', repeated=True, indexed=False)
-  advanced_danmaku_num = ndb.IntegerProperty(required=True, default=0, indexed=False)
-  advanced_danmaku_pool = ndb.KeyProperty(kind='AdvancedDanmakuPool', indexed=False)
-  subtitle_names = ndb.StringProperty(repeated=True, indexed=False)
-  subtitle_danmaku_pools = ndb.KeyProperty(kind='SubtitleDanmakuPool', repeated=True, indexed=False)
-  code_danmaku_num = ndb.IntegerProperty(required=True, default=0, indexed=False)
-  code_danmaku_pool = ndb.KeyProperty(kind='CodeDanmakuPool', indexed=False)
-  refresh = ndb.BooleanProperty(required=True, default=True, indexed=False)
-
-  @classmethod
-  def parse_url(cls, raw_url):
-    if not urlparse.urlparse(raw_url).scheme:
-      raw_url = "http://" + raw_url
-    url_parts = raw_url.split('//')[-1].split('/')
-    source = url_parts[0].split('.')[-2]
-    if source == 'youtube':
-      vid = url_parts[-1].split('=')[-1]
-      url = 'http://www.youtube.com/embed/' + vid
-    else:
-      url = raw_url
-    return {'url': url, 'vid': vid, 'source': source}
-
-  @ndb.transactional(retries=10)
-  def get_lastest_danmaku_pool(self):
-    if len(self.danmaku_pools) == 0:
-      danmaku_pool = DanmakuPool()
-      danmaku_pool.put()
-      self.danmaku_pools.append(danmaku_pool.key)
-      self.put()
-    else:
-      danmaku_pool = self.danmaku_pools[-1].get()
-      if len(danmaku_pool.danmaku_list) >= 1000:
-        danmaku_pool = DanmakuPool()
-        danmaku_pool.put()
-        self.danmaku_pools.append(danmaku_pool.key)
-        if len(self.danmaku_pools) > 20:
-          self.danmaku_pools.pop(0).delete()
-        self.put()
-    return danmaku_pool
-
-  @ndb.transactional(retries=10)
-  def get_advanced_danmaku_pool(self):
-    if not self.advanced_danmaku_pool:
-      advanced_danmaku_pool = AdvancedDanmakuPool()
-      advanced_danmaku_pool.put()
-      self.advanced_danmaku_pool = advanced_danmaku_pool
-      self.put()
-    return self.advanced_danmaku_pool
-
-  @ndb.transactional(retries=10)
-  def get_code_danmaku_pool(self):
-    if not self.code_danmaku_pool:
-      code_danmaku_pool = CodeDanmakuPool()
-      code_danmaku_pool.put()
-      self.code_danmaku_pool = code_danmaku_pool
-      self.put()
-    return self.advanced_danmaku_pool
-
-  @ndb.transactional(retries=10)
-  def append_new_subtitles(self, name, pool_key):
-    self.subtitle_names.append(name)
-    self.subtitle_danmaku_pools.append(pool_key)
-    self.put()
-
-  def Delete(self):
-    for pool in danmaku_pools:
-      pool.delete_async()
-    if advanced_danmaku_pool:
-      advanced_danmaku_pool.delete_async()
-    for pool in subtitle_danmaku_pools:
-      pool.delete_async()
-    if code_danmaku_pool:
-      code_danmaku_pool.delete_async()
-    self.key.delete_async()
+    add_result = index.put(doc)
 
 class CategoryCounter(ndb.Model):
   counter = ndb.IntegerProperty(required=True, default=0, indexed=False)
@@ -476,24 +456,34 @@ class CategoryCounter(ndb.Model):
 class VideoIDFactory(ndb.Model):
   id_counter = ndb.IntegerProperty(required=True, default=0, indexed=False)
 
+class VideoClipList(ndb.Model):
+  clips = ndb.KeyProperty(kind='VideoClip', repeated=True, indexed=False)
+  titles = ndb.StringProperty(repeated=True, indexed=False)
+
+  @classmethod
+  def get_key(cls, video_id):
+    return ndb.Key(cls, 'cl'+video_id)
+
+Video_Type = ['Original', 'Republish']
 class Video(ndb.Model):
   created = ndb.DateTimeProperty(auto_now_add=True)
   updated = ndb.DateTimeProperty(auto_now_add=True)
-  uploader = ndb.KeyProperty(kind='User', required=True)
+  uploader = ndb.KeyProperty(kind='User')
   uploader_snapshot = ndb.LocalStructuredProperty(UserSnapshot, required=True, indexed=False)
 
   title = ndb.StringProperty(required=True, indexed=False)
-  intro = ndb.TextProperty(indexed=False)
-  category = ndb.StringProperty(required=True)
-  video_type = ndb.StringProperty(required=True, choices=['original', 'republish'], indexed=False)
+  intro = ndb.TextProperty(required=True, indexed=False)
+  category = ndb.StringProperty(required=True, choices=Video_Category)
+  subcategory = ndb.StringProperty(required=True)
+  video_type = ndb.StringProperty(required=True, choices=Video_Type, indexed=False)
   duration = ndb.IntegerProperty(required=True, default=0, indexed=False)
-  default_thumbnail = ndb.StringProperty(indexed=False)
   thumbnail = ndb.BlobKeyProperty(indexed=False)
-  playlist_belonged = ndb.KeyProperty(kind='PlayList', indexed=False)
+  thumbnail_url_hq = ndb.StringProperty(required=True, indexed=False)
+  playlist_belonged = ndb.KeyProperty(kind='Playlist', indexed=False)
   tags = ndb.StringProperty(repeated=True, indexed=False)
   allow_tag_add = ndb.BooleanProperty(required=True, default=True, indexed=False)
 
-  hot_score = ndb.IntegerProperty(required=True, default=0)
+  hot_score = ndb.IntegerProperty(default=0)
   hot_score_updated = ndb.IntegerProperty(required=True, default=0, indexed=False)
   hits = ndb.IntegerProperty(required=True, default=0, indexed=False)
   likes = ndb.IntegerProperty(required=True, default=0, indexed=False)
@@ -501,76 +491,54 @@ class Video(ndb.Model):
   shares = ndb.IntegerProperty(required=True, default=0, indexed=False)
   comment_counter = ndb.IntegerProperty(required=True, default=0, indexed=False)
 
-  @classmethod
-  def get_deleted_video_info(cls):
-    info = {
-      'id': 'None',
-      'url': 'None',
-      'title': 'Video deleted',
-      'intro': 'Video deleted',
-      'thumbnail_url': '/static/img/video_deleted.png',
-      'thumbnail_url_hq': '/static/img/video_deleted.png',
-      'category': 'None',
-      'subcategory': 'None',
-      'duration': 0,
-      'type': 'None',
-    }
-    return info
+  deleted = ndb.BooleanProperty(required=True, default=False, indexed=False)
+
+  video_counter = {}
 
   @classmethod
-  def get_projection(cls):
-    return ['title', 'intro', 'category', 'subcategory', 'duration', 'video_type', 'thumbnail', 'default_thumbnail', 'playlist_belonged', 'hits', 'likes', 'shares', 'comment_counter', 'created']
-
-  @classmethod
-  def get_video_url(cls, video_id):
-    return '/video/'+video_id
+  def get_video_url(cls, video_id, playlist_id=None):
+    if playlist_id:
+      return '/video/'+video_id+'?list='+str(playlist_id)
+    else:
+      return '/video/'+video_id
 
   def get_thumbnail_url(self):
-    if not self.thumbnail:
-      res = self.default_thumbnail.split(':')
-      thumbnail_url = 'http://img.youtube.com/vi/' + res[0] + '/mqdefault.jpg'
-      thumbnail_url_hq = 'http://img.youtube.com/vi/' + res[0] + '/' + res[1] + 'default.jpg'
+    if self.deleted:
+      return self.thumbnail_url_hq
+    elif not self.thumbnail:
+      return '/'.join(self.thumbnail_url_hq.split('/')[:-1])+'/mqdefault.jpg'
     else:
-      thumbnail_url = images.get_serving_url(self.thumbnail, size=240)
-      thumbnail_url_hq = images.get_serving_url(self.thumbnail)
+      return self.thumbnail_url_hq+'=s208'
 
-    return thumbnail_url, thumbnail_url_hq
-
-  def get_basic_info(self):
-    category, subcategory = self.category.split('-')
+  def get_basic_info(self, playlist_id=None):
     basic_info = {
       'id': self.key.id(),
-      'url': Video.get_video_url(self.key.id()),
+      'url': Video.get_video_url(self.key.id(), playlist_id),
       'title': self.title,
-      'intro': self.intro,
+      'intro': self.intro[:300],
       'category': self.category,
-      'subcategory': subcategory,
-      'duration': duration,
+      'subcategory': self.subcategory,
+      'duration': self.duration,
       'type': self.video_type,
-      'uploader': self.uploader_snapshot.get_snapshot_info(self.uploader),
-    }
-    basic_info['thumbnail_url'], basic_info['thumbnail_url_hq'] = self.get_thumbnail_url()    
-    return basic_info
-
-  def get_statistic_info(self):
-    statistic_info = {
       'hits': self.hits,
       'comment_counter': self.comment_counter,
       'bullets': self.bullets,
       'shares': self.shares,
       'likes': self.likes,
+      'created': self.created.strftime("%Y-%m-%d %H:%M") if not self.deleted else '',
+      'uploader': self.uploader_snapshot.get_snapshot_info(self.uploader),
+      'thumbnail_url': self.get_thumbnail_url(),
+      'thumbnail_url_hq': self.thumbnail_url_hq,
     }
-    info = self.basic_info()
-    info.update(statistic_info)
-    return info
+    return basic_info
 
   def get_full_info(self):
     full_info = {
-      'intro': self.intro_full,
+      'intro': self.intro,
       'tags': self.tags,
       'allow_tag_add': self.allow_tag_add,
     }
-    info = self.get_statistic_info()
+    info = self.get_basic_info()
     info.update(full_info)
     return info
 
@@ -588,7 +556,7 @@ class Video(ndb.Model):
   def get_video_count(cls, category="-"):
     try:
       return cls.video_counter[category].counter
-    except Exception:
+    except AttributeError:
       category_counter = CategoryCounter.query(ancestor=ndb.Key('CategoryCounter', category)).get()
       if not category_counter:
         return 0
@@ -609,24 +577,25 @@ class Video(ndb.Model):
 
   @classmethod
   @ndb.transactional(retries=10)
-  def video_count_inc_dec(cls, action, category="-"):
+  def video_count_inc_dec(cls, action, category='', subcategory=''):
+    count_key = category + ';' + subcategory
     try:
       if action == 'inc':
-        cls.video_counter[category].counter += 1
+        cls.video_counter[count_key].counter += 1
       else: # dec
-        cls.video_counter[category].counter -= 1
-      cls.video_counter[category].put()
-    except Exception:
-      category_counter = CategoryCounter.query(ancestor=ndb.Key('CategoryCounter', category)).get()
+        cls.video_counter[count_key].counter -= 1
+      cls.video_counter[count_key].put()
+    except KeyError:
+      category_counter = CategoryCounter.query(ancestor=ndb.Key('CategoryCounter', count_key)).get()
       if not category_counter:
-        category_counter = CategoryCounter(parent=ndb.Key('CategoryCounter', category))
+        category_counter = CategoryCounter(parent=ndb.Key('CategoryCounter', count_key))
 
       if action == 'inc':
         category_counter.counter += 1
       else: # dec
         category_counter.counter -= 1
       category_counter.put()
-      cls.video_counter[category] = category_counter
+      cls.video_counter[count_key] = category_counter
 
   @classmethod
   @ndb.transactional(retries=10)
@@ -648,15 +617,14 @@ class Video(ndb.Model):
 
   def create_index(self, index_name, rank):
     index = search.Index(name=index_name)
-    searchable = ' '.join(self.tags + [self.title, self.intro[:200]]);
-    category, subcategory = self.category.split('-')
+    searchable = ' '.join(self.tags + [self.title, self.intro[:300], self.uploader_snapshot.nickname, self.video_type]);
     doc = search.Document(
       doc_id = self.key.urlsafe(),
       fields = [
         search.TextField(name='content', value=searchable.lower()),
-        search.AtomField(name='category', value=category),
-        search.AtomField(name='subcategory', value=subcategory),
-        search.AtomField(name='uper', value=self.uploader.id())
+        search.AtomField(name='category', value=self.category),
+        search.AtomField(name='subcategory', value=self.subcategory),
+        search.AtomField(name='uper', value=str(self.uploader.id()))
       ],
       rank = rank
     )
@@ -666,11 +634,14 @@ class Video(ndb.Model):
   def Create(cls, user, intro, title, category, subcategory, video_type, duration, thumbnail, default_thumbnail, tags, allow_tag_add):
     try:
       video_id = 'dt'+str(cls.getID())
-    except TransactionFailedError:
-      logging.info(e)
-      raise Exception('Failed to submit the video. Please try again.')
+    except TransactionFailedError, e:
+      raise e
 
-    category = category+'-'+subcategory
+    if not thumbnail:
+      thumbnail_url_hq = 'http://img.youtube.com/vi/' + default_thumbnail + 'default.jpg'
+    else:
+      thumbnail_url_hq = images.get_serving_url(thumbnail)
+
     current_time = time_to_seconds(datetime.now())
     video = cls(
       id = video_id,
@@ -679,59 +650,232 @@ class Video(ndb.Model):
       intro = intro,
       title = title,
       category = category,
+      subcategory = subcategory,
       video_type = video_type,
       duration = duration,
       tags = tags,
       allow_tag_add = allow_tag_add,
       thumbnail = thumbnail,
-      default_thumbnail = default_thumbnail,
+      thumbnail_url_hq = thumbnail_url_hq,
       hot_score_updated = current_time,
       hot_score = current_time,
     )
     video.put()
 
-    while True:
-      try:
-        cls.video_count_inc_dec('inc', category)
-        break
-      except TransactionFailedError:
-        pass
+    # while True:
+    #   try:
+    #     cls.video_count_inc_dec('inc', category)
+    #     break
+    #   except TransactionFailedError:
+    #     pass
+
+    # while True:
+    #   try:
+    #     cls.video_count_inc_dec('inc', category, subcategory)
+    #     break
+    #   except TransactionFailedError:
+    #     pass
+
+    video.create_index('videos_by_created', time_to_seconds(video.created))
+    video.create_index('videos_by_hits', video.hits)
+    video.create_index('videos_by_likes', video.likes)
     return video
 
   def Delete(self):
     if self.playlist_belonged:
-      playlist, list_detail = ndb.get_multi([self.playlist_belonged, PlayList.get_detail_key(self.playlist_belonged)])
-      if playlist.first_video == self.key:
-        playlist.reset_first_video()
+      playlist, list_detail = ndb.get_multi([self.playlist_belonged, Playlist.get_detail_key(self.playlist_belonged)])
       list_detail.videos.remove(self.key)
-      ndb.put_multi_async([playlist, list_detail])
+      if not list_detail.videos:
+        playlist.reset_first_video()
+      elif playlist.first_video != list_detail.videos[0]:
+        playlist.set_first_video(list_detail.videos[0].get())
+      playlist.videos_num = len(list_detail.videos)
+      ndb.put_multi([playlist, list_detail])
+      self.playlist_belonged = None
 
-    if self.thumbnail:
-      images.delete_serving_url(self.thumbnail)
-      blobstore.BlobInfo(self.thumbnail).delete()
-
-    video_clips = VideoClip.query(ancestor=self.key).fetch(keys_only=True)
+    video_clips = VideoClip.query(ancestor=self.key).fetch()
     for i in xrange(0, len(video_clips)):
       video_clips[i].Delete()
-
-    comments = Comment.query(ancestor=self.key).fetch(keys_only=True)
-    for i in xrange(0, len(comments)):
-      comment = comments[i]
-      inner_comments = InnerComment.query(ancestor=comment).fetch(keys_only=True)
-      for j in xrange(0, len(inner_comments)):
-        inner_comments[j].delete_async()
-      comment.delete_async()
+    VideoClipList.get_key(self.key.id()).delete()
     
-    while True:
-      try:
-        cls.video_count_inc_dec('dec', self.category)
-        break;
-      except Exception, e:
-        pass
+    # while True:
+    #   try:
+    #     cls.video_count_inc_dec('dec', self.category)
+    #     break;
+    #   except Exception, e:
+    #     pass
+
+    # while True:
+    #   try:
+    #     cls.video_count_inc_dec('inc', self.category, self.subcategory)
+    #     break
+    #   except TransactionFailedError:
+    #     pass
+    
+    if self.thumbnail:
+      BlobCollection(blob=self.thumbnail).put()
 
     self.delete_index('videos_by_created')
     self.delete_index('videos_by_hits')
     self.delete_index('videos_by_likes')
+    
+    self.deleted = True
+    self.title = 'Video deleted'
+    self.intro = ''
+    self.duration = 0
+    self.thumbnail_url_hq = '/static/img/video_deleted.png'
+    self.uploader = None
+    self.updated = datetime.min
+    self.created = datetime.min
+    self.hot_score = None
+    self.put()
+    # self.key.delete()
+
+class Comment(ndb.Model):
+  creator = ndb.KeyProperty(kind='User', required=True)
+  creator_snapshot = ndb.LocalStructuredProperty(UserSnapshot, required=True, indexed=False)
+  video = ndb.KeyProperty(kind='Video', required=True, indexed=False)
+  video_title = ndb.StringProperty(required=True, indexed=False)
+
+  content = ndb.TextProperty(required=True, indexed=False)
+  floorth = ndb.IntegerProperty(required=True, indexed=False)
+  inner_floorth = ndb.IntegerProperty(indexed=False)
+  inner_comment_counter = ndb.IntegerProperty(required=True, default=0, indexed=False)
+  share = ndb.BooleanProperty(required=True)
+  created = ndb.DateTimeProperty(auto_now_add=True)
+  deleted = ndb.BooleanProperty(required=True, default=False, indexed=False)
+
+  def get_content(self):
+    content_info = {
+      'id': self.key.id(),
+      'parent_id': self.key.parent().id(),
+      'content': self.content if self.deleted else '[Content deleted]',
+      'floorth': self.floorth,
+      'inner_floorth': self.inner_floorth,
+      'inner_comment_counter': self.inner_comment_counter,
+      'created': self.created.strftime("%Y-%m-%d %H:%M"),
+      'creator': self.creator_snapshot.get_snapshot_info(self.creator),
+    }
+    content_info['video'] = {
+      'url': Video.get_video_url(self.video.id()),
+      'title': self.video_title,
+    }
+    return content_info
+
+  @classmethod
+  @ndb.transactional(retries=10)
+  def CreateComment(cls, user, video, content, allow_share):
+    newest_comment = cls.query(ancestor=video.key).order(-cls.created).get()
+    if not newest_comment:
+      comment_counter = 0
+    else:
+      comment_counter = newest_comment.floorth
+    comment_counter += 1
+    
+    comment = cls(parent=video.key, video=video.key, video_title=video.title, creator=user.key, creator_snapshot=user.create_snapshot(), content=content, floorth=comment_counter, share=allow_share)
+    comment.put()
+    return comment
+
+  @classmethod
+  @ndb.transactional(retries=10, xg=True)
+  def CreateInnerComment(cls, user, comment, content, allow_share):
+    comment.inner_comment_counter += 1
+    inner_comment = cls(parent=ndb.Key('Comment', comment.key.id()), video=comment.key.parent(), video_title=comment.video_title, creator=user.key, creator_snapshot=user.create_snapshot(), content=content, floorth=comment.floorth, inner_floorth=comment.inner_comment_counter, share=allow_share)
+    ndb.put_multi([comment, inner_comment])
+    return inner_comment
+
+  def Delete():
+    self.deleted = True
+    self.content = ''
+    self.put()
+
+class VideoClip(ndb.Model):
+  uploader = ndb.KeyProperty(required=True, indexed=False)
+  title = ndb.StringProperty(required=True, indexed=False)
+  index = ndb.IntegerProperty(required=True, indexed=False)
+  subintro = ndb.TextProperty(default='', required=True, indexed=False)
+  raw_url = ndb.StringProperty(indexed=False)
+  vid = ndb.StringProperty(required=True, indexed=False)
+  duration = ndb.IntegerProperty(required=True, indexed=False, default=0)
+  source = ndb.StringProperty(required=True, choices=['YouTube'], indexed=False)
+
+  danmaku_num = ndb.IntegerProperty(required=True, default=0, indexed=False)
+  danmaku_pools = ndb.KeyProperty(kind='DanmakuPool', repeated=True, indexed=False)
+  advanced_danmaku_num = ndb.IntegerProperty(required=True, default=0, indexed=False)
+  advanced_danmaku_pool = ndb.KeyProperty(kind='AdvancedDanmakuPool', indexed=False)
+  subtitle_names = ndb.StringProperty(repeated=True, indexed=False)
+  subtitle_danmaku_pools = ndb.KeyProperty(kind='SubtitleDanmakuPool', repeated=True, indexed=False)
+  code_danmaku_num = ndb.IntegerProperty(required=True, default=0, indexed=False)
+  code_danmaku_pool = ndb.KeyProperty(kind='CodeDanmakuPool', indexed=False)
+  refresh = ndb.BooleanProperty(required=True, default=True, indexed=False)
+
+  @classmethod
+  def parse_url(cls, raw_url, source):
+    if not urlparse.urlparse(raw_url).scheme:
+      raw_url = "http://" + raw_url
+    url_parts = raw_url.split('//')[-1].split('/')
+    if source == 'YouTube':
+      vid = url_parts[-1].split('=')[-1]
+      url = 'http://www.youtube.com/embed/' + vid
+    else:
+      raise Exception('invalid url')
+    return {'url': url, 'vid': vid}
+
+  @ndb.transactional(retries=10, xg=True)
+  def get_lastest_danmaku_pool(self):
+    if not self.danmaku_pools:
+      danmaku_pool = DanmakuPool()
+      danmaku_pool.put()
+      self.danmaku_pools.append(danmaku_pool.key)
+      self.put()
+    else:
+      danmaku_pool = self.danmaku_pools[-1].get()
+      if len(danmaku_pool.danmaku_list) >= 1000:
+        danmaku_pool = DanmakuPool()
+        danmaku_pool.put()
+        self.danmaku_pools.append(danmaku_pool.key)
+        if len(self.danmaku_pools) > 20:
+          self.danmaku_pools.pop(0).delete_async()
+        self.put()
+    return danmaku_pool
+
+  @ndb.transactional(retries=10, xg=True)
+  def get_advanced_danmaku_pool(self):
+    if not self.advanced_danmaku_pool:
+      advanced_danmaku_pool = AdvancedDanmakuPool()
+      advanced_danmaku_pool.put()
+      self.advanced_danmaku_pool = advanced_danmaku_pool.key
+      self.put()
+    else:
+      advanced_danmaku_pool = self.advanced_danmaku_pool.get()
+    return advanced_danmaku_pool
+
+  @ndb.transactional(retries=10, xg=True)
+  def get_code_danmaku_pool(self):
+    if not self.code_danmaku_pool:
+      code_danmaku_pool = CodeDanmakuPool()
+      code_danmaku_pool.put()
+      self.code_danmaku_pool = code_danmaku_pool.key
+      self.put()
+    else:
+      code_danmaku_pool = self.code_danmaku_pool.get()
+    return code_danmaku_pool
+
+  @ndb.transactional(retries=10)
+  def append_new_subtitles(self, name, pool_key):
+    self.subtitle_names.append(name)
+    self.subtitle_danmaku_pools.append(pool_key)
+    self.put()
+
+  def Delete(self):
+    for pool in self.danmaku_pools:
+      pool.delete_async()
+    if self.advanced_danmaku_pool:
+      self.advanced_danmaku_pool.delete_async()
+    for pool in self.subtitle_danmaku_pools:
+      pool.delete_async()
+    if self.code_danmaku_pool:
+      self.code_danmaku_pool.delete_async()
     self.key.delete_async()
 
 Danmaku_Positions = ['Scroll', 'Top', 'Bottom']
@@ -787,88 +931,6 @@ class CodeDanmakuPool(ndb.Model):
   counter = ndb.IntegerProperty(required=True, default=0, indexed=False)
   danmaku_list = ndb.LocalStructuredProperty(CodeDanmaku, repeated=True, indexed=False)
 
-class Comment(ndb.Model):
-  creator = ndb.KeyProperty(kind='User', required=True)
-  creator_snapshot = ndb.LocalStructuredProperty(UserSnapshot, required=True, indexed=False)
-  video_title = ndb.StringProperty(required=True, indexed=False)
-
-  content = ndb.TextProperty(required=True, indexed=False)
-  deleted = ndb.BooleanProperty(required=True, default=False, indexed=False)
-  floorth = ndb.IntegerProperty(required=True, indexed=False)
-  inner_floorth = ndb.IntegerProperty(indexed=False)
-  inner_comment_counter = ndb.IntegerProperty(required=True, default=0, indexed=False)
-  created = ndb.DateTimeProperty(auto_now_add=True)
-
-  @classmethod
-  def get_deleted_content(cls):
-    content_info = {
-      'id': 'None',
-      'content': '',
-      'floorth': 'None',
-      'inner_floorth': 'None',
-      'deleted': True,
-      'created': 'None',
-    }
-    content_info['video'] = {
-      'title': 'Video deleted',
-      'url': 'None',
-    }
-    content_info['user'] = {
-      'id': 'None',
-      'space_url': 'None',
-      'nickname': 'None',
-      'avatar_url': '/static/emoticons_img/default_avatar0.png',
-      'avatar_url_small': '/static/emoticons_img/default_avatar0.png',
-    }
-    return content_info
-
-  def get_content(self):
-    content_info = {
-      'id': self.id(),
-      'content': self.content,
-      'floorth': self.floorth,
-      'inner_floorth': self.inner_floorth,
-      'inner_comment_counter': self.inner_comment_counter,
-      'deleted': self.deleted,
-      'created': self.created.strftime("%Y-%m-%d %H:%M"),
-      'user': self.creator_snapshot.get_snapshot_info(self.creator),
-    }
-    content_info['video'] = {
-      'title': video_title,
-    }
-    if self.key.parent().kind() == 'Video':
-      content_info['url'] = Video.get_video_url(self.key.parent().id())
-    else:
-      content_info['url'] = Video.get_video_url(self.key.parent().parent().id())
-    return content_info
-
-  @classmethod
-  @ndb.transactional(retries=10)
-  def CreateComment(cls, user, video, content):
-    newest_comment = cls.query(ancestor=video.key).order(-cls.created).get()
-    if not newest_comment:
-      comment_counter = 0
-    else:
-      comment_counter = newest_comment.floorth
-    comment_counter += 1
-    
-    comment = cls(parent=video.key, creator=user.key, creator_snapshot=user.create_snapshot(), content=content, floorth=comment_counter)
-    comment.put()
-    return comment
-
-  @classmethod
-  @ndb.transactional(retries=10)
-  def CreateInnerComment(cls, user, comment, content):
-    comment.inner_comment_counter += 1
-    inner_comment = cls(parent=comment.key, creator=user, creator_snapshot=user.create_snapshot(), content=content, floorth=comment.floorth, inner_floorth=comment.inner_comment_counter)
-    ndb.put_multi([comment, inner_comment])
-    return inner_comment
-
-  def Delete():
-    self.deleted = True
-    self.content = ''
-    self.put_async()
-
 class Message(ndb.Model):
   sender = ndb.KeyProperty(kind='User', required=True, indexed=False)
   content = ndb.TextProperty(required=True, indexed=False)
@@ -883,7 +945,7 @@ class MessageThread(ndb.Model):
   updated = ndb.DateTimeProperty(required=True)
 
   def get_partner_key(self, user_key):
-    for user in thread.users_backup:
+    for user in self.users_backup:
       if user != user_key:
         partner_key = user
         break
@@ -905,24 +967,25 @@ Danmaku_Types = ['danmaku', 'advanced', 'subtitles', 'code']
 class DanmakuRecord(ndb.Model):
   creator_snapshot = ndb.LocalStructuredProperty(UserSnapshot, required=True, indexed=False)
   content = ndb.TextProperty(indexed=False)
-  record_type = ndb.StringProperty(required=True, choices=Danmaku_Types, indexed=False)
+  danmaku_type = ndb.StringProperty(required=True, choices=Danmaku_Types, indexed=False)
   video = ndb.KeyProperty(kind='Video', required=True, indexed=False)
   clip_index = ndb.IntegerProperty(required=True, indexed=False)
   video_title = ndb.StringProperty(required=True, indexed=False)
-  timestamp = ndb.FloatProperty(indexed=False)
+  timestamp = ndb.FloatProperty(required=True, default=0, indexed=False)
   created = ndb.DateTimeProperty(auto_now_add=True)
 
   def get_content(self):
     content_info = {
-      'record_type': self.record_type,
+      'danmaku_type': self.danmaku_type,
       'content': self.content,
+      'timestamp': self.timestamp,
+      'clip_index': self.clip_index,
       'created': self.created.strftime("%Y-%m-%d %H:%M"),
-      'user': self.creator_snapshot.get_snapshot_info(self.key.parent()),
+      'creator': self.creator_snapshot.get_snapshot_info(self.key.parent()),
     }
     content_info['video'] = {
-      'url': Video.get_video_url(self.video.id())
+      'url': Video.get_video_url(self.video.id()),
       'title': self.video_title,
-      'clip_index': self.clip_index,
     }
     return content_info
 
@@ -941,7 +1004,7 @@ class MentionedRecord(ndb.Model):
       users[i].new_mentions += 1
 
     mentioned_record = MentionedRecord(receivers=user_keys, target=target)
-    ndb.put_multi_async([mentioned_record] + users)
+    ndb.put_multi([mentioned_record] + users)
 
 class ViewRecord(ndb.Model):
   video = ndb.KeyProperty(kind='Video', required=True)
@@ -952,7 +1015,7 @@ class ViewRecord(ndb.Model):
   @classmethod
   @ndb.transactional(retries=10)
   def get_or_create(cls, user_key, video_key):
-    record = cls.query(cls.video==video.key, ancestor=user_key).get()
+    record = cls.query(cls.video==video_key, ancestor=user_key).get()
     if not record:
       record = cls(parent=user_key, video=video_key)
       record.put()
@@ -969,7 +1032,7 @@ class LikeRecord(ndb.Model):
   def unique_create(cls, video_key, user_key):
     record_key = cls.query(cls.video==video_key, ancestor=user_key).get(keys_only=True)
     if not record_key:
-      record = cls(parent=user_key, video=video_key).put()
+      record = cls(parent=user_key, video=video_key)
       record.put()
       return True
     else:
@@ -982,9 +1045,9 @@ class Subscription(ndb.Model):
   @classmethod
   @ndb.transactional(retries=10)
   def unique_create(cls, uper_key, user_key):
-    subscription = cls.query(cls.uper==uper_ey, ancestor=user_key).get(keys_only=True)
+    subscription = cls.query(cls.uper==uper_key, ancestor=user_key).get(keys_only=True)
     if not subscription:
-      subscription = cls(parent=user_key, uper=uper_key).put()
+      subscription = cls(parent=user_key, uper=uper_key)
       subscription.put()
       return True
     else:
@@ -1001,8 +1064,7 @@ class Feedback(ndb.Model):
 
 Video_Issues = ['Graphic sexual activity', 'Nudity', 'Animal abuse', 'Promotes hatred', 'Promotes terrorism', 'Drug abuse', 'Self injury', 'Child abuse', 'Misleading thumbnail', 'Misleading text', 'Scams/fraud', 'Infringe copyrights', 'Suspicious script', 'Others']
 class ReportVideo(ndb.Model):
-  video = ndb.KeyProperty(kind='Video', required=True, indexed=False)
-  clip_index = ndb.IntegerProperty(required=True, indexed=False)
+  video_clip = ndb.KeyProperty(kind='VideoClip', required=True, indexed=False)
   issue = ndb.StringProperty(required=True, choices=Video_Issues, indexed=False)
   description = ndb.TextProperty(indexed=False)
   processed = ndb.BooleanProperty(required=True, default=False, indexed=False)
@@ -1016,15 +1078,14 @@ class ReportComment(ndb.Model):
   description = ndb.TextProperty(indexed=False)
   processed = ndb.BooleanProperty(required=True, default=False, indexed=False)
   reporter = ndb.KeyProperty(kind='User', required=True, indexed=False)
-  comment = ndb.KeyProperty(required=True, indexed=False)
+  comment = ndb.KeyProperty(kind='Comment', required=True, indexed=False)
   content = ndb.StringProperty(required=True, indexed=False)
-  user = ndb.StringProperty(required=True, indexed=False)
+  user = ndb.KeyProperty(kind='User', required=True, indexed=False)
   created = ndb.DateTimeProperty(auto_now_add=True)
 
 Danmaku_Issues = ['Blocking screen', 'Misleading information', 'Suspicious code danmaku'] + Comment_Issues
 class ReportDanmaku(ndb.Model):
-  video = ndb.KeyProperty(kind='Video', required=True, indexed=False)
-  clip_index = ndb.IntegerProperty(required=True, indexed=False)
+  video_clip = ndb.KeyProperty(kind='VideoClip', required=True, indexed=False)
   issue = ndb.StringProperty(required=True, choices=Danmaku_Issues, indexed=False)
   description = ndb.TextProperty(indexed=False)
   processed = ndb.BooleanProperty(required=True, default=False, indexed=False)
@@ -1032,5 +1093,5 @@ class ReportDanmaku(ndb.Model):
   pool = ndb.KeyProperty(required=True, indexed=False)
   danmaku_index = ndb.IntegerProperty(required=True, indexed=False)
   content = ndb.StringProperty(required=True, indexed=False)
-  user = ndb.StringProperty(required=True, indexed=False)
+  user = ndb.KeyProperty(kind='User', required=True, indexed=False)
   created = ndb.DateTimeProperty(auto_now_add=True)

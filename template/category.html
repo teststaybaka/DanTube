@@ -1,71 +1,41 @@
-{% extends "template/base.html" %}
-{% block head %}
-{{ super() }}
-<link rel="stylesheet" href="/static/index.css" type="text/css" />
-<script src="/static/index.js" language="JavaScript" type="text/javascript"></script>
-{% endblock %}
+{% extends "template/index.html" %}
 
-{% block body %}
-<div class="ranking-and-topic subpage container">
-    <div id="ranking-slides" class="subpage">
-        <div id="slide-container" class="subpage">
-            {% for video in top_ten_videos[:4]%}
-            <a href="{{ video.url }}" target="_blank" class="slide subpage">
-                <img src="{{ video.thumbnail_url_hq }}">
-            </a>
-            {% endfor %}
-        </div>
-        <div class="slide-bottom container">
-            <div class="slide-title subpage">
-                <a href="{{ top_ten_videos[3].url }}" target="_blank" class="slide-title">{{ top_ten_videos[3].title }}</a>
-            </div>
-            <div class="slide-title subpage">
-                <a href="{{ top_ten_videos[2].url }}" target="_blank" class="slide-title">{{ top_ten_videos[2].title }}</a>
-            </div>
-            <div class="slide-title subpage">
-                <a href="{{ top_ten_videos[1].url }}" target="_blank" class="slide-title">{{ top_ten_videos[1].title }}</a>
-            </div>
-            <div class="slide-title subpage active">
-                <a href="{{ top_ten_videos[0].url }}" target="_blank" class="slide-title">{{ top_ten_videos[0].title }}</a>
-            </div>
-            <div class="slide-dot"></div>
-            <div class="slide-dot"></div>
-            <div class="slide-dot"></div>
-            <div class="slide-dot active"></div>
-        </div>
-    </div>
-    {% for video in top_ten_videos[4:] %}
-    <a class="next-top-videos subpage" target="_blank" href="{{ video.url }}">
-        <div class="hover-cover subpage">
-            <div class="cover-title subpage">{{ video.title }}</div>
-            <div class="cover-uploader">Uper: {{ video.uploader.nickname }}</div>
-            <div class="cover-hits">Views: {{ video.hits }}</div>
-        </div>
-        <img src="{{ video.thumbnail_url }}">
-    </a>
-    {% endfor %}
-</div>
-
+{% block video_columns %}
 {% for cat in subcategory[category_name] %}
-<div class="sub-category-block category container" data-category="{{ category_name }}" data-subcategory="{{ cat }}">
-    <div class="sub-category-dynamic-list">
-        <div class="category-title-line container">
-            <div class="category-title-head"></div>
-            <a class="category-title normal-link" href="{{ uri_for(category_name + '-' + cat) }}">{{ cat }}</a>
-            <a class="refresh-video normal-link">Refresh</a>
-        </div>
-        <div class="video-preview-container container">
-        </div>
-        <div class="pagination-line">
+<div class="video-column">
+    <div class="block-title-line">
+        <div class="block-title-head"></div>
+        <!-- <a class="category-title normal-link" href="">{{ category_name }}</a>
+        <span class="category-middle"></span> -->
+        <a class="category-title normal-link" href="{{ uri_for(category_name + '-' + cat) }}">{{ cat }}</a>
+        <div class="search-scope active">Activity</div>
+        <div class="search-scope">Popular</div>
+        <div class="search-scope">Newest</div>
+        <div class="refresh-button">
+            <span class="refresh-icon"></span>
+            <span class="refresh-text">Refresh</span>
         </div>
     </div>
-    <div class="sub-category-side-line">
-        <div class="side-title-line">
-            <div class="side-title">Ranking</div>
+    <div class="horizontal-page-roll left hidden">
+        <div class="horizontal-page-padding"></div>
+        <span class="horizontal-page-arrow left"></span>
+    </div>
+    <div class="horizontal-page-roll right hidden">
+        <div class="horizontal-page-padding"></div>
+        <span class="horizontal-page-arrow right"></span>
+    </div>
+    <div class="horizontal-page-roll-canvas">
+        <div class="video-slide-container" data-lines="2" data-order="Activity" data-category="{{ category_name }}" data-subcategory="{{ cat }}">
+            <div class="video-list-line">
+            </div>
         </div>
-        <div class="ranking-video-container">
+        <div class="video-slide-container hidden" data-lines="2" data-order="Popular" data-category="{{ category_name }}" data-subcategory="{{ cat }}">
+            <div class="video-list-line">
+            </div>
         </div>
-        <div class="pagination-line">
+        <div class="video-slide-container hidden" data-lines="2" data-order="Newest" data-category="{{ category_name }}" data-subcategory="{{ cat }}">
+            <div class="video-list-line">
+            </div>
         </div>
     </div>
 </div>

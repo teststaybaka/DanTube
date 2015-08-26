@@ -10,7 +10,10 @@
     <div id="signin_up-header">Sign in</div>
     <form id="signinform" method="post">
         <div class="input-line">
-            <label for="email" class="form-label">Email:</label>
+            <div class="password-label-row">
+                <label for="email" class="form-label" id="email-label">Email:</label>
+                <a class="blue-link signin_up-link" id="send-veri">Send verification</a>
+            </div>
             <input type="text" class="inputtext normal-input" id="email" name="email" tabindex="1" value="{{ email_value }}" placeholder="Enter your email">
         </div>
         <div class="input-line">

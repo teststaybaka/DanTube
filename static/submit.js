@@ -113,9 +113,9 @@ function video_tag_check() {
         $('#video-tags-error').text('Please add at least one tag.');
         $('#video-tags').addClass('error');
         return false;
-    } else if (tags.length > 20) {
+    } else if (tags.length > 10) {
         $('#video-tags-error').addClass('show');
-        $('#video-tags-error').text('You can add at most 20 tags.');
+        $('#video-tags-error').text('You can add at most 10 tags.');
         $('#video-tags').addClass('error');
         return false;
     } else {
@@ -271,17 +271,13 @@ $(document).ready(function() {
     $('div.option-button.type').click(function(evt) {
         $('div.option-button.type').removeClass('select');
         $(evt.target).addClass('select');
-        if (evt.target.id === 'original-option') {
-            $('#video-type-option').val('original');
-        } else {//republish
-            $('#video-type-option').val('republish');
-        }
+        $('#video-type-option').val($(evt.target).text());
     });
 
     $('#video-total-title').focusout(title_check);
     $('#video-description').focusout(descript_check);
     $('#video-tags').focusout(video_tag_check);
-    document.getElementById('thumbnail-input').addEventListener("change", thumbnail_change);
+    $('#thumbnail-input').on("change", thumbnail_change);
 
     $('a.add-more').click(function(evt) {
         $('#add-more-link').before(video_part_line_html);
@@ -307,79 +303,65 @@ $(document).ready(function() {
         var button = document.querySelector('input.save_change-button');
         button.disabled = true;
 
-        var error = false;
-        if (!title_check()) {
-            error = true;
-        }
-        if (!descript_check()) {
-            error = true;
-        }
-        if (!video_tag_check()) {
-            error = true;
-        }
-        var subtitles = document.querySelectorAll('input.title-input');
+        var error = !title_check() | !descript_check() | !video_tag_check();
+        var subtitles = $('input.title-input');
         if (subtitles.length == 0) {
             error = true;
             $('div.input-error.add-more').addClass('show');
             $('div.input-error.add-more').text('Please add at least one video.');
         }
         for (var i = 0; i < subtitles.length; i++) {
-            if (!sub_title_check(subtitles[i])) {
-                error = true;
-            }
+            error |= !sub_title_check(subtitles[i]);
         }
-        var subintros = document.querySelectorAll('textarea.intro-input');
+        var subintros = $('textarea.intro-input');
         for (var i = 0; i < subintros.length; i++) {
-            if (!sub_intro_check(subintros[i])) {
-                error = true;
-            }
+            error |= !sub_intro_check(subintros[i]);
         }
-        var urls = document.querySelectorAll('input.url-input');
+        var urls = $('input.url-input');
         for (var i = 0; i < urls.length; i++) {
-            if (!url_check(urls[i])) {
-                error = true;
-            }
+            error |= !url_check(urls[i]);
         }
         if (error) {
             button.disabled = false;
             return false;
         }
 
-        $('#change-applying').addClass('show');
+        $('#change-applying').removeClass('hidden');
         var formData = new FormData(document.getElementById('video-submission-form'));
         $.ajax({
             type: "POST",
             url: evt.target.action,
-            // data: $('#video-submission-form').serialize(),
             data: formData,
             cache: false,
             contentType: false,
             processData: false,
+            timeout: 10000,
             success: function(result) {
                 console.log(result);
                 if(result.error) {
-                    if (result.message === 'invalid url') {
-                        var error = $('input.url-input:eq('+result.index+')').prev();
+                    var lineNumber = result.message.match(/invalid url:(\d+)/);
+                    if (lineNumber) {
+                        var error = $('input.url-input:eq('+lineNumber[1]+')').prev();
                         error.addClass('show');
                         error.text('Video url invalid.');
-                        $('input.url-input:eq('+result.index+')').addClass('error');
+                        $('input.url-input:eq('+lineNumber[1]+')').addClass('error');
                     } else {
                         dt.pop_ajax_message(result.message, 'error');
                     }
                     button.disabled = false;
                 } else {
-                    dt.pop_ajax_message(result.message, 'success');
+                    dt.pop_ajax_message('Video submitted successfully!', 'success');
                     setTimeout(function(){
                         window.location.replace('/account/video'); 
                     }, 3000);
                 }
-                $('#change-applying').removeClass('show');
+                $('#change-applying').addClass('hidden');
             },
             error: function (xhr, ajaxOptions, thrownError) {
                 console.log(xhr.status);
                 console.log(thrownError);
                 button.disabled = false;
-                $('#change-applying').removeClass('show');
+                $('#change-applying').addClass('hidden');
                 dt.pop_ajax_message(xhr.status+' '+thrownError, 'error');
             }
         });

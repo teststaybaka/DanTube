@@ -1,9 +1,10 @@
-{% extends "template/account.html" %}
+{% extends "template/account_base.html" %}
 {% block head %}
 {{ super() }}
+<link rel="stylesheet" href="/static/account.css" type="text/css" />
+<script src="/static/feedback.js" language="JavaScript" type="text/javascript"></script>
 {% endblock %}
 
-{% block overview_active %}{% endblock %}
 {% block feedback_active %}active{% endblock %}
 
 {% block topTitle %}
@@ -14,7 +15,7 @@
 {% endblock %}
 
 {% block detail %}
-<form class="change" id="feedback-submission-form" method="POST" action="{{ uri_for('contact') }}">
+<form class="change" id="feedback-submission-form" method="POST">
     <div class="input-line">
         <label class="form-label">Category:</label>
         <div class="list-select feedback">
@@ -39,7 +40,7 @@
     </div>
     <div>
         <input class="save_change-button" type="submit" value="Contact Us" />
-        <div id="change-applying"></div>
+        <div id="change-applying" class="loading hidden"></div>
     </div>
 </form>
 {% endblock %}

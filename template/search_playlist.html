@@ -1,49 +1,39 @@
-{% extends "template/search.html" %}
+{% extends "template/base.html" %}
+{% block head %}
+{{ super() }}
+<link rel="stylesheet" href="/static/search.css" type="text/css" />
+<script src="/static/search_playlist.js" language="JavaScript" type="text/javascript"></script>
+{% endblock %}
 
 {% block search_url %}
 action="{{ uri_for('search_playlist') }}"
 {% endblock %}
 
-{% block search_scope %}
+{% block body %}
 <div class="search-scope-line">
     <a class="search-scope" href="{{ uri_for('search') }}?keywords={{ keywords }}">Videos</a>
     <a class="search-scope active">Playlists</a>
     <a class="search-scope" href="{{ uri_for('search_uper') }}?keywords={{ keywords }}">UPers</a>
 </div>
-{% endblock %}
-
-{% block search_subtitle_line %}
-<div class="search-result-num">Found <span class="commas_number">{{ total_found }}</span> playlists.</div>
-{% endblock %}
-
-{% block search_result %}
-{% for playlist in playlists %}
-<div class="content-entry">
-    <div class="video-img-uper">
-        <a class="video-img" {% if playlist.url %}href="{{ playlist.url }}"{% endif %} target="_blank">
-            <img class="video-img" src="{{ playlist.thumbnail_url }}">
-            <div class="video-num-box">
-                <div class="video-num">{{ playlist.videos_num }}</div>
-                <div class="video-num">Video{% if playlist.videos_num > 1 %}s{% endif %}</div>
-            </div>
-        </a>
-        <div class="uper-line">
-            <label>UPer: </label>
-            <a href="{{ playlist.creator.space_url }}" target="_blank" class="video-uploader blue-link">{{ playlist.creator.nickname }}</a>
-        </div>
-    </div>
-    <div class="video-info">
-        <a {% if playlist.url %}href="{{ playlist.url }}"{% endif %} class="video-title normal-link" target="_blank">{{ playlist.title }}</a>
-        <div class="playlist-description">{{ playlist.intro }}</div>
-        <div class="playlist-episode">
-            {% for video in playlist.videos %}
-            <a class="inline-button episode-entry" href="{{ video.url }}">{{ video.index }}. {{ video.title }}</a>
-            {% endfor %}
-            {% if playlist.videos_num > 9 %}
-            <a class="inline-button episode-entry" href="{{ playlist.url }}"> More...</a>
-            {% endif %}
-        </div>
-    </div>
+<div class="search-scope-line">
+    <a class="search-scope {% if not playlist_type %}active{% endif %}" {% if playlist_type %}href="?keywords={{ keywords }}&min={{ playlist_min }}&max={{ playlist_max }}"{% endif %}>All</a>
+    {% for key in playlist_types %}
+        <a class="search-scope {% if key == playlist_type %}active{% endif %}" {% if key != playlist_type %}href="?keywords={{ keywords }}&type={{ key }}&min={{ playlist_min }}&max={{ playlist_max }}"{% endif %}>{{ key }}</a>
+    {% endfor %}
 </div>
-{% endfor %}
+
+<div class="search-scope-line container">
+    <div class="search-result-num">Found <span class="commas_number">0</span> playlist<span class="plural"></span>.</div>
+    <form class="number-scope-form" method="GET" action="">
+        <input type="text" class="hidden" name="keywords" value="{{ keywords }}">
+        <input type="text" class="hidden" name="type" value="{{ playlist_type }}">
+        <input class="normal-input number-input number-scope" type="text" name="min" value="{{ playlist_min }}" data-old="{{ playlist_min }}" placeholder="Minimum" tabindex="1">
+        <label class="number-scope-label">-</label>
+        <input class="normal-input number-input number-scope" type="text" name="max" value="{{ playlist_max }}" data-old="{{ playlist_max }}" placeholder="Maximum" tabindex="1">
+        <label class="number-scope-label">Videos</label>
+        <input type="submit" class="hidden">
+    </form>
+</div>
+<div class="result-container">
+</div>
 {% endblock %}

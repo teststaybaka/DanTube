@@ -1,11 +1,10 @@
-{% extends "template/account.html" %}
+{% extends "template/account_base.html" %}
 {% block head %}
 {{ super() }}
 <link rel="stylesheet" href="/static/manage_video.css" type="text/css" />
 <script src="/static/manage_danmaku.js" language="JavaScript" type="text/javascript"></script>
 {% endblock %}
 
-{% block overview_active %}{% endblock %}
 {% block videos_active %}active{% endblock %}
 
 {% block topTitle %}
@@ -13,7 +12,7 @@
     <div class="top-title-dot"></div>
     Videos
 </a>
-<a class="top-title" href="{{ uri_for('manage_danmaku', video_id=id_num) }}">
+<a class="top-title" href="{{ uri_for('manage_danmaku', video_id=id) }}">
     <div class="top-title-dot"></div>
     Parts
 </a>
@@ -24,17 +23,16 @@
 {% endblock %}
 
 {% block detail %}
-<div id="sub-title-line" class="container">
-    <a id="sub-title" class="normal-link" href="{{ uri_for('watch', video_id=id_num) }}" target="_blank">{{ title }}</a>
+<div id="sub-title-line">
+    <a id="sub-title" class="normal-link" href="{{ video_url }}" target="_blank">{{ title }}</a>
 </div>
 <div class="danmaku-clip-list">
-    <div class="actions-line container">
-        <a class="clip-title-label normal-link" href="{{ uri_for('watch', video_id=id_num) }}?index={{ clip_index }}" target="_blank">
-            {{ clip_title }}
+    <div class="actions-line">
+        <a class="clip-title-label normal-link" href="{{ video_url }}?index={{ clip_index }}" target="_blank">
             {% if clip_title %}
-                {{ clip_index }}. {{ clip_title }}
+                {{ clip_index + 1 }}. {{ clip_title }}
             {% else %}
-                Part {{ clip_index }}
+                Part {{ clip_index + 1 }}
             {% endif %}
         </a>
         <div class="list-select pool">

@@ -14,86 +14,77 @@
     -moz-border-radius: 3px;
 }
 
-div.search-scope-line {
+.search-scope-line {
     padding: 5px 25px;
-    border-bottom: 1px solid rgb(220,220,220);
-}
-
-div.search-result-num {
-    display: inline-block;
-    margin-top: 4px;
-    float: left;
-    color: rgb(100,100,100);
-}
-
-#view-method-block {
-    float: right;
-}
-
-#view-method, #view-method-label {
-    font-size: 14px;
-    display: inline-block;
-    vertical-align: middle;
-    margin-right: 10px;
-}
-
-div.content-entry {
-    border-bottom: 1px solid rgb(220,220,220);
-    display: inline-table;
-    width: 100%;
-    padding: 10px 40px 10px 30px;
-    -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
-    -moz-box-sizing: border-box;    /* Firefox, other Gecko */
-    box-sizing: border-box;
+    border-bottom: 1px solid rgb(230,230,230);
     font-size: 0;
 }
 
-div.content-entry.no-result {
-    text-align: center;
-    font-size: 18px;
-    color: rgb(150,150,150);
-    padding: 100px;
-    display: block;
+.search-result-num {
+    display: inline-block;
+    margin: 4px 0;
+    line-height: 18px;
+    color: rgb(100,100,100);
+    font-size: 16px;
 }
 
-div.video-img-uper {
+.content-entry {
+    padding-right: 40px;
+}
+
+.video-img-uper {
     display: inline-block;
     vertical-align: top;
+    width: 192px;
 }
 
-a.video-img {
+.video-img {
+    height: 108px;
     display: block;
     font-size: 0;
     position: relative;
 }
 
-img.video-img {
-    width: 192px;
-    height: 108px;
-    box-shadow: 0 0 1px rgb(100,100,100);
-}
-
-div.uper-line {
-    width: 192px;
+.uper-line {
     word-wrap: break-word;
-    max-height: 64px;
-    font-size: 14px;
-    overflow: hidden;
     margin-top: 5px;
 }
 
-a.video-uploader {
+.uploader-avatar {
+    display: inline-block;
     vertical-align: middle;
+    width: 20px;
+    height: 20px;
+    margin-right: 5px;
 }
 
-div.video-info {
+.uploader-avatar img {
+    width: 100%;
+    height: 100%;
+}
+
+.video-uploader {
+    vertical-align: middle;
+    line-height: 16px;
+    font-size: 14px;
+}
+
+.video-info {
     display: inline-block;
     vertical-align: top;
     margin-left: 15px;
     width: 745px;
 }
 
-div.video-category {
+.info-line {
+    margin-bottom: 2px;
+}
+
+.info-line:last-child {
+    margin-bottom: 0;
+}
+
+.video-category {
     display: inline-block;
     font-size: 14px;
     border: 1px solid rgb(220,220,220);
@@ -101,7 +92,7 @@ div.video-category {
     vertical-align: middle;
 }
 
-div.video-category-arrow {
+.video-category-arrow {
     display: inline-block;
     vertical-align: middle;
     width: 8px;
@@ -111,7 +102,7 @@ div.video-category-arrow {
     margin: 0 5px;
 }
 
-div.video-time {
+.video-time {
     color: rgb(150,150,150);
     font-size: 14px;
     vertical-align: middle;
@@ -119,9 +110,8 @@ div.video-time {
     margin-left: 10px;
 }
 
-a.video-title, a.uploader {
+.video-title, .uploader-name {
     font-size: 14px;
-    margin-top: 2px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -129,21 +119,15 @@ a.video-title, a.uploader {
     max-width: 100%;
 }
 
-div.video-statistic {
-    margin-top: 2px;
-    font-size: 14px;
-}
-
-div.video-statistic-entry {
+.video-statistic-entry {
     display: inline-block;
     margin-right: 30px;
     color: rgb(100,100,100);
+    font-size: 14px;
 }
 
-div.video-description, div.playlist-description, div.uper-description {
+.video-description, .playlist-description, .uper-description {
     font-size: 14px;
-    width: 100%;
-    margin-top: 2px;
     color: rgb(150,150,150);
     height: 48px;
     overflow: hidden;
@@ -151,12 +135,12 @@ div.video-description, div.playlist-description, div.uper-description {
     white-space: pre-wrap;
 }
 
-div.uper-description {
-    margin-top: 5px;
+.playlist-description {
+    height: 64px;
 }
 
-div.video-tags, div.playlist-episode, div.uper-buttons {
-    border-top: 1px solid rgb(220,220,220);
+.video-tags, .playlist-episode, .uper-buttons {
+    border-top: 1px solid rgb(230,230,230);
 }
 
 a.tag-entry {
@@ -170,6 +154,11 @@ a.tag-entry {
     cursor: pointer;
     font-size: 14px;
     color: rgb(100,100,100);
+}
+
+.tag-entry:hover {
+    background-color: rgb(240,240,240);
+    color: rgb(0,140,255);
 }
 
 a.episode-entry {
@@ -191,48 +180,28 @@ a.episode-entry {
     margin-right: 10px;
 }
 
-a.tag-entry:hover {
-    background-color: rgb(240,240,240);
-    color: rgb(0,140,255);
-}
-
-div.search-pagination-line {
-    text-align: center;
-    padding: 10px 0;
-    border-bottom: 1px solid rgb(200,200,200);
-    font-size: 0;
-}
-
-a.uper-img {
+.uper-img {
     display: inline-block;
-    font-size: 0;
-}
-
-img.uper-img {
     width: 128px;
     height: 128px;
-    box-shadow: 0 0 1px rgb(100,100,100);
+    font-size: 0;
 }
 
-div.uper-info {
+.uper-info {
     display: inline-block;
     margin-left: 20px;
     width: 794px;
     vertical-align: top;
 }
 
-div.uper-detail-line {
-    margin-top: 5px;
-    font-size: 14px;
-}
-
-div.uper-detail-info {
+.uper-detail-info {
     display: inline-block;
     margin-right: 20px;
     color: rgb(150,150,150);
+    font-size: 14px;
 }
 
-div.video-num-box {
+.video-num-box {
     text-align: center;
     position: absolute;
     right: 0;
@@ -240,7 +209,6 @@ div.video-num-box {
     height: 100%;
     width: 40%;
     font-size: 14px;
-    padding-top: 30px;
     font-weight: bold;
     color: rgb(240,240,240);
     background-color: rgba(0,0,0,0.5);
@@ -249,6 +217,23 @@ div.video-num-box {
     box-sizing: border-box;
 }
 
-div.video-num {
+.video-num {
     padding: 3px;
+}
+
+.number-scope-form {
+    float: right;
+}
+
+.number-scope {
+    width: 60px;
+    margin-left: 10px;
+    vertical-align: middle;
+}
+
+.number-scope-label {
+    vertical-align: middle;
+    font-size: 14px;
+    margin-left: 7px;
+    color: rgb(100,100,100);
 }

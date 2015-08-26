@@ -1,83 +1,38 @@
-div.content-entry {
-    border-top: 1px solid rgb(230,230,230);
+.content-entry {
     padding: 10px 25px;
-    width: 100%;
-    display: inline-table;
-    -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
-    -moz-box-sizing: border-box;    /* Firefox, other Gecko */
-    box-sizing: border-box;
+}
+
+.content-entry.read {
     background-color: rgb(245,245,245);
-    position: relative;
 }
 
-div.content-entry.unread, div.content-entry.mentioned {
-    background-color: rgb(255,255,255);
-}
-
-div.content-entry.none {
-    padding: 100px;
-    text-align: center;
-    color: rgb(150,150,150);
-    font-size: 18px;
-    background-color: rgb(255,255,255);
-}
-
-div.content-entry.loading {
-    padding: 50px;
-    background-color: rgb(255,255,255);
-}
-
-a.user-img {
-    display: inline-block;
-    width: 64px;
-    height: 64px;
-    font-size: 0;
-}
-
-a.user-img img {
-    width: 100%;
-    height: 100%;
-    box-shadow: 0 0 1px rgb(100,100,100);
-}
-
-div.message-info {
+.message-info {
     display: inline-block;
     margin-left: 10px;
     width: 620px;
     vertical-align: top;
 }
 
-div.info-line {
-    font-size: 0;
-    width: 100%;
-    word-wrap: break-word;
+.info-line {
+    font-size: 14px;
     margin-bottom: 2px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
-div.info-line label {
+.info-line label {
     font-size: 14px;
     color: rgb(150,150,150);
     margin-right: 5px;
 }
 
-div.info-line label.time {
-    margin-left: 10px;
+label.time {
+    margin-left: 5px;
 }
 
-.user-name {
-    font-size: 14px;
-    cursor: pointer;
-}
-
-.message-title {
-    display: inline-block;
-    max-width: 500px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    font-size: 14px;
-    cursor: pointer;
-    vertical-align: bottom;
+.info-line:last-child {
+    margin-bottom: 0;
 }
 
 div.content-entry.unread a.message-title {
@@ -85,35 +40,26 @@ div.content-entry.unread a.message-title {
     color: rgb(0,0,0);
 }
 
-div.comment-content {
+.comment-content {
     margin-top: 5px;
-    font-size: 14px;
     word-wrap: break-word;
     white-space: pre-wrap;
     color: rgb(50,50,50);
-    max-width: 100%;
 }
 
 a.reply-link {
-    margin-top: 5px;
     font-size: 14px;
 }
 
-div.pagination-line {
-    padding: 10px 0;
-    border-top: 1px solid rgb(230,230,230);
-    text-align: center;
-}
-
 #sub-title {
-    max-width: 600px;
+    max-width: 700px;
     word-wrap: break-word;
+    white-space: normal;
 }
 
 #message-block {
     width: 100%;
     height: 450px;
-    border-top: 1px solid rgb(200,200,200);
     position: relative;
 }
 
@@ -156,12 +102,6 @@ a.user-img {
     width: 48px;
     height: 48px;
     display: inline-block;
-}
-
-a.user-img img {
-    width: 100%;
-    height: 100%;
-    box-shadow: 0 0 1px rgb(100,100,100);
 }
 
 div.message-content {
@@ -234,7 +174,7 @@ form.message-block {
 }
 
 form.reply-block {
-    border-top: 1px solid rgb(200,200,200);
+    border-top: 1px solid rgb(230,230,230);
     padding: 25px;
 }
 
@@ -242,7 +182,6 @@ form.reply-block {
     width: 64px;
     height: 64px;
     display: inline-block;
-    box-shadow: 0 0 1px rgb(100,100,100);
     margin-right: 15px;
 }
 
@@ -266,11 +205,7 @@ form.reply-block {
 
 .inline-button.send {
     float: right;
-    margin-top: 10px;
-    margin-right: 0;
     min-width: 58px;
-    text-align: center;
-    padding: 5px 8px;
 }
 
 form.change label.message-label {

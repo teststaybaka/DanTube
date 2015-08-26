@@ -174,10 +174,9 @@ function render_code_entry(entry, index) {
 }
 
 function drop_danmaku_pool(option) {
-    var url_suffix = window.location.href.split('/').last();
     $.ajax({
         type: "POST",
-        url: '/account/video/parts/danmaku/drop/'+url_suffix,
+        url: window.location.pathname+'/drop',
         data: {pool_index: option.attr('data-index'), pool_type: option.attr('data-type')},
         success: function(result) {
             if (!result.error) {
@@ -196,7 +195,6 @@ function drop_danmaku_pool(option) {
 
 function delete_danmaku(option) {
     $('.inline-button.delete').addClass('disabled');
-    var url_suffix = window.location.href.split('/').last();
     indices = []
     var checkboxes = $('.single-checkbox.checked');
     for (var i = 0; i < checkboxes.length; i++) {
@@ -205,7 +203,7 @@ function delete_danmaku(option) {
     }
     $.ajax({
         type: "POST",
-        url: '/account/video/parts/danmaku/delete/'+url_suffix,
+        url: window.location.pathname+'/delete',
         data: {pool_index: option.attr('data-index'), pool_type: option.attr('data-type'), danmaku_index: indices},
         success: function(result) {
             if (!result.error) {

@@ -79,7 +79,7 @@ input.signin_up-button:disabled {
 }
 
 a.signin_up-link {
-  margin: 0 20px;
+  margin-left: 20px;
   font-size: 15px;
   font-weight: bold;
 }
@@ -89,14 +89,21 @@ span.other-option {
   margin-right: -10px;
 }
 
-#password-label {
+#password-label, #email-label {
   display: inline-block;
 }
 
-#forgot-password {
+#forgot-password, #send-veri {
   font-size: 14px;
-  margin-left: 130px;
-  margin-right: 0;
+  float: right;
+  margin-top: 1px;
+  cursor: pointer;
+}
+
+#send-veri.disabled {
+  color: rgb(100,100,100);
+  font-weight: normal;
+  cursor: default;
 }
 
 div.input-error {
@@ -125,32 +132,8 @@ div.input-error:after {
     display: block;
 }
 
-/* Chrome, Safari, Opera */
-@-webkit-keyframes input_error_show {
-    from {transform: translateX(40px);
-          -ms-transform: translateX(40px);
-          -webkit-transform: translateX(40px);
-          opacity: 0;}
-    to {transform: translateX(0);
-        -ms-transform: translateX(0);
-        -webkit-transform: translateX(0);
-        opacity: 1;}
-}
-
-/* Standard syntax */
-@keyframes input_error_show {
-    from {transform: translateX(40px);
-          -ms-transform: translateX(40px);
-          -webkit-transform: translateX(40px);
-          opacity: 0;}
-    to {transform: translateX(0);
-        -ms-transform: translateX(0);
-        -webkit-transform: translateX(0);
-        opacity: 1;}
-}
-
 div.input-error.show {
   display: inline-block;
-  -webkit-animation: input_error_show .25s; /* Chrome, Safari, Opera */
-  animation: input_error_show .25s;
+  -webkit-animation: right_to_left_show .25s; /* Chrome, Safari, Opera */
+  animation: right_to_left_show .25s;
 }

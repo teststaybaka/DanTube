@@ -63,7 +63,7 @@ class BaseHandler(webapp2.RequestHandler):
     @webapp2.cached_property
     def user_detail_key(self):
         u = self.user_info
-        return models.UserDetail.get_key(self.user_key) if u else None
+        return models.User.get_detail_key(self.user_key) if u else None
 
     @webapp2.cached_property
     def user_model(self):
@@ -90,12 +90,12 @@ class BaseHandler(webapp2.RequestHandler):
         if not context.get('user'):
             context['user'] = {}
         if self.user_info:
-            if not self.user:
+            try:
+                self.user
+            except AttributeError:
                 self.user = self.user_key.get()
-            context['user']['is_auth'] = True
             context['user'].update(self.user.get_private_info())
-        else:
-            context['user']['is_auth'] = False
+        # logging.info('user: '+str(context['user']))
 
         context['category'] = models.Video_Category
         context['subcategory'] = models.Video_SubCategory
@@ -103,7 +103,7 @@ class BaseHandler(webapp2.RequestHandler):
         template = env.get_template(path)
         self.response.write(template.render(context))
     
-    def notify(self, notice, tatus=200, type='error'):
+    def notify(self, notice, status=200, type='error'):
         self.response.set_status(status)
         self.render('notice', {'notice': notice, 'type': type})
 
@@ -123,6 +123,22 @@ class BaseHandler(webapp2.RequestHandler):
         seen = set()
         seen_add = seen.add
         return [x for x in ids if not (x in seen or seen_add(x))]
+
+    def search(self, query_string, index_name, page_size):
+        cursor = search.Cursor(web_safe_string=self.request.get('cursor'))
+        options = search.QueryOptions(cursor=cursor, limit=page_size, ids_only=True)
+        query = search.Query(query_string=query_string, options=options)
+        index = search.Index(name=index_name)
+        result = index.search(query)
+
+        cursor = result.cursor
+        total_found = result.number_found
+        results = ndb.get_multi([ndb.Key(urlsafe=doc.doc_id) for doc in result.results])
+        context = {
+            'total_found': total_found,
+            'cursor': cursor.web_safe_string if cursor else ''
+        }
+        return context, results
     
     def assemble_link(self, temp, users, add_link):
         if temp != '':
@@ -142,7 +158,7 @@ class BaseHandler(webapp2.RequestHandler):
         for i in xrange(0, len(content)):
             if models.ILLEGAL_LETTER.match(content[i]) and state == 1:
                 state = 0
-                new_content += self.assemble_link(temp, add_link, users)
+                new_content += self.assemble_link(temp, users, add_link)
                 temp = ''
 
             if content[i] == '@' and state == 0:
@@ -156,8 +172,7 @@ class BaseHandler(webapp2.RequestHandler):
 
         seen = set()
         seen_add = seen.add
-        return new_content, [x for x in users if not (x == user_key or x in seen or seen_add(x))]
-
+        return new_content, [x for x in users if not (x == self.user_key or x in seen or seen_add(x))]
 
 def login_required(handler):
     def check_login(self, *args, **kwargs):
@@ -242,12 +257,12 @@ class MultiPartForm(object):
 
 class Home(BaseHandler):
     def get(self):
+        page_size = 14
         cursor = models.Cursor()
-        cursor = models.Cursor(urlsafe=self.request.get('cursor'))
-        videos, cursor, more = models.Video.query(models.Video.category==category).order(-models.Video.hot_score).fetch_page(page_size, start_cursor=cursor)
+        videos, cursor, more = models.Video.query().order(-models.Video.hot_score).fetch_page(page_size, start_cursor=cursor)
         context = {
             'top_ten_videos': [],
-            'top_ten_cursor': cursor.urlsafe() if cursor else None,
+            'top_ten_cursor': cursor.urlsafe() if more else '',
         }
         for i in xrange(0, len(videos)):
             video = videos[i]
@@ -256,16 +271,17 @@ class Home(BaseHandler):
 
         remains = 8
         if self.user_info:
-            uper_keys = models.Subscription.query(ancestor=self.user_key).order(-models.Subscription.score).fetch(limit=remains, projection=['uper'])
+            subscriptions = models.Subscription.query(ancestor=self.user_key).order(-models.Subscription.score).fetch(limit=remains, projection=['uper'])
+            uper_keys = [subscription.uper for subscription in subscriptions]
             upers = ndb.get_multi(uper_keys)
-            context = ['upers'] = []
+            context['upers'] = []
             for i in xrange(0, len(upers)):
                 uper = upers[i]
                 uper_info = uper.get_public_info()
                 context['upers'].append(uper_info)
             remains -= len(upers)
 
-        context['blocks'] = []
+        context['column_categories'] = []
         total_categories = 0
         for i in xrange(0, len(models.Video_Category)):
             category = models.Video_Category[i]
@@ -279,14 +295,14 @@ class Home(BaseHandler):
                 continue
 
             used_cat.add(random_cat)
-            counter = 0
+            counter = random_cat
             for i in xrange(0, len(models.Video_Category)):
                 category = models.Video_Category[i]
                 subcategories = models.Video_SubCategory[category]
                 if counter >= len(subcategories):
                     counter -= len(subcategories)
                 else:
-                    context['blocks'].append({
+                    context['column_categories'].append({
                         'category': category,
                         'subcategory': subcategories[counter],
                     })
@@ -297,45 +313,76 @@ class Home(BaseHandler):
 
     def second_level(self):
         category = self.request.route.name
-        context = {'category_name': category}
+        page_size = 10
+        cursor = models.Cursor()
+        videos, cursor, more = models.Video.query(models.Video.category==category).order(-models.Video.hot_score).fetch_page(page_size, start_cursor=cursor)
+        context = {
+            'category_name': category,
+            'top_ten_videos': [],
+            'top_ten_cursor': cursor.urlsafe() if more else '',
+        }
+        for i in xrange(0, len(videos)):
+            video = videos[i]
+            video_info = video.get_basic_info()
+            context['top_ten_videos'].append(video_info)
+
         self.render('category', context)
 
     def third_level(self):
         [category, subcategory] = self.request.route.name.split('-')
+        page_size = 10
+        cursor = models.Cursor()
+        videos, cursor, more = models.Video.query(ndb.AND(models.Video.category==category, models.Video.subcategory==subcategory)).order(-models.Video.hot_score).fetch_page(page_size, start_cursor=cursor)
         context = {
             'category_name': category,
             'subcategory_name': subcategory,
+            'top_ten_videos': [],
+            'top_ten_cursor': cursor.urlsafe() if more else '',
         }
+        for i in xrange(0, len(videos)):
+            video = videos[i]
+            video_info = video.get_basic_info()
+            context['top_ten_videos'].append(video_info)
+
         self.render('subcategory', context)
 
-class LoadVideos(BaseHandler):
-    def subcategory(self):
+class LoadByCategory(BaseHandler):
+    def post(self):
         try:
-            page_size = int(self.request.get('page-size'))
+            page_size = int(self.request.get('page_size'))
+            if page_size > 30:
+                raise Exception('Too many')
         except Exception, e:
             self.json_response(True, {'message': 'Page size invalid.'})
             return
 
         category = self.request.get('category')
         subcategory = self.request.get('subcategory')
-        if category not in models.Video_Category or subcategory not in models.Video_SubCategory:
-            self.json_response(True, {'message': 'Invalid category.'})
-            return
-        category = category+'-'+subcategory
-
         order = self.request.get('order')
-        if order == 'updated':
+        if order != 'Popular' and not subcategory:
+            self.json_response(True, {'message': 'Invalid order.'})
+            return
+
+        if order == 'Activity':
             order = models.Video.updated
-        elif order == 'created':
+        elif order == 'Newest':
             order = models.Video.created
-        elif order == 'hot':
+        elif order == 'Popular':
             order = models.Video.hot_score
+        else:
+            self.json_response(True, {'message': 'Invalid order.'})
+            return
 
         cursor = models.Cursor(urlsafe=self.request.get('cursor'))
-        videos, cursor, more = models.Video.query(models.Video.category==category).order(-order).fetch_page(page_size, start_cursor=cursor)
+        if subcategory:
+            videos, cursor, more = models.Video.query(ndb.AND(models.Video.category==category, models.Video.subcategory==subcategory)).order(-order).fetch_page(page_size, start_cursor=cursor)
+        elif category:
+            videos, cursor, more = models.Video.query(models.Video.category==category).order(-order).fetch_page(page_size, start_cursor=cursor)
+        else:
+            videos, cursor, more = models.Video.query().order(-order).fetch_page(page_size, start_cursor=cursor)
         result = {
             'videos': [],
-            'cursor': cursor.urlsafe() if cursor else None,
+            'cursor': cursor.urlsafe() if more else '',
         }
         for i in xrange(0, len(videos)):
             video = videos[i]
@@ -344,9 +391,12 @@ class LoadVideos(BaseHandler):
 
         self.json_response(False, result)
 
-    def uper(self):
+class LoadByUper(BaseHandler):
+    def post(self):
         try:
-            page_size = int(self.request.get('page-size'))
+            page_size = int(self.request.get('page_size'))
+            if page_size > 30:
+                raise Exception('Too many')
         except ValueError:
             self.json_response(True, {'message': 'Page size invalid.'})
             return
@@ -361,7 +411,7 @@ class LoadVideos(BaseHandler):
         videos, cursor, more = models.Video.query(models.Video.uploader==uper_key).order(-models.Video.updated).fetch_page(page_size, start_cursor=cursor)
         result = {
             'videos': [],
-            'cursor': cursor.urlsafe() if cursor else None,
+            'cursor': cursor.urlsafe() if more else '',
         }
         for i in xrange(0, len(videos)):
             video = videos[i]
@@ -374,79 +424,85 @@ class FeelingLucky(BaseHandler):
     def get(self):
         max_id = models.Video.get_max_id()
         video = None
-        while not video:
+        while not video or video.deleted:
             random_id = random.randint(1, max_id)
             video = models.Video.get_by_id('dt'+str(random_id))
         self.redirect(self.uri_for('watch', video_id=random_id))
 
-class Search(BaseHandler):
+class SearchVideos(BaseHandler):
     def get(self):
         context = {
             'keywords': self.get_keywords(),
+            'cur_category': self.request.get('category'),
+            'cur_subcategory': self.request.get('subcategory'),
             'order': self.request.get('order'),
         }
-        category = self.request.get('category')
-        if category in models.Video_Category:
-            context['cur_category'] = category
-            subcategory = self.request.get('subcategory')
-            if subcategory in models.Video_SubCategory[category]:
-                context['cur_subcategory'] = subcategory
-
         self.render('search', context)
 
     def post(self):
         page_size = models.STANDARD_PAGE_SIZE
         keywords = self.get_keywords()
-        if not keywords:
-            query_string = ''
+        res = re.match(r'dt\d+', keywords)
+        if res:
+            video_id = res.group(0)
+            video = models.Video.get_by_id(video_id)
+            if video:
+                videos = [video]
+            else:
+                videos = []
+            context = {
+                'total_found': len(videos),
+                'cursor': '',
+            }
         else:
-            query_string = 'content: ' + keywords
-        
-        category = self.request.get('category')
-        if category in models.Video_Category:
-            if query_string:
-                query_string += ' AND '
-            query_string += 'category: "' + category + '"'
+            if not keywords:
+                query_string = ''
+            else:
+                query_string = 'content: ' + keywords
+            
+            category = self.request.get('category')
+            if category:
+                if query_string:
+                    query_string += ' AND '
+                query_string += 'category: "' + category + '"'
 
-            subcategory = self.request.get('subcategory')
-            if subcategory in models.Video_SubCategory[category]:
-                query_string += ' AND subcategory: "' + subcategory + '"'
+                subcategory = self.request.get('subcategory')
+                if subcategory:
+                    query_string += ' AND subcategory: "' + subcategory + '"'
 
-        order = self.request.get('order')
-        if order == 'hits':
-            index = search.Index(name='videos_by_hits')
-        elif order == 'likes':
-            index = search.Index(name='videos_by_likes')
-        elif order == 'created':
-            index = search.Index(name='videos_by_created')
-        else:
-            self.json_response(True, {'message': 'Invalid order.'})
-            return
+            order = self.request.get('order')
+            if order == 'hits':
+                index_name = 'videos_by_hits'
+            elif order == 'likes':
+                index_name = 'videos_by_likes'
+            else: #created
+                index_name = 'videos_by_created'
 
-        context{'videos': []}
-        cursor = search.Cursor(web_safe_string=self.request.get('cursor'))
-        try:
-            options = search.QueryOptions(cursor=cursor, limit=page_size, ids_only=True)
-            query = search.Query(query_string=query_string, options=options)
-            result = index.search(query)
+            try:
+                context, videos = self.search(query_string, index_name, page_size)
+            except Exception, e:
+                logging.info("search failed")
+                logging.info(e)
+                self.json_response(True, {'message': 'Video search error.'});
+                return
 
-            cursor = result.cursor
-            context['cursor'] = cursor.web_safe_string if cursor else None
-            videos = ndb.get_multi([ndb.Key(urlsafe=video_doc.doc_id) for video_doc in result.results])
-            for i in xrange(0, len(videos)):
-                video = videos[i]
-                video_info = video.get_basic_info()
-                context['videos'].append(video_info)
+        context['videos'] = []
+        for i in xrange(0, len(videos)):
+            video = videos[i]
+            video_info = video.get_full_info()
+            context['videos'].append(video_info)
 
-            self.json_response(False, context)
-        except Exception, e:
-            logging.info("search failed")
-            logging.info(e)
-            self.json_response(True, {'message': 'Video search error.'});
+        self.json_response(False, context)
 
-class SearchPlaylist(BaseHandler):
+class SearchPlaylists(BaseHandler):
     def get(self):
-        context = {'keywords': self.get_keywords()}
+        context = {
+            'playlist_types': models.Playlist_Type,
+            'keywords': self.get_keywords(),
+            'playlist_type': self.request.get('type'),
+            'playlist_max': self.request.get('max'),
+            'playlist_min': self.request.get('min'),
+        }
         self.render('search_playlist', context)
 
     def post(self):
@@ -457,29 +513,45 @@ class SearchPlaylist(BaseHandler):
         else:
             query_string = 'content: ' + keywords
 
-        context{'playlists': []}
-        index = search.Index(name='playlists_by_modified')
-        cursor = search.Cursor(web_safe_string=self.request.get('cursor'))
+        playlist_type = self.request.get('type')
+        if playlist_type:
+            if query_string:
+                query_string += ' AND '
+            query_string += 'type: "' + playlist_type + '"'
+
         try:
-            options = search.QueryOptions(cursor=cursor, limit=page_size, ids_only=True)
-            query = search.Query(query_string=query_string, options=options)
-            result = index.search(query)
+            videos_min = int(self.request.get('min'))
+            if query_string:
+                query_string += ' AND '
+            query_string += 'videos >= ' + str(videos_min)
+        except ValueError:
+            pass
 
-            cursor = result.cursor
-            context['cursor'] = cursor.web_safe_string if cursor else None
-            playlists = ndb.get_multi([ndb.Key(urlsafe=playlist_doc.doc_id) for playlist_doc in result.results])
-            for i in xrange(0, len(playlists)):
-                playlist = playlists[i]
-                playlist_info = playlist.get_info()
-                context['playlists'].append(playlist_info)
+        try:
+            videos_max = int(self.request.get('max'))
+            if query_string:
+                query_string += ' AND '
+            query_string += 'videos <= ' + str(videos_max)
+        except ValueError:
+            pass
 
-            self.json_response(False, context)
+        try:
+            context, playlists = self.search(query_string, 'playlists_by_modified', page_size)
         except Exception, e:
             logging.info("playlist search failed")
             logging.info(e)
             self.json_response(True, {'message': 'Playlist search error.'});
+            return
+
+        context['playlists'] = []
+        for i in xrange(0, len(playlists)):
+            playlist = playlists[i]
+            playlist_info = playlist.get_info()
+            context['playlists'].append(playlist_info)
+
+        self.json_response(False, context)
         
-class SearchUPer(BaseHandler):
+class SearchUPers(BaseHandler):
     def get(self):
         context = {'keywords': self.get_keywords()}
         self.render('search_uper', context)
@@ -492,25 +564,30 @@ class SearchUPer(BaseHandler):
         else:
             query_string = 'content: ' + keywords
 
-        context{'upers': []}
-        index = search.Index(name='upers_by_created')
-        cursor = search.Cursor(web_safe_string=self.request.get('cursor'))
         try:
-            options = search.QueryOptions(cursor=cursor, limit=page_size, ids_only=True)
-            query = search.Query(query_string=query_string, options=options)
-            result = index.search(query)
-
-            cursor = result.cursor
-            context['cursor'] = cursor.web_safe_string if cursor else None
-            upers = ndb.get_multi([ndb.Key(urlsafe=uper_doc.doc_id) for uper_doc in result.results])
-            upers_detail = ndb.get_multi([models.UserDetail.get_key(uper.key)  for uper in upers])
-            for i in xrange(0, len(upers)):
-                uper = upers[i]
-                uper_info = uper.get_public_info(self.user)
-                uper_info.update(upers_detail.get_detail_info())
-                context['upers'].append(uper_info)
-
-            self.json_response(False, context)
+            context, upers = self.search(query_string, 'upers_by_created', page_size)
+            upers_detail = ndb.get_multi([models.User.get_detail_key(uper.key)  for uper in upers])
         except Exception, e:
             logging.info(e)
             self.json_response(False, {'message': 'UPer search error.'});
+            return
+
+        if self.user_info:
+            subscriptions = models.Subscription.query(ancestor=self.user_key).order(-models.Subscription.score).fetch(projection=['uper'])
+            subscribed = [subscription.uper for subscription in subscriptions]
+        else:
+            subscribed = []
+
+        context['upers'] = []
+        for i in xrange(0, len(upers)):
+            uper = upers[i]
+            detail = upers_detail[i]
+            uper_info = uper.get_public_info()
+            uper_info.update(detail.get_detail_info())
+            if uper.key in subscribed:
+                uper_info['subscribed'] = True
+            else:
+                uper_info['subscribed'] = False
+            context['upers'].append(uper_info)
+
+        self.json_response(False, context)

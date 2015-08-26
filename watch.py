@@ -12,74 +12,130 @@ CODE_REG = re.compile(r'(^|.*[^a-zA-Z_$])(document|window|location|oldSetInterva
 
 class Video(BaseHandler):
     def get(self, video_id):
-        video_key = ndb.('Video', video_id)
+        video_key = ndb.Key('Video', video_id)
         try:
             clip_index = int(self.request.get('index')) - 1
         except ValueError:
             clip_index = 0
 
-        cur_clip = models.VideoClip.query(models.VideoClip.index==clip_index, ancestor=video_key).get()
-        if not cur_clip:
-            self.notify('Video not found or deleted.')
+        try:
+            list_id = int(self.request.get('list'))
+        except ValueError:
+            list_id = None
+
+        video, clip_list = ndb.get_multi([video_key, models.VideoClipList.get_key(video_id)])
+        if not video:
+            self.notify('Video not found.')
             return
 
+        # load video/clip info
+        if video.deleted:
+            video_info = video.get_basic_info()
+            video_info['deleted'] = True
+        else:
+            cur_clip = clip_list.clips[clip_index].get()
+            video_info = video.get_full_info()
+            video_info['cur_clip_id'] = cur_clip.key.id()
+            video_info['cur_vid'] = cur_clip.vid
+            video_info['cur_subintro'] = cur_clip.subintro
+            video_info['cur_index'] = clip_index
+            video_info['clip_titles'] = clip_list.titles
+            video_info['clip_range'] = range(0, len(clip_list.clips))
+            if clip_index == 0:
+                video_info['clip_range_min'] = 0
+                video_info['clip_range_max'] = min(2, len(clip_list.clips))
+            elif clip_index == len(clip_list.clips) - 1:
+                video_info['clip_range_min'] = max(0, len(clip_list.clips) - 2)
+                video_info['clip_range_max'] = len(clip_list.clips)
+            else:
+                video_info['clip_range_min'] = clip_index - 1
+                video_info['clip_range_max'] = clip_index + 1
+
+        # load playlist info
+        if list_id is not None:
+            playlist_key = ndb.Key('Playlist', list_id)
+        else:
+            playlist_key = video.playlist_belonged
+
+        playlist_info = {}
+        if playlist_key:
+            playlist, list_detail = ndb.get_multi([playlist_key, models.Playlist.get_detail_key(playlist_key)])
+            if playlist:
+                playlist_info = playlist.get_info()
+                idx = list_detail.videos.index(video_key)
+                playlist_info['cur_index'] = idx
+                min_idx = max(0, idx - 4)
+                remain = 4 - (idx - min_idx)
+                max_idx = min(len(list_detail.videos), idx + 6 + remain)
+                if min_idx > 0:
+                    playlist_info['cursor_prev'] = min_idx
+                if max_idx < len(list_detail.videos):
+                    playlist_info['cursor_next'] = max_idx
+
+                videos = ndb.get_multi(list_detail.videos[min_idx:max_idx])
+                playlist_info['videos'] = []
+                for i in xrange(0, len(videos)):
+                    list_video = videos[i]
+                    if list_id is not None:
+                        list_video_info = list_video.get_basic_info(list_id)
+                    else:
+                        list_video_info = list_video.get_basic_info()
+                    list_video_info['index'] = min_idx + i
+                    playlist_info['videos'].append(list_video_info)
+
+                if list_id is not None:
+                    video_info['list_id'] = list_id
+
+        if video.deleted:
+            context = {
+                'video': video_info,
+                'playlist': playlist_info,
+            }
+            self.render('video', context)
+            return
+
+        # update uploader info
+        uploader, uploader_detail = ndb.get_multi([video.uploader, models.User.get_detail_key(video.uploader)])
+        snapshot = uploader.create_snapshot()
+        uploader_info = uploader.get_public_info()
+        uploader_info.update(uploader_detail.get_detail_info())
+        change_snapshot = False
+        if video.uploader_snapshot.to_dict() != snapshot.to_dict():
+            video.uploader_snapshot = snapshot
+            change_snapshot = True
+            
+        # check video status for user
         if self.user_info:
-            user, video = ndb.get_multi([self.user_key, video_key])
-            self.user = user
+            self.user = user = self.user_key.get()
             try:
                 record, is_new_hit = models.ViewRecord.get_or_create(user.key, video.key)
                 if record.clip_index < clip_index:
                     record.clip_index = clip_index
-                    record.put_async()
+                    record.put()
+                if not is_new_hit:
+                    record.created = datetime.now()
+                    record.put()
             except Exception, e:
+                is_new_hit = False
                 logging.warning('View record get/create failed!')
+
+            video_info['watched'] = not is_new_hit
+            video_info['liked'] = bool(models.LikeRecord.query(models.LikeRecord.video==video.key, ancestor=self.user_key).get(keys_only=True))
+            uploader_info['subscribed'] = bool(models.Subscription.query(models.Subscription.uper==uploader.key, ancestor=self.user_key).get(keys_only=True))
         else:
-            video = video_key.get()
+            video_info['watched'] = True
+            video_info['liked'] = False
+            uploader_info['subscribed'] = False
 
-        video_info = video.get_full_info()
-        video_info['cur_vid'] = cur_clip.vid
-        video_info['cur_subintro'] = cur_clip.subintro
-        video_info['cur_index'] = clip_index
-
-        clip_titles = models.VideoClip.query(ancestor=video_key).order(models.VideoClip.index).fetch(projection=['title'])
-        video_info['clip_titles'] = clip_titles
-        video_info['clip_range'] = range(0, len(clip_titles))
-        if clip_index == 0:
-            video_info['clip_range_min'] = 0
-            video_info['clip_range_max'] = min(2, len(clip_titles))
-        elif clip_index == len(clip_titles) - 1:
-            video_info['clip_range_min'] = max(0, len(clip_titles) - 2)
-            video_info['clip_range_max'] = len(clip_titles)
-        else:
-            video_info['clip_range_min'] = clip_index - 1
-            video_info['clip_range_max'] = clip_index + 1
-
-        playlist_info = {}
-        if video.playlist_belonged:
-            uploader, uploader_detail, playlist, list_detail = ndb.get_multi([video.uploader, models.UserDetail.get_key(video.uploader), video.playlist_belonged, models.PlayList.get_detail_key(video.playlist_belonged)])
-            playlist_info = playlist.get_info()
-            idx = list_detail.videos.index(video.key)
-            playlist_info['cur_index'] = idx
-            playlist_info['videos'] = []
-            videos = ndb.get_multi(list_detail.videos)
-            for i in xrange(0, len(videos)):
-                playlist_info['videos'].append(videos[i].get_basic_info())
-        else:
-            uploader, uploader_detail = ndb.get_multi([video.uploader, models.UserDetail.get_key(video.uploader)])
-
-        if self.user_info and is_new_hit:
+        # update video entity
+        if not video_info['watched']:
             video.hits += 1
             video.update_hot_score(HOT_SCORE_PER_HIT)
             uploader_detail.videos_watched += 1
-            ndb.put_multi_async([video, uploader_detail])
+            ndb.put_multi([video, uploader_detail])
             video.create_index('videos_by_hits', video.hits)
-
-        uploader_info = uploader.get_public_info()
-        uploader_info.update(uploader_detail.get_detail_info())
-        if self.user_info:
-            uploader_info['subscribed'] = bool(models.Subscription.query(models.Subscription.uper==uploader.key, ancestor=self.user_key).get(keys_only=True))
-        else:
-            uploader_info['subscribed'] = False
+        elif change_snapshot:
+            video.put()
 
         context = {
             'video': video_info,
@@ -93,8 +149,95 @@ class Video(BaseHandler):
         }
         self.render('video', context)
 
+class GetPlaylistVideo(BaseHandler):
+    def post(self, video_id, playlist_id):
+        page_size = models.STANDARD_PAGE_SIZE
+        playlist_id = int(playlist_id)
+        list_detail = models.Playlist.get_detail_key(ndb.Key('Playlist', playlist_id)).get()
+        if not list_detail:
+            self.json_response(True, {'message': 'Playlist not found.'})
+            return
+
+        playlist_type = self.request.get('playlist_type')
+        try:
+            cursor = int(self.request.get('cursor'))
+        except Exception:
+            self.json_response(True, {'message': 'Invalid cursor'})
+            return
+
+        result = {}
+        if self.request.get('type') == 'next':
+            min_idx = cursor
+            max_idx = min(len(list_detail.videos), cursor + page_size)
+            if max_idx < len(list_detail.videos):
+                result['cursor'] = max_idx
+        else: # prev
+            min_idx = max(0, cursor - page_size)
+            max_idx = cursor
+            if min_idx > 0:
+                result['cursor'] = min_idx
+
+        videos = ndb.get_multi(list_detail.videos[min_idx:max_idx])
+        result['videos'] = []
+        for i in xrange(0, len(videos)):
+            video = videos[i]
+            if playlist_type == 'Primary':
+                video_info = video.get_basic_info()
+            else:
+                video_info = video.get_basic_info(playlist_id)
+            video_info['index'] = i + min_idx
+            result['videos'].append(video_info)
+
+        self.json_response(False, result)
+
+class CheckComment(BaseHandler):
+    def post(self, video_id):
+        try:
+            comment_id = int(self.request.get('comment_id'))
+        except Exception:
+            comment_id = ''
+
+        try:
+            inner_comment_id = int(self.request.get('inner_comment_id'))
+        except Exception:
+            inner_comment_id = ''
+
+        result = {}
+        if comment_id:
+            comment = ndb.Key('Comment', comment_id, parent=ndb.Key('Video', video_id)).get()
+            if comment:
+                comment_info = comment.get_content()
+                comment_info['inner_comments'] = []
+
+                if inner_comment_id:
+                    inner_comment = ndb.Key('Comment', inner_comment_id, parent=ndb.Key('Comment', comment_id)).get()
+                    if inner_comment:
+                        inner_info = inner_comment.get_content()
+                        comment_info['inner_comments'].append(inner_info)
+
+                inner_comments = models.Comment.query(ancestor=ndb.Key('Comment', comment_id)).order(-models.Comment.created).fetch(limit=3)
+                for j in xrange(0, len(inner_comments)):
+                    inner_comment = inner_comments[j]
+                    if len(comment_info['inner_comments']) >= 3 or (inner_comment_id and inner_comment_id == inner_comment.key.id()):
+                        continue
+
+                    inner_info = inner_comment.get_content()
+                    comment_info['inner_comments'].append(inner_info)
+
+                result['comment'] = comment_info
+
+        if not result:
+            self.json_response(True, {'message': 'No comment found'})
+        else:
+            self.json_response(False, result)
+
 class Comment(BaseHandler):
     def get_comment(self, video_id):
+        try:
+            comment_id = int(self.request.get('comment_id'))
+        except Exception:
+            comment_id = ''
+
         video_key = ndb.Key('Video', video_id)
         page_size = models.MEDIUM_PAGE_SIZE
 
@@ -103,15 +246,18 @@ class Comment(BaseHandler):
         
         result = {
             'comments': [],
-            'cursor': cursor.urlsafe() if cursor else None
+            'cursor': cursor.urlsafe() if more else '',
         }
         for i in xrange(0, len(comments)):
             comment = comments[i]
+            if comment.key.id() == comment_id:
+                continue
+
             info = comment.get_content()
             info['inner_comments'] = []
 
-            inner_comments = models.Comment.query(ancestor=comment.key).order(-models.Comment.created).fetch(limit=3)
-            for j in reversed(xrange(0, len(inner_comments))):
+            inner_comments = models.Comment.query(ancestor=ndb.Key('Comment', comment.key.id())).order(-models.Comment.created).fetch(limit=3)
+            for j in xrange(0, len(inner_comments)):
                 inner_comment = inner_comments[j]
                 inner_info = inner_comment.get_content()
                 info['inner_comments'].append(inner_info)
@@ -127,14 +273,13 @@ class Comment(BaseHandler):
         except ValueError:
             self.json_response(True, {'message': 'Invalid id.'})
             return
-        comment_key = ndb.Key('Comment', comment_id, parent=video_key)
 
         cursor = models.Cursor(urlsafe=self.request.get('cursor'))
-        inner_comments, cursor, more = models.Comment.query(ancestor=comment_key).order(models.Comment.created).fetch_page(page_size, start_cursor=cursor)
+        inner_comments, cursor, more = models.Comment.query(ancestor=ndb.Key('Comment', comment_id)).order(-models.Comment.created).fetch_page(page_size, start_cursor=cursor)
         
         result = {
             'inner_comments': [],
-            'cursor': cursor.urlsafe() if cursor else None,
+            'cursor': cursor.urlsafe() if more else '',
         }
         for i in xrange(0, len(inner_comments)):
             inner_comment = inner_comments[i]
@@ -155,23 +300,24 @@ class Comment(BaseHandler):
         content, users = self.at_users_content(content, True)
 
         user, video = ndb.get_multi([self.user_key, ndb.Key('Video', video_id)])
-        if not video:
+        if not video or video.deleted:
             self.json_response(True, {'message': 'Video not found.'})
             return
 
+        allow_share = bool(self.request.get('allow-post-comment'))
         try:
-            comment = models.Comment.CreateComment(user=user, video=video, content=content)
+            comment = models.Comment.CreateComment(user=user, video=video, content=content, allow_share=allow_share)
         except Exception, e:
-            logging.warning('Commne post failed!!!!!')
+            logging.info(str(e))
             self.json_response(True, {'message': 'Post failed. Please try again.'})
             return
 
         video.comment_counter = comment.floorth
         video.update_hot_score(HOT_SCORE_PER_COMMENT)
         video.updated = datetime.now()
-        video.put_async()
+        video.put()
 
-        models.MentionedRecord.Create(users, comment)
+        models.MentionedRecord.Create(users, comment.key)
         self.json_response(False)
 
     @login_required_json
@@ -196,25 +342,20 @@ class Comment(BaseHandler):
             self.json_response(True, {'message': 'Comment not found.'})
             return
 
-        try:
-            inner_comment = models.Comment.CreateInnerComment(user=user, comment=comment, content=content)
-        except Exception, e:
-            logging.warning('Commne post failed!!!!!')
-            self.json_response(True, {'message': 'Post failed. Please try again.'})
-            return
+        allow_share = bool(self.request.get('allow-post-reply'))
+        # try:
+        inner_comment = models.Comment.CreateInnerComment(user=user, comment=comment, content=content, allow_share=allow_share)
+        # except Exception, e:
+        #     logging.warning('Commne post failed!!!!!')
+        #     self.json_response(True, {'message': 'Post failed. Please try again.'})
+        #     return
 
-        models.MentionedRecord.Create(users, inner_comment)
+        models.MentionedRecord.Create(users, inner_comment.key)
         self.json_response(False)
 
 def video_clip_exist_required_json(handler):
-    def check_exist(self, video_id):
-        video_key = ndb.Key('Video', video_id)
-        try:
-            clip_index = int(self.request.get('index')) - 1
-        except ValueError:
-            clip_index = 0
-        
-        clip = models.VideoClip.query(models.VideoClip.index==clip_index, ancestor=video_key).get()
+    def check_exist(self, video_id, clip_id):
+        clip = ndb.Key('VideoClip', int(clip_id), parent=ndb.Key('Video', video_id)).get()
         if not clip:
             self.json_response(True, {'message': 'Video not found.'})
             return
@@ -247,7 +388,7 @@ class Danmaku(BaseHandler):
 
         if not clip.refresh and (clip.danmaku_num != danmaku_num or clip.advanced_danmaku_num != advanced_danmaku_num or clip.code_danmaku_num != code_danmaku_num):
             clip.refresh = True
-            clip.put_async()
+            clip.put()
 
         self.json_response(False, {'danmaku_list': danmaku_list})
 
@@ -304,20 +445,21 @@ class Danmaku(BaseHandler):
         try:
             danmaku_pool = clip.get_lastest_danmaku_pool()
         except Exception, e:
-            self.json_response(True, {'message', 'Danmaku post error. Please try again.'})
+            logging.info(str(e))
+            self.json_response(True, {'message': 'Danmaku post error. Please try again.'})
             return
 
-        danmaku = models.Danmaku(index=danmaku_pool.counter, timestamp=timestamp, content=content, position=position, size=size, color=color, creator=user.key)
+        danmaku = models.Danmaku(index=danmaku_pool.counter, timestamp=timestamp, content=content, position=position, size=size, color=color, creator=self.user_key)
         danmaku_pool.danmaku_list.append(danmaku)
         danmaku_pool.counter += 1
 
         user, video = ndb.get_multi([user_key, clip.key.parent()])
         video.update_hot_score(HOT_SCORE_PER_DANMAKU)
         video.updated = datetime.now()
-        danmaku_record = models.DanmakuRecord(parent=user_key, creator_snapshot=user.create_snapshot(), content=content, record_type='danmaku', video=video.key, clip_index=clip.index, video_title=video.title, timestamp=timestamp)
-        ndb.put_multi_async([danmaku_pool, video, danmaku_record])
+        danmaku_record = models.DanmakuRecord(parent=user_key, creator_snapshot=user.create_snapshot(), content=content, danmaku_type='danmaku', video=video.key, clip_index=clip.index, video_title=video.title, timestamp=timestamp)
+        ndb.put_multi([danmaku_pool, video, danmaku_record])
 
-        models.MentionedRecord.Create(users, danmaku_record)
+        models.MentionedRecord.Create(users, danmaku_record.key)
         self.json_response(False, Danmaku.format_danmaku(danmaku, danmaku_pool))
 
     @classmethod
@@ -397,18 +539,19 @@ class Danmaku(BaseHandler):
         try:
             advanced_danmaku_pool = clip.get_advanced_danmaku_pool()
         except Exception, e:
-            self.json_response(True, {'message', 'Advanced danmaku post error. Please try again.'})
+            logging.info(e)
+            self.json_response(True, {'message': 'Advanced danmaku post error. Please try again.'})
             return
         if len(advanced_danmaku_pool.danmaku_list) >= 1000:
             self.json_response(True, {'message': 'Advanced danmaku pool is full.'})
             return
 
-        danmaku = models.AdvancedDanmaku(index=advanced_danmaku_pool.counter, timestamp=timestamp, content=content, birth_x=birth_pos[0], birth_y=birth_pos[1], death_x=death_pos[0], death_y=death_pos[1], speed_x=speed[0], speed_y=speed[1], longevity=longevity, css=custom_css, as_percent=as_percent, relative=relative, creator=user.key)
+        danmaku = models.AdvancedDanmaku(index=advanced_danmaku_pool.counter, timestamp=timestamp, content=content, birth_x=birth_pos[0], birth_y=birth_pos[1], death_x=death_pos[0], death_y=death_pos[1], speed_x=speed[0], speed_y=speed[1], longevity=longevity, css=custom_css, as_percent=as_percent, relative=relative, creator=user_key)
         advanced_danmaku_pool.danmaku_list.append(danmaku)
         advanced_danmaku_pool.counter += 1
 
         user, video = ndb.get_multi([user_key, clip.key.parent()])
-        danmaku_record = models.DanmakuRecord(parent=user_key, create_snapshot=user.create_snapshot(), content=content, record_type='advanced', video=video.key, clip_index=clip.index, video_title=video.title, timestamp=timestamp)
+        danmaku_record = models.DanmakuRecord(parent=user_key, creator_snapshot=user.create_snapshot(), content=content, danmaku_type='advanced', video=video.key, clip_index=clip.index, video_title=video.title, timestamp=timestamp)
         
         ndb.put_multi([advanced_danmaku_pool, danmaku_record])
         self.json_response(False, Danmaku.format_advanced_danmaku(danmaku, advanced_danmaku_pool))
@@ -459,20 +602,20 @@ class Danmaku(BaseHandler):
         try:
             code_danmaku_pool = clip.get_code_danmaku_pool()
         except Exception, e:
-            self.json_response(True, {'message', 'Code danmaku post error. Please try again.'})
+            self.json_response(True, {'message': 'Code danmaku post error. Please try again.'})
             return
         if len(code_danmaku_pool.danmaku_list) >= 1000:
             self.json_response(True, {'message': 'Code danmaku pool is full.'})
             return
 
-        danmaku = models.CodeDanmaku(index=code_danmaku_pool.counter, timestamp=timestamp, content=content, creator=user.key)
+        danmaku = models.CodeDanmaku(index=code_danmaku_pool.counter, timestamp=timestamp, content=content, creator=user_key)
         code_danmaku_pool.danmaku_list.append(danmaku)
         code_danmaku_pool.counter += 1
 
         user, video = ndb.get_multi([user_key, clip.key.parent()])
-        danmaku_record = models.DanmakuRecord(parent=user_key, creator_snapshot=user.create_snapshot(), content=content, record_type='code', video=video.key, clip_index=clip.index, video_title=video.title, timestamp=timestamp)
+        danmaku_record = models.DanmakuRecord(parent=user_key, creator_snapshot=user.create_snapshot(), content=content, danmaku_type='code', video=video.key, clip_index=clip.index, video_title=video.title, timestamp=timestamp)
         
-        ndb.put_multi_async([code_danmaku_pool, danmaku_record])
+        ndb.put_multi([code_danmaku_pool, danmaku_record])
         self.json_response(False)
 
     @classmethod
@@ -489,32 +632,9 @@ class Danmaku(BaseHandler):
                     'index': code_danmaku.index,
                 }
 
-class Subtitles(BaseHandler):
-    def get(self, subtitles_pool_id):
-        try:
-            subtitle_danmaku_pool = models.SubtitleDanmakuPool.get_by_id(int(subtitles_pool_id))
-            if not subtitle_danmaku_pool:
-                raise Exception('Not found.')
-        except Exception, e:
-            self.json_response(True, {'message': 'Subtitles not found.'})
-            return
-
-        self.json_response(False, Subtitles.format_subtitles(subtitle_danmaku_pool))
-
-    @classmethod
-    def format_subtitles(cls, subtitle_danmaku_pool):
-        return {
-            'subtitles': subtitle_danmaku_pool.subtitles,
-            'creator': subtitle_danmaku_pool.creator.id(),
-            'created': subtitle_danmaku_pool.created.strftime("%m-%d %H:%M"),
-            'created_year': subtitle_danmaku_pool.created.strftime("%Y-%m-%d %H:%M"),
-            'created_seconds': models.time_to_seconds(subtitle_danmaku_pool.created),
-            'pool_id': subtitle_danmaku_pool.key.id(),
-        }
-
     @login_required_json
     @video_clip_exist_required_json
-    def post(self, clip):
+    def post_subtitles(self, clip):
         user_key = self.user_key
         name = self.request.get('name').strip()
         if not name:
@@ -536,7 +656,7 @@ class Subtitles(BaseHandler):
                 self.json_response(True, {'message': 'Subtitles format error.'})
                 return
 
-        subtitle_danmaku_pool = SubtitleDanmakuPool(subtitles=subtitles, creator=user_key)
+        subtitle_danmaku_pool = models.SubtitleDanmakuPool(subtitles=subtitles, creator=user_key)
         subtitle_danmaku_pool.put()
         try:
             clip.append_new_subtitles(name, subtitle_danmaku_pool.key)
@@ -545,28 +665,48 @@ class Subtitles(BaseHandler):
             return
 
         user, video = ndb.get_multi([user_key, clip.key.parent()])
-        danmaku_record = models.DanmakuRecord(parent=user_key, create_snapshot=user.create_snapshot(), content=subtitles, record_type='subtitles', video=video.key, clip_index=clip.index, video_title=video.title)
-        danmaku_record.put_async()
+        danmaku_record = models.DanmakuRecord(parent=user_key, creator_snapshot=user.create_snapshot(), content=subtitles, danmaku_type='subtitles', video=video.key, clip_index=clip.index, video_title=video.title)
+        danmaku_record.put()
         self.json_response(False)
+
+class Subtitles(BaseHandler):
+    def get(self, subtitles_pool_id):
+        subtitle_danmaku_pool = models.SubtitleDanmakuPool.get_by_id(int(subtitles_pool_id))
+        if not subtitle_danmaku_pool:
+            self.json_response(True, {'message': 'Subtitles not found.'})
+            return
+
+        self.json_response(False, Subtitles.format_subtitles(subtitle_danmaku_pool))
+
+    @classmethod
+    def format_subtitles(cls, subtitle_danmaku_pool):
+        return {
+            'subtitles': subtitle_danmaku_pool.subtitles,
+            'creator': subtitle_danmaku_pool.creator.id(),
+            'created': subtitle_danmaku_pool.created.strftime("%m-%d %H:%M"),
+            'created_year': subtitle_danmaku_pool.created.strftime("%Y-%m-%d %H:%M"),
+            'created_seconds': models.time_to_seconds(subtitle_danmaku_pool.created),
+            'pool_id': subtitle_danmaku_pool.key.id(),
+        }
 
 class Like(BaseHandler):
     @login_required_json
     def post(self, video_id):
-        user_key = self.user_key
-        video = models.Video.get_by_id(video_id)
-        if not video:
+        video = ndb.Key('Video', video_id).get()
+        if not video or video.deleted:
             self.json_response(True, {'message': 'Video not found.'})
             return
 
-        is_new = models.LikeRecord.unique_create(video.key, user_key)
+        is_new = models.LikeRecord.unique_create(video.key, self.user_key)
         if is_new:
             video.likes += 1
             video.updated = datetime.now()
             video.update_hot_score(HOT_SCORE_PER_LIKE)
-            video.put_async()
+            video.put()
             video.create_index('videos_by_likes', video.likes)
-        
-        self.json_response(False)
+            self.json_response(False)
+        else:
+            self.json_response(True)
 
 class Unlike(BaseHandler):
     @login_required_json
@@ -576,11 +716,12 @@ class Unlike(BaseHandler):
 
         record = models.LikeRecord.query(models.LikeRecord.video==video_key, ancestor=user_key).get(keys_only=True)
         if record:
-            record.delete_async()
+            record.delete()
             video = video_key.get()
             if video:
                 video.likes -= 1
-                video.put_async()
+                video.put()
                 video.create_index('videos_by_likes', video.likes)
-        
-        self.json_response(False)
+            self.json_response(False)
+        else:
+            self.json_response(True)

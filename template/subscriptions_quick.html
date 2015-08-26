@@ -7,75 +7,27 @@
 
 {% block body %}
 <div id="subscription-block">
-    <div class="quick-title-line">
-        <div class="quick-title-head"></div>
-        <div class="quick-title">Subscriptions</div>
-        <a class="search-scope active" href="?">All Activity</a>
-        <a class="search-scope" href="?uploads=1">Uploads Only</a>
+    <div class="block-title-line">
+        <div class="block-title-head"></div>
+        <div class="category-title">Subscriptions</div>
+        <a class="search-scope {% if kind != 'comments' %}active{% endif %}" href="?type=uploads">Uploads</a>
+        <a class="search-scope {% if kind == 'comments' %}active{% endif %}" href="?type=comments">Comments</a>
     </div>
     <div class="activity-container">
-    <!-- <div class="activity-entry none">
-        No item found.
-    </div> -->
-    <!-- <div class="activity-entry">
-        <a class="uploader-img" href="">
-            <img class="uploader-img" src="">
-        </a>
-        <div class="activity-detail">
-            <div class="activity-title">
-                <label>Uploaded</label>
-                <a href="" class="activity-title" target="_blank">WHY? ExportableWHY? ExportableWHY? ExportableWHY? Exportable</a>
-            </div>
-            <div class="uploader-name">
-                <label>by</label>
-                <a href="" class="uploader-name" target="_blank">Markiplier</a>
-                <div class="activity-time">2013-10-23 23:10</div>
-            </div>
-            <div class="activity-intro">WHY? ExportableWHY? ExportableWHY? ExportableWHY? ExportableWHY? ExportableWHY? ExportableWHY? ExportableWHY? ExportableWHY? ExportableWHY? ExportableWHY? ExportableWHY? ExportableWHY? ExportableWHY? ExportableWHY? ExportableWHY? ExportableWHY? ExportableWHY? Exportable</div>
-            <a class="video-img" href="" target="_blank">
-                <img class="video-img" src="">
-            </a>
-        </div>
-    </div>
-    <div class="activity-entry">
-        <a class="uploader-img" href="">
-            <img class="uploader-img" src="">
-        </a>
-        <div class="activity-detail">
-            <div class="activity-title">
-                <label>Commented in</label>
-                <a href="" class="activity-title" target="_blank">WHY? ExportableWHY? ExportableWHY? ExportableWHY? Exportable</a>
-            </div>
-            <div class="uploader-name">
-                <label>by</label>
-                <a href="" class="uploader-name" target="_blank">Markiplier</a>
-                <div class="activity-time">2013-10-23 23:10</div>
-            </div>
-            <div class="activity-intro">WHY? ExportableWHY? ExportableWHY? ExportableWHY? ExportableWHY? ExportableWHY? ExportableWHY? ExportableWHY? ExportableWHY? ExportableWHY? ExportableWHY? ExportableWHY? ExportableWHY? ExportableWHY? ExportableWHY? ExportableWHY? ExportableWHY? ExportableWHY? Exportable
-                <a class="comment-check" href="">[Check it out]</a>
-            </div>
-        </div>
-    </div> -->
     </div>
 </div>
 <div id="subscription-upers">
-    <div class="quick-title-line">
-        <div class="quick-title-head"></div>
-        <div class="quick-title">UPers</div>
+    <div class="block-title-line">
+        <div class="block-title-head"></div>
+        <div class="category-title">UPers</div>
     </div>
-    <div class="upers-block">
-        {% if subscribed_users|count == 0 %}
-        <div class="no-subscription quick">You haven't subscribed to anyone.</div>
-        {% endif %}
-        {% for subs_user in subscribed_users %}
-        <div class="quick-uper">
-            <a href="{{ subs_user.space_url}}" class="user-img" target="_blank">
-                <img src="{{ subs_user.avatar_url }}">
-            </a>
+    <div class="uper-page-container">
+        <div class="upers-block" data-offset="0">
         </div>
-        {% endfor %}
     </div>
-    <div class="pagination-line">
+    <div class="pagination-arrows">
+        <div class="uper-page-arrow up hidden"><span class="uper-page-arrow-image"></span></div>
+        <div class="uper-page-arrow down hidden"><span class="uper-page-arrow-image"></span></div>
     </div>
 </div>
 {% endblock %}

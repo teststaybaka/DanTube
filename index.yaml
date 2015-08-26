@@ -10,8 +10,115 @@ indexes:
 # automatically uploaded to the admin console when you next deploy
 # your application using appcfg.py.
 
+- kind: Comment
+  properties:
+  - name: creator
+  - name: created
+    direction: desc
+
+- kind: Comment
+  ancestor: yes
+  properties:
+  - name: created
+    direction: desc
+
+- kind: DanmakuRecord
+  ancestor: yes
+  properties:
+  - name: created
+    direction: desc
+
+- kind: LikeRecord
+  ancestor: yes
+  properties:
+  - name: created
+    direction: desc
+  - name: video
+
+- kind: MentionedRecord
+  properties:
+  - name: receivers
+  - name: created
+    direction: desc
+
+- kind: MessageThread
+  properties:
+  - name: users
+  - name: updated
+    direction: desc
+
+- kind: Notification
+  properties:
+  - name: receiver
+  - name: created
+    direction: desc
+
+- kind: Playlist
+  properties:
+  - name: creator
+  - name: modified
+    direction: desc
+
+- kind: Playlist
+  properties:
+  - name: creator
+  - name: playlist_type
+  - name: modified
+    direction: desc
+
+- kind: Subscription
+  ancestor: yes
+  properties:
+  - name: score
+    direction: desc
+  - name: uper
+
 - kind: Subscription
   ancestor: yes
   properties:
   - name: uper
+
+- kind: Video
+  properties:
+  - name: category
+  - name: hot_score
+    direction: desc
+
+- kind: Video
+  properties:
+  - name: category
+  - name: subcategory
+  - name: created
+    direction: desc
+
+- kind: Video
+  properties:
+  - name: category
+  - name: subcategory
+  - name: hot_score
+    direction: desc
+
+- kind: Video
+  properties:
+  - name: category
+  - name: subcategory
   - name: updated
+    direction: desc
+
+- kind: Video
+  properties:
+  - name: uploader
+  - name: created
+    direction: desc
+
+- kind: Video
+  properties:
+  - name: uploader
+  - name: updated
+    direction: desc
+
+- kind: ViewRecord
+  ancestor: yes
+  properties:
+  - name: created
+    direction: desc

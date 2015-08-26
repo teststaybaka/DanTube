@@ -1,13 +1,13 @@
 (function(dt, $) {
-function space_name_check(ori_name) {
+function space_name_check() {
     var space_name = $('#space-name-change').val();
     if (!space_name) {
         $('#change-space-name-error').addClass('show');
         $('#change-space-name-error').text('Please enter a name.');
         $("#space-name-change").addClass('error');
-    } else if (space_name.length > 30) {
-        $('#change-space-name-error').addClass('show');
-        $('#change-space-name-error').text('No longer than 30 characters.');
+    } else if (space_name.length > 50) {
+        $('#change-space-name-error').addClass('show')
+                                        .text('No longer than 50 characters.');
         $("#space-name-change").addClass('error');
         return false;
     } else {
@@ -22,21 +22,21 @@ function css_file_check() {
     $('#space-css-change').val('');
     if (file) {
         if (file.size <= 0) {
-            $('#change-space-css-error').addClass('show');
-            $('#change-space-css-error').text('Invalid file.')
+            $('#change-space-css-error').addClass('show')
+                                        .text('Invalid file.')
             $('#space-css-change').addClass('error');
             $('#space-css-file').val('');
         } else if (file.size > 1*1024*1024) {
-            $('#change-space-css-error').addClass('show');
-            $('#change-space-css-error').text('No larger than 1MB.');
+            $('#change-space-css-error').addClass('show')
+                                        .text('No larger than 1MB.');
             $('#space-css-change').addClass('error');
             $('#space-css-file').val('');
         } else {
             var types = file.type.split('/');
             // console.log(types)
             if (types[1] != 'css') {
-                $('#change-space-css-error').addClass('show');
-                $('#change-space-css-error').text('Please select a css file.');
+                $('#change-space-css-error').addClass('show')
+                                            .text('Please select a css file.');
                 $('#space-css-change').addClass('error');
                 $('#space-css-file').val('');
             } else {
@@ -45,25 +45,22 @@ function css_file_check() {
                 $('#space-css-change').val(file.name);
             }
         }
+    } else {
+        $('#change-space-css-error').removeClass('show');
+        $('#space-css-change').removeClass('error');
     }
 }
 
 $(document).ready(function() {
-    var url = window.location.href;
-    url = url.replace(window.location.pathname, '')
-    $('#user-space-url').text(url + $('#user-space-url').text());
+    $('#user-space-url').text(window.location.host + $('#user-space-url').text());
 
-    var space_name = $('#space-name-change').val();
-    $('#space-name-change').focusout(function() {
-        space_name_check(space_name);
-    });
-
-    document.getElementById('space-css-file').addEventListener("change", css_file_check);
+    $('#space-name-change').focusout(space_name_check);
+    $('#space-css-file').on("change", css_file_check);
 
     $('#space-reset').click(function() {
         $('#change-space-css-error').removeClass('show');
         $('#space-css-change').removeClass('error');
-        $('#change-applying').addClass('show');
+        $('#change-applying').removeClass('hidden');
 
         var buttons = document.querySelectorAll('input.save_change-button');
         for (var i = 0; i < buttons.length; i++) {
@@ -85,7 +82,7 @@ $(document).ready(function() {
                         buttons[i].disabled = false;
                     }
                 }
-                $('#change-applying').removeClass('show');
+                $('#change-applying').addClass('hidden');
             },
             error: function (xhr, ajaxOptions, thrownError) {
                 console.log(xhr.status);
@@ -93,7 +90,7 @@ $(document).ready(function() {
                 for (var i = 0; i < buttons.length; i++) {
                     buttons[i].disabled = false;
                 }
-                $('#change-applying').removeClass('show');
+                $('#change-applying').addClass('hidden');
                 dt.pop_ajax_message(xhr.status+' '+thrownError, 'error');
             }
         });
@@ -108,14 +105,14 @@ $(document).ready(function() {
             buttons[i].disabled = true;
         }
 
-        if (!space_name_check(space_name)) {
+        if (!space_name_check()) {
             for (var i = 0; i < buttons.length; i++) {
                 buttons[i].disabled = false;
             }
             return false;
         }
 
-        $('#change-applying').addClass('show');
+        $('#change-applying').removeClass('hidden');
         var formData = new FormData(document.getElementById('change-space-form'));
         $.ajax({
             type: "POST",
@@ -136,7 +133,7 @@ $(document).ready(function() {
                         window.location.reload();
                     }, 3000);
                 }
-                $('#change-applying').removeClass('show');
+                $('#change-applying').addClass('hidden');
             },
             error: function (xhr, ajaxOptions, thrownError) {
                 console.log(xhr.status);
@@ -144,7 +141,7 @@ $(document).ready(function() {
                 for (var i = 0; i < buttons.length; i++) {
                     buttons[i].disabled = false;
                 }
-                $('#change-applying').removeClass('show');
+                $('#change-applying').addClass('hidden');
                 dt.pop_ajax_message(xhr.status+' '+thrownError, 'error');
             }
         });

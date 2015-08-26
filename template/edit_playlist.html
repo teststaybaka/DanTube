@@ -1,11 +1,10 @@
-{% extends "template/account.html" %}
+{% extends "template/account_base.html" %}
 {% block head %}
 {{ super() }}
 <link rel="stylesheet" href="/static/manage_video.css" type="text/css" />
 <script src="/static/edit_playlist.js" language="JavaScript" type="text/javascript"></script>
 {% endblock %}
 
-{% block overview_active %}{% endblock %}
 {% block playlists_active %}active{% endblock %}
 
 {% block topTitle %}
@@ -20,8 +19,9 @@
 {% endblock %}
 
 {% block detail %}
-<div id="sub-title-line" class="container">
-    <form id="playlist-title-change-form" action="{{ uri_for('edit_playlist_info', playlist_id=playlist.id) }}" method="POST">
+<div id="sub-title-line">
+    <form id="playlist-title-change-form" class="hidden" action="{{ uri_for('edit_playlist_info', playlist_id=playlist.id) }}" method="POST">
+        <input id="playlist-type" type="text" class="hidden" name="type" value="{{ playlist.type }}">
         <input id="playlist-title-change" class="normal-input" type="text" name="title" placeholder="Title here." value="{{ playlist.title }}" tabindex="2">
         <textarea id="playlist-intro-change" class="normal-input" type="text" name="intro" placeholder="Optional introduction to your playlist." tabindex="2">{{ playlist.intro }}</textarea>
         <div id="playlist-change-buttons-line">
@@ -33,6 +33,8 @@
     <div id="action-select">
         <div class="selected">Actions</div>
         <div class="option">
+            <a class="option-entry" href="?">Descend</a>
+            <a class="option-entry" href="?ascend=1">Ascend</a>
             <div class="option-entry select">Select all</div>
             <div class="option-entry deselect">Deselect all</div>
             <div class="option-entry delete">Remove</div>
@@ -41,44 +43,7 @@
     <div class="inline-button sub" id="add-videos-button">Add videos</div>
 </div>
 <div class="edit-playlists-container">
-    {% if total_pages == 0 %}
-    <div class="content-entry none">Empty list.</div>
-    {% endif %}
-    {% for video in videos %}
-    <div class="content-entry list {{ video.id_num }}">
-        <div class="list-No">{{ video.index }}</div>
-        <a class="video-img playlist" href="{{ video.url }}" target="_blank">
-            <img class="list-video-img" src="{{ video.thumbnail_url }}">
-        </a>
-        <div class="video-info playlist">
-            <div class="video-title">
-                <a class="video-title list normal-link" href="{{ video.url }}" target="_blank">{{ video.title }}</a>
-            </div>
-            <div class="list-video-time">{{ video.created }}</div>
-            <div class="video-edit">
-                <a class="blue-link edit-entry move-to">[Move to]</a>
-                <input type="text" class="normal-input move-to-input" placeholder="1-{{ playlist.videos_num }}">
-            </div>
-        </div>
-        <div class="single-checkbox" data-id="{{ video.id_num }}" data-title="{{ video.title }}"></div>
-    </div>
-    {% endfor %}
 </div>
-{% if total_pages != 0 %}
-<div class="pagination-line">
-  {% if cur_page > 1 %}
-    <a class="page-change" href="?page=1"><<</a>
-    <a class="page-change" href="?page={{ cur_page - 1 }}"><</a>
-  {% endif %}
-  {% for p in pages %}
-    <a class="page-num {% if p == cur_page %}active{% endif %}" href="?page={{ p }}">{{ p }}</a>
-  {% endfor %}
-  {% if cur_page < total_pages %}
-    <a class="page-change" href="?page={{ cur_page + 1 }}">></a>
-    <a class="page-change" href="?page={{ total_pages }}">>></a>
-  {% endif %}
-</div>
-{% endif %}
 {% endblock %}
 
 {% block popup_window %}
@@ -89,9 +54,9 @@
             <div class="ajax-icon warning"></div>
             <div class="delete-confirm-message">Are you sure to remove the following video(s) from the list?</div>
             <div class="delete-target-name">sdf</div>
-            <div class="delete-buttons-line container">
-                <input class="inline-button special delete-button" type="button" value="Remove">
+            <div class="delete-buttons-line">
                 <div class="inline-button delete-button">Cancel</div>
+                <input class="inline-button special delete-button" type="button" value="Remove">
             </div>
         </div>
     </div>
@@ -100,17 +65,17 @@
     <div class="popup-window-center wide">
         <div class="popup-window-padding"></div>
         <div class="popup-window-box add-search">
-            <div class="add-search-title-line container">
+            <div class="add-search-title-line">
                 <div class="add-search-title">Select videos to add</div>
                 <form id="search-video-form" class="sub-search-block none-float" method="POST" action="{{ uri_for('search_video_to_list') }}">
-                    <input class="sub-search-input" type="text" name="keywords" placeholder="Id, url or keywords" tabindex="1">
+                    <input class="sub-search-input" type="text" name="keywords" placeholder="Keywords or video id" tabindex="1">
                     <input type="submit" class="sub-search-button" value="">
                 </form>
             </div>
             <div class="popup-video-container"></div>
-            <div class="pagination-line popup">
-                <input class="inline-button special add-button" type="button" value="Confirm">
+            <div class="choose-buttons-line">
                 <div class="inline-button add-button">Cancel</div>
+                <input class="inline-button special add-button" type="button" value="Add">
             </div>
         </div>
     </div>

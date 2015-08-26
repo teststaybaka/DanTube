@@ -7,67 +7,49 @@ class Account(BaseHandler):
     @login_required
     def get(self):
         user, user_detail = ndb.get_multi([self.user_key, self.user_detail_key])
-        context = {'user': user_detail.get_detail_info()}
         self.user = user
-        self.render('account')
+        context = {'user': user_detail.get_detail_info()}
+        self.render('account', context)
 
 class History(BaseHandler):
     @login_required
-    def get_watch(self):
-        self.render('history')
+    def get(self):
+        context = {
+            'type': self.request.get('type'),
+        }
+        self.render('history', context)
 
     @login_required_json
-    def watch(self):
+    def post(self):
         user_key = self.user_key
         page_size = models.STANDARD_PAGE_SIZE
-        cursor = models.Cursor(urlsafe=self.request.get('cursor'))
-        records, cursor, more = models.ViewRecord.query(ancestor=user_key).order(-models.ViewRecord.created).fetch_page(page_size, start_cursor=cursor)
-        videos = ndb.get_multi([record.video for record in records])
-
-        context = {
-            'videos': [],
-            'cursor': cursor.urlsafe() if cursor else None,
-        }
-        for i in xrange(0, len(records)):
-            record = records[i]
-            video = videos[i]
-            if not video:
-                video_info = models.Video.get_deleted_video_info()
-            else:
-                video_info = video.get_basic_info()
-            video_info['index'] = record.clip_index
-            video_info['last_timestamp'] = record.last_timestamp
-            video_info['last_viewed_time'] = record.created.strftime("%Y-%m-%d %H:%M")
-            context['videos'].append(video_info)
-
-        self.json_response(False, context)
-
-    @login_required
-    def get_comment(self):
-        context = {'type': self.request.get('type')}
-        self.render('history_comment', context)
-
-    @login_required_json
-    def comment(self):
-        user_key = self.user_key
-        page_size = models.MEDIUM_PAGE_SIZE
         cursor = models.Cursor(urlsafe=self.request.get('cursor'))
 
         kind = self.request.get('type')
         if kind == 'danmaku':
             records, cursor, more = models.DanmakuRecord.query(ancestor=user_key).order(-models.DanmakuRecord.created).fetch_page(page_size, start_cursor=cursor)
-        else:
+        elif kind == 'comment':
             records, cursor, more = models.Comment.query(models.Comment.creator==user_key).order(-models.Comment.created).fetch_page(page_size, start_cursor=cursor)
+        else:
+            records, cursor, more = models.ViewRecord.query(ancestor=user_key).order(-models.ViewRecord.created).fetch_page(page_size, start_cursor=cursor)
+            videos = ndb.get_multi([record.video for record in records])
 
         context = {
-            'comments': [],
-            'cursor': cursor.urlsafe() if cursor else None,
+            'entries': [],
+            'cursor': cursor.urlsafe() if more else '',
         }
         for i in xrange(0, len(records)):
             record = records[i]
-            video = videos[i]
-            comment_info = record.get_content()
-            context['comments'].append(comment_info)
+            if kind == 'danmaku' or kind == 'comment':
+                comment_info = record.get_content()
+                context['entries'].append(comment_info)
+            else:
+                video = videos[i]
+                video_info = video.get_basic_info()
+                video_info['index'] = record.clip_index
+                video_info['last_timestamp'] = record.timestamp
+                video_info['last_viewed_time'] = record.created.strftime("%Y-%m-%d %H:%M")
+                context['entries'].append(video_info)
 
         self.json_response(False, context)
 
@@ -82,65 +64,41 @@ class Likes(BaseHandler):
         page_size = models.STANDARD_PAGE_SIZE
 
         cursor = models.Cursor(urlsafe=self.request.get('cursor'))
-        records, cursor, more = models.LikeRecord.query(ancestor=user_key).order(-models.LikeRecord.created).fetch_page(page_size, start_cursor=cursor, projection=['video'])
+        records, cursor, more = models.LikeRecord.query(ancestor=user_key).order(-models.LikeRecord.created).fetch_page(page_size, start_cursor=cursor, projection=['video', 'created'])
         videos = ndb.get_multi([record.video for record in records])
 
         context = {
             'videos': [],
-            'cursor': cursor.urlsafe() if cursor else None,
+            'cursor': cursor.urlsafe() if more else '',
         }
         for i in xrange(0, len(records)):
             video = videos[i]
-            if not video:
-                video_info = models.Video.get_deleted_video_info()
-            else:
-                video_info = video.get_basic_info()
+            record = records[i]
+            video_info = video.get_basic_info()
+            video_info['liked'] = record.created.strftime("%Y-%m-%d %H:%M")
             context['videos'].append(video_info)
 
         self.json_response(False, context)
 
-class Unlike(BaseHandler):
-    @login_required_json
-    def post(self):
-        user_key = self.user_key
-        try:
-            ids = self.get_ids()
-        except ValueError:
-            self.json_response(True, {'message': 'Invalid id'})
-            return
-
-        video_keys = [ndb.Key('Video', identifier) for identifier in ids]
-        videos = ndb.get_multi(video_keys)
-        records = models.LikeRecord.query(models.LikeRecord.video.IN(video_keys), ancestor=user_key).fetch(keys_only=True)
-        put_list = []
-        for i in xrange(0, len(records)):
-            if record:
-                video = videos[i]
-                if video:
-                    video.likes -= 1
-                    video.create_index('videos_by_likes', video.likes) #todo
-                    put_list.append(video)
-                records[i].delete_async()
-
-        ndb.put_multi_async(put_list)
-        self.json_response(False)
-
 class Subscribed(BaseHandler):
     @login_required
     def get(self):
-        self.render('subscribed_users')
+        user, user_detail = ndb.get_multi([self.user_key, self.user_detail_key])
+        self.user = user
+        context = {'user': user_detail.get_detail_info()}
+        self.render('subscribed_users', context)
 
     @login_required_json
     def post(self):
         user_key = self.user_key
-        page_size = models.MEDIUM_PAGE_SIZE
+        page_size = models.STANDARD_PAGE_SIZE
         cursor = models.Cursor(urlsafe=self.request.get('cursor'))
-        uper_keys, cursor, more = models.Subscription.query(ancestor=user_key).order(-models.Subscription.score).fetch_page(page_size, start_cursor=cursor, projection=['uper'])
-        upers = ndb.get_multi(uper_keys)
+        subscriptions, cursor, more = models.Subscription.query(ancestor=user_key).order(-models.Subscription.score).fetch_page(page_size, start_cursor=cursor, projection=['uper'])
+        upers = ndb.get_multi([subscription.uper for subscription in subscriptions])
         
         context = {
             'upers': [],
-            'cursor': cursor.urlsafe() if cursor else None,
+            'cursor': cursor.urlsafe() if more else '',
         }
         for i in xrange(0, len(upers)):
             uper = upers[i]
@@ -156,40 +114,62 @@ class Subscriptions(BaseHandler):
     #     self.json_response(False,{'count': models.number_upper_limit_99(new_count)})
 
     @login_required
-    def get_page(self):
+    def get(self):
         self.user = user = self.user_key.get()
         user.new_subscriptions = 0
-        user.put_async()
+        user.last_subscription_check = datetime.now()
+        user.put()
         self.response.set_cookie('new_subscriptions', '', path='/')
-        self.render('subscriptions')
 
-    @login_required
-    def full_page(self):
-        self.user = user = self.user_key.get()
-        user.new_subscriptions = 0
-        user.put_async()
-        self.response.set_cookie('new_subscriptions', '', path='/')
-        self.render('subscriptions_quick')
+        context = {'kind': self.request.get('type')}
+        self.render('subscriptions', context) 
 
     @login_required_json
-    def load_activities(self):
+    def post(self):
         user_key = self.user_key
         page_size = models.STANDARD_PAGE_SIZE
-
-        uper_keys = models.Subscription.query(ancestor=user_key).order(-models.Subscription.score).fetch(projection=['uper'])
+        
+        subscriptions = models.Subscription.query(ancestor=user_key).order(-models.Subscription.score).fetch(projection=['uper'])
+        uper_keys = [subscription.uper for subscription in subscriptions]
         cursor = models.Cursor(urlsafe=self.request.get('cursor'))
-        videos, cursor, more = models.Video.query(models.Video.uploader.IN(uper_keys)).order(-models.Video.created).fetch_page(page_size, start_cursor=cursor)
+        kind = self.request.get('type')
+        if uper_keys:
+            if kind == 'comments':
+                entries, cursor, more = models.Comment.query(models.Comment.creator.IN(uper_keys)).order(-models.Comment.created, models.Comment.key).fetch_page(page_size, start_cursor=cursor)
+            else:
+                entries, cursor, more = models.Video.query(models.Video.uploader.IN(uper_keys)).order(-models.Video.created, models.Video.key).fetch_page(page_size, start_cursor=cursor)
+        else:
+            entries = []
+            more = False
     
         result = {
-            'videos': [],
-            'cursor': cursor.urlsafe() if cursor else None,
+            'entries': [],
+            'cursor': cursor.urlsafe() if more else '',
+            'type': kind,
         }
-        for i in xrange(0, len(videos)):
-            video = videos[i]
-            video_info = video.get_basic_info()
-            result['videos'].append(video_info)
+        for i in xrange(0, len(entries)):
+            if kind == 'comments':
+                comment = entries[i]
+                content_info = comment.get_content()
+                result['entries'].append(content_info)
+            else:
+                video = entries[i]
+                video_info = video.get_basic_info()
+                result['entries'].append(video_info)
 
         self.json_response(False, result)
+
+class SubscriptionQuick(BaseHandler):
+    @login_required
+    def get(self):
+        self.user = user = self.user_key.get()
+        user.new_subscriptions = 0
+        user.last_subscription_check = datetime.now()
+        user.put()
+        self.response.set_cookie('new_subscriptions', '', path='/')
+
+        context = {'kind': self.request.get('type')}
+        self.render('subscriptions_quick', context)
 
 class ChangePassword(BaseHandler):
     @login_required
@@ -209,24 +189,21 @@ class ChangePassword(BaseHandler):
             return
 
         user = self.user_key.get()
-        try:
-            self.user_model.get_by_auth_password(user.email, old_password)
-            user.set_password(new_password)
-            user.put_async()
-        except (auth.InvalidAuthIdError, auth.InvalidPasswordError) as e:
-            self.json_response(True, {'message': 'Password incorrect.'})
-            return
-        except Exception, e:
-            logging.info(e)
-            self.json_response(True, {'message': e})
+        if not user.auth_password(old_password):
+            self.json_response(True, {'message': 'Incorrect password.'})
             return
 
+        user.set_password(new_password)
+        user.put()
         self.json_response(False)
 
 class ChangeInfo(BaseHandler):
     @login_required
     def get(self):
-        self.render('change_info')
+        user, user_detail = ndb.get_multi([self.user_key, self.user_detail_key])
+        self.user = user
+        context = {'user': user_detail.get_detail_info()}
+        self.render('change_info', context)
 
     @login_required_json
     def post(self):
@@ -238,21 +215,26 @@ class ChangeInfo(BaseHandler):
             self.json_response(True, {'message': 'Already applied.'})
             return
 
+        if len(intro) > 2000:
+            self.json_response(True, {'message': 'Intro can\'t exceed 2000 characters.'})
+            return
+
         if nickname != user.nickname:
             nickname = self.user_model.validate_nickname(nickname)
             if not nickname:
                 self.json_response(True, {'message': 'Invalid nickname.'})
                 return
 
-            user.nickname = nickname
+            if not self.user_model.create_unique('nickname', nickname):
+                self.json_response(True, {'message': 'Nickname already exist.'})
+                return
 
-        if len(intro) > 2000:
-            self.json_response(True, {'message': 'Intro can\'t exceed 2000 characters.'})
-            return
+            self.user_model.delete_unique('nickname', user.nickname)
+            user.nickname = nickname
 
         user_detail.intro = intro
         user.create_index(intro)
-        user.put_async()
+        ndb.put_multi([user, user_detail])
 
         self.json_response(False)
 
@@ -331,7 +313,6 @@ class ChangeAvatar(BaseHandler):
 
 class AvatarUpload(BaseHandler, blobstore_handlers.BlobstoreUploadHandler):
     def post(self, user_id):
-        # logging.info(self.request)
         self.response.headers['Content-Type'] = 'text/plain'
         upload = self.get_uploads('avatarImage')
         if not upload:
@@ -357,16 +338,21 @@ class AvatarUpload(BaseHandler, blobstore_handlers.BlobstoreUploadHandler):
 
         user = self.user_model.get_by_id(int(user_id))
         if user.avatar:
-            BlobCollection(blob=user.avatar).put_async()
+            models.BlobCollection(blob=user.avatar).put()
+
         user.avatar = uploaded_image.key()
-        user.put_async()
+        user.avatar_url = images.get_serving_url(user.avatar)
+        user.put()
         self.response.out.write('success')
         # self.response.out.write(json.dumps({'error':False}))
 
-class SpaceSetting(BaseHandler, blobstore_handlers.BlobstoreUploadHandler):
+class SpaceSetting(BaseHandler):
     @login_required
     def get(self):
-        self.render('space_setting')
+        user, user_detail = ndb.get_multi([self.user_key, self.user_detail_key])
+        self.user = user
+        context = {'user': user_detail.get_detail_info()}
+        self.render('space_setting', context)
 
     @login_required_json
     def post(self):
@@ -381,8 +367,8 @@ class SpaceSetting(BaseHandler, blobstore_handlers.BlobstoreUploadHandler):
         if space_name == '':
             self.json_response(True, {'message': 'Please enter a name.'})
             return
-        elif len(space_name) > 30:
-            self.json_response(True, {'message': 'No longer than 30 characters.'})
+        elif len(space_name) > 50:
+            self.json_response(True, {'message': 'No longer than 50 characters.'})
             return
         user_detail.spacename = space_name
 
@@ -415,10 +401,11 @@ class SpaceSetting(BaseHandler, blobstore_handlers.BlobstoreUploadHandler):
                 models.blobstore.BlobInfo(user_detail.css_file).delete()
             user_detail.css_file = file_key
 
-        user_detail.put_async()
+        user_detail.put()
         self.json_response(False)
 
-    def css_upload(self):
+class CSSUpload(BaseHandler, blobstore_handlers.BlobstoreUploadHandler):
+    def post(self):
         self.response.headers['Content-Type'] = 'text/plain'
         upload = self.get_uploads('user_style')
         if not upload:
@@ -439,15 +426,16 @@ class SpaceSetting(BaseHandler, blobstore_handlers.BlobstoreUploadHandler):
 
         self.response.out.write(str(uploaded_file.key()))
 
+class SpaceSettingReset(BaseHandler):
     @login_required_json
-    def reset(self):
+    def post(self):
         user_detail = self.user_detail_key.get()
         if user_detail.css_file:
             models.blobstore.BlobInfo(user_detail.css_file).delete()
             user_detail.css_file = None
 
         user_detail.spacename = ''
-        user_detail.put_async()
+        user_detail.put()
         self.json_response(False)
 
 class SpaceCSS(blobstore_handlers.BlobstoreDownloadHandler):

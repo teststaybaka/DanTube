@@ -1,0 +1,54 @@
+{% extends "template/base.html" %}
+
+{% block body %}
+<div id="account-left-bar">
+    <div id="profile-area">
+        <div id="profile-img-space">
+            <a id="profile-img" href="{{ uri_for('account') }}">
+                <img src="{{ user.avatar_url }}">
+            </a>
+        </div>
+        <div id="profile-nickname">{{ user.nickname }}</div>
+    </div>
+    <div id="bottom-area">
+        <a class="main-option normal-link" href="{{ uri_for('account') }}">Account</a>
+        <div class="sub-menu">
+            <a class="sub-option {% block overview_active %}normal-link{% endblock %}" id="sub-overview" href="{{ uri_for('account') }}">Overview</a>
+            <a class="sub-option {% block setting_active %}normal-link{% endblock %}" id="sub-setting" href="{{ uri_for('change_info') }}">Settings</a>
+        </div>
+        <a class="main-option normal-link" href="{{ uri_for('manage_video') }}">Video Manager</a>
+        <div class="sub-menu">
+            <a class="sub-option {% block videos_active %}normal-link{% endblock %}" id="sub-videos" href="{{ uri_for('manage_video') }}">Videos</a>
+            <a class="sub-option {% block playlists_active %}normal-link{% endblock %}" id="sub-playlists" href="{{ uri_for('manage_playlist') }}">Playlists</a>
+            <a class="sub-option {% block submission_active %}normal-link{% endblock %}" id="sub-submit" href="{{ uri_for('submit') }}">Submit</a>
+        </div>
+        <a class="main-option normal-link" href="{{ uri_for('subscribed_users') }}">Subscription</a>
+        <div class="sub-menu">
+            <a class="sub-option {% block manage_subscription_active %}normal-link{% endblock %}" id="subscribed-users" href="{{ uri_for('subscribed_users') }}">Manage Subscription</a>
+            <a class="sub-option {% block subscriptions_active %}normal-link{% endblock %}" id="subscriptions" href="{{ uri_for('subscriptions') }}">Subscriptions</a>
+        </div>
+        <a class="main-option normal-link" href="{{ uri_for('message') }}">Messages</a>
+        <div class="sub-menu">
+            <a class="sub-option {% block messages_active %}normal-link{% endblock %}" id="messages" href="{{ uri_for('message') }}">Messages</a>
+            <a class="sub-option {% block at_me_active %}normal-link{% endblock %}" id="mentioned" href="{{ uri_for('mentioned') }}">@Me</a>
+            <a class="sub-option {% block notifications_active %}normal-link{% endblock %}" id="notifications" href="{{ uri_for('notifications') }}">Notifications</a>
+        </div>
+        <a class="main-option normal-link" href="{{ uri_for('space_setting') }}">Personal Space</a>
+        <div class="sub-menu">
+            <a class="sub-option {% block space_settings_active %}normal-link{% endblock %}" id="space-setting" href="{{ uri_for('space_setting') }}">Space Settings</a>
+        </div>
+        <a class="main-option normal-link" href="{{ uri_for('contact') }}">Contact</a>
+        <div class="sub-menu">
+            <a class="sub-option {% block feedback_active %}normal-link{% endblock %}" id="contact" href="{{ uri_for('contact') }}">Contact Us</a>
+        </div>
+    </div>
+</div>
+<div id="account-right-section">
+    <div id="account-top-title">
+        {% block topTitle %}
+        {% endblock %}
+    </div>
+    {% block detail %}
+    {% endblock %}
+</div>
+{% endblock %}

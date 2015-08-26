@@ -1,11 +1,11 @@
-{% extends "template/account.html" %}
+{% extends "template/account_base.html" %}
 {% block head %}
 {{ super() }}
+<link rel="stylesheet" href="/static/account.css" type="text/css" />
 <link rel="stylesheet" href="/static/message.css" type="text/css" />
 <script src="/static/message_compose.js" language="JavaScript" type="text/javascript"></script>
 {% endblock %}
 
-{% block overview_active %}{% endblock %}
 {% block messages_active %}active{% endblock %}
 
 {% block topTitle %}
@@ -36,7 +36,7 @@
         <div id="send-message-block">
             <textarea name="content" class="normal-input" id="send-message" tabindex="1"></textarea>
             <div class="input-error">Error.</div>
-            <div class="container">
+            <div class="emoticons-line">
                 <div class="emoticons-select"></div>
                 <input type="submit" class="inline-button special send" value="Send" id="submit-message-button">
             </div>

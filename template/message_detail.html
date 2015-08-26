@@ -1,11 +1,10 @@
-{% extends "template/account.html" %}
+{% extends "template/account_base.html" %}
 {% block head %}
 {{ super() }}
 <link rel="stylesheet" href="/static/message.css" type="text/css" />
 <script src="/static/message_detail.js" language="JavaScript" type="text/javascript"></script>
 {% endblock %}
 
-{% block overview_active %}{% endblock %}
 {% block messages_active %}active{% endblock %}
 
 {% block topTitle %}
@@ -20,7 +19,7 @@
 {% endblock %}
 
 {% block detail %}
-<div id="sub-title-line" class="container">
+<div id="sub-title-line">
     <div id="sub-title">{{ subject }}</div>
 </div>
 <div id="message-block">
@@ -44,7 +43,7 @@
     <img id="self-img" src="{{ user.avatar_url }}">
     <div id="send-message-block">
         <textarea id="send-message" class="normal-input" name="content" tabindex="1"></textarea>
-        <div class="container">
+        <div class="emoticons-line">
             <div class="emoticons-select"></div>
             <input type="submit" class="inline-button special send" id="reply-message-send" value="Send">
         </div>

@@ -2,63 +2,27 @@
 {% block head %}
 {{ super() }}
 <link rel="stylesheet" href="/static/history.css" type="text/css" />
+<script src="/static/history.js" language="JavaScript" type="text/javascript"></script>
 {% endblock %}
 
 {% block body %}
-<div class="quick-title-line">
-    <div class="quick-title-head"></div>
-    <div class="quick-title">History</div>
-    {% block scope %}
-    <a class="search-scope active">Views</a>
-    <a class="search-scope" href="{{ uri_for('history_comment') }}">Comments</a>
-    {% endblock %}
+<div class="block-title-line">
+    <div class="block-title-head"></div>
+    <div class="category-title">History</div>
+    {% if type == 'comment' %}
+    <a class="search-scope" href="?type=view">Views</a>
+    <a class="search-scope active" href="?type=comment">Comments</a>
+    <a class="search-scope" href="?type=danmaku">Danmaku</a>
+    {% elif type == 'danmaku' %}
+    <a class="search-scope" href="?type=view">Views</a>
+    <a class="search-scope" href="?type=comment">Comments</a>
+    <a class="search-scope active" href="?type=danmaku">Danmaku</a>
+    {% else %}
+    <a class="search-scope active" href="?type=view">Views</a>
+    <a class="search-scope" href="?type=comment">Comments</a>
+    <a class="search-scope" href="?type=danmaku">Danmaku</a>
+    {% endif %}
 </div>
-<div class="history-container container">
-  {% if total_pages == 0 %}
-  <div class="no-history">
-    No history found.
-  </div>
-  {% endif %}
-  {% block history_entry %}
-    {% for video in videos %}
-    <div class="content-entry">
-      <a class="video-img" href="{{ video.url }}" target="_blank">
-        <img src="{{ video.thumbnail_url }}">
-      </a>
-      <div class="video-info">
-        <div class="video-title">
-          <a href="{{ video.url }}?index={{ video.index }}" class="video-title normal-link" target="_blank">{{ video.title }}</a>
-        </div>
-        <div class="uper-line">
-          <label>by</label>
-          <a class="blue-link" href="{{ video.uploader.space_url }}" target="_blank">{{ video.uploader.nickname }}</a>
-        </div>
-        <div class="video-statistic">
-          <div class="video-statistic-entry">Views: <span class="commas_number">{{ video.hits }}</span></div>
-          <div class="video-statistic-entry">Favors: <span class="commas_number">{{ video.favors }}</span></div>
-          <div class="video-statistic-entry">Comments: <span class="commas_number">{{ video.comment_counter }}</span></div>
-          <div class="video-statistic-entry">Bullets: <span class="commas_number">{{ video.bullets }}</span></div>
-        </div>
-        <div class="last-viewed">Last watched: {{ video.last_viewed_time }}</div>
-      </div>
-    </div>
-    {% endfor %}
-  {% endblock %}
+<div class="history-container">
 </div>
-{% if total_pages != 0 %}
-<div class="pagination-line">
-  {% if cur_page > 1 %}
-    <a class="page-change" href="?page=1"><<</a>
-    <a class="page-change" href="?page={{ cur_page - 1 }}"><</a>
-  {% endif %}
-  {% for p in pages %}
-    <a class="page-num {% if p == cur_page %}active{% endif %}" href="?page={{ p }}">{{ p }}</a>
-  {% endfor %}
-  {% if cur_page < total_pages %}
-    <a class="page-change" href="?page={{ cur_page + 1 }}">></a>
-    <a class="page-change" href="?page={{ total_pages }}">>></a>
-  {% endif %}
-</div>
-{% endif %}
-
 {% endblock %}

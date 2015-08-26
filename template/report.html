@@ -1,11 +1,10 @@
-{% extends "template/account.html" %}
+{% extends "template/account_base.html" %}
 {% block head %}
 {{ super() }}
 <link href="/static/report.css" rel="stylesheet" type="text/css">
 <script src="/static/report.js" language="JavaScript" type="text/javascript"></script>
 {% endblock %}
 
-{% block overview_active %}{% endblock %}
 {% block report_active %}active{% endblock %}
 
 {% block topTitle %}
@@ -38,7 +37,7 @@
     </div>
     <div>
         <input class="save_change-button" type="submit" value="Report" />
-        <div id="change-applying"></div>
+        <div id="change-applying" class="loading hidden"></div>
     </div>
 </form>
 {% endblock %}

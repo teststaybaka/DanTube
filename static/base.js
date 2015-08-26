@@ -102,90 +102,36 @@ function count_new_subscriptions() {
     });
 }
 
+var user_box_hide;
+var user_box_clear;
 $(document).ready(function() {
-    if ($('#portrait').length != 0) {
-        var uesr_id = $('#portrait').attr('data-id');
-        var cookie = dt.getCookie(uesr_id+'_check');
-        if (!cookie) {
-            var now = new Date().toUTCString();
-            var extime = 10 * 60 * 1000; // 10 mins wait
-            dt.setCookie(uesr_id+'_check', now, extime);
-            count_new_subscriptions();
-        }
-        var num = dt.getCookie('new_subscriptions');
-        $('#user-subscriptions-new-num').text(num);
-    }
+    // if ($('#portrait').length != 0) {
+    //     var uesr_id = $('#portrait').attr('data-id');
+    //     var cookie = dt.getCookie(uesr_id+'_check');
+    //     if (!cookie) {
+    //         var now = new Date().toUTCString();
+    //         var extime = 10 * 60 * 1000; // 10 mins wait
+    //         dt.setCookie(uesr_id+'_check', now, extime);
+    //         count_new_subscriptions();
+    //     }
+    //     var num = dt.getCookie('new_subscriptions');
+    //     $('#user-subscriptions-new-num').text(num);
+    // }
+    register_subscribe_button_hover();
+    register_subscribe_button_action();
 
-    $('#portrait').mouseover(function() {
+    $('#portrait').hover(function() {
         $('#user-box').addClass('show');
         $('#user-box').removeClass('hide');
-        clearTimeout(window.user_box_hide);
-        clearTimeout(window.user_box_clear);
-    });
-
-    $('#portrait').mouseout(function() {
-        window.user_box_hide = setTimeout(function() {
+        clearTimeout(user_box_hide);
+        clearTimeout(user_box_clear);
+    }, function() {
+        user_box_hide = setTimeout(function() {
             $('#user-box').addClass('hide');
-            window.user_box_clear = setTimeout(function() {
+            user_box_clear = setTimeout(function() {
                 $('#user-box').removeClass('show');
             }, 100);
         }, 100);
-    });
-
-    $('.subscribe-button').hover(
-        function() {
-            if ($(this).hasClass('unsubscribe')) {
-                $(this).children('.subscribe-text').text('Unsubscribe');
-            }
-        }, 
-        function() {
-            if ($(this).hasClass('unsubscribe')) {
-                $(this).children('.subscribe-text').text('Subscribed');
-            }
-        }
-    );
-    $('.subscribe-button').click(function(evt) {
-        var button = $(this);
-        var uploader_id = button.attr('data-id');
-        var action = '';
-        if (button.hasClass('unsubscribe')) {
-            action = "/user/unsubscribe/"+uploader_id;
-        } else {
-            action = "/user/subscribe/"+uploader_id;
-        }
-        $.ajax({
-            type: "POST",
-            url: action,
-            success: function(result) {
-                if(!result.error) {
-                    if (button.hasClass('unsubscribe')) {
-                        dt.pop_ajax_message('Unsubscribed successfully.', 'success');
-                        button.removeClass('unsubscribe');
-                        button.children('.subscribe-text').text('Subscribe');
-                    } else {
-                        dt.pop_ajax_message('You have successfully subscribed to the UPer.', 'success');
-                        button.addClass('unsubscribe');
-                        button.children('.subscribe-text').text('Subscribed');
-                    }
-                } else {
-                    dt.pop_ajax_message(result.message, 'error');
-                    if (result.change) {
-                        if (button.hasClass('unsubscribe')) {
-                            button.removeClass('unsubscribe');
-                            button.children('.subscribe-text').text('Subscribe');
-                        } else {
-                            button.addClass('unsubscribe');
-                            button.children('.subscribe-text').text('Subscribed');
-                        }
-                    }
-                }
-            },
-            error: function (xhr, ajaxOptions, thrownError) {
-                console.log(xhr.status);
-                console.log(thrownError);
-                dt.pop_ajax_message(xhr.status+' '+thrownError, 'error');
-            }
-        });
     });
 
     $('span.commas_number').each(function() {
@@ -195,7 +141,7 @@ $(document).ready(function() {
         $(this).text(dt.secondsToTime($(this).text()) );
     });
 
-    $('div.emoticons-select').append('<div class="emoticons-menu container">\
+    $('div.emoticons-select').append('<div class="emoticons-menu">\
                 <div class="emoticons-option">(⌒▽⌒)</div>\
                 <div class="emoticons-option">（￣▽￣）</div>\
                 <div class="emoticons-option">(=・ω・=)</div>\
@@ -249,11 +195,6 @@ $(document).ready(function() {
         }
     });
 
-    $('.checkbox-selection').click(function() {
-        $(this).toggleClass('off');
-        $(this).toggleClass('on');
-    });
-
     if ($('.list-selected').length > 0) {
         $('.list-selected.auto').each(function(evt) {
             var first_option = $($(this).prev().children()[0]);
@@ -266,12 +207,12 @@ $(document).ready(function() {
         $(document).click(function() {
             $('.list-selection').addClass('hidden');
         });
-        $(document).on('click', '.list-selected', function(evt) {
+        $('#body-container').on('click', '.list-selected', function(evt) {
             evt.stopPropagation();
             $('.list-selection').addClass('hidden');
             $(this).prev().removeClass('hidden');
         });
-        $(document).on('click', '.list-option', function(evt) {
+        $('#body-container').on('click', '.list-option', function(evt) {
             var list = $(this).parent();
             list.next().text($(this).text());
             list.next().next().val($(this).text());
@@ -279,47 +220,138 @@ $(document).ready(function() {
             $(this).addClass('active');
         });
     }
+
+    $('.number-input').on('input propertychange paste', function (e) {
+        if (($(this).hasClass('negative') && /^[-]?\d*[.]?\d*$/.test($(this).val()))
+            || (!$(this).hasClass('negative') && /^\d*[.]?\d*$/.test($(this).val()))) { // is a number
+            $(this).attr('data-old', $(this).val());
+        } else { // not a number, preserve original value
+            $(this).val($(this).attr('data-old'));
+        }
+    });
+
+    $('#account-right-section').on('click', '.single-checkbox', function(evt) {
+        $(this).toggleClass('checked');
+    });
+    $('#action-select .option-entry.deselect').click(function() {
+        $('.single-checkbox.checked').removeClass('checked');
+    });
+    $('#action-select .option-entry.select').click(function() {
+        $('.single-checkbox').addClass('checked');
+    });
+    deleteWindow(window.location.pathname+'/delete');
+
+    if ($('.popup-window-container').length > 0) {
+        $(document).keydown(function(e) {
+            if (e.keyCode == 27) {
+                $('.popup-window-container').removeClass('show');
+            }
+        });
+    }
 });
 
-dt.render_pagination = function(cur_page, total_pages) {
-    var page_range = 10;
-    cur_page = parseInt(cur_page);
-    var max_page;
-    var min_page;
-    if (cur_page > total_pages) {
-        max_page = total_pages;
-        min_page = Math.min(max_page - page_range + 1, 1);
-    } else if (cur_page < 1) {
-        min_page = 1;
-        max_page = Math.max(min_page + page_range - 1, total_pages);
-    } else {
-        max_page = Math.min(cur_page + 4, total_pages);
-        min_page = Math.max(cur_page - 5, 1);
-        var remain_page = page_range - (max_page - cur_page) - (cur_page - min_page) - 1;
+function deleteWindow(url) {
+    $('input.delete-button').click(function(evt) {
+        var ids= $(evt.target).attr('data-id').split(';');
+        dt.pop_ajax_message('Removing...', 'info');
+        $(evt.target).prop('disabled', true);
+        $.ajax({
+            type: "POST",
+            url: url,
+            data: {ids: ids},
+            success: function(result) {
+                console.log(result);
+                if (!result.error) {
+                    dt.pop_ajax_message('Removed!', 'success');
+                    for (var i = 0; i < ids.length; i++) {
+                        $('div.content-entry.'+ids[i]).remove();
+                    }
+                } else {
+                    dt.pop_ajax_message(result.message, 'error');
+                }
+                $(evt.target).prop('disabled', false);
+            },
+            error: function (xhr, ajaxOptions, thrownError) {
+                console.log(xhr.status);
+                console.log(thrownError);
+                $(evt.target).prop('disabled', false);
+                dt.pop_ajax_message(xhr.status+' '+thrownError, 'error');
+            }
+        });
+        $('div.popup-window-container.remove').removeClass('show');
+    });
 
-        if (remain_page > 0) {
-            max_page = Math.min(max_page + remain_page, total_pages);
-            min_page = Math.max(min_page - remain_page, 1);
+    $('div.delete-button').click(function(evt) {
+        $('div.popup-window-container.remove').removeClass('show');
+    });
+
+    $('#action-select .option-entry.delete').click(function() {
+        var checked_boxes = $('div.single-checkbox.checked');
+        if (checked_boxes.length != 0) {
+            $('div.popup-window-container.remove').addClass('show');
+            $('div.delete-target-name').remove();
+            var ids = $(checked_boxes[0]).attr('data-id');
+            var title = $(checked_boxes[0]).attr('data-title');
+            $('div.delete-buttons-line').before('<div class="delete-target-name">'+title+'</div>');
+            for (var i = 1; i < checked_boxes.length; i++) {
+                ids += ';'+ $(checked_boxes[i]).attr('data-id');
+                title = $(checked_boxes[i]).attr('data-title');
+                $('div.delete-buttons-line').before('<div class="delete-target-name">'+title+'</div>');
+            }
+            $('input.delete-button').attr('data-id', ids);
         }
-    }
-    
-    var pagination = "";
-    if(cur_page > 1) {
-        pagination += '<a class="page-change" data-page="' + 1 + '"><<</a>';
-        pagination += '<a class="page-change" data-page="' + (cur_page - 1) + '"><</a>';
-    }
-    for(var i = min_page; i <= max_page; i++) {
-        if(i == cur_page) {
-            pagination += '<a class="page-num active" data-page="' + i + '">' + i + '</a>';
+    });
+}
+
+function register_subscribe_button_hover() {
+    $('.subscribe-button').off('mouseenter mouseleave');
+    $('.subscribe-button').hover(function() {
+        if ($(this).hasClass('unsubscribe')) {
+            $(this).children('.subscribe-text').text('Unsubscribe');
+        }
+    }, function() {
+        if ($(this).hasClass('unsubscribe')) {
+            $(this).children('.subscribe-text').text('Subscribed');
+        }
+    });
+}
+
+function register_subscribe_button_action() {
+    $('.subscribe-button').off('click');
+    $('.subscribe-button').click(function() {
+        var button = $(this);
+        var uploader_id = button.attr('data-id');
+        var action = '';
+        if (button.hasClass('unsubscribe')) {
+            action = "/user/unsubscribe/"+uploader_id;
         } else {
-            pagination += '<a class="page-num" data-page="' + i + '">' + i + '</a>';
+            action = "/user/subscribe/"+uploader_id;
         }
-    }
-    if(cur_page < total_pages) {
-        pagination += '<a class="page-change" data-page="' + (cur_page + 1) + '">></a>';
-        pagination += '<a class="page-change" data-page="' + total_pages + '">>></a>';
-    }
-    return pagination;
+        $.ajax({
+            type: "POST",
+            url: action,
+            success: function(result) {
+                if(!result.error) {
+                    if (button.hasClass('unsubscribe')) {
+                        dt.pop_ajax_message('Unsubscribed successfully.', 'success');
+                        button.removeClass('unsubscribe');
+                        button.children('.subscribe-text').text('Subscribe');
+                    } else {
+                        dt.pop_ajax_message('You have successfully subscribed to the UPer.', 'success');
+                        button.addClass('unsubscribe');
+                        button.children('.subscribe-text').text('Subscribed');
+                    }
+                } else {
+                    dt.pop_ajax_message(result.message, 'error');
+                }
+            },
+            error: function (xhr, ajaxOptions, thrownError) {
+                console.log(xhr.status);
+                console.log(thrownError);
+                dt.pop_ajax_message(xhr.status+' '+thrownError, 'error');
+            }
+        });
+    });
 }
 
 // Modified from http://www.w3schools.com/js/js_cookies.asp
@@ -420,6 +452,158 @@ dt.unescapeHTML = function(safe) {
     return safe.replace(/&amp;/g, "&")
                 .replace(/&lt;/g, "<")
                 .replace(/&gt;/g, ">");
+}
+
+var isLoading = {};
+var cursors = {};
+var isOver = {}
+dt.loadNextPage = function(url, params, before_callback, success_callback, failure_callback) {
+    var params = $.param(params);
+    var key = url+'?'+params;
+    if (isLoading[key] || isOver[key])
+        return;
+
+    isLoading[key] = true;
+    if (!cursors[key]) cursors[key] = '';
+    before_callback();
+
+    $.ajax({
+        type: 'POST',
+        url: url,
+        data: params+'&'+$.param({cursor: cursors[key]}),
+        success: function(result) {
+            cursors[key] = result.cursor;
+            isOver[key] = !result.cursor;
+            isLoading[key] = false;
+            success_callback(result, isOver[key]);
+
+            register_subscribe_button_hover();
+            register_subscribe_button_action();
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            isLoading[key] = false;
+            console.log(xhr.status);
+            console.log(thrownError);
+            failure_callback(xhr, ajaxOptions, thrownError);
+        }
+    });
+}
+dt.setCursor = function(url, params, cursor) {
+    var params = $.param(params);
+    var key = url+'?'+params;
+    cursors[key] = cursor;
+}
+dt.getCursor = function(url, params, cursor) {
+    var params = $.param(params);
+    var key = url+'?'+params;
+    return cursors[key];
+}
+dt.resetLoad = function(url, params) {
+    var params = $.param(params);
+    var key = url+'?'+params;
+    isOver[key] = false;
+    cursors[key] = '';
+}
+
+dt.scrollUpdate = function(url, params, element_class, container, callback, finish_callback, no_data_string, not_use_page_number) {
+    function before_callback() {
+        container.append('<div class="'+element_class+' loading"></div>');
+    }
+
+    function failure_callback() {
+        container.children('.'+element_class+'.loading').remove();
+    }
+
+    function success_callback(result, isOver) {
+        if (isOver) $(window).off('scroll', detectReachBottom);
+        container.children('.'+element_class+'.loading').remove();
+        var div = callback(result);
+        if (div === '') {
+            if (container.find('.'+element_class).length == 0) {
+                div = '<div class="'+element_class+' none">'
+                if (no_data_string) {
+                    div += no_data_string
+                } else {
+                    div += 'No results found.'
+                }
+                div += '</div>'
+                container.append(div);
+            }
+        } else {
+            dt.registerPageCollapse(div, container, not_use_page_number);
+            if (finish_callback) finish_callback();
+        }
+    }
+
+    function detectReachBottom() {
+        if ($(window).scrollTop() >= $('.'+element_class+':last-child').offset().top - $(window).height()) {
+            dt.loadNextPage(url, params, before_callback, success_callback, failure_callback);
+        }
+    }
+    $(window).scroll(detectReachBottom);
+    dt.loadNextPage(url, params, before_callback, success_callback, failure_callback);
+}
+
+dt.registerPageCollapse = function(div, container, not_use_page_number) {
+    var page = container.children('.pagination-line').length + 1;
+    var content_div = div;
+    div = '<div class="pagination-line">\
+                <div class="page-expand-wrapper">\
+                    <div class="page-expand-arrow"></div>\
+                </div>\
+                <div class="page-number">'
+                if (not_use_page_number) {
+                    div += 'Collpase'
+                } else {
+                    div += 'Page '+page
+                }
+                div += '</div>\
+            </div>\
+            <div class="page-container">'+content_div+'</div>'
+    container.append(div);
+
+    container.children('.page-container:last-child').prev().click(function() {
+        var container = $(this).next();
+        if (dt.pageStretchProgress[container[0]]) return;
+
+        if ($(this).hasClass('collapse')) {
+            dt.pageStretch(container[0], container[0].scrollHeight);
+            $(this).removeClass('collapse');
+            if (not_use_page_number) $(this).children('.page-number').text('Collapse');
+        } else {
+            dt.pageStretch(container[0], 0);
+            $(this).addClass('collapse');
+            if (not_use_page_number) $(this).children('.page-number').text('Expand');
+        }
+    });
+}
+
+dt.pageStretchProgress = {};
+dt.pageStretch = function(ele, targetHeight) {
+    var actualHeight = ele.offsetHeight;
+    var contentHeight = ele.scrollHeight;
+    if (targetHeight == actualHeight) return;
+
+    dt.pageStretchProgress[ele] = true;
+    var direction = (targetHeight - actualHeight)/Math.abs(targetHeight - actualHeight);
+    var lTime = Date.now();
+    function stretch() {
+        var curTime = Date.now();
+        var deltaTime = curTime - lTime;
+        lTime = curTime;
+
+        actualHeight += contentHeight*4*deltaTime/1000*direction;
+        if ((targetHeight - actualHeight)*direction <= 0) {
+            ele.style.height = targetHeight+'px';
+            ele.scrollTop = contentHeight;
+            dt.pageStretchProgress[ele] = false;
+        } else {
+            ele.style.height = actualHeight+'px';
+            ele.scrollTop = contentHeight;
+            requestAnimationFrame(stretch);
+        }
+    }
+    stretch();
 }
 
 dt.subtitle_format = /^\[(\d+):(\d{1,2}).(\d{1,2})\](.*)$/;

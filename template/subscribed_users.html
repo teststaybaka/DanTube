@@ -1,10 +1,10 @@
-{% extends "template/account.html" %}
+{% extends "template/account_base.html" %}
 {% block head %}
 {{ super() }}
 <link href="/static/subscriptions.css" rel="stylesheet" type="text/css">
+<script src="/static/subscribed.js" language="JavaScript" type="text/javascript"></script>
 {% endblock %}
 
-{% block overview_active %}{% endblock %}
 {% block manage_subscription_active %}active{% endblock %}
 
 {% block topTitle %}
@@ -15,41 +15,9 @@
 {% endblock %}
 
 {% block detail %}
-<div id="sub-title-line" class="container">
-    <div id="sub-title"><span class="commas_number">{{ subscription_counter }}</span> UPer{% if subscription_counter > 1 %}s{% endif %}</div>
+<div id="sub-title-line">
+    <div id="sub-title"><span class="commas_number">{{ user.subscription_counter }}</span> UPer{% if user.subscription_counter > 1 %}s{% endif %}</div>
 </div>
 <div id="subs-user-list">
-  {% if total_pages == 0 %}
-  <div class="no-subscription">
-    You haven't subscribed to anyone.
-  </div>
-  {% endif %}
-  {% for subs_user in upers %}
-  <div class="subscription-user-box">
-    <a class="user-img" href="{{ subs_user.space_url}}" target="_blank">
-        <img src="{{ subs_user.avatar_url }}" title="{{ subs_user.nickname }}">
-    </a>
-    <div class="user-details">
-      <div><a class="user-nickname blue-link" href="{{ subs_user.space_url}}" target="_blank" title="{{ subs_user.nickname }}">{{ subs_user.nickname }}</a></div>
-      <a class="inline-button subscribed" href="{{ uri_for('message_compose') }}?to={{ subs_user.nickname }}">Send Message</a>
-      <div class="inline-button subscribed subscribe-button unsubscribe" data-id="{{ subs_user.id }}"><span class="subscribe-icon"></span><span class="subscribe-text">Subscribed</span></div>
-    </div>
-  </div>
-  {% endfor %}
 </div>
-{% if total_pages != 0 %}
-<div class="pagination-line">
-  {% if cur_page > 1 %}
-    <a class="page-change" href="?page=1"><<</a>
-    <a class="page-change" href="?page={{ cur_page - 1 }}"><</a>
-  {% endif %}
-  {% for p in pages %}
-    <a class="page-num {% if p == cur_page %}active{% endif %}" href="?page={{ p }}">{{ p }}</a>
-  {% endfor %}
-  {% if cur_page < total_pages %}
-    <a class="page-change" href="?page={{ cur_page + 1 }}">></a>
-    <a class="page-change" href="?page={{ total_pages }}">>></a>
-  {% endif %}
-</div>
-{% endif %}
 {% endblock %}

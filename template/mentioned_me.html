@@ -1,11 +1,10 @@
-{% extends "template/account.html" %}
+{% extends "template/account_base.html" %}
 {% block head %}
 {{ super() }}
 <link rel="stylesheet" href="/static/message.css" type="text/css" />
 <script src="/static/mentioned.js" language="JavaScript" type="text/javascript"></script>
 {% endblock %}
 
-{% block overview_active %}{% endblock %}
 {% block at_me_active %}active{% endblock %}
 
 {% block topTitle %}
@@ -16,33 +15,9 @@
 {% endblock %}
 
 {% block detail %}
-<div id="sub-title-line" class="container">
+<div id="sub-title-line">
     <div id="sub-title"><span class="commas_number">{{ new_mentions }}</span> New mention{% if new_mentions > 1 %}s{% endif %}</div>
 </div>
 <div class="messages-container">
-    <!-- <div class="content-entry none">
-        No messages found.
-    </div>
-    <div class="content-entry mentioned">
-        <a href="" target="_blank" class="user-img">
-            <img src="">
-        </a>
-        <div class="message-info">
-            <div class="info-line">
-                <a href="" target="_blank" class="blue-link user-name">OOOOOOOOOOOOOOOOOOOOOOOOOOOOOO</a>
-                <label class="time">2013-03-12 09:23</label>
-            </div>
-            <div class="info-line">
-                <label>Mentioned you in </label>
-                <a class="message-title" href="" target="_blank">How's everthing going?How's everthing going?How's everth?OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO</a>
-            </div>
-            <div class="info-line">
-                <div class="comment-content">SOSJDFOIJFSOIDJF</div>
-            </div>
-            <div class="info-line">
-                <a class="reply-link" href="" target="_blank">Reply</a>
-            </div>
-        </div>
-    </div> -->
 </div>
 {% endblock %}

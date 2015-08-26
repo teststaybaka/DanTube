@@ -1,178 +1,143 @@
 (function(dt, $) {
-function update_upers(page) {
-    var uper_container = $('.upers-block');
-    var pagination_container = uper_container.next();
-    uper_container.empty();
-    pagination_container.empty();
-    uper_container.append('<div class="no-subscription quick loading"></div>');
-
-    $.ajax({
-        type: 'POST',
-        url: '/subscription/load_upers',
-        data: {page: page},
-        success: function(result) {
-            uper_container.empty();
-            if (!result.error) {
-                if(result.upers.length == 0) {
-                    uper_container.append('<div class="no-subscription quick">You haven\'t subscribed to anyone.</div>');
-                } else {
-                    for(var i = 0; i < result.upers.length; i++) {
-                        var div = render_uper_div(result.upers[i]);
-                        uper_container.append(div);
-                    }
-
-                    var pagination = dt.render_pagination(page, result.total_pages);
-                    pagination_container.append(pagination);
-                }
-            } else {
-                uper_container.empty();
-                uper_container.append('<div class="no-subscription quick">Load failed.</div>');
-            }
-        },
-        error: function (xhr, ajaxOptions, thrownError) {
-            console.log(xhr.status);
-            console.log(thrownError);
-            uper_container.empty();
-            uper_container.append('<div class="no-subscription quick">Load failed.</div>');
-        }
-    });
-}
-
 $(document).ready(function() {
-    var url = document.URL;
-    var urls = url.split('?');
-    var uploads = dt.getParameterByName('uploads');
-    if (uploads) {
-        $('.search-scope.active').removeClass('active');
-        $('.search-scope:last-child').addClass('active');
-    }
+    $('.upers-block').each(function() {
+        var upers_lines = 0;
+        var page_lines = 5;
+        var line_size = 2;
+        var up_margin = 15;
+        var uper_page_over = false;
+        var slide_container = $('.upers-block')[0];
 
-    if ($('.upers-block').length != 0) {
-        update_upers(1);
-    }
-    $('#subscription-upers .pagination-line').on('click', 'a', function() {
-        var page = $(this).attr('data-page');
-        update_upers(page);
-    });
+        function loadNextUpers() {
+            dt.loadNextPage('/account/subscribed', {}, function() {
+                $('.upers-block').append('<div class="quick-uper loading"></div>');
+            }, function(result, isOver) {
+                $('.quick-uper.loading').remove();
+                uper_page_over = isOver;
+                upers_lines += Math.ceil(result.upers.length/line_size);
 
-    var isLoading = false;
-    var isOver = false;
-    var cursor = '';
-
-    $(window).scroll(function() {
-        if(($(window).scrollTop() >= $('.activity-entry:last-child').offset().top - 30 - $(window).height()) && !isLoading && !isOver) {
-            update_activities(cursor);
-        }
-    });
-    update_activities(cursor);
-
-    function update_activities() {
-        isLoading = true;
-        $('.activity-container').append('<div class="activity-entry loading"></div>');
-        $.ajax({
-            type: 'POST',
-            url: '/subscription/load_activities',
-            data: {cursor: cursor, uploads: uploads},
-            success: function(result) {
-                $('.activity-entry.loading').remove();
-                if(!result.error) {
-                    for (var i = 0; i < result.activities.length; i++) {
-                        var record = result.activities[i];
-                        var div = render_activity_div(record);
-                        $('.activity-container').append(div);
-                    }
-                    if (result.activities.length == 0 && !cursor) {
-                        $('.activity-container').append('<div class="activity-entry none"> No activities found.</div>');
-                    }
-                    if (result.activities.length < 10) {
-                        isOver = true;
-                    }
-                    cursor = result.cursor;
-                } else {
-                    dt.pop_ajax_message(result.message, 'error');
+                var div = '';
+                for (var i = 0; i < result.upers.length; i++) {
+                    var uper = result.upers[i];
+                    div += '<div class="quick-uper">\
+                                <a href="' + uper.space_url + '" class="user-img" title="' + uper.nickname + '" target="_blank">\
+                                    <img src="' + uper.avatar_url_small + '">\
+                                </a>\
+                            </div>'
                 }
-                isLoading = false;
-            },
-            error: function (xhr, ajaxOptions, thrownError) {
-                isLoading = false;
-                $('.activity-entry.loading').remove();
-                console.log(xhr.status);
-                console.log(thrownError);
-                dt.pop_ajax_message(xhr.status+' '+thrownError, 'error');
+
+                if (div === '') {
+                    if ($('.quick-uper').length == 0) {
+                        div = '<div class="quick-uper none">You haven\'t subscribed to anyone.</div>'
+                    }
+                }
+                $('.upers-block').append(div);
+
+                var height = $('.uper-page-container').height() - up_margin;
+                var y = parseInt(slide_container.getAttribute('data-offset'));
+                if (y >= (upers_lines/page_lines - 1)*height && uper_page_over) $('.uper-page-arrow.down').addClass('hidden');
+                else $('.uper-page-arrow.down').removeClass('hidden');
+            }, function() {
+                $('.quick-uper.loading').remove();
+            });
+        }
+        loadNextUpers();
+
+        $('.uper-page-arrow').click(function() {
+            var height = $('.uper-page-container').height() - up_margin;
+            var y = parseInt(slide_container.getAttribute('data-offset'));
+            if ($(this).hasClass('up')) {
+                y = Math.max(0, y - height);
+            } else {// down
+                if (uper_page_over) {
+                    y = Math.min((upers_lines/page_lines - 1)*height, y + height);
+                } else {
+                    y = Math.min(upers_lines/page_lines*height, y + height);
+                }
             }
+
+            if (y <= 0) $('.uper-page-arrow.up').addClass('hidden');
+            else $('.uper-page-arrow.up').removeClass('hidden');
+
+            if (uper_page_over) {
+                if (y >= (upers_lines/page_lines - 1)*height) $('.uper-page-arrow.down').addClass('hidden');
+                else $('.uper-page-arrow.down').removeClass('hidden');
+            } else {
+                if (y > (upers_lines/page_lines - 1)*height) {
+                    loadNextUpers();
+                    $('.uper-page-arrow.down').addClass('hidden');
+                } else $('.uper-page-arrow.down').removeClass('hidden');
+            }
+
+            slide_container.setAttribute('data-offset', y);
+            slide_container.style.WebkitTransform = "translateY(-"+y+"px)";
+            slide_container.style.msTransform = "translateY(-"+y+"px)";
+            slide_container.style.transform = "translateY(-"+y+"px)";
         });
-    }
+    });
+
+    var type = dt.getParameterByName('type');
+    dt.scrollUpdate('/account/subscriptions', {type: type}, 'content-entry', $('.activity-container'), function(result) {
+        var div = '';
+        if (result.type == 'comments') {
+            for (var i = 0; i < result.entries.length; i++) {
+                var comment = result.entries[i];
+                div += '<div class="content-entry">\
+                            <a class="uploader-img" href="' + comment.creator.space_url + '" target="_blank">\
+                                <img class="uploader-img" src="' + comment.creator.avatar_url_small + '">\
+                            </a>\
+                            <div class="activity-detail">\
+                                <div class="activity-title normal-link">\
+                                    <label>'
+                                    if (comment.inner_floorth) {
+                                        div += 'Replied a comment in'
+                                    } else {
+                                        div += 'Posted a comment in'
+                                    }
+                                    div += '</label>\
+                                    <a href="' + comment.video.url + '" class="activity-title normal-link" target="_blank">' + comment.video.title + '</a>\
+                                </div>\
+                                <div class="uploader-name">\
+                                    <label>by</label>\
+                                    <a href="' + comment.creator.space_url + '" class="uploader-name blue-link" target="_blank">' + comment.creator.nickname + '</a>\
+                                    <div class="activity-time">' + comment.created + '</div>\
+                                </div>\
+                                <div class="activity-intro">' + comment.content + '</div>\
+                                <a class="comment-check blue-link" href="' + comment.video.url + '?comment=' + comment.floorth
+                                if (comment.inner_floorth) {
+                                    div +=  '&reply=' + comment.inner_floorth;
+                                }
+                                div += '" target="_blank">[Check it out]</a>\
+                            </div>\
+                        </div>'
+            }
+        } else {
+            for (var i = 0; i < result.entries.length; i++) {
+                var video = result.entries[i];
+                div += '<div class="content-entry">\
+                            <a class="uploader-img" href="' + video.uploader.space_url + '" target="_blank">\
+                                <img class="uploader-img" src="' + video.uploader.avatar_url_small + '">\
+                            </a>\
+                            <div class="activity-detail">\
+                                <div class="activity-title normal-link">\
+                                    <label>Uploaded</label>\
+                                    <a href="' + video.url + '" class="activity-title normal-link" target="_blank">' + video.title + '</a>\
+                                </div>\
+                                <div class="uploader-name">\
+                                    <label>by</label>\
+                                    <a href="' + video.uploader.space_url + '" class="uploader-name blue-link" target="_blank">' + video.uploader.nickname + '</a>\
+                                    <div class="activity-time">' + video.created + '</div>\
+                                </div>\
+                                <div class="activity-intro">' + video.intro + '</div>\
+                                <a class="video-img" href="' + video.url + '" target="_blank">\
+                                    <img src="' + video.thumbnail_url + '">\
+                                </a>\
+                            </div>\
+                        </div>'
+            }
+        }
+        return div;
+    });
 });
-
-function render_activity_div(record) {
-    var div = '<div class="activity-entry">\
-        <a class="uploader-img" href="' + record.creator.space_url + '" target="_blank">\
-            <img class="uploader-img" src="' + record.creator.avatar_url_small + '">\
-        </a>'
-    if (record.type === 'upload' || record.type === 'edit') {
-        div += '<div class="activity-detail">\
-                <div class="activity-title normal-link">\
-                    <label>'
-        if (record.type === 'upload') {
-            div += 'Uploaded'
-        } else {//edit
-            div += 'Edited'
-        }
-        div += '</label>\
-                    <a href="' + record.video_url + '" class="activity-title normal-link" target="_blank">' + record.video_title + '</a>\
-                </div>\
-                <div class="uploader-name">\
-                    <label>by</label>\
-                    <a href="' + record.creator.space_url + '" class="uploader-name blue-link" target="_blank">' + record.creator.nickname + '</a>\
-                    <div class="activity-time">' + record.created + '</div>\
-                </div>\
-                <div class="activity-intro">' + record.content + '</div>\
-                <a class="video-img" href="' + record.video_url + '" target="_blank">\
-                    <img class="video-img" src="' + record.video.thumbnail_url + '">\
-                </a>\
-            </div>\
-        </div>'
-    } else {
-        div += '<div class="activity-detail">\
-            <div class="activity-title normal-link">\
-                <label>'
-        if (record.type === 'comment') {
-            div += 'Posted a comment in'
-        } else if (record.type === 'inner_comment') {
-            div += 'Replied a comment in'
-        } else { //danmaku
-            div += 'Posted a danmaku in'
-        }
-        div += '</label>\
-                <a href="' + record.video_url + '" class="activity-title normal-link" target="_blank">' + record.video_title + '</a>\
-            </div>\
-            <div class="uploader-name">\
-                <label>by</label>\
-                <a href="' + record.creator.space_url + '" class="uploader-name blue-link" target="_blank">' + record.creator.nickname + '</a>\
-                <div class="activity-time">' + record.created + '</div>\
-            </div>\
-            <div class="activity-intro">' + record.content + '</div>\
-            <a class="comment-check blue-link" href="' + record.video_url + '?'
-        if (record.type === 'comment') {
-            div +=  'comment=' + record.floorth;
-        } else if (record.type === 'inner_comment') {
-            div +=  'comment=' + record.floorth + '&reply=' + record.inner_floorth;
-        } else { //danmaku
-            div += 'index=' + record.clip_index + '&timestamp=' + record.timestamp;
-        }
-        div += '" target="_blank">[Check it out]</a>\
-        </div>'
-    }
-    return div;
-}
-
-function render_uper_div(uper) {
-    var div = '<div class="quick-uper">\
-            <a href="' + uper.space_url + '" class="user-img" title="' + uper.nickname + '" target="_blank">\
-                <img src="' + uper.avatar_url_small + '">\
-            </a>\
-        </div>'
-    return div;
-}
 //end of the file
 } (dt, jQuery));

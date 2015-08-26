@@ -1,9 +1,34 @@
 (function(dt, $) {
 $(document).ready(function() {
+    dt.scrollUpdate(window.location.href, {}, 'content-entry', $('.notifications-container'), function(result) {
+        var div = '';
+        for (var i = 0; i < result.entries.length; i++) {
+            var note = result.entries[i];
+            div += '<div class="content-entry '
+                    if (notification.read) { 
+                        div += 'read'
+                    }
+                    div += ' '+note.id+'">\
+                        <div class="notification-type '+note.type+'"></div>\
+                        <div class="message-info">\
+                            <div class="info-line">\
+                                <a class="notification-title normal-link" data-id="'+note.id+'">'+note.title+'</a>\
+                            </div>\
+                            <div class="info-line">\
+                                <label>'+note.created+'</label>\
+                            </div>\
+                            <div class="notification-detail">'+note.content+'</div>\
+                        </div>\
+                        <div class="single-checkbox" data-id="'+note.id+'" data-title="'+note.title+'"></div>\
+                    </div>'
+        }
+        return div;
+    });
+
     $('.messages-container').on('click', 'a.notification-title', function() {
         var message_entry = $(this).parent().parent().parent();
-        if (message_entry.hasClass('unread')) {
-            message_entry.removeClass('unread');
+        if (!message_entry.hasClass('read')) {
+            message_entry.addClass('read');
             $.ajax({
                 type: "POST",
                 url: '/account/notifications/read',

@@ -7,6 +7,7 @@
 <link href="/static/player.css" rel="stylesheet" type="text/css">
 <script src="/static/video.js" language="JavaScript" type="text/javascript"></script>
 <script type="text/javascript">
+{% if not video.deleted %}
   var tag = document.createElement('script');
   tag.src = "https://www.youtube.com/iframe_api";
   var firstScriptTag = document.getElementsByTagName('script')[0];
@@ -32,14 +33,17 @@
       }
     });
   }
+{% endif %}
 </script>
 {% endblock %}
 
 {% block body %}
+<input type="text" class="hidden" id="video-id" value="{{ video.id }}">
+<input type="text" class="hidden" id="clip-id" value="{{ video.cur_clip_id }}">
 <div id="video-info-container" class="container">
   <div id="video-info">
     <div id="video-title">{{ video.title }}</div>
-    <div id="video-sub-title-line" class="container">
+    <div id="video-sub-title-line">
       <a class="category-link" href="/">Home</a>
       <div class="category-arrow"></div>
       <a class="category-link" href="{{ uri_for(video.category) }}">{{ video.category }}</a>
@@ -47,7 +51,7 @@
       <a class="category-link cur-subcategory" href="{{ uri_for([video.category, video.subcategory]|join('-')) }}">{{ video.subcategory }}</a>
       <div class="video-date">{{ video.created }}</div>
       <div class="video-statistic" title="views"><span class="statistic-icon views"></span><span class="commas_number">{{ video.hits }}</span></div>
-      <div class="video-statistic" title="favors"><span class="statistic-icon favorites"></span><span class="commas_number">{{ video.favors }}</span></div>
+      <div class="video-statistic" title="likes"><span class="statistic-icon likes"></span><span class="commas_number">{{ video.likes }}</span></div>
       <div class="video-statistic" title="comments"><span class="statistic-icon comment"></span><span class="commas_number">{{ video.comment_counter }}</span></div>
       <div class="video-statistic" title="bullets"><span class="statistic-icon bullets"></span><span class="commas_number">{{ video.bullets }}</span></div>
       <div class="right" id="report-video">
@@ -69,17 +73,17 @@
           <div class="report-input-line">
             <textarea id="report-video-textarea" name="description" class="normal-input report" placeholder="If it happens at a centain time, include the timestamp, like 05:15." tabindex="1"></textarea>
           </div>
-          <div class="container">
-            <input class="inline-button special report" type="submit" value="Report" />
+          <div class="report-buttons-line">
             <div class="inline-button report">Cancel</div>
+            <input class="inline-button special report" type="submit" value="Report" />
           </div>
         </form>
       </div>
     </div>
-    <div id="video-parts-container" class="container">
+    <div id="video-parts-container">
       {% if video.clip_titles|length > 1 %}
         {% for i in video.clip_range %}
-          <a class="inline-button episode-link {% if i+1 == video.cur_index %}active{% endif %} {% if i+1 < video.clip_range_min or i+1 > video.clip_range_max %}hidden{% endif %}" href="{{ video.url }}?index={{ i+1 }}">
+          <a class="inline-button episode-link {% if i == video.cur_index %}active{% endif %} {% if i < video.clip_range_min or i > video.clip_range_max %}hidden{% endif %}" href="{{ video.url }}?index={{ i+1 }}{% if video.list_id %}&list={{ video.list_id }}{% endif %}">
           {% if video.clip_titles[i] %}
             {{ i+1 }}. {{ video.clip_titles[i] }}
           {% else %}
@@ -94,9 +98,10 @@
       {% endif %}
     </div>
   </div>
+  {% if not video.deleted %}
   <div id="uploader-info-box">
-    <a href="{{ uploader.space_url}}" target="_blank">
-      <img id="uploader-img" src="{{ uploader.avatar_url_small }}">
+    <a id="uploader-img" href="{{ uploader.space_url}}" target="_blank">
+      <img src="{{ uploader.avatar_url_small }}">
     </a>
     <div id="uploader-info">
       <div id="uploader-link-line">
@@ -108,13 +113,18 @@
       <div id="uploader-intro">{{ uploader.intro }}</div>
     </div>
   </div>
+  {% endif %}
 </div>
 <div id="player-container">
   <div id="player-controller">
     <div id="player-background">
       <div class="player-vertical-padding"></div>
       <div id="player-canvas">
+        {% if video.deleted %}
+        <img src="/static/img/video_deleted.png">
+        {% else %}
         <div id="player"></div>
+        {% endif %}
       </div>
       <div id="switch-count-down" class="hidden">
         <span id="switch-count-span">Switch to the next part in 5 seconds.</span>
@@ -141,9 +151,9 @@
       <div class="report-input-line">
         <textarea id="report-danmaku-textarea" name="description" class="normal-input report" placeholder="" tabindex="1"></textarea>
       </div>
-      <div class="container">
-        <input class="inline-button special report" type="submit" value="Report" />
+      <div class="report-buttons-line">
         <div class="inline-button report">Cancel</div>
+        <input class="inline-button special report" type="submit" value="Report" />
       </div>
     </form>
     <div id="progress-controller-wrap">
@@ -154,7 +164,7 @@
         <div id="progress-tip" class="hidden">--:--</div>
       </div>
       <div id="controller-background">
-        <div id="controller" class="container">
+        <div id="controller">
           <div class="screen-size">
             <div id="page-wide" class="player-button off">
               <div class="button-tip off">Page-wide screen</div>
@@ -276,13 +286,6 @@
               <div class="danmaku-type-option normal active"><div class="danmaku-type-img normal"></div><div class="danmaku-type-text">Scroll</div></div>
               <input id="danmaku-type-input" type="text" value="Scroll" name="type" class="hidden">
             </div>
-            <div>
-              <label class="danmaku-share check-label">
-                <div class="pseudo-checkbox"></div>
-                <input type="checkbox" class="hidden" id="allow-post-danmaku" name="allow-share">
-                <span>Share with subscribers.</span>
-              </label>
-            </div>
           </div>
           <div class="danmaku-setting" id="danmaku-type-setting">
             <div id="danmaku-type-tip">Danmaku options</div>
@@ -296,7 +299,7 @@
             <div class="input-layon-block hidden" title="Replying">
               <div class="layon-close"></div>
             </div>
-            <input id="danmaku-input" type="text" placeholder="{% if not user.is_auth %}Please sign in{% endif %}" name="content" tabindex="2">
+            <input id="danmaku-input" type="text" placeholder="{% if not user %}Please sign in{% endif %}" name="content" tabindex="2">
           </div>
           <input id="fire-button" type="submit" value="Fire!" title="Burning Love!">
         </form>
@@ -399,11 +402,11 @@
           </div>
         </div>
         <div class="subtitles-block hidden">
-          <div class="subtitles-list container">
+          <div class="subtitles-list">
             {% for name in subtitle_names %}
             <label class="check-label subtitle">
               <div class="pseudo-checkbox"></div>
-              <input type="checkbox" id="show-colored-checkbox" class="hidden" data-id="{{ subtitle_pool_ids[loop.index0] }}">
+              <input type="checkbox" class="hidden" data-id="{{ subtitle_pool_ids[loop.index0] }}">
               <span>{{ name }}</span>
             </label>
             {% endfor %}
@@ -567,9 +570,9 @@
         <div class="player-full-setting-line">
           <textarea class="css-customize-input normal-input" name="danmaku-css" placeholder="e.g., color: rgb(255,255,255);" tabindex="1">color: rgb(255,255,255);&#10;font-size: 20px;&#10;text-shadow: 1px 0 1px rgb(0,0,0), -1px 0 1px rgb(0,0,0), 0 1px 1px rgb(0,0,0), 0 -1px 1px rgb(0,0,0);</textarea>
         </div>
-        <div class="player-full-setting-line container">
-          <input class="inline-button special special-danmaku-button" type="submit" value="Send">
+        <div class="player-full-setting-line buttons-line">
           <input class="inline-button special-danmaku-button" type="button" value="Preview">
+          <input class="inline-button special special-danmaku-button" type="submit" value="Send">
         </div>
       </form>
       <form class="special-danmaku-setting subtitle hidden" id="subtitles-danmaku-form">
@@ -584,9 +587,9 @@
         <div class="player-full-setting-line">
           <textarea class="subtitle-content-input normal-input" name="subtitles" placeholder="e.g., [10:23.08] This is a line." tabindex="1"></textarea>
         </div>
-        <div class="player-full-setting-line container">
-          <input class="inline-button special special-danmaku-button" type="submit" value="Send">
+        <div class="player-full-setting-line buttons-line">
           <input class="inline-button special-danmaku-button" type="button" value="Preview">
+          <input class="inline-button special special-danmaku-button" type="submit" value="Send">
         </div>
       </form>
       <form class="special-danmaku-setting code hidden" id="code-danmaku-form">
@@ -605,7 +608,21 @@
           <label id="clear-code" class="blue-link code-area-button">Clear</label>
         </div>
         <div class="player-full-setting-line">
-          <textarea id="textarea-code-danmaku" class="code-danmaku-content-input normal-input" name="content" tabindex="1"></textarea>
+          <textarea id="textarea-code-danmaku" class="code-danmaku-content-input normal-input" name="content" tabindex="1">
+var pos_x = 0;
+create_danmaku('Run this code!', function(ele, delta) {
+    var speed = (100*danmaku_speed + 400)/10;
+    if (pos_x > player_width + ele.offsetWidth) {
+        return true;
+    } else {
+        pos_x += speed*delta;
+        ele.style.WebkitTransform = "translate(-"+pos_x+"px, 0px)";
+        ele.style.msTransform = "translate(-"+pos_x+"px, 0px)";
+        ele.style.transform = "translate(-"+pos_x+"px, 0px)";
+        return false;
+    }
+});
+          </textarea>
         </div>
         <div class="player-full-setting-line">
           <label class="advanced-danmaku-label">Execute at (sec)</label>
@@ -620,9 +637,9 @@
             <span>Use current timestamp</span>
           </label>
         </div>
-        <div class="player-full-setting-line container">
-          <input type="submit" class="inline-button special special-danmaku-button" value="Send">
+        <div class="player-full-setting-line buttons-line">
           <input type="button" class="inline-button special-danmaku-button" value="Preview">
+          <input type="submit" class="inline-button special special-danmaku-button" value="Send">
         </div>
       </form>
     </div>
@@ -637,7 +654,7 @@
       <div class="video-source-icon"></div>
       <div class="danmaku-info-box-left">
         <span class="special-number">Currently watching:</span>
-        <span class="special-number commas_number">1</span>
+        <span class="special-number">...</span>
       </div>
       <div class="dammaku-info-box-right">
         <div class="danmaku-pool-info-box">
@@ -678,9 +695,11 @@
     <div class="right-click-entry" id="danmaku-pool-report">Report abuse</div>
   </div>
 </div>
+{% if not video.deleted %}
 <div id="left-info-box">
   <div id="video-detail-info-block">
     <div id="video-tags-line">
+      <a href="{{ uri_for('search') }}?keywords={{ video.type }}" target="_blank" class="tags-link">{{ video.type }}</a>
       {% for tag in video.tags %}
       <a href="{{ uri_for('search') }}?keywords={{ tag }}" target="_blank" class="tags-link">{{ tag }}</a>
       {% endfor %}
@@ -691,21 +710,30 @@
       </form>
       {% endif %}
     </div>
-    <div id="video-intro-box">{% if video.cur_subintro %}{{ video.cur_subintro }}{% else %}{{ video.description }}{% endif %}</div>
-    <div id="video-intro-display-button" class="display-button intro"><span class="intro-display-text">SHOW MORE</span><span class="display-arrow"></span></div>
+    <div>
+      <div class="intro-box">
+        <div class="intro-content">{{ video.intro }}</div>
+        <div class="display-button intro"><span class="display-text">SHOW MORE</span><span class="display-arrow"></span></div>
+      </div>
+      {% if video.cur_subintro %}
+      <div class="intro-box sub">
+        <div class="intro-content">{{ video.cur_subintro }}</div>
+        <div class="display-button intro"><span class="display-text">SHOW MORE</span><span class="display-arrow"></span></div>
+      </div>
+      {% endif %}
+    </div>
     <div class="container">
-      <div class="operation-button" title="Like this!" id="like-this"><span class="operation-icon like"></span><span class="commas_number">{{ video.likes }}</span></div>
+      <div class="operation-button{% if video.liked %} liked{% endif %}" title="Like this!" id="like-this"><span class="operation-icon like"></span><span class="commas_number">{{ video.likes }}</span></div>
       <div class="operation-button" title="Support you!"><span class="operation-icon bullets"></span><span class="commas_number">{{ video.bullets }}</span></div>
-      <div class="operation-button" title="It's my favorite!" id="add-to-favorite"><span class="operation-icon favors"></span><span class="commas_number">{{ video.favors }}</span></div>
       <div class="operation-button" title="Share it!"><span class="operation-icon share"></span><span class="commas_number">{{ video.shares }}</span></div>
     </div>
   </div>
   <div id="comments-block-title">Comments <span class="commas_number">{{ video.comment_counter }}</span></div>
   <form id="user-comment-form">
-    <img class="comment-img" src="{% if user.is_auth %}{{ user.avatar_url_small }}{% else %}/static/emoticons_img/default_avatar1.png{% endif %}">
+    <img class="comment-img" src="{% if user %}{{ user.avatar_url_small }}{% else %}/static/emoticons_img/default_avatar1.png{% endif %}">
     <div class="write-comment-block">
-      <textarea class="normal-input" name="content" id="comment-textarea" placeholder="{% if user.is_auth %}Share what you think{% else %}Please sign in{% endif %}" tabindex="2"></textarea>
-      <div class="container">
+      <textarea class="normal-input" name="content" id="comment-textarea" placeholder="{% if user %}Share what you think{% else %}Please sign in{% endif %}" tabindex="2"></textarea>
+      <div class="emoticons-line">
         <div class="emoticons-select"></div>
         <label class="check-label comment-share">
             <div class="pseudo-checkbox checked"></div>
@@ -717,11 +745,11 @@
     </div>
   </form>
   <form id="user-reply-form" class="hidden">
-    <img class="comment-img" src="{% if user.is_auth %}{{ user.avatar_url_small }}{% else %}/static/emoticons_img/default_avatar1.png{% endif %}">
+    <img class="comment-img" src="{% if user %}{{ user.avatar_url_small }}{% else %}/static/emoticons_img/default_avatar1.png{% endif %}">
     <div class="write-comment-block">
       <input type="text" class="hidden" id="comment-id-input" name="comment_id" value="">
-      <textarea class="normal-input" name="content" id="reply-textarea" placeholder="{% if user.is_auth %}Share what you think{% else %}Please sign in{% endif %}" tabindex="2"></textarea>
-      <div class="container">
+      <textarea class="normal-input" name="content" id="reply-textarea" placeholder="{% if user %}Share what you think{% else %}Please sign in{% endif %}" tabindex="2"></textarea>
+      <div class="emoticons-line">
         <div class="emoticons-select"></div>
         <label class="check-label comment-share">
             <div class="pseudo-checkbox checked"></div>
@@ -733,9 +761,10 @@
     </div>
   </form>
   <div id="comments-list-container">
+    <!-- <div class="load-more-line"><span class="load-more-button">Load previous comments</span></div> -->
   </div>
-  <div class="pagination-line all"></div>
 </div>
+{% endif %}
 <form id="report-comment-form" class="popup-box hidden" method="POST">
   <input type="text" class="hidden" name="is_inner" id="report-comment-is-inner">
   <input type="text" class="hidden" name="comment_id" id="report-comment-id">
@@ -756,9 +785,9 @@
   <div class="report-input-line">
     <textarea id="report-comment-textarea" name="description" class="normal-input report" placeholder="" tabindex="1"></textarea>
   </div>
-  <div class="container">
-    <input class="inline-button special report" type="submit" value="Report" />
+  <div class="report-buttons-line">
     <div class="inline-button report">Cancel</div>
+    <input class="inline-button special report" type="submit" value="Report" />
   </div>
 </form>
 <div id="right-info-box">
@@ -767,17 +796,17 @@
     <div id="list-title">{{ playlist.title }}</div>
     {% if playlist.intro %}
     <div id="list-intro-wrapper">
-      <div id="list-intro">{{ playlist.intro }}</div>
-      <div id="list-intro-display-button" class="display-button intro"><span class="intro-display-text">SHOW MORE</span><span class="display-arrow"></span></div>
+      <div class="intro-content" >{{ playlist.intro }}</div>
+      <div class="display-button intro"><span class="display-text">SHOW MORE</span><span class="display-arrow"></span></div>
     </div>
     {% endif %}
-    <div id="list-scroll-bar">
+    <div id="list-scroll-bar" data-id="{{ playlist.id }}" data-type="{{ playlist.type }}" data-cursor-prev="{{ playlist.cursor_prev }}" data-cursor-next="{{ playlist.cursor_next }}">
       {% for list_video in playlist.videos %}
-      <a class="list-entry {% if loop.index == playlist.cur_index+1 %}active{% endif %}" {% if loop.index != playlist.cur_index+1 %}href="{{ list_video.url }}"{% endif %}>
-        <div class="list-entry-index {% if loop.index == playlist.cur_index+1 %}active{% endif %}">{% if loop.index != playlist.cur_index+1 %}{{ loop.index }}{% endif %}</div>
+      <a class="list-entry {% if playlist.cur_index == list_video.index %}active{% endif %}" {% if playlist.cur_index != list_video.index %}href="{{ list_video.url }}"{% endif %}>
+        <div class="list-entry-index">{% if playlist.cur_index != list_video.index %}{{ list_video.index + 1 }}{% endif %}</div>
         <img class="list-video-img" src="{{ list_video.thumbnail_url }}">
         <div class="list-entry-info">
-          <div class="list-video-title {% if loop.index == playlist.cur_index+1 %}active{% endif %}">{{ list_video.title }}</div>
+          <div class="list-video-title">{{ list_video.title }}</div>
           <div>
             <div class="list-video-statistic hits"><span class="statistic-icon views"></span><span class="commas_number">{{ list_video.hits }}</span></div>
             <div class="list-video-statistic comments"><span class="statistic-icon comment"></span><span class="commas_number">{{ list_video.comment_counter }}</span></div>

@@ -1,4 +1,10 @@
 (function(dt, $) {
+var video_preview_timeout;
+var slide_timeout;
+var right_margin = 11;
+var element_width = 196;
+var max_page_columns = 7;
+
 function slideMove(index) {
     var total_slides = $('div.slide-dot').length;
     var preIndex = total_slides - 1 - $('div.slide-dot').index($('div.slide-dot.active'));
@@ -6,11 +12,11 @@ function slideMove(index) {
     $('div.slide-dot:eq('+(total_slides - 1 - index)+')').addClass('active');
     $('div.slide-title.active').removeClass('active');
     $('div.slide-title:eq('+(total_slides - 1 - index)+')').addClass('active');
-    var len = index*document.getElementById('ranking-slides').offsetWidth;
-    var slides = document.getElementById('slide-container');
-    slides.style.WebkitTransform = "translateX(-"+len+"px)";
-    slides.style.msTransform = "translateX(-"+len+"px)";
-    slides.style.transform = "translateX(-"+len+"px)";
+    var slide_container = document.getElementById('slide-container');
+    var len = index*slide_container.offsetWidth;
+    slide_container.style.WebkitTransform = "translateX(-"+len+"px)";
+    slide_container.style.msTransform = "translateX(-"+len+"px)";
+    slide_container.style.transform = "translateX(-"+len+"px)";
 }
 
 function slideChange() {
@@ -18,278 +24,303 @@ function slideChange() {
     var preIndex = total_slides - 1 - $('div.slide-dot').index($('div.slide-dot.active'));
     var index = (preIndex + 1)%total_slides;
     slideMove(index);
-    window.slideTimeout = setTimeout(slideChange, 5000);
+    slide_timeout = setTimeout(slideChange, 5000);
 }
 
-function update_random_videos() {
-    $('div.single-preview-line').empty();
-    $('div.single-preview-line').append('<div class="preview-status loading"></div>');
-
-    $.ajax({
-        type: 'POST',
-        url: '/video/random',
-        data: {size: 5},
-        success: function(result) {
-            $('div.single-preview-line').empty();
-            if(!result.error) {
-                for(var i = 0; i < result.videos.length; i++) {
-                    var video_div = render_wide_preview_video_div(result.videos[i]);
-                    $('div.single-preview-line').append(video_div);
-                }
-            } else {
-                console.log('ssssssss')
-                $('div.single-preview-line').empty();
-                $('div.single-preview-line').append('<div class="preview-status">Load failed.</div>');
-            }
-        },
-        error: function (xhr, ajaxOptions, thrownError) {
-            console.log(xhr.status);
-            console.log(thrownError);
-            console.log('ddddddddd')
-            $('div.single-preview-line').empty();
-            $('div.single-preview-line').append('<div class="preview-status">Load failed.</div>');
-        }
-    });
-}
-
-function update_page(query, video_container, pagination_container, video_div_type) {
-    video_container.empty();
-    pagination_container.empty();
-    video_container.append('<div class="preview-status loading"></div>');
-
-    $.ajax({
-        type: 'POST',
-        url: '/video/category',
-        data: query,
-        success: function(result) {
-            video_container.empty();
-            if (!result.error) {
-                if(result.videos.length == 0) {
-                    video_container.append('<div class="preview-status">No video.</div>');
-                } else {
-                    for(var i = 0; i < result.videos.length; i++) {
-                        var video_div;
-                        if(video_div_type == 'dynamic') {
-                            video_div = render_dynamic_video_div(result.videos[i]);
-                        } else if (video_div_type == 'wide_preview') {
-                            video_div = render_wide_preview_video_div(result.videos[i]);
-                        } else { // ranking
-                            var rank = (query.page - 1) * ranking_page_size + i;
-                            video_div = render_ranking_video_div(result.videos[i], rank);
-                        }
-                        video_container.append(video_div);
-                    }
-
-                    var pagination = dt.render_pagination(query.page, result.total_pages);
-                    pagination_container.append(pagination);
-
-                    video_container.prev().children('a.refresh-video').attr('data-page', query.page);
-                }
-            } else {
-                video_container.empty();
-                video_container.append('<div class="preview-status">Load failed.</div>');
-            }
-        },
-        error: function (xhr, ajaxOptions, thrownError) {
-            console.log(xhr.status);
-            console.log(thrownError);
-            video_container.empty();
-            video_container.append('<div class="preview-status">Load failed.</div>');
-        }
-    });
-}
-
-var ranking_page_size = 10;
-var dynamic_page_size = 12;
-var wide_dynamic_page_size = 15;
 $(document).ready(function() {
-    window.slideTimeout = setTimeout(slideChange, 5000);
+    slide_timeout = setTimeout(slideChange, 5000);
     $('div.slide-dot').click(function(evt) {
         if ($(evt.target).hasClass('active')) return;
         
-        clearTimeout(window.slideTimeout);
+        clearTimeout(slide_timeout);
         var total_slides = $('div.slide-dot').length;
         var index = total_slides - 1 - $('div.slide-dot').index(evt.target);
         slideMove(index);
-        window.slideTimeout = setTimeout(slideChange, 5000);
+        slide_timeout = setTimeout(slideChange, 5000);
+    });
+    
+    var preview_popup = $('.video-preview-popup');
+    $('.video-list-line').on('mouseenter', 'a.video-preview', function() {
+        var video_preview = $(this);
+        var offset = video_preview.offset();
+
+        video_preview_timeout = setTimeout(function() {
+            preview_popup.find('.popup-title').text(video_preview.find('.video-preview-title').text());
+            preview_popup.find('.popup-descript').text(video_preview.find('.video-preview-popup-info[data-type="intro"]').text());
+            preview_popup.find('.popup-statistic-entry .hits-num').text(video_preview.find('.video-preview-popup-info[data-type="hits"]').text());
+            preview_popup.find('.popup-statistic-entry .likes-num').text(video_preview.find('.video-preview-popup-info[data-type="likes"]').text());
+            preview_popup.find('.popup-statistic-entry .comment-num').text(video_preview.find('.video-preview-popup-info[data-type="comments"]').text());
+            preview_popup.find('.popup-statistic-entry .bullets-num').text(video_preview.find('.video-preview-popup-info[data-type="bullets"]').text());
+            preview_popup.find('.preview-time').text(video_preview.find('.video-preview-popup-info[data-type="duration"]').text());
+            preview_popup.find('.popup-uploader').text(video_preview.find('.video-preview-popup-info[data-type="nickname"]').text());
+            preview_popup.find('.popup-upload-time').text(video_preview.find('.video-preview-popup-info[data-type="created"]').text());
+            preview_popup.find('.popup-upload-time').text(video_preview.find('.video-preview-popup-info[data-type="created"]').text());
+            preview_popup.find('.popup-thumbnail img').attr('src', video_preview.find('.video-preview-thumbnail img').attr('src'));
+            preview_popup.find('.popup-uploader-avatar img').attr('src', video_preview.find('.video-preview-popup-info[data-type="avatar"]').text());
+
+            if (video_preview.width() + offset.left >= $('#body-container').width()) {
+                preview_popup.addClass('show').css({left: offset.left - video_preview.width() - right_margin, top: offset.top - 5 - preview_popup[0].scrollHeight});
+            } else {
+                preview_popup.addClass('show').css({left: offset.left, top: offset.top - 5 - preview_popup[0].scrollHeight});
+            }
+        }, 300);
+    });
+    $('.video-list-line').on('mouseleave', 'a.video-preview', function() {
+        $('.video-preview-popup').removeClass('show');
+        clearTimeout(video_preview_timeout);
     });
 
-    $('a.refresh-video.random').click(update_random_videos);
-    if ($('div.sub-category-block.random').length == 1) update_random_videos();
+    $('.search-scope').click(function() {
+        if ($(this).hasClass('active')) return;
 
-    var initialize_check = function() {
-        $('div.sub-category-block.category').each(function() {
-            var category = $(this).attr('data-category');
-            var subcategory = $(this).attr('data-subcategory');
-            var dynamic_video_container = $(this).find('div.video-preview-container');
-            var dynamic_pagination_container = $(this).find('div.sub-category-dynamic-list div.pagination-line');
-            if (dynamic_video_container.children().length > 0
-                || $(window).scrollTop() < $(this).offset().top - 30 - $(window).height()) return;
+        $(this).siblings('.search-scope.active').removeClass('active');
+        $(this).addClass('active');
+        var column = $(this).parent().parent();
+        column.find('.video-slide-container').addClass('hidden');
+        column.find('.video-slide-container[data-order='+$(this).text()+']').removeClass('hidden').trigger('show');
+    });
 
-            var page_size = dynamic_page_size;
-            var renderType = 'dynamic';
-            if ($(this).hasClass('wide')) {
-                page_size = wide_dynamic_page_size;
-                renderType = 'wide_preview';
-            }
-            var order = 'last_updated';
-            if ($(this).hasClass('newest')) {
-                order = 'created';
-            }
-            var dynamic_query = {'category': category, 'subcategory': subcategory, 'order': order, 'page': 1, 'page_size': page_size};
-            update_page(dynamic_query, dynamic_video_container, dynamic_pagination_container, renderType);
+    $('.refresh-button').click(function() {
+        var column = $(this).parent().parent();
+        column.find('.video-slide-container').not('.hidden').trigger('refresh');
+    });
 
-            if (!($(this).hasClass('wide')) ) {
-                var ranking_video_container = $(this).find('div.ranking-video-container');
-                var ranking_pagination_container = $(this).find('div.sub-category-side-line div.pagination-line');
-                // var ranking_query = {'category': category, 'subcategory': subcategory, 'order': 'hits', 'page': 1, 'page_size': ranking_page_size};
-                var ranking_query = {'category': category, 'subcategory': subcategory, 'order': 'hot_score', 'page': 1, 'page_size': ranking_page_size};
-                update_page(ranking_query, ranking_video_container, ranking_pagination_container, 'ranking');
+    $('.video-column .video-slide-container').each(function() {
+        var slide_container = $(this)[0];
+        var column = $(this).parent().parent();
+        var lines = slide_container.getAttribute('data-lines');
+        var page_size = lines*max_page_columns;
+        var load_over, video_columns;
+        var initial = true;
+
+        var left_arrow = column.find('.horizontal-page-roll.left');
+        var right_arrow = column.find('.horizontal-page-roll.right');
+
+        var url, params;
+        if (slide_container.getAttribute('data-id')) {
+            url = '/uper_videos';
+            var uper_id = slide_container.getAttribute('data-id');
+            params = {user_id: uper_id, page_size: page_size};
+        } else {
+            url = '/category_videos';
+            var category = slide_container.getAttribute('data-category');
+            var subcategory = slide_container.getAttribute('data-subcategory');
+            var order = slide_container.getAttribute('data-order');
+            params = {category: category, subcategory: subcategory, order: order, page_size: page_size};
+        }
+
+        function load_video_column() {
+            dt.loadNextPage(url, params, function() {
+                if (initial) {
+                    var lists = $(slide_container).find('.video-list-line');
+                    for (var i = 1; i < lists.length; i++) {
+                        $(lists[i]).remove();
+                    }
+                    $(lists[0]).empty();
+                    video_columns = 0;
+                    load_over = false;
+                    slide_container.setAttribute('data-offset', 0);
+                    slide_container.style.WebkitTransform = "translateX(-0px)";
+                    slide_container.style.msTransform = "translateX(-0px)";
+                    slide_container.style.transform = "translateX(-0px)";
+
+                    $(slide_container).find('.video-list-line').append('<div class="video-list-load loading"></div>')
+                }
+            }, function(result, isOver) {
+                // console.log(result)
+                if (initial) {
+                    initial = false;
+                    $('.video-list-load').remove();
+                    if (result.videos.length == 0) {
+                        $(slide_container).find('.video-list-line').append('<div class="line-empty">No videos found.</div>')
+                    } else {
+                        lines = Math.ceil(result.videos.length/max_page_columns);
+                        for (var i = 1; i < lines; i++) {
+                            $(slide_container).append('<div class="video-list-line"></div>')
+                        }
+                    }
+                }
+
+                load_over = isOver;
+                video_columns += Math.ceil(result.videos.length/lines);
+                for (var i = 0; i < result.videos.length; i++) {
+                    var video = result.videos[i];
+                    var div = '<a class="video-preview" target="_blank" href="' + video.url + '">\
+                                    <div class="video-preview-thumbnail">\
+                                        <img src="' + video.thumbnail_url + '">\
+                                    </div>\
+                                    <div class="video-preview-statistic">\
+                                        <div class="video-preview-title">' + video.title + '</div>\
+                                        <div class="video-preview-hits"><span class="preview-icon views"></span>' + dt.numberWithCommas(video.hits) + '</div>\
+                                        <div class="video-preview-comment-num"><span class="preview-icon comment"></span>' + dt.numberWithCommas(video.comment_counter) + '</div>\
+                                    </div>\
+                                    <div class="video-preview-popup-info hidden" data-type="intro">' + video.intro + '</div>\
+                                    <div class="video-preview-popup-info hidden" data-type="hits">' + dt.numberWithCommas(video.hits) + '</div>\
+                                    <div class="video-preview-popup-info hidden" data-type="likes">' + dt.numberWithCommas(video.likes) + '</div>\
+                                    <div class="video-preview-popup-info hidden" data-type="comments">' + dt.numberWithCommas(video.comment_counter) + '</div>\
+                                    <div class="video-preview-popup-info hidden" data-type="bullets">' + dt.numberWithCommas(video.bullets) + '</div>\
+                                    <div class="video-preview-popup-info hidden" data-type="duration">' + dt.secondsToTime(video.duration) + '</div>\
+                                    <div class="video-preview-popup-info hidden" data-type="nickname">' + video.uploader.nickname + '</div>\
+                                    <div class="video-preview-popup-info hidden" data-type="avatar">' + video.uploader.avatar_url_small + '</div>\
+                                    <div class="video-preview-popup-info hidden" data-type="created">' + video.created + '</div>\
+                                </a>'
+                    $(slide_container).find('.video-list-line:eq('+Math.floor(i/max_page_columns)+')').append(div);
+                }
+
+                var width = slide_container.offsetWidth + right_margin;
+                var page_columns = width/(element_width+right_margin);
+                var x = parseInt(slide_container.getAttribute('data-offset'));
+                if (x >= (video_columns/page_columns - 1)*width && load_over) right_arrow.addClass('hidden');
+                else right_arrow.removeClass('hidden');
+            }, function() {
+                if (initial) {
+                    $('.video-list-load').remove();
+                    $(slide_container).find('.video-list-line').append('<div class="line-empty">Load error</div>');
+                }
+            });
+        }
+
+        right_arrow.add(left_arrow).click(function() {
+            if ($(slide_container).hasClass('hidden')) return;
+
+            var width = slide_container.offsetWidth + right_margin;
+            var page_columns = width/(element_width+right_margin);
+            var x = parseInt(slide_container.getAttribute('data-offset'));
+            if ($(this).hasClass('left')) {
+                x = Math.max(0, x - width);
+            } else {// right
+                if (load_over) {
+                    x = Math.min((video_columns/page_columns - 1)*width, x + width);
+                } else {
+                    x = Math.min(video_columns/page_columns*width, x + width);
+                }
             }
+
+            if (x <= 0) left_arrow.addClass('hidden');
+            else left_arrow.removeClass('hidden');
+            
+            if (load_over) {
+                if (x >= (video_columns/page_columns - 1)*width) right_arrow.addClass('hidden');
+                else right_arrow.removeClass('hidden');
+            } else {
+                if (x > (video_columns/page_columns - 1)*width) {
+                    load_video_column();
+                    right_arrow.addClass('hidden');
+                } else right_arrow.removeClass('hidden');
+            }
+
+            slide_container.setAttribute('data-offset', x);
+            slide_container.style.WebkitTransform = "translateX(-"+x+"px)";
+            slide_container.style.msTransform = "translateX(-"+x+"px)";
+            slide_container.style.transform = "translateX(-"+x+"px)";
         });
-    }
-    $(window).scroll(initialize_check);
-    initialize_check();
 
-    $('div.sub-category-dynamic-list div.pagination-line').on('click', 'a', function() {
-        var pagination_container = $(this).parent();
-        var video_container = pagination_container.prev();
-        var sub_category_block = video_container.parent().parent();
-        var category = sub_category_block.attr('data-category');
-        var subcategory = sub_category_block.parent().attr('data-subcategory');
-        var page = $(this).attr('data-page');
-        var page_size = dynamic_page_size;
-        var renderType = 'dynamic';
-        if (sub_category_block.hasClass('wide')) {
-            page_size = wide_dynamic_page_size;
-            renderType = 'wide_preview';
+        $(slide_container).on('refresh', function() {
+            initial = true;
+            dt.resetLoad(url, params);
+            load_video_column();
+        });
+
+        $(slide_container).on('show', function() {
+            if (initial) load_video_column();
+        });
+
+        function detectReach() {
+            if ($(window).scrollTop() >= $(slide_container).offset().top - 40 - $(window).height()) {
+                $(window).off('scroll', detectReach);
+                if (!$(slide_container).hasClass('hidden'))
+                    $(slide_container).trigger('show');
+            }
         }
-        var order = 'last_updated';
-        if (sub_category_block.hasClass('newest')) {
-            order = 'created';
-        }
-        var query = {'category': category, 'subcategory': subcategory, 'order': order, 'page': page, 'page_size': page_size};
-        update_page(query, video_container, pagination_container, renderType);
+        $(window).scroll(detectReach);
+        detectReach();
     });
 
-    $('div.sub-category-side-line div.pagination-line').on('click', 'a', function() {
-        var pagination_container = $(this).parent();
-        var video_container = pagination_container.prev();
-        var sub_category_block = video_container.parent().parent();
-        var category = sub_category_block.attr('data-category');
-        var subcategory = sub_category_block.attr('data-subcategory');
-        var page = $(this).attr('data-page');
-        // var query = {'category': category, 'subcategory': subcategory, 'order': 'hits', 'page': page, 'page_size': ranking_page_size};
-        var query = {'category': category, 'subcategory': subcategory, 'order': 'hot_score', 'page': page, 'page_size': ranking_page_size};
-        update_page(query, video_container, pagination_container, 'ranking');
-    });
+    $('.ranking-and-topic .video-slide-container').each(function() {
+        var slide_container = $(this)[0];
+        var column = $(this).parent().parent();
+        var lines = $(slide_container).find('.video-list-line').length;
+        var page_size = lines*max_page_columns;
+        var load_over = false;
+        var video_columns = 2 + Math.ceil($(slide_container).find('.next-top-videos').length/lines);
+        slide_container.setAttribute('data-offset', 0);
 
-    $('a.refresh-video').click(function() {
-        var page = $(this).attr('data-page');
-        if (!page) page = '1';
-        var video_container = $(this).parent().next();
-        var pagination_container = video_container.next();
-        var sub_category_block = video_container.parent().parent();
-        var category = sub_category_block.attr('data-category');
-        var subcategory = sub_category_block.attr('data-subcategory');
-        var page_size = dynamic_page_size;
-        var renderType = 'dynamic';
-        if (sub_category_block.hasClass('wide')) {
-            page_size = wide_dynamic_page_size;
-            renderType = 'wide_preview';
+        var left_arrow = column.find('.horizontal-page-roll.left');
+        var right_arrow = column.find('.horizontal-page-roll.right');
+
+        var category = slide_container.getAttribute('data-category');
+        var subcategory = slide_container.getAttribute('data-subcategory');
+        var order = slide_container.getAttribute('data-order');
+        var cursor = slide_container.getAttribute('data-cursor');
+        
+        var url = '/category_videos';
+        var params = {category: category, subcategory: subcategory, order: order, page_size: page_size};
+        dt.setCursor(url, params, cursor);
+        if (!cursor) {
+            right_arrow.addClass('hidden');
         }
-        var order = 'last_updated';
-        if (sub_category_block.hasClass('newest')) {
-            order = 'created';
+
+        function load_video_column() {
+            dt.loadNextPage(url, params, function() {
+            }, function(result, isOver) {
+                load_over = isOver;
+                video_columns += Math.ceil(result.videos.length/lines);
+                for (var i = 0; i < result.videos.length; i++) {
+                    var video = result.videos[i];
+                    var div = '<a class="next-top-videos" target="_blank" href="'+video.url+'">\
+                                    <div class="hover-cover">\
+                                        <div class="cover-title">'+video.title+'</div>\
+                                        <div class="cover-uploader">Uper:'+video.uploader.nickname+'</div>\
+                                        <div class="cover-hits">Views:'+dt.numberWithCommas(video.hits)+'</div>\
+                                    </div>\
+                                    <img src="'+video.thumbnail_url+'">\
+                                </a>'
+                    $(slide_container).find('.video-list-line:eq('+i%lines+')').append(div);
+                }
+
+                var width = slide_container.offsetWidth + right_margin;
+                var page_columns = width/(element_width+right_margin);
+                var x = parseInt(slide_container.getAttribute('data-offset'));
+                if (x >= (video_columns/page_columns - 1)*width && load_over) right_arrow.addClass('hidden');
+                else right_arrow.removeClass('hidden');
+            }, function() {
+            });
         }
-        var query = {'category': category, 'subcategory': subcategory, 'order': order, 'page': page, 'page_size': page_size};
-        update_page(query, video_container, pagination_container, renderType);
+
+        right_arrow.add(left_arrow).click(function() {
+            var width = slide_container.offsetWidth + right_margin;
+            var page_columns = width/(element_width+right_margin);
+            var x = parseInt(slide_container.getAttribute('data-offset'));
+
+            if ($(this).hasClass('left')) {
+                x = Math.max(0, x - width);
+            } else {// right
+                if (load_over) {
+                    x = Math.min((video_columns/page_columns - 1)*width, x + width);
+                } else {
+                    x = Math.min(video_columns/page_columns*width, x + width);
+                }
+            }
+
+            if (x <= 0) left_arrow.addClass('hidden');
+            else left_arrow.removeClass('hidden');
+            
+            if (load_over) {
+                if (x >= (video_columns/page_columns - 1)*width) right_arrow.addClass('hidden');
+                else right_arrow.removeClass('hidden');
+            } else {
+                if (x > (video_columns/page_columns - 1)*width) {
+                    load_video_column();
+                    right_arrow.addClass('hidden');
+                } else right_arrow.removeClass('hidden');
+            }
+
+            slide_container.setAttribute('data-offset', x);
+            slide_container.style.WebkitTransform = "translateX(-"+x+"px)";
+            slide_container.style.msTransform = "translateX(-"+x+"px)";
+            slide_container.style.transform = "translateX(-"+x+"px)";
+        });
     });
 });
-
-function render_dynamic_video_div(video) {
-    var preview_div = render_preview_video_div(video);
-    return '<a class="video-preview" target="_blank" href="' + video.url + '">' + preview_div + '</a>';
-}
-
-function render_wide_preview_video_div(video) {
-    var preview_div = render_preview_video_div(video);
-    return '<a class="video-preview wide" target="_blank" href="' + video.url + '">' + preview_div + '</a>';
-}
-
-function render_preview_video_div(video) {
-    var div =   '<div class="video-preview-thumbnail">\
-                    <img src="' + video.thumbnail_url + '">\
-                </div>\
-                <div class="video-preview-statistic">\
-                    <div class="video-preview-title">' + video.title + '</div>\
-                    <div class="video-preview-hits"><span class="preview-icon views"></span>' + dt.numberWithCommas(video.hits) + '</div>\
-                    <div class="video-preview-comment-num"><span class="preview-icon comment"></span>' + dt.numberWithCommas(video.comment_counter) + '</div>\
-                </div>\
-                <div class="video-preview-popup">\
-                    <div class="popup-title">' + video.title + '</div>\
-                    <div class="popup-statistic-line">\
-                        <div class="popup-statistic-entry"><span class="preview-icon views"></span>' + dt.numberWithCommas(video.hits) + '</div>\
-                        <div class="popup-statistic-entry"><span class="preview-icon favorites"></span>' + dt.numberWithCommas(video.favors) + '</div>\
-                        <div class="popup-statistic-entry"><span class="preview-icon comment"></span>' + dt.numberWithCommas(video.comment_counter) + '</div>\
-                        <div class="popup-statistic-entry"><span class="preview-icon bullets"></span>' + dt.numberWithCommas(video.bullets) + '</div>\
-                    </div>\
-                    <div class="popup-intro">\
-                        <div class="popup-thumbnail">\
-                            <img src="' + video.thumbnail_url + '">\
-                            <div class="preview-time">' + dt.secondsToTime(video.duration) + '</div>\
-                        </div>\
-                        <div class="popup-descript">' + video.description + '</div>\
-                    </div>\
-                    <div class="popup-upload-info">\
-                        <div class="popup-uploader">UPer: ' + video.uploader.nickname + '</div>\
-                        <div class="popup-upload-time">' + video.created + '</div>\
-                    </div>\
-                </div>';
-    return div;
-}
-
-function render_ranking_video_div(video, rank) {
-    var div = "";
-    if (rank%ranking_page_size < 3) {
-        div = '<a class="ranking-content-entry" target="_blank" href="' + video.url + '">\
-            <div class="ranking-top-video">\
-                <div class="top-video-thumbnail">\
-                    <img src="' + video.thumbnail_url + '">\
-                </div>\
-                <div class="top-No">' + (rank+1) + '</div>\
-                <div class="top-video-title">' + video.title + '</div>\
-            </div>\
-            <div class="top-video-hits"><span class="preview-icon views"></span>' + dt.numberWithCommas(video.hits) + '</div>\
-            <div class="top-video-comment-num"><span class="preview-icon comment"></span>' + dt.numberWithCommas(video.comment_counter) + '</div>';
-    } else {
-        div = '<a class="ranking-content-entry" target="_blank" href="' + video.url + '">\
-                <div class="ranking-No">' + (rank+1) + '</div>\
-                <div class="ranking-video-title">' + video.title + '</div>';
-    }
-
-    div += '<div class="video-preview-popup">\
-                <div class="popup-title">' + video.title + '</div>\
-                <div class="popup-statistic-line">\
-                    <div class="popup-statistic-entry"><span class="preview-icon views"></span>' + dt.numberWithCommas(video.hits) + '</div>\
-                    <div class="popup-statistic-entry"><span class="preview-icon favorites"></span>' + dt.numberWithCommas(video.favors) + '</div>\
-                    <div class="popup-statistic-entry"><span class="preview-icon comment"></span>' + dt.numberWithCommas(video.comment_counter) + '</div>\
-                    <div class="popup-statistic-entry"><span class="preview-icon bullets"></span>' + dt.numberWithCommas(video.bullets) + '</div>\
-                </div>\
-                <div class="popup-intro">\
-                    <div class="popup-thumbnail">\
-                        <img src="' + video.thumbnail_url + '">\
-                        <div class="preview-time">' + dt.secondsToTime(video.duration) + '</div>\
-                    </div>\
-                    <div class="popup-descript">' + video.description + '</div>\
-                </div>\
-                <div class="popup-upload-info">\
-                    <div class="popup-uploader">UPer: ' + video.uploader.nickname + '</div>\
-                    <div class="popup-upload-time">' + video.created + '</div>\
-                </div>\
-            </div>\
-        </a>';
-    return div;
-}
 //end of the file
 } (dt, jQuery));

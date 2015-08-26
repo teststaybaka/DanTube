@@ -155,10 +155,10 @@ $(document).ready(function() {
             success: function(result) {
                 console.log(result);
                 if(!result.error) {
-                    dt.pop_ajax_message('Sign up successfully! Check your email to activate your account.', 'success');
-                    setTimeout(function(){
-                        window.location.replace('/'); 
-                    }, 3000);
+                    dt.pop_ajax_message('Sign up successfully! Please check your email to activate your account.', 'success');
+                    setTimeout(function() {
+                        window.location.replace('/');
+                    }, 5000);
                 } else {
                     // $('#signupform').prepend('<div id="signup-message" class="fail">Sign up failed.</div>');
                     button.disabled = false;

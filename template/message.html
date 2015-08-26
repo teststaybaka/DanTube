@@ -1,10 +1,10 @@
-{% extends "template/account.html" %}
+{% extends "template/account_base.html" %}
 {% block head %}
 {{ super() }}
 <link rel="stylesheet" href="/static/message.css" type="text/css" />
+<script src="/static/message.js" language="JavaScript" type="text/javascript"></script>
 {% endblock %}
 
-{% block overview_active %}{% endblock %}
 {% block messages_active %}active{% endblock %}
 
 {% block topTitle %}
@@ -15,7 +15,7 @@
 {% endblock %}
 
 {% block detail %}
-<div id="sub-title-line" class="container">
+<div id="sub-title-line">
     <div id="sub-title"><span class="commas_number">{{ new_messages }}</span> New message{% if new_messages > 1 %}s{% endif %}</div>
     <div id="action-select">
         <div class="selected">Actions</div>
@@ -28,47 +28,7 @@
     <a class="inline-button sub" href="{{ uri_for('message_compose') }}">Compose</a>
 </div>
 <div class="messages-container">
-    {% if total_pages == 0 %}
-    <div class="content-entry none">No messages found.</div>
-    {% endif %}
-    {% for thread in entries %}
-    <div class="content-entry{% if thread.unread %} unread{% endif %} {{ thread.id }}">
-          <a href="{{ thread.partner.space_url }}" target="_blank" class="user-img">
-              <img src="{{ thread.partner.avatar_url }}">
-          </a>
-          <div class="message-info">
-              <div class="info-line">
-                  <label>About</label>
-                  <a class="message-title normal-link" href="{{ uri_for('message_detail', thread_id=thread.id) }}">{{ thread.subject }}</a>
-              </div>
-              <div class="info-line">
-                  <label>With</label>
-                  <a href="{{ thread.partner.space_url }}" target="_blank" class="user-name blue-link">{{ thread.partner.nickname }}</a>
-              </div>
-              <div class="info-line">
-                  <label>{% if thread.is_sender %}You{% else %}He{% endif %} said: {{ thread.last_message }}</label>
-                  <label>{{ thread.updated }}</label>
-              </div>
-          </div>
-          <div class="single-checkbox" data-id="{{ thread.id }}" data-title="{{ thread.subject }}"></div>
-      </div>
-      {% endfor %}
 </div>
-{% if total_pages != 0 %}
-<div class="pagination-line">
-  {% if cur_page > 1 %}
-    <a class="page-change" href="?page=1"><<</a>
-    <a class="page-change" href="?page={{ cur_page - 1 }}"><</a>
-  {% endif %}
-  {% for p in pages %}
-    <a class="page-num {% if p == cur_page %}active{% endif %}" href="?page={{ p }}">{{ p }}</a>
-  {% endfor %}
-  {% if cur_page < total_pages %}
-    <a class="page-change" href="?page={{ cur_page + 1 }}">></a>
-    <a class="page-change" href="?page={{ total_pages }}">>></a>
-  {% endif %}
-</div>
-{% endif %}
 {% endblock %}
 
 {% block popup_window %}
@@ -79,9 +39,9 @@
             <div class="ajax-icon warning"></div>
             <div class="delete-confirm-message">Are you sure to delete the following message(s)?</div>
             <div class="delete-target-name">sdf</div>
-            <div class="delete-buttons-line container">
-                <input class="inline-button special delete-button" type="button" value="Delete">
+            <div class="delete-buttons-line">
                 <div class="inline-button delete-button">Cancel</div>
+                <input class="inline-button special delete-button" type="button" value="Delete">
             </div>
         </div>
     </div>

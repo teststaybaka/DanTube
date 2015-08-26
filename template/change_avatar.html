@@ -1,17 +1,24 @@
-{% extends "template/account.html" %}
+{% extends "template/account_base.html" %}
 {% block head %}
 {{ super() }}
-<script src="/static/jquery.Jcrop.min.js" language="JavaScript" type="text/javascript"></script>
-<script src="/static/change_avatar.js" language="JavaScript" type="text/javascript"></script>
 <link rel="stylesheet" href="/static/jquery.Jcrop.min.css" type="text/css" />
 <link rel="stylesheet" href="/static/change_avatar.css" type="text/css" />
+<script src="/static/jquery.Jcrop.min.js" language="JavaScript" type="text/javascript"></script>
+<script src="/static/change_avatar.js" language="JavaScript" type="text/javascript"></script>
 {% endblock %}
 
-{% block overview_active %}{% endblock %}
-{% block change_avatar_active %}active{% endblock %}
+{% block setting_active %}active{% endblock %}
 
 {% block topTitle %}
-<a class="top-title active" href="">
+<a class="top-title" href="{{ uri_for('change_info') }}">
+    <div class="top-title-dot"></div>
+    Basic
+</a>
+<a class="top-title" href="{{ uri_for('change_password') }}">
+    <div class="top-title-dot"></div>
+    Password
+</a>
+<a class="top-title active" href="{{ uri_for('change_avatar') }}">
     <div class="top-title-dot"></div>
     Avatar
 </a>
@@ -21,9 +28,9 @@
 <div id="avatar-container" class="container">
   <div id="avatar-edit">
     <div id="avatar-crop-canvas">
-      <div id="image-upload-hint">Select an image smaller than 50MB. Safe file type: jpg, gif, png. <br><br>Note: Animated image is not surpported.</div>
+      <div id="image-upload-hint" class="vertical-align-relative">Select an image smaller than 50MB. Safe file type: jpg, gif, png. <br><br>Note: Animated image is not surpported.</div>
     </div>
-    <form method="post" id="avatar-upload-form" enctype="multipart/form-data" class="change container">
+    <form method="post" id="avatar-upload-form" enctype="multipart/form-data" class="change">
       <div id="file-input-line">
         <input type="file" name="upload-avatar" class="file" id="upload-avatar">
         <input type="text" class="normal-input" id="upload-file-text" placeholder="Select an image">
@@ -31,7 +38,7 @@
         <div class="input-error" id="file-error">Please select an image.</div>
       </div>
       <input class="save_change-button" type="submit" value="Save Change" />
-      <div id="change-applying"></div>
+      <div id="change-applying" class="loading hidden"></div>
     </form>
   </div>
   <div id="avatar-preview">

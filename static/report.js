@@ -72,14 +72,14 @@ $(document).ready(function() {
 
     $('#report-submission-form').submit(function(evt) {
         evt.preventDefault();
-        $('#change-applying').addClass('show');
+        $('#change-applying').removeClass('hidden');
 
         var button = document.querySelector('input.save_change-button');
         button.disabled = true;
 
         if (!is_vid_valid) {
             button.disabled = false;
-            $('#change-applying').removeClass('show');
+            $('#change-applying').addClass('hidden');
             return false;
         }
 
@@ -98,13 +98,13 @@ $(document).ready(function() {
                         window.location.reload(); 
                     }, 3000);
                 }
-                $('#change-applying').removeClass('show');
+                $('#change-applying').addClass('hidden');
             },
             error: function (xhr, ajaxOptions, thrownError) {
                 console.log(xhr.status);
                 console.log(thrownError);
                 button.disabled = false;
-                $('#change-applying').removeClass('show');
+                $('#change-applying').addClass('hidden');
                 dt.pop_ajax_message(xhr.status+' '+thrownError, 'error');
             }
         });

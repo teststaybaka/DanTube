@@ -1,72 +1,57 @@
 (function(dt, $) {
-function new_password_check(new_pw) {
+    function new_password_check() {
+    var new_pw = $("#new-password").val();
+    var confirm_pw = $('#confirm-password').val();
+
+    var no_error = true;
     if (!new_pw) {
         $('#new-password-error').addClass('show');
         $('#new-password-error').text('Please enter a new password.');
         $("#new-password").addClass('error');
-        return false;
+        no_error &= false;
     } else if (!new_pw.trim()) {
         $('#new-password-error').addClass('show');
         $('#new-password-error').text('Password can\'t be all spaces.');
         $("#new-password").addClass('error');
-        return false;
+        no_error &= false;
     } else if (new_pw.length < 6) {
         $('#new-password-error').addClass('show');
         $('#new-password-error').text('Password must contain at least 6 characters.');
         $("#new-password").addClass('error');
-        return false;
+        no_error &= false;
     } else if (new_pw.length > 40) {
         $('#new-password-error').addClass('show');
         $('#new-password-error').text('Password can\'t exceed 40 characters.');
         $("#new-password").addClass('error');
-        return false;
+        no_error &= false;
     } else {
         $('#new-password-error').removeClass('show');
         $("#new-password").removeClass('error');
-        return true;
+        no_error &= true;
     }
-}
 
-function confirm_password_check(confirm_pw) {
-    var new_pw = $("#new-password")[0].value;
     if (confirm_pw != new_pw) {
         $('#confirm-password-error').addClass('show');
         $('#confirm-password-error').text('Password doesn\'t match.');
         $("#confirm-password").addClass('error');
-        return false;
+        no_error &= false;
     } else {
         $('#confirm-password-error').removeClass('show');
         $("#confirm-password").removeClass('error');
-        return true;
+        no_error &= true;
     }
+    return no_error;
 }
 
 $(document).ready(function() {
-    $("#new-password").focusout(function(evt) {
-        var new_pw = evt.target.value;
-        new_password_check(new_pw);
-    });
-
-    $("#confirm-password").focusout(function(evt) {
-        var confirm_pw = evt.target.value;
-        confirm_password_check(confirm_pw);
-    });
+    $("#new-password").focusout(new_password_check);
+    $("#confirm-password").focusout(new_password_check);
 
     $('#resetpasswordform').submit(function(evt) {
         var button = document.querySelector('#resetpasswordform input[type="submit"]');
         button.disabled = true;
 
-        var new_pw = $("#new-password")[0].value;
-        var confirm_pw = $("#confirm-password")[0].value;
-
-        var error = false;
-        if (!new_password_check(new_pw)) {
-            error = true;
-        }
-        if (!confirm_password_check(confirm_pw)) {
-            error = true;
-        }
-        if (error) {
+        if (!new_password_check()) {
             button.disabled = false;
             return false;
         }
@@ -74,7 +59,7 @@ $(document).ready(function() {
         $.ajax({
             type: "POST",
             url: window.location,
-            data: {new_password: new_pw},
+            data: $('#resetpasswordform').serialize(),
             success: function(result) {
                 console.log(result);
                 if(!result.error) {

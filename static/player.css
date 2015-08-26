@@ -100,7 +100,8 @@ div.danmaku {
 }
 
 #backward-button, #forward-button {
-	float: left;
+	display: inline-block;
+	vertical-align: middle;
 	height: 100%;
 	width: 40px;
 	background-image: url("/static/img/player_icons.png");
@@ -131,8 +132,9 @@ div.danmaku {
 	background-position: 0 -1137px;
 }
 
-#play-pause-button.play, #play-pause-button.pause {
-	float: left;
+#play-pause-button {
+	display: inline-block;
+	vertical-align: middle;
 	height: 100%;
 	width: 40px;
 	background-position: 0 -630px;
@@ -236,10 +238,7 @@ div.danmaku {
 
 #progress-number {
 	display: inline-block;
-	float: left;
-	-webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
-	-moz-box-sizing: border-box;    /* Firefox, other Gecko */
-	box-sizing: border-box;
+	vertical-align: middle;
 	font-size: 14px;
 	line-height: 25px;
 	text-align: left;
@@ -828,10 +827,6 @@ div.danmaku-type-text {
 	color: rgb(100,100,100);
 }
 
-.danmaku-share.check-label {
-	margin: 5px;
-}
-
 #danmaku-input-container {
 	vertical-align: top;
 	display: inline-block;
@@ -1154,6 +1149,10 @@ div.bullet-date-value {
 	margin: 7px 10px;
 }
 
+.player-full-setting-line.buttons-line {
+	text-align: right;
+}
+
 .player-full-setting-line label {
 	font-size: 14px;
 	vertical-align: middle;
@@ -1397,37 +1396,40 @@ div.bullet-date-value {
 	border-bottom: 1px solid rgb(200,200,200);
 }
 
-a.category-link {
-	float: left;
+.category-link {
 	color: rgb(100,100,100);
+	display: inline-block;
+	vertical-align: middle;
 }
 
-a.cur-subcategory {
+.cur-subcategory {
 	font-weight: bold;
 	color: rgb(0,140,255);
 }
 
-div.category-arrow {
-	float: left;
+.category-arrow {
 	display: inline-block;
+	vertical-align: middle;
 	width: 8px;
 	height: 8px;
 	background-position: 0 0;
     background-image: url("/static/img/basic_icons.png");
-	margin: 4px 5px;
+    margin: 0 5px;
 }
 
-div.video-date {
-	float: left;
+.video-date {
 	margin: 0 5px;
+	display: inline-block;
+	vertical-align: middle;
 }
 
-div.video-statistic {
-	float: left;
+.video-statistic {
 	margin-left: 10px;
+	display: inline-block;
+	vertical-align: middle;
 }
 
-span.statistic-icon {
+.statistic-icon {
 	width: 10px;
 	height: 10px;
 	display: inline-block;
@@ -1435,26 +1437,27 @@ span.statistic-icon {
 	background-image: url("/static/img/basic_icons.png");
 }
 
-span.statistic-icon.views {
+.statistic-icon.views {
 	background-position: 0 -182px;
 }
 
-span.statistic-icon.comment {
+.statistic-icon.comment {
 	background-position: 0 -162px;
 }
 
-span.statistic-icon.bullets {
+.statistic-icon.bullets {
 	background-position: 0 -152px;
 }
 
-span.statistic-icon.favorites {
+.statistic-icon.likes {
 	background-position: 0 -172px;
 }
 
 #uploader-img {
 	width: 64px;
 	height: 64px;
-	box-shadow: 0 0 1px rgb(100,100,100);
+	display: inline-block;
+	vertical-align: top;
 }
 
 #uploader-info-box {
@@ -1499,9 +1502,12 @@ span.statistic-icon.favorites {
 	width: 219px;
 }
 
+.video-parts-container {
+	font-size: 0;
+}
+
 a.episode-link {
 	font-weight: normal;
-	float: left;
 	word-wrap: break-word;
 	-webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
     -moz-box-sizing: border-box;    /* Firefox, other Gecko */
@@ -1574,29 +1580,6 @@ a.tags-link:hover {
 	vertical-align: top;
 }
 
-@-webkit-keyframes left_to_right_show {
-    from {opacity: 0;
-        -ms-transform: translateX(-15px); /* IE 9 */
-        -webkit-transform: translateX(-15px); /* Chrome, Safari, Opera */
-        transform: translateX(-15px); }
-    to {opacity: 1;
-        -ms-transform: translateX(0); /* IE 9 */
-        -webkit-transform: translateX(0); /* Chrome, Safari, Opera */
-        transform: translateX(0); }
-}
-
-/* Standard syntax */
-@keyframes left_to_right_show {
-    from {opacity: 0;
-        -ms-transform: translateX(-15px); /* IE 9 */
-        -webkit-transform: translateX(-15px); /* Chrome, Safari, Opera */
-        transform: translateX(-15px); }
-    to {opacity: 1;
-        -ms-transform: translateX(0); /* IE 9 */
-        -webkit-transform: translateX(0); /* Chrome, Safari, Opera */
-        transform: translateX(0); }
-}
-
 input.add-new-tag-input {
 	position: absolute;
 	padding-top: 2px;
@@ -1635,33 +1618,40 @@ div.add-new-tag-button:active {
 	box-shadow: inset 0 0 4px rgb(200,200,200);
 }
 
-#video-intro-box {
-	margin: 10px 10px 20px 10px;
+.intro-box {
+	padding-bottom: 5px;
+	margin: 10px 10px 10px 10px;
+}
+
+.intro-box.sub {
+	margin-top: -10px;
+	padding-top: 5px;
+	border-top: 1px solid rgb(230,230,230);
+}
+
+.intro-content {
 	font-size: 14px;
 	color: rgb(100,100,100);
 	word-wrap: break-word;
 	white-space: pre-wrap;
-	/*border-bottom: 1px solid rgb(220,220,220);*/
 	overflow: hidden;
 	-webkit-transition: height .15s; /* For Safari 3.1 to 6.0 */
     transition: height .15s;
     line-height: 16px;
 }
 
-div.display-button.intro {
-	position: absolute;
-	margin-left: 10px;
+.display-button.intro {
+	display: inline-block;
 	font-size: 12px;
 	color: rgb(150,150,150);
-	margin-top: -20px;
 	cursor: pointer;
 }
 
-div.display-button.intro:hover {
+.display-button.intro:hover {
 	color: rgb(100,100,100);
 }
 
-div.display-button.comment {
+.display-button.comment {
 	cursor: pointer;
 	font-size: 14px;
 	color: rgb(0,140,255);
@@ -1669,19 +1659,22 @@ div.display-button.comment {
 	display: inline-block;
 }
 
-div.display-button.comment:hover {
+.display-button.comment:hover {
 	text-decoration: underline;
 }
 
-div.display-button.replies {
+.display-button-line.replies {
+	text-align: center;
+	margin-top: 5px;
+}
+
+.display-button.replies {
 	cursor: pointer;
 	font-size: 14px;
 	color: rgb(0,140,255);
-	margin-top: 5px;
-	display: inline-block;
 }
 
-div.display-button.replies:hover {
+.display-button.replies:hover {
 	text-decoration: underline;
 }
 
@@ -1695,19 +1688,19 @@ span.display-arrow {
 	vertical-align: middle;
 }
 
-div.display-button:hover span.display-arrow {
+.display-button:hover span.display-arrow {
 	background-position: 0 -865px;
 }
 
-div.display-button.less span.display-arrow {
+.display-button.less span.display-arrow {
 	background-position: -14px -855px;
 }
 
-div.display-button.less:hover span.display-arrow {
+.display-button.less:hover span.display-arrow {
 	background-position: -14px -865px;
 }
 
-div.operation-button {
+.operation-button {
 	float: right;
 	color: rgb(100,100,100);
 	font-size: 14px;
@@ -1719,7 +1712,7 @@ div.operation-button {
     margin: 5px;
 }
 
-div.operation-button:hover {
+.operation-button:hover {
 	background-color: rgb(245,245,245);
 }
 
@@ -1748,6 +1741,14 @@ span.operation-icon.share {
 	background-position: 0 -1073px;
 }
 
+.operation-button.liked {
+	color: rgb(0,140,255);
+}
+
+.operation-button.liked span.operation-icon.like {
+	background-position: 0 -828px;
+}
+
 #comments-block-title {
 	color: rgb(100,100,100);
 	font-size: 18px;
@@ -1761,12 +1762,11 @@ span.operation-icon.share {
 	padding-left: 10px;
 }
 
-img.comment-img {
+.comment-img {
 	display: inline-block;
-	width: 64px;
-	height: 64px;
-	box-shadow: 0 0 1px rgb(100,100,100);
-	vertical-align: text-top;
+	width: 48px;
+	height: 48px;
+	vertical-align: top;
 }
 
 div.write-comment-block {
@@ -1789,10 +1789,7 @@ div.write-comment-block {
 }
 
 input.inline-button.post {
-	margin-top: 10px;
-	margin-right: 0;
 	float: right;
-	text-align: center;
 	width: 64px;
 }
 
@@ -1804,7 +1801,7 @@ div.inner-comment-container {
 	margin-top: 10px;
 	margin-left: 58px;
 	margin-right: 20px;
-	border-top: 1px solid rgb(220,220,220);
+	border-top: 1px solid rgb(230,230,230);
 }
 
 div.inner-comment-container:empty {
@@ -1814,14 +1811,14 @@ div.inner-comment-container:empty {
 div.comment-entry {
 	padding: 10px 0;
 	font-size: 0;
-	border-bottom: 1px solid rgb(220,220,220);
+	border-bottom: 1px solid rgb(230,230,230);
 }
 
 div.comment-entry.inner:last-child {
 	border-bottom: 0;
 }
 
-div.comment-entry.no-comment {
+div.comment-entry.none {
 	padding: 50px;
 	text-align: center;
 	color: rgb(150,150,150);
@@ -1832,16 +1829,6 @@ div.comment-entry.no-comment {
 div.comment-entry.loading {
     height: 100px;
     border-bottom: 0;
-}
-
-div.comment-entry.error {
-	cursor: pointer;
-}
-
-img.comment-img {
-	width: 48px;
-	height: 48px;
-	box-shadow: 0 0 1px rgb(100,100,100);
 }
 
 div.comment-detail-box {
@@ -1878,11 +1865,7 @@ div.comment-content {
 	font-size: 14px;
 	color: rgb(50,50,50);
 	line-height: 16px;
-}
-
-div.comment-content.collapse {
 	overflow: hidden;
-	height: 48px;
 	-webkit-transition: height .15s; /* For Safari 3.1 to 6.0 */
 	transition: height .15s;
 }
@@ -1905,15 +1888,6 @@ div.comment-detail-box:hover div.comment-operation.report {
 
 div.comment-operation:hover {
 	color: rgb(0,140,255);
-}
-
-div.pagination-line {
-	text-align: center;
-	margin: 10px 0;
-}
-
-div.pagination-line.replies:empty {
-	display: none;
 }
 
 #right-info-box {
@@ -1945,18 +1919,7 @@ div.pagination-line.replies:empty {
 
 #list-intro-wrapper {
 	border-bottom: 1px solid rgb(220,220,220);
-}
-
-#list-intro {
-	margin: 10px 10px 20px 10px;
-	color: rgb(100,100,100);
-	font-size: 14px;
-	word-wrap: break-word;
-	white-space: pre-wrap;
-	overflow: hidden;
-	-webkit-transition: height .15s; /* For Safari 3.1 to 6.0 */
-    transition: height .15s;
-    line-height: 16px;
+	padding: 10px 10px 15px 10px;
 }
 
 #list-scroll-bar {
@@ -1968,6 +1931,10 @@ a.list-entry {
 	padding: 10px 0;
 	font-size: 0;
 	display: block;
+}
+
+a.list-entry.loading {
+	padding: 30px 0;
 }
 
 div.list-entry-index {
@@ -2012,12 +1979,12 @@ a.list-entry.active {
 	box-shadow: inset 0 0 6px rgb(200,200,200);
 }
 
-div.list-entry-index.active, div.list-video-title.active {
+a.list-entry.active .list-entry-index, a.list-entry.active .list-video-title {
 	color: rgb(0,140,255);
 	position: relative;
 }
 
-div.list-entry-index.active:after {
+a.list-entry.active .list-entry-index:after {
 	content: "";
 	display: inline-block;
 	position: absolute;
@@ -2044,10 +2011,20 @@ div.list-video-statistic.comments {
 	width: 90px;
 }
 
+.list-entry.cursor {
+	text-align: center;
+	color: rgb(0,140,255);
+	font-size: 14px;
+	cursor: pointer;
+	padding: 5px 0;
+}
+
+.list-entry.cursor:hover {
+	text-decoration: underline;
+}
+
 .check-label.comment-share {
-    margin-top: 17px;
     margin-left: 10px;
-    float: left;
 }
 
 input.checkbox {
@@ -2062,9 +2039,7 @@ input.checkbox {
 	margin-top: 3px;
 	margin-left: 10px;
 	margin-right: 5px;
-	text-align: center;
 	font-weight: normal;
-	float: right;
 }
 
 .subtitle-danmaku-label {
@@ -2314,13 +2289,31 @@ textarea.report {
 	resize: none;
 }
 
+.report-buttons-line {
+	text-align: right;
+	margin-top: 10px;
+}
+
 .inline-button.report {
-	float: right;
 	font-weight: normal;
 	margin-left: 10px;
-	margin-top: 5px;
 }
 
 .report-label {
 	font-size: 14px;
+}
+
+.load-more-line {
+	font-size: 14px;
+	padding: 5px 0;
+	text-align: center;
+}
+
+.load-more-button {
+	cursor: pointer;
+	color: rgb(0,140,255);
+}
+
+.load-more-button:hover {
+	text-decoration: underline;
 }

@@ -160,7 +160,7 @@ $(document).ready(function() {
             button.disabled = true;
             $('#file-error').removeClass('show');
             $('#upload-file-text').removeClass('error');
-            $('#change-applying').addClass('show');
+            $('#change-applying').removeClass('hidden');
 
             // var canvas = document.getElementById("crop-canvas");
             // var ctx = canvas.getContext("2d");
@@ -185,7 +185,7 @@ $(document).ready(function() {
                 contentType: false,
                 processData: false,
                 success: function(result) {
-                    $('#change-applying').removeClass('show');
+                    $('#change-applying').addClass('hidden');
                     if (!result.error) {
                         // uploadImage(result.url, dataURL);
                         dt.pop_ajax_message('Change applied successfully!', 'success');
@@ -201,7 +201,7 @@ $(document).ready(function() {
                     console.log(xhr.status);
                     console.log(thrownError);
                     button.disabled = false;
-                    $('#change-applying').removeClass('show');
+                    $('#change-applying').addClass('hidden');
                     dt.pop_ajax_message(xhr.status+' '+thrownError, 'error');
                 }
             });

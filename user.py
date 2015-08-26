@@ -2,12 +2,10 @@ from views import *
 
 def host_info(handler):
     def check_host(self, user_id):
-        host_id = int(host_id)
-        host_key = self.user_model.get_key(host_id)
-        host_detail_key = models.UserDetail.get_key(host_key)
+        host_key = ndb.Key('User', int(host_id))
+        host_detail_key = models.User.get_detail_key(host_key)
         if self.user_info:
             host, host_detail, user = ndb.get_multi([host_key, host_detail_key, self.user_key])
-            self.user = user
             if not host:
                 self.notify('404 not found.', 404)
                 return
@@ -24,7 +22,7 @@ def host_info(handler):
                 host_detail.recent_visitors.pop(0)
                 host_detail.visitor_snapshots.pop(0)
             host_detail.space_visited += 1
-            host_detail.put_async()
+            host_detail.put()
         else:
             host, host_detail = ndb.get_multi([host_key, host_detail_key])
             if not host:
@@ -32,7 +30,7 @@ def host_info(handler):
                 return
 
             host_detail.space_visited += 1
-            host_detail.put_async()
+            host_detail.put()
 
         context = {}
         context['host'] = host.get_public_info()
@@ -53,7 +51,7 @@ class Space(BaseHandler):
         self.render('space', context)
 
     def post(self, user_id):
-        host_key = self.user_model.get_key(int(user_id))
+        host_key = ndb.Key('User', int(user_id))
         page_size = models.STANDARD_PAGE_SIZE
         
         cursor = models.Cursor(urlsafe=self.request.get('cursor'))
@@ -61,7 +59,7 @@ class Space(BaseHandler):
         
         context = {
             'videos': [],
-            'cursor': cursor.urlsafe() if cursor else None,
+            'cursor': cursor.urlsafe() if more else '',
         }
         for i in xrange(0, len(videos)):
             video = videos[i]
@@ -76,15 +74,15 @@ class SpacePlaylist(BaseHandler):
         self.render('space_playlist', context)
 
     def post(self, user_id):
-        host_key = self.user_model.get_key(int(user_id))
+        host_key = ndb.Key('User', int(user_id))
         page_size = models.STANDARD_PAGE_SIZE
 
         cursor = models.Cursor(urlsafe=self.request.get('cursor'))
-        playlists, cursor, more = models.PlayList.query(models.PlayList.creator==host_key).order(-models.PlayList.modified).fetch_page(page_size, start_cursor=cursor)
+        playlists, cursor, more = models.Playlist.query(models.Playlist.creator==host_key).order(-models.Playlist.modified).fetch_page(page_size, start_cursor=cursor)
 
         context = {
             'playlists': [],
-            'cursor': cursor.urlsafe() if cursor else None,
+            'cursor': cursor.urlsafe() if more else '',
         }
         for i in xrange(0, len(playlists)):
             playlist = playlists[i]
@@ -99,7 +97,7 @@ class FeaturedUpers(BaseHandler):
         self.render('space_upers', context)
 
     def post(self, user_id):
-        host_key = self.user_model.get_key(int(user_id))
+        host_key = ndb.Key('User', int(user_id))
         page_size = models.MEDIUM_PAGE_SIZE
 
         cursor = models.Cursor(urlsafe=self.request.get('cursor'))
@@ -113,7 +111,7 @@ class FeaturedUpers(BaseHandler):
 
         context = {
             'upers': [],
-            'cursor': cursor.urlsafe() if cursor else None,
+            'cursor': cursor.urlsafe() if more else '',
         }
         for i in xrange(0, len(upers)):
             uper = upers[i]
@@ -130,12 +128,12 @@ class Subscribe(BaseHandler):
     @login_required_json
     def post(self, user_id):
         user_key = self.user_key
-        host_key = self.user_model.get_key(int(user_id))
+        host_key = ndb.Key('User', int(user_id))
         if user_key == host_key:
             self.json_response(True, {'message': 'You can\'t subscribe to yourself.'})
             return
 
-        host = host_key.get()
+        host, user_detail = ndb.get_multi([host_key, models.User.get_detail_key(user_key)])
         if not host:
             self.json_response(True, {'message': 'User not found.'})
             return
@@ -143,7 +141,8 @@ class Subscribe(BaseHandler):
         is_new = models.Subscription.unique_create(host.key, user_key)
         if is_new:
             host.subscribers_counter += 1
-            host.put_async()
+            user_detail.subscription_counter += 1
+            ndb.put_multi([host, user_detail])
 
         self.json_response(False)
 
@@ -151,13 +150,15 @@ class Unsubscribe(BaseHandler):
     @login_required_json
     def post(self, user_id):
         user_key = self.user_key
-        host_key = self.user_model.get_key(int(user_id))
+        host_key = ndb.Key('User', int(user_id))
 
         subscription = models.Subscription.query(models.Subscription.uper==host_key, ancestor=user_key).get(keys_only=True)
         if subscription:
-            subscription.delete_async()
-            host = host_key.get()
+            host, user_detail = ndb.get_multi([host_key, models.User.get_detail_key(user_key)])
             host.subscribers_counter -= 1
-            host.put_async()
+            user_detail.subscription_counter -= 1
+            logging.info(user_detail.subscription_counter)
+            ndb.put_multi([host, user_detail])
+            subscription.delete()
 
         self.json_response(False)
