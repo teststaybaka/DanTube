@@ -93,7 +93,7 @@ class UserDetail(ndb.Model):
   spacename = ndb.StringProperty(indexed=False)
   css_file = ndb.BlobKeyProperty(indexed=False)
   recent_visitors = ndb.KeyProperty(kind='User', repeated=True, indexed=False)
-  visitor_snapshopts = ndb.LocalStructuredProperty(UserSnapshot, repeated=True, indexed=False)
+  visitor_snapshots = ndb.LocalStructuredProperty(UserSnapshot, repeated=True, indexed=False)
   bullets = ndb.IntegerProperty(required=True, default=0, indexed=False)
   playlists_created = ndb.IntegerProperty(required=True, default=0, indexed=False)
   subscription_counter = ndb.IntegerProperty(required=True, default=0, indexed=False)
@@ -125,7 +125,7 @@ class UserDetail(ndb.Model):
     visitor_info = {'visitors': []}
     for i in reversed(xrange(0, len(self.recent_visitors))):
       visitor_key = self.recent_visitors[i]
-      visitor = self.visitor_snapshopts[i]
+      visitor = self.visitor_snapshots[i]
       info = visitor.get_snapshot_info(visitor_key)
       visitor_info['visitors'].append(info)
     return visitor_info
@@ -725,8 +725,8 @@ class Video(ndb.Model):
     self.duration = 0
     self.thumbnail_url_hq = '/static/img/video_deleted.png'
     self.uploader = None
-    self.updated = datetime.min
-    self.created = datetime.min
+    self.updated = None
+    self.created = None
     self.hot_score = None
     self.put()
     # self.key.delete()

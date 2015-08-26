@@ -1,31 +1,7 @@
-{% extends "template/space.html" %}
-
+{% extends "template/space_base.html" %}
 {% block head %}
 {{ super() }}
+<script src="/static/space_playlist.js" language="JavaScript" type="text/javascript"></script>
 {% endblock %}
 
-{% block videos_active %}{% endblock %}
 {% block playlists_active %}active{% endblock %}
-
-{% block left_body %}
-{% if total_pages == 0 %}
-<div class="content-entry none">
-    No playlists found.
-</div>
-{% endif %}
-{% for playlist in playlists %}
-<div class="content-entry">
-    <a class="video-img" {% if playlist.url %}href="{{ playlist.url }}"{% endif %} target="_blank">
-        <img class="video-img" src="{{ playlist.thumbnail_url }}">
-        <div class="video-num-box">
-            <div class="video-num">{{ playlist.videos_num }}</div>
-            <div class="video-num">Video{% if playlist.videos_num > 1 %}s{% endif %}</div>
-        </div>
-    </a>
-    <div class="video-info">
-        <a {% if playlist.url %}href="{{ playlist.url }}"{% endif %} class="video-title playlist" target="_blank">{{ playlist.title }}</a>
-        <div class="video-intro">{{ playlist.intro }}</div>
-    </div>
-</div>
-{% endfor %}
-{% endblock %}

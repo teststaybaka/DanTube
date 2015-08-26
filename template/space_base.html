@@ -1,0 +1,64 @@
+{% extends "template/base.html" %}
+
+{% block page_title %}
+{% if host.spacename %}{{ host.spacename }}{% else %}{{ host.nickname }}'s Space{% endif %}
+{% endblock %}
+
+{% block head %}
+{{ super() }}
+<link rel="stylesheet" href="/static/space.css" type="text/css" />
+{% if host.space_css %}
+<link rel="stylesheet" href="{{ uri_for('space_css', resource=host.space_css) }}" type="text/css" />
+{% endif %}
+{% endblock %}
+
+{% block navigation %}
+<div id="space-navigation-background">
+  <div id="space-navigation" class="container">
+    <div id="space-title">{% if host.spacename %}{{ host.spacename }}{% else %}{{ host.nickname }}'s Space{% endif %}</div>
+    <div id="navi-link-line">
+      <a class="space-navi-link {% block videos_active %}{% endblock %}" href="{{ uri_for('space_home', user_id=host.id) }}">Videos</a>
+      <a class="space-navi-link {% block playlists_active %}{% endblock %}" href="{{ uri_for('space_playlist', user_id=host.id) }}">Playlists</a>
+      <a class="space-navi-link {% block upers_active %}{% endblock %}" href="{{ uri_for('featured_upers', user_id=host.id) }}">UPers</a>
+      <a class="space-navi-link back" href="{{ uri_for('home') }}">Back</a>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block body %}
+<div id="space-list-container">
+</div>
+<div id="uper-info-box">
+  <img id="uper-img" src="{{ host.avatar_url }}">
+  <div class="uper-buttons-line">
+    <a class="inline-button host" href="{{ uri_for('message_compose') }}?to={{ host.nickname }}">Send Message</a>
+    <div class="inline-button host subscribe-button {% if host.subscribed %}unsubscribe{% endif %}" data-id="{{ host.id }}"><span class="subscribe-icon"></span><span class="subscribe-text">{% if host.subscribed %}Subscribed{% else %}Subscribe{% endif %}</span></div>
+  </div>
+  <div id="uper-intro">{% if host.intro %}{{ host.intro }}{% else %}This UPer is too lazy to speak.{% endif %}</div>
+  <div id="uper-statistic">
+    <div class="uper-statistic-entry">
+      <label class="uper-statistic-label">Views:</label>
+      <div class="uper-statistic-content"><span class="commas_number">{{ host.videos_watched }}</span></div>
+    </div>
+    <div class="uper-statistic-entry">
+      <label class="uper-statistic-label">Videos:</label>
+      <div class="uper-statistic-content"><span class="commas_number">{{ host.videos_submitted }}</span></div>
+    </div>
+    <div class="uper-statistic-entry">
+      <label class="uper-statistic-label">Subscribers:</label>
+      <div class="uper-statistic-content"><span class="commas_number">{{ host.subscribers_counter }}</span></div>
+    </div>
+  </div>
+  <div id="recent-visiter-box">
+    <div id="visiter-line">Recent visiters</div>
+    <div id="recent-visiter-list" class="container">
+      {% for visitor in host.visitors %}
+      <a class="visiter-img" href="{{ visitor.space_url }}" target="_blank">
+        <img class="visiter-img" src="{{ visitor.avatar_url_small }}" title="{{ visitor.nickname }}">
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}

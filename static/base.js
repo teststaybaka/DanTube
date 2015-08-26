@@ -476,9 +476,6 @@ dt.loadNextPage = function(url, params, before_callback, success_callback, failu
             isOver[key] = !result.cursor;
             isLoading[key] = false;
             success_callback(result, isOver[key]);
-
-            register_subscribe_button_hover();
-            register_subscribe_button_action();
         },
         error: function (xhr, ajaxOptions, thrownError) {
             isLoading[key] = false;
@@ -532,6 +529,8 @@ dt.scrollUpdate = function(url, params, element_class, container, callback, fini
         } else {
             dt.registerPageCollapse(div, container, not_use_page_number);
             if (finish_callback) finish_callback();
+            register_subscribe_button_hover();
+            register_subscribe_button_action();
         }
     }
 

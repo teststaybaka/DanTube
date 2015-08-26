@@ -2,27 +2,29 @@ from views import *
 
 def host_info(handler):
     def check_host(self, user_id):
-        host_key = ndb.Key('User', int(host_id))
+        host_key = ndb.Key('User', int(user_id))
         host_detail_key = models.User.get_detail_key(host_key)
         if self.user_info:
             host, host_detail, user = ndb.get_multi([host_key, host_detail_key, self.user_key])
+            self.user = user
             if not host:
                 self.notify('404 not found.', 404)
                 return
 
-            try:
-                index = host_detail.recent_visitors.index(user.key)
-                host_detail.recent_visitors.pop(index)
-                host_detail.visitor_snapshots.pop(index)
-            except ValueError:
-                logging.info('not found')
-            host_detail.recent_visitors.append(user.key)
-            host_detail.visitor_snapshots.append(user.create_snapshot())
-            if len(host_detail.recent_visitors) > 8:
-                host_detail.recent_visitors.pop(0)
-                host_detail.visitor_snapshots.pop(0)
-            host_detail.space_visited += 1
-            host_detail.put()
+            if host.key != user.key:
+                try:
+                    index = host_detail.recent_visitors.index(user.key)
+                    host_detail.recent_visitors.pop(index)
+                    host_detail.visitor_snapshots.pop(index)
+                except ValueError:
+                    logging.info('not found')
+                host_detail.recent_visitors.append(user.key)
+                host_detail.visitor_snapshots.append(user.create_snapshot())
+                if len(host_detail.recent_visitors) > 8:
+                    host_detail.recent_visitors.pop(0)
+                    host_detail.visitor_snapshots.pop(0)
+                host_detail.space_visited += 1
+                host_detail.put()
         else:
             host, host_detail = ndb.get_multi([host_key, host_detail_key])
             if not host:
@@ -101,11 +103,13 @@ class FeaturedUpers(BaseHandler):
         page_size = models.MEDIUM_PAGE_SIZE
 
         cursor = models.Cursor(urlsafe=self.request.get('cursor'))
-        uper_keys, cursor, more = models.Subscription.query(ancestor=host_key).order(-models.Subscription.score).fetch_page(page_size, start_cursor=cursor, projection=['uper'])
+        subscriptions, cursor, more = models.Subscription.query(ancestor=host_key).order(-models.Subscription.score).fetch_page(page_size, start_cursor=cursor, projection=['uper'])
+        uper_keys = [subscription.uper for subscription in subscriptions]
         upers = ndb.get_multi(uper_keys)
 
         if self.user_info:
-            subscribed_keys = models.Subscription.query(ancestor=self.user_key).order(-models.Subscription.score).fetch(projection=['uper'])
+            subscriptions = models.Subscription.query(ancestor=self.user_key).order(-models.Subscription.score).fetch(projection=['uper'])
+            subscribed_keys = [subscription.uper for subscription in subscriptions]
         else:
             subscribed_keys = []
 
@@ -138,7 +142,13 @@ class Subscribe(BaseHandler):
             self.json_response(True, {'message': 'User not found.'})
             return
 
-        is_new = models.Subscription.unique_create(host.key, user_key)
+        try:
+            is_new = models.Subscription.unique_create(host.key, user_key)
+        except TransactionFailedError, e:
+            logging.error('Subscription unique creation failed!!!')
+            self.json_response(True, {'message': 'Subscription error. Please try again.'})
+            return
+
         if is_new:
             host.subscribers_counter += 1
             user_detail.subscription_counter += 1

@@ -52,9 +52,9 @@ routes = [
     webapp2.Route(r'/account/notifications/read', message.ReadNotification, name='read_note'),
     webapp2.Route(r'/account/notifications/delete', message.DeleteNotifications, name='delete_note'),
 
-    # webapp2.Route(r'/user/<user_id:\d+>', user.Space, name='space_home'),
-    # webapp2.Route(r'/user/playlist/<user_id:\d+>', user.SpacePlaylist, name='space_playlist'),
-    # webapp2.Route(r'/user/upers/<user_id:\d+>', user.FeaturedUpers, name='featured_upers'),
+    webapp2.Route(r'/user/<user_id:\d+>', user.Space, name='space_home'),
+    webapp2.Route(r'/user/playlists/<user_id:\d+>', user.SpacePlaylist, name='space_playlist'),
+    webapp2.Route(r'/user/upers/<user_id:\d+>', user.FeaturedUpers, name='featured_upers'),
     webapp2.Route(r'/user/subscribe/<user_id:\d+>', user.Subscribe, name='subscribe'),
     webapp2.Route(r'/user/unsubscribe/<user_id:\d+>', user.Unsubscribe, name='unsubscribe'),
 

@@ -2457,6 +2457,8 @@ $(document).ready(function() {
 					if (!result.error) {
 						button.removeClass('liked');
 						button.find('.commas_number').text(parseInt(dt.numberWithCommas(button.find('.commas_number').text()) - 1));
+					} else if (result.message) {
+						dt.pop_ajax_message(result.message, 'error');
 					}
 				},
 	            error: function (xhr, ajaxOptions, thrownError) {
@@ -2473,6 +2475,8 @@ $(document).ready(function() {
 					if (!result.error) {
 						button.addClass('liked');
 						button.find('.commas_number').text(parseInt(dt.numberWithCommas(button.find('.commas_number').text()) + 1));
+					} else if (result.message) {
+						dt.pop_ajax_message(result.message, 'error');
 					}
 				},
 	            error: function (xhr, ajaxOptions, thrownError) {

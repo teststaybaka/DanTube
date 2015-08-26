@@ -286,7 +286,10 @@ class VideoUpload(BaseHandler):
                 tags=self.tags,
                 allow_tag_add=self.allow_tag_add
             )
-        except models.TransactionFailedError:
+        except TransactionFailedError:
+            logging.error('Video submitted failed!!!')
+            if self.thumbnail_key:
+                models.blobstore.BlobInfo(self.thumbnail_key).delete()
             self.json_response(True, {'message': 'Video uploading error. Please try again.'})
             return
 

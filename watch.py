@@ -103,21 +103,21 @@ class Video(BaseHandler):
         if video.uploader_snapshot.to_dict() != snapshot.to_dict():
             video.uploader_snapshot = snapshot
             change_snapshot = True
-            
+
         # check video status for user
         if self.user_info:
             self.user = user = self.user_key.get()
             try:
                 record, is_new_hit = models.ViewRecord.get_or_create(user.key, video.key)
+            except TransactionFailedError, e:
+                is_new_hit = False
+                logging.error('View record get/create failed!')
+            else:
                 if record.clip_index < clip_index:
                     record.clip_index = clip_index
-                    record.put()
                 if not is_new_hit:
                     record.created = datetime.now()
-                    record.put()
-            except Exception, e:
-                is_new_hit = False
-                logging.warning('View record get/create failed!')
+                record.put()
 
             video_info['watched'] = not is_new_hit
             video_info['liked'] = bool(models.LikeRecord.query(models.LikeRecord.video==video.key, ancestor=self.user_key).get(keys_only=True))
@@ -307,8 +307,8 @@ class Comment(BaseHandler):
         allow_share = bool(self.request.get('allow-post-comment'))
         try:
             comment = models.Comment.CreateComment(user=user, video=video, content=content, allow_share=allow_share)
-        except Exception, e:
-            logging.info(str(e))
+        except TransactionFailedError, e:
+            logging.error('Comment post failed!!!!!')
             self.json_response(True, {'message': 'Post failed. Please try again.'})
             return
 
@@ -343,12 +343,12 @@ class Comment(BaseHandler):
             return
 
         allow_share = bool(self.request.get('allow-post-reply'))
-        # try:
-        inner_comment = models.Comment.CreateInnerComment(user=user, comment=comment, content=content, allow_share=allow_share)
-        # except Exception, e:
-        #     logging.warning('Commne post failed!!!!!')
-        #     self.json_response(True, {'message': 'Post failed. Please try again.'})
-        #     return
+        try:
+            inner_comment = models.Comment.CreateInnerComment(user=user, comment=comment, content=content, allow_share=allow_share)
+        except TransactionFailedError, e:
+            logging.error('Comment reply post failed!!!!!')
+            self.json_response(True, {'message': 'Post failed. Please try again.'})
+            return
 
         models.MentionedRecord.Create(users, inner_comment.key)
         self.json_response(False)
@@ -444,8 +444,8 @@ class Danmaku(BaseHandler):
 
         try:
             danmaku_pool = clip.get_lastest_danmaku_pool()
-        except Exception, e:
-            logging.info(str(e))
+        except TransactionFailedError, e:
+            logging.error('Danmaku post failed!!!')
             self.json_response(True, {'message': 'Danmaku post error. Please try again.'})
             return
 
@@ -538,8 +538,8 @@ class Danmaku(BaseHandler):
 
         try:
             advanced_danmaku_pool = clip.get_advanced_danmaku_pool()
-        except Exception, e:
-            logging.info(e)
+        except TransactionFailedError, e:
+            logging.error('Advanced danmaku post failed!!!')
             self.json_response(True, {'message': 'Advanced danmaku post error. Please try again.'})
             return
         if len(advanced_danmaku_pool.danmaku_list) >= 1000:
@@ -586,7 +586,7 @@ class Danmaku(BaseHandler):
         user_key = self.user_key
         try:
             timestamp = float(self.request.get('timestamp'))
-        except Exception, e:
+        except ValueError, e:
             self.json_response(True, {'message': 'Invalid timestamp.'})
             return
 
@@ -601,7 +601,8 @@ class Danmaku(BaseHandler):
 
         try:
             code_danmaku_pool = clip.get_code_danmaku_pool()
-        except Exception, e:
+        except TransactionFailedError, e:
+            logging.error('Code danmaku post failed!!!')
             self.json_response(True, {'message': 'Code danmaku post error. Please try again.'})
             return
         if len(code_danmaku_pool.danmaku_list) >= 1000:
@@ -660,8 +661,10 @@ class Danmaku(BaseHandler):
         subtitle_danmaku_pool.put()
         try:
             clip.append_new_subtitles(name, subtitle_danmaku_pool.key)
-        except:
-            self.json_response(True, {'message': 'Subtitles post error. Please try again.'})
+        except TransactionFailedError, e:
+            logging.error('Subtitles post failed!!!')
+            subtitle_danmaku_pool.key.delete_async()
+            self.json_response(True, {'message': 'Subtitles submit error. Please try again.'})
             return
 
         user, video = ndb.get_multi([user_key, clip.key.parent()])
@@ -696,8 +699,13 @@ class Like(BaseHandler):
         if not video or video.deleted:
             self.json_response(True, {'message': 'Video not found.'})
             return
+        try:
+            is_new = models.LikeRecord.unique_create(video.key, self.user_key)
+        except TransactionFailedError, e:
+            logging.error('Like unique creation failed!!!')
+            self.json_response(True, {'message': 'Like error. Please try again.'})
+            return
 
-        is_new = models.LikeRecord.unique_create(video.key, self.user_key)
         if is_new:
             video.likes += 1
             video.updated = datetime.now()
