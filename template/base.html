@@ -45,10 +45,23 @@
                     </div>
                 </div>
             </div>
-            <a href="{{ uri_for('subscriptions_quick') }}" id="user-subscriptions" class="navi navi-right normal-link">Subscriptions<div id="user-subscriptions-new-num">{{ user.new_subscriptions_99 }}</div></a>
-            <a href="{{ uri_for('likes') }}" class="navi navi-right normal-link">Likes</a>
-            <a href="{{ uri_for('history') }}" class="navi navi-right normal-link">History</a>
-            <a href="{{ uri_for('submit') }}" class="navi navi-right normal-link">Submit</a>
+            <a href="{{ uri_for('subscriptions_quick') }}" id="user-subscriptions" class="navi navi-right normal-link">
+                <span class="navi-img subscriptions"></span>
+                <span class="navi-text">Subscriptions</span>
+                <div id="user-subscriptions-new-num">{{ user.new_subscriptions_99 }}</div>
+            </a>
+            <a href="{{ uri_for('likes') }}" class="navi navi-right normal-link">
+                <span class="navi-img likes"></span>
+                <span class="navi-text">Likes</span>
+            </a>
+            <a href="{{ uri_for('history') }}" class="navi navi-right normal-link">
+                <span class="navi-img history"></span>
+                <span class="navi-text">History</span>
+            </a>
+            <a href="{{ uri_for('submit') }}" class="navi navi-right normal-link">
+                <span class="navi-img submit"></span>
+                <span class="navi-text">Submit</span>
+            </a>
             {% else %}
             <a href="{{ uri_for('signup') }}" id="signup-nav-button" class="navi navi-right normal-link">Sign up</a>
             <a href="{{ uri_for('signin') }}" id="signin-nav-button" class="navi navi-right">Sign in</a>

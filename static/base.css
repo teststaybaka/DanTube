@@ -204,11 +204,11 @@ a {
 }
 
 .navi {
-    margin-top: 20px;
-    padding: 3px 5px;
-    margin-left: 10px;
+    margin-left: 5px;
     cursor: pointer;
     display: inline-block;
+    color: rgb(100,100,100);
+    margin-top: 8px;
 }
 
 .navi-right {
@@ -217,6 +217,55 @@ a {
 
 .navi-left {
 	float: left;
+}
+
+.navi-img {
+    display: block;
+    width: 20px;
+    height: 20px;
+    background-image: url("/static/img/basic_icons.png");
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.navi-text {
+    display: block;
+    text-align: center;
+    font-size: 14px;
+    padding: 1px 3px 0 3px;
+    line-height: 16px;
+}
+
+.navi-img.submit {
+    background-position: 0 -1180px;
+}
+
+.navi:hover .navi-img.submit {
+    background-position: 0 -1203px;
+}
+
+.navi-img.history {
+    background-position: 0 -1227px;
+}
+
+.navi:hover .navi-img.history {
+    background-position: 0 -1249px;
+}
+
+.navi-img.likes {
+    background-position: 0 -1270px;
+}
+
+.navi:hover .navi-img.likes {
+    background-position: 0 -1291px;
+}
+
+.navi-img.subscriptions {
+    background-position: 0 -1313px;
+}
+
+.navi:hover .navi-img.subscriptions {
+    background-position: 0 -1336px;
 }
 
 #signin-nav-button {
@@ -264,7 +313,7 @@ a {
 
 #portrait {
 	margin-left: 15px;
-	margin-top: 5px;
+	margin-top: 6px;
 	margin-right: 15px;
 	height: 35px;
 }
