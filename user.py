@@ -47,7 +47,7 @@ def host_info(handler):
 
     return check_host
 
-class Space(BaseHandler):
+class SpaceVideo(BaseHandler):
     @host_info
     def get(self, context):
         self.render('space', context)
@@ -90,6 +90,29 @@ class SpacePlaylist(BaseHandler):
             playlist = playlists[i]
             info = playlist.get_info()
             context['playlists'].append(info)
+
+        self.json_response(False, context)
+
+class SpaceComment(BaseHandler):
+    @host_info
+    def get(self, context):
+        self.render('space_comments', context)
+
+    def post(self, user_id):
+        host_key = ndb.Key('User', int(user_id))
+        page_size = models.MEDIUM_PAGE_SIZE
+
+        cursor = models.Cursor(urlsafe=self.request.get('cursor'))
+        comments, cursor, more = models.Comment.query(ndb.AND(models.Comment.creator==host_key, models.Comment.share==True)).order(-models.Comment.created).fetch_page(page_size, start_cursor=cursor)
+
+        context = {
+            'comments': [],
+            'cursor': cursor.urlsafe() if more else '',
+        }
+        for i in xrange(0, len(comments)):
+            comment = comments[i]
+            content_info = comment.get_content()
+            context['comments'].append(content_info)
 
         self.json_response(False, context)
 

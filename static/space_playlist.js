@@ -3,7 +3,7 @@ $(document).ready(function() {
     dt.scrollUpdate(window.location.href, {}, 'content-entry', $('#space-list-container'), function(result) {
         var div = '';
         for (var i = 0; i < result.playlists.length; i++) {
-            playlist = result.playlists[i];
+            var playlist = result.playlists[i];
             div += '<div class="content-entry">\
                         <a class="video-img"'
                         if (playlist.url) {
@@ -31,7 +31,7 @@ $(document).ready(function() {
                                 if (playlist.url) {
                                     div += 'href="'+playlist.url+'"'
                                 }
-                                div += ' class="video-title playlist" target="_blank">'+playlist.title+'</a>\
+                                div += ' class="video-title normal-link" target="_blank">'+playlist.title+'</a>\
                             </div>\
                             <div class="info-line playlist-intro">'+playlist.intro+'</div>\
                         </div>\

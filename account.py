@@ -45,7 +45,10 @@ class History(BaseHandler):
                 context['entries'].append(comment_info)
             else:
                 video = videos[i]
-                video_info = video.get_basic_info()
+                if record.playlist:
+                    video_info = video.get_basic_info(record.playlist.id())
+                else:
+                    video_info = video.get_basic_info()
                 video_info['index'] = record.clip_index
                 video_info['last_timestamp'] = record.timestamp
                 video_info['last_viewed_time'] = record.created.strftime("%Y-%m-%d %H:%M")
@@ -135,7 +138,7 @@ class Subscriptions(BaseHandler):
         kind = self.request.get('type')
         if uper_keys:
             if kind == 'comments':
-                entries, cursor, more = models.Comment.query(models.Comment.creator.IN(uper_keys)).order(-models.Comment.created, models.Comment.key).fetch_page(page_size, start_cursor=cursor)
+                entries, cursor, more = models.Comment.query(ndb.AND(models.Comment.creator.IN(uper_keys), models.Comment.share==True)).order(-models.Comment.created, models.Comment.key).fetch_page(page_size, start_cursor=cursor)
             else:
                 entries, cursor, more = models.Video.query(models.Video.uploader.IN(uper_keys)).order(-models.Video.created, models.Video.key).fetch_page(page_size, start_cursor=cursor)
         else:

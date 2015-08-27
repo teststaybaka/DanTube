@@ -3,7 +3,7 @@ $(document).ready(function() {
     dt.scrollUpdate(window.location.href, {}, 'content-entry', $('#space-list-container'), function(result) {
         var div = '';
         for (var i = 0; i < result.videos.length; i++) {
-            video = result.videos[i];
+            var video = result.videos[i];
             div += '<div class="content-entry">\
                         <a class="video-img" href="'+video.url+'" target="_blank">\
                             <img src="'+video.thumbnail_url+'">\

@@ -17,6 +17,13 @@ indexes:
     direction: desc
 
 - kind: Comment
+  properties:
+  - name: creator
+  - name: share
+  - name: created
+    direction: desc
+
+- kind: Comment
   ancestor: yes
   properties:
   - name: created

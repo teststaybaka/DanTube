@@ -749,7 +749,7 @@ class Comment(ndb.Model):
     content_info = {
       'id': self.key.id(),
       'parent_id': self.key.parent().id(),
-      'content': self.content if self.deleted else '[Content deleted]',
+      'content': self.content if not self.deleted else '[Content deleted]',
       'floorth': self.floorth,
       'inner_floorth': self.inner_floorth,
       'inner_comment_counter': self.inner_comment_counter,
@@ -1008,6 +1008,7 @@ class MentionedRecord(ndb.Model):
 
 class ViewRecord(ndb.Model):
   video = ndb.KeyProperty(kind='Video', required=True)
+  playlist = ndb.KeyProperty(kind='Playlist', indexed=False)
   clip_index = ndb.IntegerProperty(required=True, default=0, indexed=False)
   timestamp = ndb.IntegerProperty(required=True, default=0, indexed=False)
   created = ndb.DateTimeProperty(auto_now=True)

@@ -113,10 +113,13 @@ class Video(BaseHandler):
                 is_new_hit = False
                 logging.error('View record get/create failed!')
             else:
-                if record.clip_index < clip_index:
-                    record.clip_index = clip_index
+                record.clip_index = clip_index
                 if not is_new_hit:
                     record.created = datetime.now()
+                if list_id and playlist:
+                    record.playlist = playlist.key
+                else:
+                    record.playlist = None
                 record.put()
 
             video_info['watched'] = not is_new_hit
