@@ -116,6 +116,11 @@ indexes:
   properties:
   - name: uploader
   - name: created
+
+- kind: Video
+  properties:
+  - name: uploader
+  - name: created
     direction: desc
 
 - kind: Video

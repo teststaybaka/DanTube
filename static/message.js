@@ -28,7 +28,7 @@ $(document).ready(function() {
                                 } else {
                                     div += 'He'
                                 }
-                                div += ' said: '+thread.last_message+'</label>\
+                                div += ' said: '+dt.escapeHTML(thread.last_message)+'</label>\
                                 <label>'+thread.updated+'</label>\
                             </div>\
                         </div>\

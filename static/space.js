@@ -25,7 +25,7 @@ $(document).ready(function() {
                                 <div class="video-statistic-entry">Comments: '+dt.numberWithCommas(video.comment_counter)+'</div>\
                                 <div class="video-statistic-entry">Bullets: '+dt.numberWithCommas(video.bullets)+'</div>\
                             </div>\
-                            <div class="video-intro info-line">'+video.intro+'</div>\
+                            <div class="video-intro info-line">'+dt.escapeHTML(video.intro)+'</div>\
                         </div>\
                     </div>'
         }

@@ -606,6 +606,6 @@ dt.pageStretch = function(ele, targetHeight) {
 }
 
 dt.subtitle_format = /^\[(\d+):(\d{1,2}).(\d{1,2})\](.*)$/;
-dt.puncts = /[&@.,?!:/\\"'<>]/;
+dt.puncts = /[&@.,?!:/\\"'<>=]/;
 //end of the file
 } (dt, jQuery));

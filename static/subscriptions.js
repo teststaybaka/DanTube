@@ -128,7 +128,7 @@ $(document).ready(function() {
                                     <a href="' + video.uploader.space_url + '" class="uploader-name blue-link" target="_blank">' + video.uploader.nickname + '</a>\
                                     <div class="activity-time">' + video.created + '</div>\
                                 </div>\
-                                <div class="activity-intro">' + video.intro + '</div>\
+                                <div class="activity-intro">' + dt.escapeHTML(video.intro) + '</div>\
                                 <a class="video-img" href="' + video.url + '" target="_blank">\
                                     <img src="' + video.thumbnail_url + '">\
                                 </a>\

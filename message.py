@@ -65,6 +65,9 @@ class Compose(BaseHandler):
         if not subject:
             self.json_response(True, {'message': 'Subject cannot be empty.'})
             return
+        elif models.ILLEGAL_REGEX.match(subject):
+            self.json_response(True, {'message': 'Subject contains illegal characters.'})
+            return
         elif len(subject) > 400:
             self.json_response(True, {'message': 'Subject is too long.'})
             return

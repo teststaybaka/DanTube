@@ -26,8 +26,8 @@ def number_upper_limit_99(num):
     return str(num)
 
 EMIAL_REGEX = re.compile(r"^[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$")
-ILLEGAL_REGEX = re.compile(r".*[&@.,?!:/\\\"'<>].*")
-ILLEGAL_LETTER = re.compile(r"[&@.,?!:/\\\"'<>]")
+ILLEGAL_REGEX = re.compile(r".*[&@.,?!:/\\\"'<>=].*")
+ILLEGAL_LETTER = re.compile(r"[&@.,?!:/\\\"'<>=]")
 
 class BlobCollection(ndb.Model):
   blob = ndb.BlobKeyProperty(required=True, indexed=False)
@@ -192,7 +192,7 @@ class User(webapp2_extras.appengine.auth.models.User):
       subscriptions = Subscription.query(ancestor=self.key).fetch(projection=['uper'])
       uper_keys = [subscription.uper for subscription in subscriptions]
       if uper_keys:
-        self.new_subscriptions = Video.query(ndb.AND(Video.uploader.IN(uper_keys), -Video.created < -self.last_subscription_check)).count()
+        self.new_subscriptions = Video.query(ndb.AND(Video.uploader.IN(uper_keys), Video.created > self.last_subscription_check)).count()
       else:
         self.new_subscriptions = 0
       self.put()

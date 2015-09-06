@@ -61,7 +61,12 @@ function nickname_check(ajax_check) {
     ajax_check = typeof ajax_check !== 'undefined' ?  ajax_check : true;
 
     var nickname = $('#nickname-change').val().trim();
-    if (!nickname || dt.puncts.test(nickname)) {
+    if (!nickname) {
+        $('#change-nickname-error').addClass('show')
+                                    .text('Your nickname can\'t be empty');
+        $('#nickname-change').addClass('error');
+        return false
+    } else if (dt.puncts.test(nickname)) {
         $('#change-nickname-error').addClass('show')
                                     .text('Your nickname can\'t contain: & @ . , ? ! : / \\ \" \' < >');
         $('#nickname-change').addClass('error');

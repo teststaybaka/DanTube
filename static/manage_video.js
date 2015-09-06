@@ -48,7 +48,7 @@ function load_more_search_result() {
 
         if (div === '') {
             if ($('.content-entry.popup').length == 0) {
-                div = '<div class="content-entry none">No results found.</div>'
+                div = '<div class="content-entry popup none">No results found.</div>'
             }
         }
         popup_container.append(div);

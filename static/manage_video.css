@@ -316,6 +316,10 @@ div.edit-title-button:hover {
     padding: 30px 0;
 }
 
+.content-entry.popup.none {
+    padding: 100px 0;
+}
+
 .content-entry.popup.belonged .video-title, .content-entry.popup.belonged .list-video-time {
     color: rgb(175,175,175);
 }

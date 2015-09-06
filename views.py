@@ -113,7 +113,7 @@ class BaseHandler(webapp2.RequestHandler):
         self.response.write(json.dumps(result))
 
     def get_keywords(self):
-        return models.ILLEGAL_LETTER.sub(' ', self.request.get('keywords').strip().lower())
+        return models.ILLEGAL_LETTER.sub(' ', self.request.get('keywords')).strip().lower()
 
     def get_ids(self):
         ids = self.request.POST.getall('ids[]')

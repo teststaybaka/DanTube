@@ -18,6 +18,11 @@ function check_subject() {
                                 .next().addClass('show')
                                         .text('Subject cannot be empty.');
         return false;
+    } else if (dt.puncts.test($('input[name=subject]').val())) {
+        $('input[name=subject]').addClass('error')
+                                .next().addClass('show')
+                                        .text('Subject contains illegal characters.');
+        return false;
     } else if ($('input[name=subject]').val().length > 400) {
         $('input[name=subject]').addClass('error')
                                 .next().addClass('show')

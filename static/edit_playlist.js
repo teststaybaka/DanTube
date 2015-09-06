@@ -164,6 +164,10 @@ $(document).ready(function() {
             dt.pop_ajax_message('Title can not be empty.', 'error');
             $('#playlist-title-change').addClass('error');
             error = true;
+        } else if (dt.puncts.test(title)) {
+            dt.pop_ajax_message('Title contains illegal characters.', 'error');
+            $('#playlist-title-change').addClass('error');
+            error = true;
         } else if (title.length > 400) {
             dt.pop_ajax_message('Title can not be longer than 400 characters.', 'error');
             $('#playlist-title-change').addClass('error');

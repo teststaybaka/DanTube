@@ -33,7 +33,7 @@ $(document).ready(function() {
                                 }
                                 div += ' class="video-title normal-link" target="_blank">'+playlist.title+'</a>\
                             </div>\
-                            <div class="info-line playlist-intro">'+playlist.intro+'</div>\
+                            <div class="info-line playlist-intro">'+dt.escapeHTML(playlist.intro)+'</div>\
                         </div>\
                     </div>'
         }

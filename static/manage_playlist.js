@@ -31,7 +31,7 @@ $(document).ready(function() {
                                 <a class="video-title normal-link" href="'+playlist.url+'" target="_blank">'+playlist.title+'</a>\
                             </div>\
                             <div class="info-line">\
-                                <div class="list-intro">'+playlist.intro+'</div>\
+                                <div class="list-intro">'+dt.escapeHTML(playlist.intro)+'</div>\
                             </div>\
                             <div class="info-line">\
                                 <a class="blue-link edit-button" href="/account/playlists/edit/'+playlist.id+'">[Edit Playlist]</a>\
@@ -58,6 +58,10 @@ $(document).ready(function() {
         var title = $('#playlist-title-input').val().trim();
         if (!title) {
             dt.pop_ajax_message('Title can not be empty.', 'error');
+            $('#playlist-title-input').addClass('error');
+            error = true;
+        } else if (dt.puncts.test(title)) {
+            dt.pop_ajax_message('Title contains illegal characters.', 'error');
             $('#playlist-title-input').addClass('error');
             error = true;
         } else if (title.length > 400) {

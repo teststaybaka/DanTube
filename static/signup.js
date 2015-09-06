@@ -2,9 +2,13 @@
 $(document).ready(function() {
     $('#signupform input[name="nickname"]').focusout(function(evt) {
         var nickname = evt.target.value.trim();
-        if (!nickname || dt.puncts.test(nickname)) {
+        if (!nickname) {
             $('#nickname-error').addClass('show');
-            $('#nickname-error').text('Your nickname can\'t contain: & @ . , ? ! : / \\ \" \' < >');
+            $('#nickname-error').text('Your nickname can\'t be empty');
+            $(evt.target).addClass('error');
+        } else if (dt.puncts.test(nickname)) {
+            $('#nickname-error').addClass('show');
+            $('#nickname-error').text('Your nickname can\'t contain: & @ . , ? ! : / \\ \" \' < > =');
             $(evt.target).addClass('error');
         } else if (nickname.length > 50) {
             $('#nickname-error').addClass('show');
@@ -130,9 +134,14 @@ $(document).ready(function() {
         }
 
         var nickname = $('#signupform input[name="nickname"]')[0].value.trim();
-        if (!nickname || dt.puncts.test(nickname)) {
+        if (!nickname) {
             $('#nickname-error').addClass('show');
-            $('#nickname-error').text('Your nickname can\'t contain: & @ . , ? ! : / \\ \" \' < >');
+            $('#nickname-error').text('Your nickname can\'t be empty');
+            $('#signupform input[name="nickname"]').addClass('error');
+            error = true;
+        } else if (dt.puncts.test(nickname)) {
+            $('#nickname-error').addClass('show');
+            $('#nickname-error').text('Your nickname can\'t contain: & @ . , ? ! : / \\ \" \' < > =');
             $('#signupform input[name="nickname"]').addClass('error');
             error = true;
         } else if (nickname.length > 50) {

@@ -38,7 +38,7 @@ $(document).ready(function() {
                                 <div class="video-statistic-entry">Comments: '+dt.numberWithCommas(video.comment_counter)+'</div>\
                                 <div class="video-statistic-entry">Bullets: '+dt.numberWithCommas(video.bullets)+'</div>\
                             </div>\
-                            <div class="info-line video-description">'+video.intro+'</div>\
+                            <div class="info-line video-description">'+dt.escapeHTML(video.intro)+'</div>\
                             <div class="info-line video-tags">'
                             for (var j = 0; j < video.tags.length; j++) {
                                 var tag = video.tags[j];

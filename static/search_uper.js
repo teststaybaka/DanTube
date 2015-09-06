@@ -22,7 +22,7 @@ $(document).ready(function() {
                             </div>\
                             <div class="info-line uper-description">'
                             if (uper.intro) {
-                                div += uper.intro
+                                div += dt.escapeHTML(uper.intro)
                             }
                             div += '</div>\
                             <div class="info-line uper-buttons">\

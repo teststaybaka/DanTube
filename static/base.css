@@ -269,7 +269,6 @@ a {
 }
 
 #signin-nav-button {
-  margin-top: 10px;
   padding: 7px 10px;
   border: 1px solid rgb(200,200,200);
   border-radius: 5px;
@@ -284,10 +283,12 @@ a {
   -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
   -moz-box-sizing: border-box;    /* Firefox, other Gecko */
   box-sizing: border-box;
+  margin-right: 10px;
 }
 
 #signup-nav-button {
     margin-top: 15px;
+    margin-right: 5px;
 }
 
 #signin-nav-button:hover {

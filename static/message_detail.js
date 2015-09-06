@@ -56,7 +56,7 @@ $(document).ready(function() {
                         '<div class="message-detail-entry container" style="height: 0;">' + 
                             '<div class="message-date send">' + result.when + '</div>' +
                             '<a class="user-img send"><img src="' + user_avatar_url + '"></a>' + 
-                            '<div class="message-content send">' + result.content + '</div>' +
+                            '<div class="message-content send">' + dt.escapeHTML(result.content) + '</div>' +
                         '</div>');
                     slideDownNewMessage($('.message-detail-entry:last-child')[0]);
                 }
