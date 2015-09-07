@@ -110,7 +110,7 @@ function video_tag_check() {
                 return false;
             } else if (dt.puncts.test(tag)) {
                 $('#video-tags-error').addClass('show');
-                $('#video-tags-error').text('Tags contain illegal letters.');
+                $('#video-tags-error').text('Tags contain illegal characters.');
                 $('#video-tags').addClass('error');
                 return false;
             }

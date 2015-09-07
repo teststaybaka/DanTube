@@ -102,7 +102,7 @@ $(document).ready(function() {
                                     <a href="' + comment.creator.space_url + '" class="uploader-name blue-link" target="_blank">' + comment.creator.nickname + '</a>\
                                     <div class="activity-time">' + comment.created + '</div>\
                                 </div>\
-                                <div class="activity-intro">' + comment.content + '</div>\
+                                <div class="activity-intro">' + dt.contentWrapper(comment.content) + '</div>\
                                 <a class="comment-check blue-link" href="' + comment.video.url + '?comment=' + comment.floorth
                                 if (comment.inner_floorth) {
                                     div +=  '&reply=' + comment.inner_floorth;

@@ -605,7 +605,32 @@ dt.pageStretch = function(ele, targetHeight) {
     stretch();
 }
 
+dt.contentWrapper = function(text) {
+    text = text.replace(dt.http_format, function(_, $1, $2) {
+        if (!$1) {
+            return '<a class="blue-link" target="_blank" href="http://'+$2+'">'+$2+'</a>'
+        } else {
+            return '<a class="blue-link" target="_blank" href="'+$1+$2+'">'+$1+$2+'</a>'
+        }
+    });
+    // text = text.replace(dt.at_user_format, '<a class="blue-link" target="_blank" href="/user/$1">$2</a>');
+    text = text.replace(dt.video_id_format, function(_, $1, $2) {
+        if (!$2) {
+            return '<a class="blue-link" target="_blank" href="/video/'+$1+'">'+$1+'</a>'
+        } else {
+            return '<a class="blue-link" target="_blank" href="/video/'+$1+'?index='+$2+'">'+$1+'#'+$2+'</a>'
+        }
+    });
+    text = text.replace(dt.video_time_format, '<span class="blue-link video-timestamp-quick-link" data-minutes="$2" data-seconds="$3">$1</span>');
+    return text;
+}
+
+dt.http_format = /(https?:\/\/)?([A-Za-z0-9_\-]+\.[A-Za-z0-9_\-]+(?:\.[A-Za-z0-9_\-]+)?(?:\:[0-9]+)?(?:\/[A-Za-z0-9_\-]+)?)/g;
+dt.at_user_format = /\[(.+)(@.+)\]/g
+dt.video_id_format = /(dt\d+)(?:#(\d+))?/g
+dt.video_time_format = /(\[(\d+):(\d{1,2})\])/g
 dt.subtitle_format = /^\[(\d+):(\d{1,2}).(\d{1,2})\](.*)$/;
+dt.email_format = /^[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/;
 dt.puncts = /[&@.,?!:/\\"'<>=]/;
 //end of the file
 } (dt, jQuery));

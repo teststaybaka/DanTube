@@ -26,7 +26,7 @@ $(document).ready(function() {
                         <a class="normal-link" href="' + comment.video.url + '" target="_blank">' + comment.video.title + '</a>\
                     </div>\
                     <div class="info-line">\
-                        <div class="comment-content">' + comment.content + '</div>\
+                        <div class="comment-content">' + dt.contentWrapper(comment.content) + '</div>\
                     </div>\
                     <div class="info-line">\
                         <a class="blue-link" href="'+comment.video.url+'?'

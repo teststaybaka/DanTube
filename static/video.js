@@ -1235,10 +1235,12 @@ dt.onPlayerReady = function(event) {
 	$('#backward-button').click(function() {
 		var time = Math.max(player.getCurrentTime() - 3, 0);
 		player_seek(time);
+		player.playVideo();
 	});
 	$('#forward-button').click(function() {
 		var time = Math.min(player.getCurrentTime() + 3, player.getDuration());
 		player_seek(time);
+		player.playVideo();
 	});
 
 	var volume_button = document.getElementById("volume-switch");
@@ -2827,7 +2829,13 @@ $(document).ready(function() {
 			inner_comment_container.append('<div class="display-button-line replies"><span class="display-button replies" data-num="'+total_num+'" data-cursor="'+cursor+'">View more replies (' + (total_num - inner_comment_container.find('.comment-entry.inner').length) + ')</span></div>')
 		});
 	});
-
+	
+	$('#comments-list-container').on('click', 'span.video-timestamp-quick-link', function() {
+		var minutes = parseInt($(this).attr('data-minutes'));
+		var seconds = parseInt($(this).attr('data-seconds'));
+		player_seek(minutes*60 + seconds);
+		player.playVideo();
+	});
 	$('#comments-list-container').on('click', 'div.display-button.comment', click_collapse);
 	$('#comments-list-container').on('click', 'div.comment-operation.reply', function() {
 		var comment_box = $(this).parent().parent();
@@ -2941,7 +2949,7 @@ function render_comment_div(comment) {
           <a class="blue-link user-name" href="' + comment.creator.space_url + '" target="_blank">' + comment.creator.nickname + '</a>\
           <label class="comment-time">' + comment.created + '</label>\
         </div>\
-        <div class="comment-content">' + comment.content + '</div>\
+        <div class="comment-content">' + dt.contentWrapper(comment.content) + '</div>\
         <div class="display-button comment"><span class="display-text">Read more</span><span class="display-arrow"></span></div>\
         <div class="comment-operation-line">\
           <div class="comment-operation reply">Reply</div>\
@@ -2972,7 +2980,7 @@ function render_inner_comment_div(inner_comment) {
 			              <a class="blue-link user-name" href="' + inner_comment.creator.space_url + '" target="_blank">' + inner_comment.creator.nickname + '</a>\
 			              <label class="comment-time">' + inner_comment.created + '</label>\
 			            </div>\
-			            <div class="comment-content">' + inner_comment.content + '</div>\
+			            <div class="comment-content">' + dt.contentWrapper(inner_comment.content) + '</div>\
 			            <div class="display-button comment"><span class="display-text">Read more</span><span class="display-arrow"></span></div>\
 						<div class="comment-operation-line">\
 				          <div class="comment-operation reply">Reply</div>\

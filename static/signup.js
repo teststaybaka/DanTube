@@ -64,8 +64,7 @@ $(document).ready(function() {
 
     $('#signupform input[name="email"]').focusout(function(evt) {
         var email = evt.target.value.trim();
-        var email_re = /^[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/;
-        if (!email || !email_re.test(email)) {
+        if (!email || !dt.email_format.test(email)) {
             $('#email-error').addClass('show');
             $('#email-error').text('Email address invalid.');
             $(evt.target).addClass('error');
@@ -102,8 +101,7 @@ $(document).ready(function() {
 
         var error = false;
         var email = $('#signupform input[name="email"]')[0].value.trim();
-        var email_re = /^[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/;
-        if (!email || !email_re.test(email)) {
+        if (!email || !dt.email_format.test(email)) {
             $('#email-error').addClass('show');
             $('#email-error').text('Email address invalid.');
             $('#signupform input[name="email"]').addClass('error');

@@ -1596,3 +1596,7 @@ div.preview-time {
 .video-num {
     padding: 3px;
 }
+
+span.video-timestamp-quick-link {
+    cursor: pointer;
+}
