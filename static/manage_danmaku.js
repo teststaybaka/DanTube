@@ -7,8 +7,7 @@ $(document).ready(function() {
             $('.inline-button.drop').removeClass('disabled');
         }
     });
-    $('.pools-block').on('click', '.single-checkbox', function() {
-        $(this).toggleClass('checked');
+    $('#account-right-section').on('click', '.single-checkbox', function() {
         if ($(this).hasClass('all')) {
             if ($(this).hasClass('checked')) {
                 $('.single-checkbox').addClass('checked');
@@ -27,18 +26,16 @@ $(document).ready(function() {
     $('.list-option').click(function() {
         load_danmaku_list($(this));
     });
-    $('.inline-button.drop').click(function() {
-        if ($(this).hasClass('disabled')) return;
-        drop_danmaku_pool($('.list-option.active'));
-    });
-    $('.inline-button.delete').click(function() {
-        if ($(this).hasClass('disabled')) return;
-        delete_danmaku($('.list-option.active'));
-    });
+    $('.inline-button.drop').click(drop_danmaku_pool);
+    $('.inline-button.delete').click(delete_danmaku);
+    $('.danmaku-confirm-label').click(confirm_subtitles);
+    $('.pools-block').on('click', '.detail-label.confirm', confirm_danmaku);
+    $('.pools-block').on('click', '.detail-label.expand', expand_danmaku);
 });
 
 function load_danmaku_list(option) {
     $('.inline-button.delete').addClass('disabled');
+    $('.danmaku-confirm-label').text('');
     var list_block = $('.pools-block');
     list_block.empty();
     list_block.append('<div class="pool-detail-list loading"></div>');
@@ -67,7 +64,7 @@ function load_danmaku_list(option) {
                     list_block.append('<div class="pool-detail-entry label-line">\
                         <div class="detail-label timestamp">Timestamp</div>\
                         <div class="detail-label">Type</div>\
-                        <div class="detail-label content advanced">Content</div>\
+                        <div class="detail-label content long">Content</div>\
                         <div class="detail-label created">Created</div>\
                         <div class="single-checkbox inline all"></div>\
                     </div>');
@@ -79,7 +76,7 @@ function load_danmaku_list(option) {
                     list_block.append('<div class="pool-detail-entry label-line">\
                         <div class="detail-label timestamp">Timestamp</div>\
                         <div class="detail-label">Type</div>\
-                        <div class="detail-label content subtitles">Content</div>\
+                        <div class="detail-label content long">Content</div>\
                         <div class="detail-label created">Created</div>\
                     </div>');
                     var subtitles_list = [];
@@ -100,18 +97,21 @@ function load_danmaku_list(option) {
                         list_block.append(render_subtitles_entry(subtitles_list[i], result.subtitles_list.created_year));
                     }
                     $('.danmaku-num-label').text(subtitles_list.length);
+                    if (!option.attr('data-approved')) {
+                        $('.danmaku-confirm-label').text('Confirm');
+                    }
                 } else if (option.attr('data-type') === 'code') {
                     list_block.append('<div class="pool-detail-entry label-line">\
                         <div class="detail-label timestamp">Timestamp</div>\
                         <div class="detail-label">Type</div>\
-                        <div class="detail-label content code">Content</div>\
+                        <div class="detail-label content long">Content</div>\
                         <div class="detail-label created">Created</div>\
                         <div class="single-checkbox inline all"></div>\
                     </div>');
                     for (var i = 0; i < result.danmaku_list.length; i++) {
                         list_block.append(render_code_entry(result.danmaku_list[i], i));
                     }
-                    $('.danmaku-num-label').text(result.danmaku_list.length);
+                    $('.danmaku-num-label').text(result.danmaku_list.length+'/100');
                 }
             } else {
                 list_block.append('<div class="content-entry none">Load error.</div>');
@@ -145,8 +145,15 @@ function render_advanced_entry(entry, index) {
     div = '<div class="pool-detail-entry">\
                 <div class="detail-label timestamp">'+dt.millisecondsToTime(entry.timestamp)+'</div>\
                 <div class="detail-label">Advanced</div>\
-                <div class="detail-label content advanced" title="'+entry.content+'">'+entry.content+'</div>\
-                <div class="detail-label created">'+entry.created_year+'</div>\
+                <div class="detail-label content long'
+                if (!entry.approved) {
+                    div += ' pending'
+                }
+                div += '" title="'+entry.content+'">'+entry.content+'</div>'
+                if (!entry.approved) {
+                    div += '<div class="detail-label confirm blue-link" data-index="'+index+'">Confirm</div>'
+                }
+                div += '<div class="detail-label created">'+entry.created_year+'</div>\
                 <div class="single-checkbox inline" data-index="'+index+'"></div>\
             </div>'
     return div;
@@ -156,7 +163,7 @@ function render_subtitles_entry(entry, created_year) {
     div = '<div class="pool-detail-entry">\
                 <div class="detail-label timestamp">'+dt.millisecondsToTime(entry.timestamp)+'</div>\
                 <div class="detail-label">Subtitles</div>\
-                <div class="detail-label content subtitles" title="'+entry.content+'">'+entry.content+'</div>\
+                <div class="detail-label content long" title="'+entry.content+'">'+entry.content+'</div>\
                 <div class="detail-label created">'+created_year+'</div>\
             </div>'
     return div;
@@ -166,14 +173,25 @@ function render_code_entry(entry, index) {
     div = '<div class="pool-detail-entry">\
                 <div class="detail-label timestamp">'+dt.millisecondsToTime(entry.timestamp)+'</div>\
                 <div class="detail-label">Code</div>\
-                <div class="detail-label content code" title="'+entry.content+'">'+entry.content+'</div>\
-                <div class="detail-label created">'+entry.created_year+'</div>\
+                <div class="detail-label content code'
+                if (!entry.approved) {
+                    div += ' pending'
+                }
+                div += '" title="'+entry.content+'">'+entry.content+'</div>\
+                <div class="detail-label expand blue-link">Expand</div>'
+                if (!entry.approved) {
+                    div += '<div class="detail-label confirm blue-link" data-index="'+index+'">Confirm</div>'
+                }
+                div += '<div class="detail-label created">'+entry.created_year+'</div>\
                 <div class="single-checkbox inline" data-index="'+index+'"></div>\
             </div>'
     return div;
 }
 
-function drop_danmaku_pool(option) {
+function drop_danmaku_pool() {
+    if ($(this).hasClass('disabled')) return;
+
+    var option = $('.list-option.active');
     $.ajax({
         type: "POST",
         url: window.location.pathname+'/drop',
@@ -193,7 +211,10 @@ function drop_danmaku_pool(option) {
     });
 }
 
-function delete_danmaku(option) {
+function delete_danmaku() {
+    if ($(this).hasClass('disabled')) return;
+
+    var option = $('.list-option.active');
     $('.inline-button.delete').addClass('disabled');
     indices = []
     var checkboxes = $('.single-checkbox.checked');
@@ -220,4 +241,60 @@ function delete_danmaku(option) {
         }
     });
 }
+
+function confirm_danmaku() {
+    $(this).siblings('.detail-label.content').removeClass('pending');
+    $(this).remove();
+    var option = $('.list-option.active');
+    $.ajax({
+        type: 'POST',
+        url: window.location.pathname+'/confirm',
+        data: {pool_index: option.attr('data-index'), pool_type: option.attr('data-type'), danmaku_index: confirm_button.attr('data-index')},
+        success: function(result) {
+            if (!result.error) {
+                
+                dt.pop_ajax_message('Danmaku confirmed!', 'success');
+            } else {
+                dt.pop_ajax_message(result.message, 'error');
+            }
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            console.log(xhr.status);
+            console.log(thrownError);
+            dt.pop_ajax_message(xhr.status+' '+thrownError, 'error');
+        }
+    });
+}
+
+function expand_danmaku() {
+    var content = $(this).siblings('.detail-label.content');
+    content.addClass('expanded');
+    content.height(content[0].scrollHeight);
+    $(this).remove();
+}
+
+function confirm_subtitles() {
+    $(this).siblings('.detail-label.content').removeClass('pending');
+    $(this).remove();
+    var option = $('.list-option.active');
+    $.ajax({
+        type: 'POST',
+        url: window.location.pathname+'/confirm',
+        data: {pool_index: option.attr('data-index'), pool_type: option.attr('data-type'), danmaku_index: 0},
+        success: function(result) {
+            if (!result.error) {
+                
+                dt.pop_ajax_message('Danmaku confirmed!', 'success');
+            } else {
+                dt.pop_ajax_message(result.message, 'error');
+            }
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            console.log(xhr.status);
+            console.log(thrownError);
+            dt.pop_ajax_message(xhr.status+' '+thrownError, 'error');
+        }
+    });
+}
+//end of file
 } (dt, jQuery));

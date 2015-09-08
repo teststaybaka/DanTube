@@ -144,8 +144,8 @@ class Video(BaseHandler):
             'video': video_info,
             'uploader': uploader_info,
             'playlist': playlist_info,
-            'subtitle_names': cur_clip.subtitle_names,
-            'subtitle_pool_ids': [pool.id() for pool in cur_clip.subtitle_danmaku_pools],
+            'subtitle_names': [cur_clip.subtitle_names[i] for i in xrange(0, len(cur_clip.subtitle_danmaku_pools)) if cur_clip.subtitle_approved[i]],
+            'subtitle_pool_ids': [cur_clip.subtitle_danmaku_pools[i].id() for i in xrange(0, len(cur_clip.subtitle_danmaku_pools)) if cur_clip.subtitle_approved[i]],
             'video_issues': models.Video_Issues,
             'comment_issues': models.Comment_Issues,
             'danmaku_issues': models.Danmaku_Issues,
@@ -381,13 +381,13 @@ class Danmaku(BaseHandler):
         if clip.advanced_danmaku_pool:
             advanced_danmaku_pool = clip.advanced_danmaku_pool.get()
             advanced_danmaku_num += len(advanced_danmaku_pool.danmaku_list)
-            danmaku_list += [Danmaku.format_advanced_danmaku(danmaku, advanced_danmaku_pool) for danmaku in advanced_danmaku_pool.danmaku_list]
+            danmaku_list += [Danmaku.format_advanced_danmaku(danmaku, advanced_danmaku_pool) for danmaku in advanced_danmaku_pool.danmaku_list if danmaku.approved]
 
         code_danmaku_num = 0
         if clip.code_danmaku_pool:
             code_danmaku_pool = clip.code_danmaku_pool.get()
             code_danmaku_num += len(code_danmaku_pool.danmaku_list)
-            danmaku_list += [Danmaku.format_code_danmaku(danmaku, code_danmaku_pool) for danmaku in code_danmaku_pool.danmaku_list]
+            danmaku_list += [Danmaku.format_code_danmaku(danmaku, code_danmaku_pool) for danmaku in code_danmaku_pool.danmaku_list if danmaku.approved]
 
         if not clip.refresh and (clip.danmaku_num != danmaku_num or clip.advanced_danmaku_num != advanced_danmaku_num or clip.code_danmaku_num != code_danmaku_num):
             clip.refresh = True
@@ -555,8 +555,9 @@ class Danmaku(BaseHandler):
 
         user, video = ndb.get_multi([user_key, clip.key.parent()])
         danmaku_record = models.DanmakuRecord(parent=user_key, creator_snapshot=user.create_snapshot(), content=content, danmaku_type='advanced', video=video.key, clip_index=clip.index, video_title=video.title, timestamp=timestamp)
-        
-        ndb.put_multi([advanced_danmaku_pool, danmaku_record])
+        notification = models.Notification(receiver=user_key, subject='An advanced danmaku was posted.', content='An advanced danmaku was posted to your video: '+video.title+' ('+video.key.id()+') by '+user.nickname+'. Please confirm or delete it if contains improper content.', note_type='info')
+        user.new_notifications += 1
+        ndb.put_multi([user, advanced_danmaku_pool, danmaku_record, notification])
         self.json_response(False, Danmaku.format_advanced_danmaku(danmaku, advanced_danmaku_pool))
 
     @classmethod
@@ -581,6 +582,7 @@ class Danmaku(BaseHandler):
                     'type': 'Advanced',
                     'pool_id': danmaku_pool.key.id(),
                     'index': advanced_danmaku.index,
+                    'approved': advanced_danmaku.approved,
                 }
 
     @login_required_json
@@ -608,7 +610,7 @@ class Danmaku(BaseHandler):
             logging.error('Code danmaku post failed!!!')
             self.json_response(True, {'message': 'Code danmaku post error. Please try again.'})
             return
-        if len(code_danmaku_pool.danmaku_list) >= 1000:
+        if len(code_danmaku_pool.danmaku_list) >= 100:
             self.json_response(True, {'message': 'Code danmaku pool is full.'})
             return
 
@@ -618,8 +620,9 @@ class Danmaku(BaseHandler):
 
         user, video = ndb.get_multi([user_key, clip.key.parent()])
         danmaku_record = models.DanmakuRecord(parent=user_key, creator_snapshot=user.create_snapshot(), content=content, danmaku_type='code', video=video.key, clip_index=clip.index, video_title=video.title, timestamp=timestamp)
-        
-        ndb.put_multi([code_danmaku_pool, danmaku_record])
+        notification = models.Notification(receiver=user_key, subject='A code danmaku was posted.', content='A code danmaku was posted to your video: '+video.title+' ('+video.key.id()+') by '+user.nickname+'. Please confirm carefully or delete it if it does something unknown/harmful to you/other users.', note_type='info')
+        user.new_notifications += 1
+        ndb.put_multi([user, code_danmaku_pool, danmaku_record, notification])
         self.json_response(False)
 
     @classmethod
@@ -634,6 +637,7 @@ class Danmaku(BaseHandler):
                     'type': 'Code',
                     'pool_id': danmaku_pool.key.id(),
                     'index': code_danmaku.index,
+                    'approved': code_danmaku.approved,
                 }
 
     @login_required_json
@@ -672,7 +676,9 @@ class Danmaku(BaseHandler):
 
         user, video = ndb.get_multi([user_key, clip.key.parent()])
         danmaku_record = models.DanmakuRecord(parent=user_key, creator_snapshot=user.create_snapshot(), content=subtitles, danmaku_type='subtitles', video=video.key, clip_index=clip.index, video_title=video.title)
-        danmaku_record.put()
+        notification = models.Notification(receiver=user_key, subject='A new subtitles was submitted.', content='A new subtitles, '+name+', was submitted to your video: '+video.title+' ('+video.key.id()+') by '+user.nickname+'. Please confirm or delete it if improper.', note_type='info')
+        user.new_notifications += 1
+        ndb.put_multi([user, danmaku_record, notification])
         self.json_response(False)
 
 class Subtitles(BaseHandler):

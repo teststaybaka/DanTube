@@ -291,7 +291,7 @@ class Notifications(BaseHandler):
                 'content': notification.content,
                 'created': notification.created.strftime("%Y-%m-%d %H:%M"),
                 'read': notification.read,
-                'title': notification.title,
+                'title': notification.subject,
                 'id': notification.key.id(),
             }
             context['entries'].append(note_info)

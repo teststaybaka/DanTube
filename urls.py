@@ -70,7 +70,8 @@ routes = [
     webapp2.Route(r'/account/video/parts/<video_id:dt\d+>', video.ManageDanmaku, name="manage_danmaku"),
     webapp2.Route(r'/account/video/parts/danmaku/<video_id:dt\d+>/<clip_id:\d+>', video.ManageDanmakuDetail, name="manage_danmaku_detail"),
     webapp2.Route(r'/account/video/parts/danmaku/<video_id:dt\d+>/<clip_id:\d+>/drop', video.ManageDanmakuDetail, name="drop_danmaku_pool", handler_method="drop"),
-    webapp2.Route(r'/account/video/parts/danmaku/<video_id:dt\d+>/<clip_id:\d+>/delete', video.ManageDanmakuDetail, name="delete_danmaku_pool", handler_method="delete"),
+    webapp2.Route(r'/account/video/parts/danmaku/<video_id:dt\d+>/<clip_id:\d+>/delete', video.ManageDanmakuDetail, name="delete_danmaku", handler_method="delete"),
+    webapp2.Route(r'/account/video/parts/danmaku/<video_id:dt\d+>/<clip_id:\d+>/confirm', video.ManageDanmakuDetail, name="confirm_danmaku", handler_method="confirm"),
 
     webapp2.Route(r'/account/playlists', playlist.ManagePlaylist, name="manage_playlist"),
     webapp2.Route(r'/account/playlists/create', playlist.PlaylistInfo, name="create_playlist", handler_method="create"),

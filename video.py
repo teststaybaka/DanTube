@@ -664,7 +664,7 @@ class ManageDanmaku(BaseHandler):
 
 def pool_required_json(handler):
     def check_index(self, video_id, clip_id):
-        clip = ndb.Key('VideoClip', int(clip_id), parent=ndb.Key('Video', video_id))
+        clip = ndb.Key('VideoClip', int(clip_id), parent=ndb.Key('Video', video_id)).get()
         if not clip or clip.uploader != self.user_key:
             self.json_response(True, {'message': 'You are not allowed to edit this video.',})
             return
@@ -700,6 +700,7 @@ class ManageDanmakuDetail(BaseHandler):
             'advanced_danmaku_pool': clip.advanced_danmaku_pool,
             'subtitles_num': len(clip.subtitle_danmaku_pools),
             'subtitle_names': clip.subtitle_names,
+            'subtitle_approved': clip.subtitle_approved,
             'code_danmaku_pool': clip.code_danmaku_pool,
         }
         self.render('manage_danmaku_detail', context)
@@ -720,7 +721,7 @@ class ManageDanmakuDetail(BaseHandler):
                     'danmaku_list': [Danmaku.format_advanced_danmaku(danmaku, advanced_danmaku_pool) for danmaku in advanced_danmaku_pool.danmaku_list]
                 })
             elif pool_type == 'subtitles':
-                subtitle_danmaku_pool = clip.subtitle_danmaku_pools[pool_index-1].get()
+                subtitle_danmaku_pool = clip.subtitle_danmaku_pools[pool_index].get()
                 self.json_response(False, {
                     'subtitles_list': Subtitles.format_subtitles(subtitle_danmaku_pool)
                 })
@@ -740,19 +741,49 @@ class ManageDanmakuDetail(BaseHandler):
         pool_type = self.request.get('pool_type')
         try:
             if pool_type == 'danmaku':
-                danmaku_pool = clip.danmaku_pools.pop(pool_index-1)
+                danmaku_pool = clip.danmaku_pools.pop(pool_index)
                 danmaku_pool.delete()
             elif pool_type == 'advanced':
                 clip.advanced_danmaku_pool.delete()
                 clip.advanced_danmaku_pool = None
             elif pool_type == 'subtitles':
-                subtitle_danmaku_pool = clip.subtitle_danmaku_pools.pop(pool_index-1)
+                subtitle_danmaku_pool = clip.subtitle_danmaku_pools.pop(pool_index)
                 subtitle_danmaku_pool.delete()
-                clip.subtitle_names.pop(pool_index-1)
+                clip.subtitle_names.pop(pool_index)
+                clip.subtitle_approved.pop(pool_index)
             elif pool_type == 'code':
                 clip.code_danmaku_pool.delete()
                 clip.code_danmaku_pool = None
             clip.put()
+            self.json_response(False)
+        except IndexError:
+            self.json_response(True, {'message': 'Index out of range.'})
+
+    @login_required_json
+    @pool_required_json
+    def confirm(self, clip, pool_index):
+        try:
+            idx = int(self.request.get('danmaku_index'))
+        except ValueError:
+            self.json_response(True, {'message': 'Invalid index.'})
+            return
+
+        pool_type = self.request.get('pool_type')
+        try:
+            if pool_type == 'advanced':
+                danmaku_pool = clip.advanced_danmaku_pool.get()
+                danmaku_pool.danmaku_list[idx].approved = True
+                danmaku_pool.put()
+            elif pool_type == 'subtitles':
+                clip.subtitle_approved[pool_index] = True
+                clip.put()
+            elif pool_type == 'code':
+                danmaku_pool = clip.code_danmaku_pool.get()
+                danmaku_pool.danmaku_list[idx].approved = True
+                danmaku_pool.put()
+            else:
+                self.json_response(True, {'message': 'Invalid type.'})
+                return
             self.json_response(False)
         except IndexError:
             self.json_response(True, {'message': 'Index out of range.'})
@@ -769,7 +800,7 @@ class ManageDanmakuDetail(BaseHandler):
 
         pool_type = self.request.get('pool_type')
         if pool_type == 'danmaku':
-            danmaku_pool = clip.danmaku_pools[pool_index-1].get()
+            danmaku_pool = clip.danmaku_pools[pool_index].get()
         elif pool_type == 'advanced':
             danmaku_pool = clip.advanced_danmaku_pool.get()
         elif pool_type == 'code':

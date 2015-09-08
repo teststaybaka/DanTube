@@ -419,7 +419,7 @@ div.add-button, input.add-button {
     font-size: 14px;
     width: 60px;
     display: inline-block;
-    vertical-align: middle;
+    vertical-align: top;
     height: 16px;
     overflow: hidden;
     margin-right: 10px;
@@ -439,8 +439,42 @@ div.add-button, input.add-button {
     white-space: nowrap;
 }
 
-.detail-label.content.advanced, .detail-label.content.subtitles, .detail-label.content.code {
+.detail-label.content.long {
     width: 380px;
+}
+
+.detail-label.content.advanced.pending {
+    width: 320px;
+}
+
+.detail-label.content.code {
+    width: 325px;
+}
+
+.detail-label.content.code.expanded {
+    width: 380px;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    -webkit-transition: height .3s; /* For Safari 3.1 to 6.0 */
+    transition: height .3s;
+}
+
+.detail-label.content.code.pending {
+    width: 265px;
+}
+
+.detail-label.content.code.expanded.pending {
+    width: 320px;
+}
+
+.detail-label.expand {
+    width: 45px;
+    cursor: pointer;
+}
+
+.detail-label.confirm {
+    width: 50px;
+    cursor: pointer;
 }
 
 .detail-label.created {
@@ -496,6 +530,15 @@ div.add-button, input.add-button {
     vertical-align: middle;
     display: inline-block;
     margin-left: 10px;
+    color: rgb(100,100,100);
+}
+
+.danmaku-confirm-label {
+    font-size: 14px;
+    vertical-align: middle;
+    display: inline-block;
+    margin-left: 10px;
+    cursor: pointer;
     color: rgb(100,100,100);
 }
 

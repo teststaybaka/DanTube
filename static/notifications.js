@@ -5,7 +5,7 @@ $(document).ready(function() {
         for (var i = 0; i < result.entries.length; i++) {
             var note = result.entries[i];
             div += '<div class="content-entry '
-                    if (notification.read) { 
+                    if (note.read) { 
                         div += 'read'
                     }
                     div += ' '+note.id+'">\
@@ -25,7 +25,7 @@ $(document).ready(function() {
         return div;
     });
 
-    $('.messages-container').on('click', 'a.notification-title', function() {
+    $('.notifications-container').on('click', 'a.notification-title', function() {
         var message_entry = $(this).parent().parent().parent();
         if (!message_entry.hasClass('read')) {
             message_entry.addClass('read');

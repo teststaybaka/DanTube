@@ -247,3 +247,7 @@ div.notification-detail {
 #action-select {
     margin-left: 15px;
 }
+
+.notification-title {
+    cursor: pointer;
+}

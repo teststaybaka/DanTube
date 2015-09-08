@@ -44,7 +44,7 @@
                 <div class="list-option medium" data-type="advanced" title="Advanced danmaku pool">Advanced danmaku pool</div>
                 {% endif %}
                 {% for sub_name in subtitle_names %}
-                <div class="list-option medium" data-index="{{ loop.index }}" data-type="subtitles" title="{{ sub_name }}">{{ sub_name }}</div>
+                <div class="list-option medium" data-index="{{ loop.index }}" data-type="subtitles" {% if subtitle_approved[loop.index0] %}data-approved="1"{% endif %} title="{{ sub_name }}">{{ sub_name }}</div>
                 {% endfor %}
                 {% if code_danmaku_pool %}
                 <div class="list-option medium" data-type="code" title="Advanced danmaku pool">Code danmaku pool</div>
@@ -53,6 +53,7 @@
             <div class="list-selected auto medium">No pool available</div>
         </div>
         <div class="danmaku-num-label"></div>
+        <div class="danmaku-confirm-label blue-link">Confirm</div>
         <div class="inline-button actions delete disabled">Delete</div>
         <div class="inline-button actions drop disabled">Drop the pool</div>
     </div>

@@ -804,6 +804,7 @@ class VideoClip(ndb.Model):
   advanced_danmaku_num = ndb.IntegerProperty(required=True, default=0, indexed=False)
   advanced_danmaku_pool = ndb.KeyProperty(kind='AdvancedDanmakuPool', indexed=False)
   subtitle_names = ndb.StringProperty(repeated=True, indexed=False)
+  subtitle_approved = ndb.BooleanProperty(repeated=True, indexed=False)
   subtitle_danmaku_pools = ndb.KeyProperty(kind='SubtitleDanmakuPool', repeated=True, indexed=False)
   code_danmaku_num = ndb.IntegerProperty(required=True, default=0, indexed=False)
   code_danmaku_pool = ndb.KeyProperty(kind='CodeDanmakuPool', indexed=False)
@@ -864,6 +865,7 @@ class VideoClip(ndb.Model):
   @ndb.transactional(retries=10)
   def append_new_subtitles(self, name, pool_key):
     self.subtitle_names.append(name)
+    self.subtitle_approved.append(False)
     self.subtitle_danmaku_pools.append(pool_key)
     self.put()
 
@@ -903,6 +905,7 @@ class AdvancedDanmaku(ndb.Model):
   css = ndb.TextProperty(required=True, indexed=False)
   as_percent = ndb.BooleanProperty(required=True, indexed=False)
   relative = ndb.BooleanProperty(required=True, indexed=False)
+  approved = ndb.BooleanProperty(required=True, default=False, indexed=False)
   creator = ndb.KeyProperty(kind='User', required=True, indexed=False)
   created = ndb.DateTimeProperty(auto_now_add=True, indexed=False)
 
@@ -910,6 +913,7 @@ class CodeDanmaku(ndb.Model):
   index = ndb.IntegerProperty(required=True, default=0, indexed=False)
   timestamp = ndb.FloatProperty(required=True, indexed=False)
   content = ndb.TextProperty(required=True, indexed=False)
+  approved = ndb.BooleanProperty(required=True, default=False, indexed=False)
   creator = ndb.KeyProperty(kind='User', required=True, indexed=False)
   created = ndb.DateTimeProperty(auto_now_add=True, indexed=False)
 
@@ -923,7 +927,7 @@ class AdvancedDanmakuPool(ndb.Model):
 
 class SubtitleDanmakuPool(ndb.Model):
   subtitles = ndb.TextProperty(required=True, indexed=False)
-  status = ndb.StringProperty(required=True, indexed=False, default='Pending', choices=['Pending', 'Approved'])
+  approved = ndb.BooleanProperty(required=True, default=False, indexed=False)
   creator = ndb.KeyProperty(kind='User', required=True, indexed=False)
   created = ndb.DateTimeProperty(auto_now_add=True, indexed=False)
 
