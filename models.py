@@ -29,14 +29,6 @@ EMIAL_REGEX = re.compile(r"^[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^
 ILLEGAL_REGEX = re.compile(r".*[&@.,?!:/\\\"'<>=].*")
 ILLEGAL_LETTER = re.compile(r"[&@.,?!:/\\\"'<>=]")
 
-class BlobCollection(ndb.Model):
-  blob = ndb.BlobKeyProperty(required=True, indexed=False)
-  created = ndb.DateTimeProperty(auto_now_add=True, indexed=False)
-
-  def Delete(self):
-    images.delete_serving_url(self.blob)
-    blobstore.BlobInfo(self.blob).delete_async()
-
 class UserToken(ndb.Model):
   subject = ndb.StringProperty(required=True, indexed=False)
   token = ndb.StringProperty(required=True, indexed=False)
@@ -75,25 +67,12 @@ class UserToken(ndb.Model):
 
     return res_tokens
 
-class UserSnapshot(ndb.Model):
-  nickname = ndb.StringProperty(required=True, indexed=False)
-  avatar_url_small = ndb.StringProperty(required=True, indexed=False)
-
-  def get_snapshot_info(self, user_key):
-    snapshot_info = {
-      'id': user_key.id() if user_key else '',
-      'space_url': User.get_space_url(user_key.id()) if user_key else '',
-      'nickname': self.nickname,
-      'avatar_url_small': self.avatar_url_small,
-    }
-    return snapshot_info
-
 class UserDetail(ndb.Model):
   intro = ndb.TextProperty(required=True, default='',indexed=False)
   spacename = ndb.StringProperty(indexed=False)
   css_file = ndb.BlobKeyProperty(indexed=False)
   recent_visitors = ndb.KeyProperty(kind='User', repeated=True, indexed=False)
-  visitor_snapshots = ndb.LocalStructuredProperty(UserSnapshot, repeated=True, indexed=False)
+  recent_visitor_names = ndb.StringProperty(repeated=True, indexed=False)
   bullets = ndb.IntegerProperty(required=True, default=0, indexed=False)
   playlists_created = ndb.IntegerProperty(required=True, default=0, indexed=False)
   subscription_counter = ndb.IntegerProperty(required=True, default=0, indexed=False)
@@ -124,9 +103,7 @@ class UserDetail(ndb.Model):
   def get_visitor_info(self):
     visitor_info = {'visitors': []}
     for i in reversed(xrange(0, len(self.recent_visitors))):
-      visitor_key = self.recent_visitors[i]
-      visitor = self.visitor_snapshots[i]
-      info = visitor.get_snapshot_info(visitor_key)
+      info = User.get_snapshot_info(self.recent_visitor_names[i], self.recent_visitors[i])
       visitor_info['visitors'].append(info)
     return visitor_info
 
@@ -137,16 +114,14 @@ class UserDetail(ndb.Model):
 
 class User(webapp2_extras.appengine.auth.models.User):
   token_model = UserToken
+  AvatarPrefix = 'https://storage.googleapis.com/dantube-avatar/'
 
   email = ndb.StringProperty(required=True, indexed=False)
   password = ndb.StringProperty(required=True, indexed=False)
   nickname = ndb.StringProperty(required=True)
   level = ndb.IntegerProperty(required=True, default=1, indexed=False)
-  avatar = ndb.BlobKeyProperty(indexed=False)
-  avatar_url = ndb.StringProperty(required=True, indexed=False)
   created = ndb.DateTimeProperty(auto_now_add=True, indexed=False)
   updated = ndb.DateTimeProperty(auto_now_add=True, indexed=False)
-
   new_messages = ndb.IntegerProperty(required=True, default=0, indexed=False)
   new_mentions = ndb.IntegerProperty(required=True, default=0, indexed=False)
   new_notifications = ndb.IntegerProperty(required=True, default=0, indexed=False)
@@ -167,11 +142,31 @@ class User(webapp2_extras.appengine.auth.models.User):
   def get_space_url(cls, user_id):
     return '/user/' + str(user_id)
 
-  def get_avatar_url_small(self):
-    if self.avatar:
-      return self.avatar_url+'=s64'
+  @classmethod
+  def get_avatar_url(cls, user_key):
+    return cls.AvatarPrefix + 'standard-' + str(user_key.id())
+
+  @classmethod
+  def get_avatar_url_small(cls, user_key):
+    return cls.AvatarPrefix + 'small-' + str(user_key.id())
+
+  @classmethod
+  def get_snapshot_info(cls, nickname, user_key):
+    if user_key:
+      snapshot_info = {
+        'id': user_key.id(),
+        'space_url': cls.get_space_url(user_key.id()),
+        'nickname': nickname,
+        'avatar_url_small': cls.get_avatar_url_small(user_key),
+      }
     else:
-      return self.avatar_url
+      snapshot_info = {
+        'id': 0,
+        'space_url': None,
+        'nickname': None,
+        'avatar_url_small': None,
+      }
+    return snapshot_info
 
   def get_public_info(self):
     public_info = {
@@ -181,8 +176,8 @@ class User(webapp2_extras.appengine.auth.models.User):
       'created': self.created.strftime("%Y-%m-%d %H:%M"),
       'space_url': User.get_space_url(self.key.id()),
       'subscribers_counter': self.subscribers_counter,
-      'avatar_url': self.avatar_url,
-      'avatar_url_small': self.get_avatar_url_small(),
+      'avatar_url': User.get_avatar_url(self.key),
+      'avatar_url_small': User.get_avatar_url_small(self.key),
     }
     return public_info
 
@@ -207,9 +202,6 @@ class User(webapp2_extras.appengine.auth.models.User):
     info = self.get_public_info()
     info.update(private_info)
     return info
-
-  def create_snapshot(self):
-    return UserSnapshot(nickname=self.nickname, avatar_url_small=self.get_avatar_url_small())
 
   def delete_index(self):
     index = search.Index(name='upers_by_created')
@@ -397,8 +389,6 @@ class Playlist(ndb.Model):
   playlist_type = ndb.StringProperty(required=True, choices=Playlist_Type)
   intro = ndb.TextProperty(required=True, default='', indexed=False)
   first_video = ndb.KeyProperty(kind='Video', indexed=False)
-  thumbnail_url = ndb.StringProperty(indexed=False)
-  # thumbnail_url_hq = ndb.StringProperty(indexed=False)
   videos_num = ndb.IntegerProperty(required=True, default=0, indexed=False)
 
   @classmethod
@@ -412,7 +402,7 @@ class Playlist(ndb.Model):
       'title': self.title, 
       'type': self.playlist_type,
       'intro': self.intro[:300],
-      'thumbnail_url': self.thumbnail_url if self.thumbnail_url else '/static/img/empty_list.png',
+      'thumbnail_url': Video.get_thumbnail_url(self.first_video.id()) if self.first_video else '/static/img/empty_list.png',
       # 'thumbnail_url_hq': self.thumbnail_url_hq if self.thumbnail_url_hq else '/static/img/empty_list.png',
       'modified': self.modified.strftime("%Y-%m-%d %H:%M"),
     }
@@ -421,15 +411,6 @@ class Playlist(ndb.Model):
     else:
       basic_info['url'] = Video.get_video_url(self.first_video.id(), self.key.id()) if self.first_video else '',
     return basic_info
-
-  def set_first_video(self, video):
-    self.first_video = video.key
-    self.thumbnail_url = video.get_thumbnail_url()
-
-  def reset_first_video(self):
-    self.first_video = None
-    self.thumbnail_url = None
-    # self.thumbnail_url_hq = None
 
   def delete_index(self):
     index = search.Index(name='playlists_by_modified')
@@ -466,10 +447,12 @@ class VideoClipList(ndb.Model):
 
 Video_Type = ['Original', 'Republish']
 class Video(ndb.Model):
+  ThumbnailPrefix = 'https://storage.googleapis.com/dantube-thumbnail/'
+
   created = ndb.DateTimeProperty(auto_now_add=True)
   updated = ndb.DateTimeProperty(auto_now_add=True)
   uploader = ndb.KeyProperty(kind='User')
-  uploader_snapshot = ndb.LocalStructuredProperty(UserSnapshot, required=True, indexed=False)
+  uploader_name = ndb.StringProperty(required=True, indexed=False)
 
   title = ndb.StringProperty(required=True, indexed=False)
   intro = ndb.TextProperty(required=True, indexed=False)
@@ -477,8 +460,6 @@ class Video(ndb.Model):
   subcategory = ndb.StringProperty(required=True)
   video_type = ndb.StringProperty(required=True, choices=Video_Type, indexed=False)
   duration = ndb.IntegerProperty(required=True, default=0, indexed=False)
-  thumbnail = ndb.BlobKeyProperty(indexed=False)
-  thumbnail_url_hq = ndb.StringProperty(required=True, indexed=False)
   playlist_belonged = ndb.KeyProperty(kind='Playlist', indexed=False)
   tags = ndb.StringProperty(repeated=True, indexed=False)
   allow_tag_add = ndb.BooleanProperty(required=True, default=True, indexed=False)
@@ -502,13 +483,13 @@ class Video(ndb.Model):
     else:
       return '/video/'+video_id
 
-  def get_thumbnail_url(self):
-    if self.deleted:
-      return self.thumbnail_url_hq
-    elif not self.thumbnail:
-      return '/'.join(self.thumbnail_url_hq.split('/')[:-1])+'/mqdefault.jpg'
-    else:
-      return self.thumbnail_url_hq+'=s208'
+  @classmethod
+  def get_thumbnail_url_large(cls, video_id):
+    return cls.ThumbnailPrefix+'large-'+video_id
+
+  @classmethod
+  def get_thumbnail_url(cls, video_id):
+    return cls.ThumbnailPrefix+'standard-'+video_id
 
   def get_basic_info(self, playlist_id=None):
     basic_info = {
@@ -526,9 +507,9 @@ class Video(ndb.Model):
       'shares': self.shares,
       'likes': self.likes,
       'created': self.created.strftime("%Y-%m-%d %H:%M") if not self.deleted else '',
-      'uploader': self.uploader_snapshot.get_snapshot_info(self.uploader),
-      'thumbnail_url': self.get_thumbnail_url(),
-      'thumbnail_url_hq': self.thumbnail_url_hq,
+      'uploader': User.get_snapshot_info(self.uploader_name, self.uploader),
+      'thumbnail_url': Video.get_thumbnail_url(self.key.id()),
+      'thumbnail_url_hq': Video.get_thumbnail_url_large(self.key.id()),
     }
     return basic_info
 
@@ -617,7 +598,7 @@ class Video(ndb.Model):
 
   def create_index(self, index_name, rank):
     index = search.Index(name=index_name)
-    searchable = ' '.join(self.tags + [self.title, self.intro[:300], self.uploader_snapshot.nickname, self.video_type]);
+    searchable = ' '.join(self.tags + [self.title, self.intro[:300], self.uploader_name, self.video_type]);
     doc = search.Document(
       doc_id = self.key.urlsafe(),
       fields = [
@@ -631,22 +612,17 @@ class Video(ndb.Model):
     add_result = index.put(doc)
 
   @classmethod
-  def Create(cls, user, intro, title, category, subcategory, video_type, duration, thumbnail, default_thumbnail, tags, allow_tag_add):
+  def Create(cls, user, intro, title, category, subcategory, video_type, duration, tags, allow_tag_add):
     try:
       video_id = 'dt'+str(cls.getID())
     except TransactionFailedError, e:
       raise e
 
-    if not thumbnail:
-      thumbnail_url_hq = 'http://img.youtube.com/vi/' + default_thumbnail + 'default.jpg'
-    else:
-      thumbnail_url_hq = images.get_serving_url(thumbnail)
-
     current_time = time_to_seconds(datetime.now())
     video = cls(
       id = video_id,
       uploader = user.key,
-      uploader_snapshot = user.create_snapshot(),
+      uploader_name = user.nickname,
       intro = intro,
       title = title,
       category = category,
@@ -655,8 +631,6 @@ class Video(ndb.Model):
       duration = duration,
       tags = tags,
       allow_tag_add = allow_tag_add,
-      thumbnail = thumbnail,
-      thumbnail_url_hq = thumbnail_url_hq,
       hot_score_updated = current_time,
       hot_score = current_time,
     )
@@ -686,9 +660,9 @@ class Video(ndb.Model):
       playlist, list_detail = ndb.get_multi([self.playlist_belonged, Playlist.get_detail_key(self.playlist_belonged)])
       list_detail.videos.remove(self.key)
       if not list_detail.videos:
-        playlist.reset_first_video()
+        playlist.first_video = None
       elif playlist.first_video != list_detail.videos[0]:
-        playlist.set_first_video(list_detail.videos[0].get())
+        playlist.first_video = list_detail.videos[0]
       playlist.videos_num = len(list_detail.videos)
       ndb.put_multi([playlist, list_detail])
       self.playlist_belonged = None
@@ -712,9 +686,6 @@ class Video(ndb.Model):
     #   except TransactionFailedError:
     #     pass
     
-    if self.thumbnail:
-      BlobCollection(blob=self.thumbnail).put()
-
     self.delete_index('videos_by_created')
     self.delete_index('videos_by_hits')
     self.delete_index('videos_by_likes')
@@ -723,7 +694,6 @@ class Video(ndb.Model):
     self.title = 'Video deleted'
     self.intro = ''
     self.duration = 0
-    self.thumbnail_url_hq = '/static/img/video_deleted.png'
     self.uploader = None
     self.updated = None
     self.created = None
@@ -733,7 +703,7 @@ class Video(ndb.Model):
 
 class Comment(ndb.Model):
   creator = ndb.KeyProperty(kind='User', required=True)
-  creator_snapshot = ndb.LocalStructuredProperty(UserSnapshot, required=True, indexed=False)
+  creator_name = ndb.StringProperty(required=True, indexed=False)
   video = ndb.KeyProperty(kind='Video', required=True, indexed=False)
   video_title = ndb.StringProperty(required=True, indexed=False)
 
@@ -754,7 +724,7 @@ class Comment(ndb.Model):
       'inner_floorth': self.inner_floorth,
       'inner_comment_counter': self.inner_comment_counter,
       'created': self.created.strftime("%Y-%m-%d %H:%M"),
-      'creator': self.creator_snapshot.get_snapshot_info(self.creator),
+      'creator': User.get_snapshot_info(self.creator_name, self.creator),
     }
     content_info['video'] = {
       'url': Video.get_video_url(self.video.id()),
@@ -772,7 +742,7 @@ class Comment(ndb.Model):
       comment_counter = newest_comment.floorth
     comment_counter += 1
     
-    comment = cls(parent=video.key, video=video.key, video_title=video.title, creator=user.key, creator_snapshot=user.create_snapshot(), content=content, floorth=comment_counter, share=allow_share)
+    comment = cls(parent=video.key, video=video.key, video_title=video.title, creator=user.key, creator_name=user.nickname, content=content, floorth=comment_counter, share=allow_share)
     comment.put()
     return comment
 
@@ -780,7 +750,7 @@ class Comment(ndb.Model):
   @ndb.transactional(retries=10, xg=True)
   def CreateInnerComment(cls, user, comment, content, allow_share):
     comment.inner_comment_counter += 1
-    inner_comment = cls(parent=ndb.Key('Comment', comment.key.id()), video=comment.key.parent(), video_title=comment.video_title, creator=user.key, creator_snapshot=user.create_snapshot(), content=content, floorth=comment.floorth, inner_floorth=comment.inner_comment_counter, share=allow_share)
+    inner_comment = cls(parent=ndb.Key('Comment', comment.key.id()), video=comment.key.parent(), video_title=comment.video_title, creator=user.key, creator_name=user.nickname, content=content, floorth=comment.floorth, inner_floorth=comment.inner_comment_counter, share=allow_share)
     ndb.put_multi([comment, inner_comment])
     return inner_comment
 
@@ -969,7 +939,7 @@ class Notification(ndb.Model):
 
 Danmaku_Types = ['danmaku', 'advanced', 'subtitles', 'code']
 class DanmakuRecord(ndb.Model):
-  creator_snapshot = ndb.LocalStructuredProperty(UserSnapshot, required=True, indexed=False)
+  creator_name = ndb.StringProperty(required=True, indexed=False)
   content = ndb.TextProperty(indexed=False)
   danmaku_type = ndb.StringProperty(required=True, choices=Danmaku_Types, indexed=False)
   video = ndb.KeyProperty(kind='Video', required=True, indexed=False)
@@ -985,7 +955,7 @@ class DanmakuRecord(ndb.Model):
       'timestamp': self.timestamp,
       'clip_index': self.clip_index,
       'created': self.created.strftime("%Y-%m-%d %H:%M"),
-      'creator': self.creator_snapshot.get_snapshot_info(self.key.parent()),
+      'creator': User.get_snapshot_info(self.creator_name, self.key.parent()),
     }
     content_info['video'] = {
       'url': Video.get_video_url(self.video.id()),

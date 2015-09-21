@@ -7,11 +7,15 @@ import cStringIO
 import itertools
 import mimetools
 import mimetypes
-import urllib
 import urllib2
 import random
 import cgi
+import json
+import re
+import math
+import cloudstorage as gcs
 
+from google.appengine.api import app_identity
 from datetime import datetime
 from jinja2 import Undefined
 from webapp2_extras import sessions
@@ -24,9 +28,6 @@ from google.appengine.api import search
 from google.appengine.ext import ndb
 
 import models
-import json
-import re
-import math
 
 class SilentUndefined(Undefined):
     '''

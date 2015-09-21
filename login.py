@@ -1,5 +1,6 @@
 from views import *
 import time
+from PIL import Image
 
 class EmailCheck(BaseHandler):
     def post(self):
@@ -49,7 +50,6 @@ class Signup(BaseHandler):
             nickname=nickname,
             email=email,
             password_raw=password,
-            avatar_url='/static/emoticons_img/default_avatar'+str(random.randint(1,6))+'.png',
         )
         if not success:
             # self.session['message'] = 'Unable to create user for email %s because of \
@@ -66,13 +66,23 @@ class Signup(BaseHandler):
                                     subject="Verficaition Email from DanTube")
         message.to = email
         message.body = """
-        Dear %s:
+Dear %s:
 
-        Please use the following url to activate your account:
-        %s
-        """ % (nickname, verification_url)
+Please use the following url to activate your account:
+%s
+""" % (nickname, verification_url)
         logging.info(message.body)
         message.send()
+
+        img = Image.open(cStringIO.StringIO(urllib2.urlopen(self.request.host_url+'/static/emoticons_img/default_avatar'+str(random.randint(1,6))+'.png').read()))
+        bucket_name = 'dantube-avatar'
+        standard_file = gcs.open('/'+bucket_name+'/standard-'+str(user.key.id()), 'w', content_type="text/plain", options={'x-goog-acl': 'public-read'})
+        small_file = gcs.open('/'+bucket_name+'/small-'+str(user.key.id()), 'w', content_type="text/plain", options={'x-goog-acl': 'public-read'})
+        img.save(standard_file, format='png', optimize=True)
+        img = img.resize((64, 64), Image.ANTIALIAS)
+        img.save(small_file, format='png', optimize=True)
+        standard_file.close()
+        small_file.close()
 
         self.json_response(False);
 
@@ -137,13 +147,13 @@ class ForgotPassword(BaseHandler):
                                     subject="Password Reset Email from DanTube")
         message.to = user.email
         message.body = """
-        Dear %s:
+Dear %s:
 
-        Your password reset url is:
-        %s
+Your password reset url is:
+%s
 
-        You can safely ignore this email if you didn't request a password reset.
-        """ % (user.nickname, password_reset_url)
+You can safely ignore this email if you didn't request a password reset.
+""" % (user.nickname, password_reset_url)
         logging.info(message.body)
         message.send()
 
@@ -241,11 +251,11 @@ class SendVerification(BaseHandler):
                                     subject="Verficaition Email from DanTube")
         message.to = user.email
         message.body = """
-        Dear %s:
+Dear %s:
 
-        Please use the following url to activate your account:
-        %s
-        """ % (user.nickname, verification_url)
+Please use the following url to activate your account:
+%s
+""" % (user.nickname, verification_url)
         logging.info(message.body)
         message.send()
 

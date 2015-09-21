@@ -30,7 +30,7 @@ routes = [
     webapp2.Route(r'/account', account.Account, name="account"),
     webapp2.Route(r'/account/info', account.ChangeInfo, name="change_info"),
     webapp2.Route(r'/account/avatar', account.ChangeAvatar, name="change_avatar"),
-    webapp2.Route(r'/account/avatar/upload/<user_id:\d+>', account.AvatarUpload, name="avatar_upload"),
+    # webapp2.Route(r'/account/avatar/upload/<user_id:\d+>', account.AvatarUpload, name="avatar_upload"),
     webapp2.Route(r'/account/password', account.ChangePassword, name="change_password"),
     webapp2.Route(r'/account/subscribed', account.Subscribed, name="subscribed_users"),
     webapp2.Route(r'/account/subscriptions', account.Subscriptions, name="subscriptions"),
@@ -111,6 +111,7 @@ routes = [
     webapp2.Route(r'/report/danmaku/<video_id:dt\d+>/<clip_id:\d+>', report.Report, name="report_danmaku", handler_method="danmaku"),
 
     # webapp2.Route(r'/admin', admin.Home, name="Admin_Home"),
+    webapp2.Route(r'/admin/delete/videos', admin.DeleteVideos, name="delete_video"),
     # webapp2.Route(r'/admin/video', admin.VideoPageTest, name="Admin_Video"),
     # webapp2.Route(r'/admin/danmaku', admin.DanmakuTest, name="Admin_Danmaku"),
     # webapp2.Route(r'/admin/notify', admin.Notify, name="Admin_Notify"),

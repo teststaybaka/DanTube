@@ -258,96 +258,89 @@ class ChangeAvatar(BaseHandler):
             return
 
         avatar_field = self.request.POST.get('upload-avatar')
-        if avatar_field != '':
-            try:
-                im = Image.open(avatar_field.file)
-                # mypalette = frame.getpalette()
-                # logging.info(frame.info['duration'])
-                # nframes = 0
-                # while frame:
-                #     frame.putpalette(mypalette)
-                #     im = frame
-                #     nframes += 1
-                #     if nframes > 4:
-                #         break;
-                #     try:
-                #         frame.seek(frame.tell() + 1)
-                #     except EOFError:
-                #         break;
-
-                output = cStringIO.StringIO()
-                if im.mode == "RGBA" or "transparency" in im.info:
-                    rgba_im = Image.new("RGBA", (128,128))
-                    resized_im = im.crop((x0, y0, x0+width-1, y0+height-1)).resize((128,128), Image.ANTIALIAS)
-                    rgba_im.paste(resized_im)
-                    new_im = Image.new("RGB", (128,128), (255,255,255))
-                    new_im.paste(rgba_im, rgba_im)
-                    new_im.save(output, format='jpeg', quality=100)
-                else:
-                    rgb_im = Image.new("RGB", (128,128))
-                    resized_im = im.crop((x0, y0, x0+width-1, y0+height-1)).resize((128,128), Image.ANTIALIAS)
-                    rgb_im.paste(resized_im)
-                    rgb_im.save(output, format='jpeg', quality=100)
-            except Exception, e:
-                self.json_response(True, {'message': 'Image crop error.'})
-            else:
-                output.seek(0)
-                form = MultiPartForm()
-                # form.add_field('raw_url', raw_url)
-                form.add_file('avatarImage', 'avatar.jpg', fileHandle=output)
-
-                # Build the request
-                upload_url = models.blobstore.create_upload_url(self.uri_for('avatar_upload', user_id=self.user_key.id()))
-                # logging.info(upload_url)
-                request = urllib2.Request(upload_url)
-                request.add_header('User-agent', 'PyMOTW (http://www.doughellmann.com/PyMOTW/)')
-                body = str(form)
-                request.add_header('Content-type', form.get_content_type())
-                request.add_header('Content-length', len(body))
-                request.add_data(body)
-                # request.get_data()
-
-                if urllib2.urlopen(request).read() == 'error':
-                    self.json_response(True, {'message': 'Image upload error.'})
-                else:
-                    self.json_response(False)
-        else:
+        if avatar_field == '':
             self.json_response(True, {'message': 'Image file doesn\'t exist.'})
-
-class AvatarUpload(BaseHandler, blobstore_handlers.BlobstoreUploadHandler):
-    def post(self, user_id):
-        self.response.headers['Content-Type'] = 'text/plain'
-        upload = self.get_uploads('avatarImage')
-        if not upload:
-            self.response.out.write('error')
-            # self.response.out.write(json.dumps({'error':True,'message': 'Please select a file.'}))
             return
 
-        uploaded_image = upload[0]
-        logging.info("upload content_type:"+uploaded_image.content_type)
-        logging.info("upload size:"+str(uploaded_image.size))
-        types = uploaded_image.content_type.split('/')
-        if types[0] != 'image':
-            uploaded_image.delete()
-            self.response.out.write('error')
-            # self.response.out.write(json.dumps({'error':True,'message': 'File type error.'}))
+        try:
+            im = Image.open(avatar_field.file)
+            # mypalette = frame.getpalette()
+            # logging.info(frame.info['duration'])
+            # nframes = 0
+            # while frame:
+            #     frame.putpalette(mypalette)
+            #     im = frame
+            #     nframes += 1
+            #     if nframes > 4:
+            #         break;
+            #     try:
+            #         frame.seek(frame.tell() + 1)
+            #     except EOFError:
+            #         break;
+
+            bucket_name = 'dantube-avatar'
+            standard_file = gcs.open('/'+bucket_name+'/standard-'+str(self.user_key.id()), 'w', content_type="text/plain", options={'x-goog-acl': 'public-read'})
+            small_file = gcs.open('/'+bucket_name+'/small-'+str(self.user_key.id()), 'w', content_type="text/plain", options={'x-goog-acl': 'public-read'})
+
+            if im.mode == "RGBA" or "transparency" in im.info:
+                resized_im = im.crop((x0, y0, x0+width-1, y0+height-1)).resize((128,128), Image.ANTIALIAS)
+                new_im = Image.new("RGB", (128,128), (255,255,255))
+                new_im.paste(resized_im, resized_im)
+                new_im.save(standard_file, format='jpeg', quality=95, optimize=True)
+                new_im = new_im.resize((64, 64), Image.ANTIALIAS)
+                new_im.save(small_file, format='jpeg', quality=95, optimize=True)
+            else:
+                resized_im = im.crop((x0, y0, x0+width-1, y0+height-1)).resize((128,128), Image.ANTIALIAS)
+                resized_im.save(standard_file, format='jpeg', quality=95, optimize=True)
+                resized_im = resized_im.resize((64, 64), Image.ANTIALIAS)
+                resized_im.save(small_file, format='jpeg', quality=95, optimize=True)
+
+            standard_file.close()
+            small_file.close()
+        except Exception, e:
+            self.json_response(True, {'message': 'Image crop error.'})
             return
 
-        if uploaded_image.size > 50*1024*1024:
-            uploaded_image.delete()
-            self.response.out.write('error')
-            # self.response.out.write(json.dumps({'error':True,'message': 'File is too large.'}))
-            return
+        self.json_response(False)
+            
 
-        user = self.user_model.get_by_id(int(user_id))
-        if user.avatar:
-            models.BlobCollection(blob=user.avatar).put()
+# class AvatarUpload(BaseHandler, blobstore_handlers.BlobstoreUploadHandler):
+#     def post(self, user_id):
+#         self.response.headers['Content-Type'] = 'text/plain'
+#         upload = self.get_uploads('avatarImage')
+#         if not upload:
+#             self.response.out.write('error')
+#             logging.warning('No file uploaded')
+#             # self.response.out.write(json.dumps({'error':True,'message': 'Please select a file.'}))
+#             return
 
-        user.avatar = uploaded_image.key()
-        user.avatar_url = images.get_serving_url(user.avatar)
-        user.put()
-        self.response.out.write('success')
-        # self.response.out.write(json.dumps({'error':False}))
+#         uploaded_image = upload[0]
+#         logging.info("upload content_type:"+uploaded_image.content_type)
+#         logging.info("upload size:"+str(uploaded_image.size))
+#         types = uploaded_image.content_type.split('/')
+#         if types[0] != 'image':
+#             uploaded_image.delete()
+#             self.response.out.write('error')
+#             logging.warning('File type error')
+#             # self.response.out.write(json.dumps({'error':True,'message': 'File type error.'}))
+#             return
+
+#         if uploaded_image.size > 50*1024*1024:
+#             uploaded_image.delete()
+#             self.response.out.write('error')
+#             logging.warning('File too large')
+#             # self.response.out.write(json.dumps({'error':True,'message': 'File is too large.'}))
+#             return
+
+#         user = self.user_model.get_by_id(int(user_id))
+#         if user.avatar:
+#             models.BlobCollection(blob=user.avatar).put()
+
+#         user.avatar = uploaded_image.key()
+#         user.avatar_url = images.get_serving_url(user.avatar)
+#         user.put()
+#         self.response.out.write('success')
+#         # self.response.out.write(json.dumps({'error':False}))
 
 class SpaceSetting(BaseHandler):
     @login_required

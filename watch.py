@@ -96,12 +96,11 @@ class Video(BaseHandler):
 
         # update uploader info
         uploader, uploader_detail = ndb.get_multi([video.uploader, models.User.get_detail_key(video.uploader)])
-        snapshot = uploader.create_snapshot()
         uploader_info = uploader.get_public_info()
         uploader_info.update(uploader_detail.get_detail_info())
         change_snapshot = False
-        if video.uploader_snapshot.to_dict() != snapshot.to_dict():
-            video.uploader_snapshot = snapshot
+        if video.uploader_name != uploader.nickname:
+            video.uploader_name = uploader.nickname
             change_snapshot = True
 
         # check video status for user
@@ -459,7 +458,7 @@ class Danmaku(BaseHandler):
         user, video = ndb.get_multi([user_key, clip.key.parent()])
         video.update_hot_score(HOT_SCORE_PER_DANMAKU)
         video.updated = datetime.now()
-        danmaku_record = models.DanmakuRecord(parent=user_key, creator_snapshot=user.create_snapshot(), content=content, danmaku_type='danmaku', video=video.key, clip_index=clip.index, video_title=video.title, timestamp=timestamp)
+        danmaku_record = models.DanmakuRecord(parent=user_key, creator_name=user.nickname, content=content, danmaku_type='danmaku', video=video.key, clip_index=clip.index, video_title=video.title, timestamp=timestamp)
         ndb.put_multi([danmaku_pool, video, danmaku_record])
 
         models.MentionedRecord.Create(users, danmaku_record.key)
@@ -554,8 +553,8 @@ class Danmaku(BaseHandler):
         advanced_danmaku_pool.counter += 1
 
         user, video = ndb.get_multi([user_key, clip.key.parent()])
-        danmaku_record = models.DanmakuRecord(parent=user_key, creator_snapshot=user.create_snapshot(), content=content, danmaku_type='advanced', video=video.key, clip_index=clip.index, video_title=video.title, timestamp=timestamp)
-        notification = models.Notification(receiver=user_key, subject='An advanced danmaku was posted.', content='An advanced danmaku was posted to your video: '+video.title+' ('+video.key.id()+') by '+user.nickname+'. Please confirm or delete it if contains improper content.', note_type='info')
+        danmaku_record = models.DanmakuRecord(parent=user_key, creator_name=user.nickname, content=content, danmaku_type='advanced', video=video.key, clip_index=clip.index, video_title=video.title, timestamp=timestamp)
+        notification = models.Notification(receiver=user_key, subject='An advanced danmaku was posted.', content='An advanced danmaku was posted to your video, '+video.title+' ('+video.key.id()+'), by '+user.nickname+'. Please confirm or delete it if contains improper content.', note_type='info')
         user.new_notifications += 1
         ndb.put_multi([user, advanced_danmaku_pool, danmaku_record, notification])
         self.json_response(False, Danmaku.format_advanced_danmaku(danmaku, advanced_danmaku_pool))
@@ -619,8 +618,8 @@ class Danmaku(BaseHandler):
         code_danmaku_pool.counter += 1
 
         user, video = ndb.get_multi([user_key, clip.key.parent()])
-        danmaku_record = models.DanmakuRecord(parent=user_key, creator_snapshot=user.create_snapshot(), content=content, danmaku_type='code', video=video.key, clip_index=clip.index, video_title=video.title, timestamp=timestamp)
-        notification = models.Notification(receiver=user_key, subject='A code danmaku was posted.', content='A code danmaku was posted to your video: '+video.title+' ('+video.key.id()+') by '+user.nickname+'. Please confirm carefully or delete it if it does something unknown/harmful to you/other users.', note_type='info')
+        danmaku_record = models.DanmakuRecord(parent=user_key, creator_name=user.nickname, content=content, danmaku_type='code', video=video.key, clip_index=clip.index, video_title=video.title, timestamp=timestamp)
+        notification = models.Notification(receiver=user_key, subject='A code danmaku was posted.', content='A code danmaku was posted to your video, '+video.title+' ('+video.key.id()+'), by '+user.nickname+'. Please confirm carefully or delete it if it does something unknown/harmful to you/other users.', note_type='info')
         user.new_notifications += 1
         ndb.put_multi([user, code_danmaku_pool, danmaku_record, notification])
         self.json_response(False)
@@ -675,8 +674,8 @@ class Danmaku(BaseHandler):
             return
 
         user, video = ndb.get_multi([user_key, clip.key.parent()])
-        danmaku_record = models.DanmakuRecord(parent=user_key, creator_snapshot=user.create_snapshot(), content=subtitles, danmaku_type='subtitles', video=video.key, clip_index=clip.index, video_title=video.title)
-        notification = models.Notification(receiver=user_key, subject='A new subtitles was submitted.', content='A new subtitles, '+name+', was submitted to your video: '+video.title+' ('+video.key.id()+') by '+user.nickname+'. Please confirm or delete it if improper.', note_type='info')
+        danmaku_record = models.DanmakuRecord(parent=user_key, creator_name=user.nickname, content=subtitles, danmaku_type='subtitles', video=video.key, clip_index=clip.index, video_title=video.title)
+        notification = models.Notification(receiver=user_key, subject='A new subtitles was submitted.', content='A new subtitles, '+name+', was submitted to your video, '+video.title+' ('+video.key.id()+'), by '+user.nickname+'. Please confirm or delete it if improper.', note_type='info')
         user.new_notifications += 1
         ndb.put_multi([user, danmaku_record, notification])
         self.json_response(False)

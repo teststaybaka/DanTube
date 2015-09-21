@@ -15,14 +15,14 @@ def host_info(handler):
                 try:
                     index = host_detail.recent_visitors.index(user.key)
                     host_detail.recent_visitors.pop(index)
-                    host_detail.visitor_snapshots.pop(index)
+                    host_detail.recent_visitor_names.pop(index)
                 except ValueError:
                     logging.info('not found')
                 host_detail.recent_visitors.append(user.key)
-                host_detail.visitor_snapshots.append(user.create_snapshot())
+                host_detail.recent_visitor_names.append(user.nickname)
                 if len(host_detail.recent_visitors) > 8:
                     host_detail.recent_visitors.pop(0)
-                    host_detail.visitor_snapshots.pop(0)
+                    host_detail.recent_visitor_names.pop(0)
                 host_detail.space_visited += 1
                 host_detail.put()
         else:

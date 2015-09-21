@@ -4,7 +4,7 @@ var orig_width, orig_height;
 var crop_coords = {};
 
 function cropImage(src) {
-    $('#image-upload-hint').addClass('hidden')
+    $('#image-upload-hint').css('visibility', 'hidden');
     $('#avatar-crop-canvas').append('<img id="avatar-crop" src="' + src + '">');
     crop_width = $('#avatar-crop').width();
     crop_height = $('#avatar-crop').height();
@@ -35,9 +35,9 @@ function cropImage(src) {
 
 function readImage() {
     var file = document.getElementById("upload-avatar").files[0];
-    $('#image-upload-hint').removeClass('hidden');
-    $('#avatar-crop').remove();
+    $('#image-upload-hint').css('visibility', 'visible');
     $('div.jcrop-holder').remove();
+    $('#avatar-crop').remove();
     $('#upload-file-text').val('');
     if (file) {
         if (file.size <= 0) {

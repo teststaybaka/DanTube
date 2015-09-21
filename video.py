@@ -207,12 +207,23 @@ class VideoUpload(BaseHandler):
             except Exception, e:
                 raise Exception('Index error.')
 
-    def thumbnail_upload(self):
-        self.thumbnail_field = self.request.POST.get('thumbnail')
-        self.thumbnail_key = None
-        if self.thumbnail_field == '':
-            return
+    def upload_default_thumbnail(self, video_id):
+        try:
+            im = Image.open(cStringIO.StringIO(urllib2.urlopen('http://img.youtube.com/vi/'+self.default_thumbnail+'default.jpg').read()))
+            bucket_name = 'dantube-thumbnail'
+            large_file = gcs.open('/'+bucket_name+'/large-'+video_id, 'w', content_type="text/plain", options={'x-goog-acl': 'public-read'})
+            standard_file = gcs.open('/'+bucket_name+'/standard-'+video_id, 'w', content_type="text/plain", options={'x-goog-acl': 'public-read'})
+            resized_im = im.resize((512,288), Image.ANTIALIAS)
+            resized_im.save(large_file, format='jpeg', quality=90, optimize=True)
+            resized_im = resized_im.resize((208,117), Image.ANTIALIAS)
+            resized_im.save(standard_file, format='jpeg', quality=90, optimize=True)
+            large_file.close()
+            standard_file.close()
+        except Exception:
+            logging.info('Image process failed')
+            raise Exception('Image process failed.')
 
+    def upload_thumbnail(self, video_id):
         try:
             im = Image.open(self.thumbnail_field.file)
             # mypalette = frame.getpalette()
@@ -228,49 +239,33 @@ class VideoUpload(BaseHandler):
             #         frame.seek(frame.tell() + 1)
             #     except EOFError:
             #         break;
+            bucket_name = 'dantube-thumbnail'
+            large_file = gcs.open('/'+bucket_name+'/large-'+video_id, 'w', content_type="text/plain", options={'x-goog-acl': 'public-read'})
+            standard_file = gcs.open('/'+bucket_name+'/standard-'+video_id, 'w', content_type="text/plain", options={'x-goog-acl': 'public-read'})
 
-            output = cStringIO.StringIO()
             if im.mode == "RGBA" or "transparency" in im.info:
-                rgba_im = Image.new("RGBA", (512,288))
                 resized_im = im.resize((512,288), Image.ANTIALIAS)
-                rgba_im.paste(resized_im)
                 new_im = Image.new("RGB", (512,288), (255,255,255))
                 new_im.paste(rgba_im, rgba_im)
-                new_im.save(output, format='jpeg', quality=90)
+                new_im.save(large_file, format='jpeg', quality=90, optimize=True)
+                new_im = new_im.resize((208,117), Image.ANTIALIAS)
+                new_im.save(standard_file, format='jpeg', quality=90, optimize=True)
             else:
-                rgb_im = Image.new("RGB", (512,288))
                 resized_im = im.resize((512,288), Image.ANTIALIAS)
-                rgb_im.paste(resized_im)
-                rgb_im.save(output, format='jpeg', quality=90)
-        except Exception, e:
-            # logging.info('image process failed')
-            raise Exception('Image process failed.')
-        else:
-            output.seek(0)
-            form = MultiPartForm()
-            # form.add_field('raw_url', raw_url)
-            form.add_file('coverImage', 'cover.jpg', fileHandle=output)
+                resized_im.save(large_file, format='jpeg', quality=90, optimize=True)
+                resized_im = resized_im.resize((208,117), Image.ANTIALIAS)
+                resized_im.save(standard_file, format='jpeg', quality=90, optimize=True)
 
-            # Build the request
-            upload_url = models.blobstore.create_upload_url(self.uri_for('cover_upload'))
-            request = urllib2.Request(upload_url)
-            request.add_header('User-agent', 'PyMOTW (http://www.doughellmann.com/PyMOTW/)')
-            body = str(form)
-            request.add_header('Content-type', form.get_content_type())
-            request.add_header('Content-length', len(body))
-            request.add_data(body)
-            # request.get_data()
-            request_res = urllib2.urlopen(request).read()
-            if request_res == 'error':
-                raise Exception('Image upload error.')
-            else:
-                self.thumbnail_key = models.blobstore.BlobKey(request_res)
+            large_file.close()
+            standard_file.close()
+        except Exception, e:
+            logging.info('Image process failed')
+            raise Exception('Image process failed.')
 
     @login_required_json
     def submit_post(self):
         try:
             self.field_check()
-            self.thumbnail_upload()
         except Exception, e:
             self.json_response(True, {'message': str(e)})
             return
@@ -285,17 +280,22 @@ class VideoUpload(BaseHandler):
                 subcategory=self.subcategory,
                 video_type=self.video_type,
                 duration=sum(self.durations),
-                thumbnail=self.thumbnail_key,
-                default_thumbnail=self.default_thumbnail,
                 tags=self.tags,
-                allow_tag_add=self.allow_tag_add
+                allow_tag_add=self.allow_tag_add,
             )
         except TransactionFailedError:
             logging.error('Video submitted failed!!!')
-            if self.thumbnail_key:
-                models.blobstore.BlobInfo(self.thumbnail_key).delete()
             self.json_response(True, {'message': 'Video uploading error. Please try again.'})
             return
+
+        try:
+            self.thumbnail_field = self.request.POST.get('thumbnail')
+            if self.thumbnail_field != '':
+                self.upload_thumbnail(video.key.id())
+            else:
+                self.upload_default_thumbnail(video.key.id())
+        except Exception, e:
+            pass
 
         video_clips = []
         for i in xrange(0, len(self.raw_urls)):
@@ -340,7 +340,9 @@ class VideoUpload(BaseHandler):
         self.allow_post = bool(self.request.get('allow-post'))
         try:
             self.field_check()
-            self.thumbnail_upload()
+            self.thumbnail_field = self.request.POST.get('thumbnail')
+            if self.thumbnail_field != '':
+                self.upload_thumbnail(video.key.id())
         except Exception, e:
             self.json_response(True, {'message': str(e)})
             return
@@ -379,19 +381,6 @@ class VideoUpload(BaseHandler):
         if video.allow_tag_add != self.allow_tag_add:
             video.allow_tag_add = self.allow_tag_add
             changed = True
-
-        if self.thumbnail_key:
-            if video.thumbnail:
-                models.BlobCollection(blob=video.thumbnail).put()
-            video.thumbnail = self.thumbnail_key
-            video.thumbnail_url_hq = images.get_serving_url(self.thumbnail_key)
-            changed = True
-
-            if video.playlist_belonged:
-                playlist = video.playlist_belonged.get()
-                if playlist.first_video == video.key:
-                    playlist.set_first_video(video)
-                    playlist.put()
 
         ori_clips = ndb.get_multi(clip_list.clips)
         new_clips = []
@@ -450,7 +439,10 @@ class VideoUpload(BaseHandler):
                 changed = True
 
         if not changed:
-            self.json_response(True, {'message': 'Nothing changed.'})
+            if self.thumbnail_field != '':
+                self.json_response(False)
+            else:
+                self.json_response(True, {'message': 'Nothing changed.'})
             return
 
         ndb.put_multi(put_clips)
@@ -532,6 +524,10 @@ class DeleteVideo(BaseHandler):
             self.json_response(True, {'message': 'Invalid id.'})
             return
 
+        im = Image.open(cStringIO.StringIO(urllib2.urlopen(self.request.host_url+'/static/img/video_deleted.png').read()))
+        resized_im = im.resize((208,117), Image.ANTIALIAS)
+        bucket_name = 'dantube-thumbnail'
+
         videos = ndb.get_multi([ndb.Key('Video', identifier) for identifier in ids])
         deleted_counter = 0
         for i in xrange(0, len(ids)):
@@ -541,6 +537,13 @@ class DeleteVideo(BaseHandler):
 
             video.Delete()
             deleted_counter += 1
+
+            large_file = gcs.open('/'+bucket_name+'/large-'+video.key.id(), 'w', content_type="text/plain", options={'x-goog-acl': 'public-read'})
+            standard_file = gcs.open('/'+bucket_name+'/standard-'+video.key.id(), 'w', content_type="text/plain", options={'x-goog-acl': 'public-read'})
+            im.save(large_file, format='png', optimize=True)
+            resized_im.save(standard_file, format='png', optimize=True)
+            large_file.close()
+            standard_file.close()
 
         user_detail = self.user_detail_key.get()
         user_detail.videos_submitted -= deleted_counter

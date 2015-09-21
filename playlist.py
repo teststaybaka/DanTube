@@ -292,8 +292,6 @@ class AddVideo(BaseHandler):
                 if not video or video.deleted or video.playlist_belonged or video.uploader != user_key:
                     continue
 
-                if not list_detail.videos:
-                    playlist.set_first_video(video)
                 list_detail.videos.append(video.key)
                 video.playlist_belonged = playlist.key
                 put_list.append(video)
@@ -307,10 +305,7 @@ class AddVideo(BaseHandler):
 
             for i in xrange(0, len(ids)):
                 video_key = video_keys[i]
-                if not list_detail.videos:
-                    video = video_key.get()
-                    playlist.set_first_video(video)
-
+                
                 try:
                     list_detail.videos.index(video_key)
                 except ValueError:
@@ -321,6 +316,7 @@ class AddVideo(BaseHandler):
             self.json_response(True, {'message': 'Too many videos in one playlist.'})
             return
 
+        playlist.first_video = list_detail.videos[0]
         playlist.modified = datetime.now()
         ndb.put_multi([playlist, list_detail] + put_list)
         playlist.create_index()
@@ -359,9 +355,9 @@ class RemoveVideo(BaseHandler):
                 put_list.append(video)
         
         if not list_detail.videos:
-            playlist.reset_first_video()
+            playlist.first_video = None
         elif playlist.first_video != list_detail.videos[0]:
-            playlist.set_first_video(list_detail.videos[0].get())
+            playlist.first_video = list_detail.videos[0]
 
         playlist.videos_num = len(list_detail.videos)
         playlist.modified = datetime.now()
@@ -389,7 +385,7 @@ class MoveVideo(BaseHandler):
         temp_key = list_detail.videos.pop(ori_idx)
         list_detail.videos.insert(target_idx, temp_key)
         if playlist.first_video != list_detail.videos[0]:
-            playlist.set_first_video(list_detail.videos[0].get())
+            playlist.first_video = list_detail.videos[0]
         
         playlist.modified = datetime.now()
         ndb.put_multi([playlist, list_detail])

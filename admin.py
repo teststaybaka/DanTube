@@ -78,3 +78,95 @@ class Reports(webapp2.RequestHandler):
         context = {'reports': reports}
         template = env.get_template('template/admin_reports.html')
         self.response.write(template.render(context))
+
+class DeleteVideos(webapp2.RequestHandler):
+    def get(self):
+        doc_index  = search.Index(name='videos_by_created')
+        # looping because get_range by default returns up to 100 documents at a time
+        while True:
+            # Get a list of documents populating only the doc_id field and extract the ids.
+            document_ids = [document.doc_id
+                            for document in doc_index.get_range(ids_only=True)]
+            if not document_ids:
+                break
+            # Delete the documents for the given ids from the Index.
+            doc_index.delete(document_ids)
+
+        doc_index  = search.Index(name='videos_by_likes')
+        # looping because get_range by default returns up to 100 documents at a time
+        while True:
+            # Get a list of documents populating only the doc_id field and extract the ids.
+            document_ids = [document.doc_id
+                            for document in doc_index.get_range(ids_only=True)]
+            if not document_ids:
+                break
+            # Delete the documents for the given ids from the Index.
+            doc_index.delete(document_ids)
+
+        doc_index  = search.Index(name='videos_by_hits')
+        # looping because get_range by default returns up to 100 documents at a time
+        while True:
+            # Get a list of documents populating only the doc_id field and extract the ids.
+            document_ids = [document.doc_id
+                            for document in doc_index.get_range(ids_only=True)]
+            if not document_ids:
+                break
+            # Delete the documents for the given ids from the Index.
+            doc_index.delete(document_ids)
+
+        videos = models.Video.query().fetch(keys_only=True)
+        for v in videos:
+            v.delete()
+
+        videos = models.VideoClip.query().fetch(keys_only=True)
+        for v in videos:
+            v.delete()
+
+        videos = models.VideoClipList.query().fetch(keys_only=True)
+        for v in videos:
+            v.delete()
+
+        entities = models.VideoIDFactory.query().fetch(keys_only=True)
+        for e in entities:
+            e.delete()
+
+        entities = models.LikeRecord.query().fetch(keys_only=True)
+        for e in entities:
+            e.delete()
+
+        entities = models.ViewRecord.query().fetch(keys_only=True)
+        for e in entities:
+            e.delete()
+
+        user_detail = models.User.get_detail_key(ndb.Key('User', 5730082031140864)).get()
+        logging.info(user_detail.space_visited)
+        logging.info(user_detail.videos_submitted)
+        logging.info(user_detail.videos_watched)
+
+        user_detail.space_visited = 0
+        user_detail.videos_submitted = 0
+        user_detail.videos_watched = 0
+        user_detail.put()
+
+class DeleteSearch(webapp2.RequestHandler):
+    def get(self):
+        doc_index  = search.Index(name='videos_by_hits')
+        # looping because get_range by default returns up to 100 documents at a time
+        while True:
+            # Get a list of documents populating only the doc_id field and extract the ids.
+            document_ids = [document.doc_id
+                            for document in doc_index.get_range(ids_only=True)]
+            if not document_ids:
+                break
+            # Delete the documents for the given ids from the Index.
+            doc_index.delete(document_ids)
+        user_detail = models.User.get_detail_key(ndb.Key('User', 5730082031140864)).get()
+        logging.info(user_detail.space_visited)
+        logging.info(user_detail.videos_submitted)
+        logging.info(user_detail.videos_watched)
+
+        user_detail.space_visited = 0
+        user_detail.videos_submitted = 0
+        user_detail.videos_watched = 0
+        user_detail.put()
+        
