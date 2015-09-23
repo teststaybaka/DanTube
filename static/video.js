@@ -2421,7 +2421,7 @@ function refresh_danmaku_pool() {
 }
 
 $(document).ready(function() {
-	$('.intro-content').each(check_content_collapse);
+	$('.intro-content').each(content_collapse_wrapper);
 	$('.display-button.intro').click(click_collapse);
 
 	video_id = $('#video-id').val();
@@ -2769,7 +2769,7 @@ $(document).ready(function() {
 			}
 			return div;
 		}, function() {
-			$('#comments-list-container').children('.page-container:last-child').find('.comment-content').each(check_content_collapse);
+			$('#comments-list-container').children('.page-container:last-child').find('.comment-content').each(content_collapse_wrapper);
 		}, 'Be the first one to comment!', true);
 	}
 	if (comment_id) {
@@ -2782,7 +2782,7 @@ $(document).ready(function() {
 					var div = render_comment_div(result.comment);
 					$('#comments-list-container').prepend(div);
 					$('.comment-entry.none').remove();
-					$('#comments-list-container').children('.comment-entry:first-child').find('.comment-content').each(check_content_collapse);
+					$('#comments-list-container').children('.comment-entry:first-child').find('.comment-content').each(content_collapse_wrapper);
 					$(window).scrollTop($('#comments-list-container').children('.comment-entry:first-child').offset().top);
 					$(window).scroll(detectLoadComment);
 				} else {
@@ -2825,7 +2825,7 @@ $(document).ready(function() {
 			cursor = dt.getCursor(url, params);
 			if (!isOver) inner_comment_container.append('<div class="display-button-line replies"><span class="display-button replies" data-num="'+total_num+'" data-cursor="'+cursor+'">View more replies (' + (total_num - inner_comment_container.find('.comment-entry.inner').length) + ')</span></div>')
 
-			inner_comment_container.children('.page-container:last-child').find('.comment-content').each(check_content_collapse);
+			inner_comment_container.children('.page-container:last-child').find('.comment-content').each(content_collapse_wrapper);
 		}, function() {
 			inner_comment_container.children('.comment-entry.loading').remove();
 			inner_comment_container.append('<div class="display-button-line replies"><span class="display-button replies" data-num="'+total_num+'" data-cursor="'+cursor+'">View more replies (' + (total_num - inner_comment_container.find('.comment-entry.inner').length) + ')</span></div>')
@@ -2951,7 +2951,7 @@ function render_comment_div(comment) {
           <a class="blue-link user-name" href="' + comment.creator.space_url + '" target="_blank">' + comment.creator.nickname + '</a>\
           <label class="comment-time">' + comment.created + '</label>\
         </div>\
-        <div class="comment-content">' + dt.contentWrapper(comment.content) + '</div>\
+        <div class="comment-content">' + comment.content + '</div>\
         <div class="display-button comment"><span class="display-text">Read more</span><span class="display-arrow"></span></div>\
         <div class="comment-operation-line">\
           <div class="comment-operation reply">Reply</div>\
@@ -2982,7 +2982,7 @@ function render_inner_comment_div(inner_comment) {
 			              <a class="blue-link user-name" href="' + inner_comment.creator.space_url + '" target="_blank">' + inner_comment.creator.nickname + '</a>\
 			              <label class="comment-time">' + inner_comment.created + '</label>\
 			            </div>\
-			            <div class="comment-content">' + dt.contentWrapper(inner_comment.content) + '</div>\
+			            <div class="comment-content">' + inner_comment.content + '</div>\
 			            <div class="display-button comment"><span class="display-text">Read more</span><span class="display-arrow"></span></div>\
 						<div class="comment-operation-line">\
 				          <div class="comment-operation reply">Reply</div>\
@@ -3055,13 +3055,14 @@ function render_playlist_video(video) {
 	return div;
 }
 
-function check_content_collapse() {
+function content_collapse_wrapper() {
 	var content_div = $(this)[0];
 	if (content_div.scrollHeight > 48) {
 		content_div.style.height = '48px';
 	} else {
 		$(this).next().remove();
 	}
+	$(this).html(dt.contentWrapper($(this).html()));
 }
 
 function click_collapse() {

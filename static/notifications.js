@@ -17,7 +17,7 @@ $(document).ready(function() {
                             <div class="info-line">\
                                 <label>'+note.created+'</label>\
                             </div>\
-                            <div class="notification-detail">'+note.content+'</div>\
+                            <div class="notification-detail">'+dt.escapeHTML(note.content)+'</div>\
                         </div>\
                         <div class="single-checkbox" data-id="'+note.id+'" data-title="'+note.title+'"></div>\
                     </div>'

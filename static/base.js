@@ -625,7 +625,7 @@ dt.contentWrapper = function(text) {
     return text;
 }
 
-dt.http_format = /(https?:\/\/)?([A-Za-z0-9_\-]+\.[A-Za-z0-9_\-]+(?:\.[A-Za-z0-9_\-]+)?(?:\:[0-9]+)?(?:\/[A-Za-z0-9_\-]+)?)/g;
+dt.http_format = /(https?:\/\/)?([A-Za-z][A-Za-z0-9_\-]*\.[A-Za-z][A-Za-z0-9_\-]*(?:\.[A-Za-z][A-Za-z0-9_\-]+)?(?:\:[0-9]+)?(?:\/[A-Za-z0-9_\-]+)?)/g;
 dt.at_user_format = /\[(.+)(@.+)\]/g
 dt.video_id_format = /(dt\d+)(?:#(\d+))?/g
 dt.video_time_format = /(\[(\d+):(\d{1,2})\])/g

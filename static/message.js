@@ -15,7 +15,7 @@ $(document).ready(function() {
                         <div class="message-info">\
                             <div class="info-line">\
                                 <label>About</label>\
-                                <a class="normal-link" href="/account/messages/'+thread.id+'">'+thread.subject+'</a>\
+                                <a class="normal-link" href="/account/messages/'+thread.id+'">'+dt.escapeHTML(thread.subject)+'</a>\
                             </div>\
                             <div class="info-line">\
                                 <label>With</label>\
