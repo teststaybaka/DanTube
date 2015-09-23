@@ -27,7 +27,7 @@ function load_more_search_result() {
                             <img class="video-img playlist" src="' + video.thumbnail_url + '">\
                             <div class="video-info playlist">\
                                 <div class="info-line">\
-                                    <div class="video-title popup">' + video.title + '</div>\
+                                    <div class="video-title popup">' + dt.escapeHTML(video.title) + '</div>\
                                 </div>\
                                 <div class="info-line">\
                                     <div class="list-video-time">' + video.created + '</div>\
@@ -128,7 +128,7 @@ $(document).ready(function() {
                         </a>\
                         <div class="video-info playlist">\
                             <div class="info-line">\
-                                <a class="video-title normal-link" href="'+video.url+'" target="_blank">'+video.title+'</a>\
+                                <a class="video-title normal-link" href="'+video.url+'" target="_blank">'+dt.escapeHTML(video.title)+'</a>\
                             </div>\
                             <div class="info-line">\
                                 <div class="list-video-time">'+video.created+'</div>\
@@ -162,10 +162,6 @@ $(document).ready(function() {
         var title = $('#playlist-title-change').val();
         if (!title) {
             dt.pop_ajax_message('Title can not be empty.', 'error');
-            $('#playlist-title-change').addClass('error');
-            error = true;
-        } else if (dt.puncts.test(title)) {
-            dt.pop_ajax_message('Title contains illegal characters.', 'error');
             $('#playlist-title-change').addClass('error');
             error = true;
         } else if (title.length > 400) {

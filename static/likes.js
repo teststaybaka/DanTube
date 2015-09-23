@@ -11,7 +11,7 @@ $(document).ready(function() {
                         </a>\
                         <div class="video-info">\
                             <div class="video-info-line">\
-                                <a href="'+video.url+'" class="normal-link" target="_blank">'+video.title+'</a>\
+                                <a href="'+video.url+'" class="normal-link" target="_blank">'+dt.escapeHTML(video.title)+'</a>\
                             </div>\
                             <div class="video-info-line">\
                                 <label class="by-label">by</label>\

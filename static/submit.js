@@ -26,11 +26,6 @@ function title_check() {
         $('#video-title-error').text('Please enter a title for your video');
         $('#video-total-title').addClass('error');
         return false;
-    } else if (dt.puncts.test(title)) {
-        $('#video-title-error').addClass('show');
-        $('#video-title-error').text('Video title contains illegal characters.');
-        $('#video-total-title').addClass('error');
-        return false;
     } else if (title.length > 400) {
         $('#video-title-error').addClass('show');
         $('#video-title-error').text('Video title can\'t exceed 400 characters.');
@@ -46,12 +41,7 @@ function title_check() {
 function sub_title_check(target) {
     var title = $(target).val().trim();
     var error = $(target).prev();
-    if (dt.puncts.test(title)) {
-        error.addClass('show');
-        error.text('Illegal characters.');
-        $(target).addClass('error');
-        return false;
-    } else if (title.length > 400) {
+    if (title.length > 400) {
         error.addClass('show');
         error.text('No longer than 400 characters.');
         $(target).addClass('error');

@@ -31,7 +31,7 @@ $(document).ready(function() {
                                 if (playlist.url) {
                                     div += 'href="'+playlist.url+'"'
                                 }
-                                div += ' class="video-title normal-link" target="_blank">'+playlist.title+'</a>\
+                                div += ' class="video-title normal-link" target="_blank">'+dt.escapeHTML(playlist.title)+'</a>\
                             </div>\
                             <div class="info-line playlist-intro">'+dt.escapeHTML(playlist.intro)+'</div>\
                         </div>\

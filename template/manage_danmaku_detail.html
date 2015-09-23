@@ -28,7 +28,7 @@
 </div>
 <div class="danmaku-clip-list">
     <div class="actions-line">
-        <a class="clip-title-label normal-link" href="{{ video_url }}?index={{ clip_index }}" target="_blank">
+        <a class="clip-title-label normal-link" href="{{ video_url }}?index={{ clip_index + 1 }}" target="_blank">
             {% if clip_title %}
                 {{ clip_index + 1 }}. {{ clip_title }}
             {% else %}
@@ -53,7 +53,7 @@
             <div class="list-selected auto medium">No pool available</div>
         </div>
         <div class="danmaku-num-label"></div>
-        <div class="danmaku-confirm-label blue-link">Confirm</div>
+        <div class="danmaku-confirm-label blue-link"></div>
         <div class="inline-button actions delete disabled">Delete</div>
         <div class="inline-button actions drop disabled">Drop the pool</div>
     </div>

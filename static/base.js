@@ -292,11 +292,11 @@ function deleteWindow(url) {
             $('div.delete-target-name').remove();
             var ids = $(checked_boxes[0]).attr('data-id');
             var title = $(checked_boxes[0]).attr('data-title');
-            $('div.delete-buttons-line').before('<div class="delete-target-name">'+title+'</div>');
+            $('div.delete-buttons-line').before('<div class="delete-target-name">'+dt.escapeHTML(title)+'</div>');
             for (var i = 1; i < checked_boxes.length; i++) {
                 ids += ';'+ $(checked_boxes[i]).attr('data-id');
                 title = $(checked_boxes[i]).attr('data-title');
-                $('div.delete-buttons-line').before('<div class="delete-target-name">'+title+'</div>');
+                $('div.delete-buttons-line').before('<div class="delete-target-name">'+dt.escapeHTML(title)+'</div>');
             }
             $('input.delete-button').attr('data-id', ids);
         }

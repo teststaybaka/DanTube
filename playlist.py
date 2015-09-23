@@ -40,8 +40,6 @@ class PlaylistInfo(BaseHandler):
         self.title = self.request.get('title').strip()
         if not self.title:
             raise Exception('Title can\'t be empty.')
-        elif models.ILLEGAL_REGEX.match(self.title):
-            raise Exception('Title contains illegal characters.')
         elif len(self.title) > 400:
             raise Exception('Title too long.')
 

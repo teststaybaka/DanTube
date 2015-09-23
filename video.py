@@ -106,8 +106,6 @@ class VideoUpload(BaseHandler):
         self.title = self.request.get('total-title').strip()
         if not self.title:
             raise Exception('Title must not be empty!')
-        elif models.ILLEGAL_REGEX.match(self.title):
-            raise Exception('Title contains illegal characters.')
         elif len(self.title) > 400:
             raise Exception('Title is too long!')
 
@@ -189,9 +187,7 @@ class VideoUpload(BaseHandler):
         self.clip_titles = self.request.POST.getall('sub-title[]')
         for i in xrange(0, len(self.clip_titles)):
             self.clip_titles[i] = self.clip_titles[i].strip()
-            if models.ILLEGAL_REGEX.match(self.clip_titles[i]):
-                raise Exception('Sub title contains illegal characters.')
-            elif len(self.clip_titles[i]) > 400:
+            if len(self.clip_titles[i]) > 400:
                 raise Exception('Sub title too long!')
 
         self.subintros = self.request.POST.getall('sub-intro[]')
@@ -714,7 +710,7 @@ class ManageDanmakuDetail(BaseHandler):
         pool_type = self.request.get('pool_type')
         try:
             if pool_type == 'danmaku':
-                danmaku_pool = ndb.Key('DanmakuPool', int(pool_id)).get()
+                danmaku_pool = clip.danmaku_pools[pool_index].get()
                 self.json_response(False,  {
                     'danmaku_list': [Danmaku.format_danmaku(danmaku, danmaku_pool) for danmaku in danmaku_pool.danmaku_list]
                 })

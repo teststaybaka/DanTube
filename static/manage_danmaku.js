@@ -243,16 +243,16 @@ function delete_danmaku() {
 }
 
 function confirm_danmaku() {
+    var danmaku_index = $(this).attr('data-index');
     $(this).siblings('.detail-label.content').removeClass('pending');
     $(this).remove();
     var option = $('.list-option.active');
     $.ajax({
         type: 'POST',
         url: window.location.pathname+'/confirm',
-        data: {pool_index: option.attr('data-index'), pool_type: option.attr('data-type'), danmaku_index: confirm_button.attr('data-index')},
+        data: {pool_index: option.attr('data-index'), pool_type: option.attr('data-type'), danmaku_index: danmaku_index},
         success: function(result) {
             if (!result.error) {
-                
                 dt.pop_ajax_message('Danmaku confirmed!', 'success');
             } else {
                 dt.pop_ajax_message(result.message, 'error');

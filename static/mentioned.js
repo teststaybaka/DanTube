@@ -23,7 +23,7 @@ $(document).ready(function() {
                             div += 'comment'
                         }
                         div += ' in</label>\
-                        <a class="normal-link" href="' + comment.video.url + '" target="_blank">' + comment.video.title + '</a>\
+                        <a class="normal-link" href="' + comment.video.url + '" target="_blank">' + dt.escapeHTML(comment.video.title) + '</a>\
                     </div>\
                     <div class="info-line">\
                         <div class="comment-content">' + dt.contentWrapper(comment.content) + '</div>\

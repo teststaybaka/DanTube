@@ -27,7 +27,7 @@
                 </div>
                 <div class="slide-bottom">
                     {% for video in top_ten_videos[:4]|reverse %}
-                    <div class="slide-title">
+                    <div class="slide-title{% if loop.index0 == 3 %} active{% endif %}">
                         <a href="{{ video.url }}" target="_blank" class="slide-title">{{ video.title }}</a>
                     </div>
                     <div class="slide-dot{% if loop.index0 == 3 %} active{% endif %}"></div>

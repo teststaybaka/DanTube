@@ -14,7 +14,7 @@ $(document).ready(function() {
                             </a>\
                             <div class="video-info">\
                                 <div class="video-info-line">\
-                                    <a href="'+video.url+'?index='+(video.index+1)+'" class="normal-link" target="_blank">'+video.title+'</a>\
+                                    <a href="'+video.url+'?index='+(video.index+1)+'" class="normal-link" target="_blank">'+dt.escapeHTML(video.title)+'</a>\
                                 </div>\
                                 <div class="video-info-line">\
                                     <label class="by-label">by</label>\
@@ -61,7 +61,7 @@ $(document).ready(function() {
                                         cur_div += 'comment'
                                     }
                                     cur_div += ' in </label>\
-                                    <a class="message-title normal-link" href="'+comment.video.url+'" target="_blank">'+comment.video.title+'</a>\
+                                    <a class="message-title normal-link" href="'+comment.video.url+'" target="_blank">'+dt.escapeHTML(comment.video.title)+'</a>\
                                 </div>\
                                 <div class="info-line">\
                                     <div class="comment-content">'+dt.contentWrapper(comment.content)+'</div>\

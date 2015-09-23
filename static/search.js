@@ -30,7 +30,7 @@ $(document).ready(function() {
                                 <div class="video-time">'+video.created+'</div>\
                             </div>\
                             <div class="info-line">\
-                                <a href="'+video.url+'" class="video-title normal-link">'+video.title+'</a>\
+                                <a href="'+video.url+'" class="video-title normal-link">'+dt.escapeHTML(video.title)+'</a>\
                             </div>\
                             <div class="info-line">\
                                 <div class="video-statistic-entry">Views: '+dt.numberWithCommas(video.hits)+'</div>\

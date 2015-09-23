@@ -37,7 +37,7 @@ function load_more_search_result() {
                             </div>\
                             <div class="video-info playlist">\
                                 <div class="info-line">\
-                                    <div class="video-title popup">' + playlist.title + '</div>\
+                                    <div class="video-title popup">' + dt.escapeHTML(playlist.title) + '</div>\
                                 </div>\
                                 <div class="info-line">\
                                     <div class="list-video-time">' + playlist.modified + '</div>\
@@ -180,12 +180,12 @@ $(document).ready(function() {
                                 <div class="video-time">'+video.created+'</div>\
                             </div>\
                             <div class="info-line">\
-                                <a href="'+video.url+'" class="video-title normal-link" target="_blank">'+video.title+'</a>\
+                                <a href="'+video.url+'" class="video-title normal-link" target="_blank">'+dt.escapeHTML(video.title)+'</a>\
                             </div>\
                             <div class="info-line">\
                                 <label class="video-list-belonged">Primary list: </label>'
                                 if (video.playlist) {
-                                    div += '<a class="video-list-belonged normal-link" href="/account/playlists/edit/'+video.playlist.id+'">'+video.playlist.title+'</a><a class="blue-link playlist-button remove-from" data-id="'+video.id+'" data-playlist-id="'+video.playlist.id+'">[Remove from]</a>';
+                                    div += '<a class="video-list-belonged normal-link" href="/account/playlists/edit/'+video.playlist.id+'">'+dt.escapeHTML(video.playlist.title)+'</a><a class="blue-link playlist-button remove-from" data-id="'+video.id+'" data-playlist-id="'+video.playlist.id+'">[Remove from]</a>';
                                 } else {
                                     div += '<label class="video-list-belonged">Not listed</label><a class="blue-link playlist-button add-to" data-id="'+video.id+'">[Add to]</a>';
                                 }

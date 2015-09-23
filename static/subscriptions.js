@@ -95,7 +95,7 @@ $(document).ready(function() {
                                         div += 'Posted a comment in'
                                     }
                                     div += '</label>\
-                                    <a href="' + comment.video.url + '" class="activity-title normal-link" target="_blank">' + comment.video.title + '</a>\
+                                    <a href="' + comment.video.url + '" class="activity-title normal-link" target="_blank">' + dt.escapeHTML(comment.video.title) + '</a>\
                                 </div>\
                                 <div class="uploader-name">\
                                     <label>by</label>\
@@ -121,7 +121,7 @@ $(document).ready(function() {
                             <div class="activity-detail">\
                                 <div class="activity-title normal-link">\
                                     <label>Uploaded</label>\
-                                    <a href="' + video.url + '" class="activity-title normal-link" target="_blank">' + video.title + '</a>\
+                                    <a href="' + video.url + '" class="activity-title normal-link" target="_blank">' + dt.escapeHTML(video.title) + '</a>\
                                 </div>\
                                 <div class="uploader-name">\
                                     <label>by</label>\

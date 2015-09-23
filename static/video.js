@@ -115,9 +115,11 @@ dt.onPlayerStateChange = function(event) {
 		isPlaying = true;
 		if (danmakuVar == null) {
 			danmakuVar = oldSetInterval(danmaku_update, 250);
+			danmaku_update();
 		}
 		if (progressVar == null) {
 			progressVar = oldSetInterval(progress_update, 500);
+			progress_update();
 		}
 		if (switch_count_down != null) {
 			stop_switch_count_down();
