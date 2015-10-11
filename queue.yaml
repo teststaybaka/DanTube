@@ -1,0 +1,6 @@
+queue:
+- name: UpdateIndex
+  mode: pull
+
+- name: Activity
+  mode: pull

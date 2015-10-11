@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 from views import *
-import math
 
 HOT_SCORE_PER_HIT = 5
 HOT_SCORE_PER_DANMAKU = 5
@@ -35,12 +34,14 @@ class Video(BaseHandler):
         else:
             cur_clip = clip_list.clips[clip_index].get()
             video_info = video.get_full_info()
-            video_info['cur_clip_id'] = cur_clip.key.id()
-            video_info['cur_vid'] = cur_clip.vid
-            video_info['cur_subintro'] = cur_clip.subintro
-            video_info['cur_index'] = clip_index
-            video_info['clip_titles'] = clip_list.titles
-            video_info['clip_range'] = range(0, len(clip_list.clips))
+            video_info.update({
+                'cur_clip_id': cur_clip.key.id(),
+                'cur_vid': cur_clip.vid,
+                'cur_subintro': cur_clip.subintro,
+                'cur_index': clip_index,
+                'clip_titles': clip_list.titles,
+                'clip_range': range(0, len(clip_list.clips)),
+            })
             if clip_index == 0:
                 video_info['clip_range_min'] = 0
                 video_info['clip_range_max'] = min(2, len(clip_list.clips))
@@ -95,12 +96,12 @@ class Video(BaseHandler):
             return
 
         # update uploader info
-        uploader, uploader_detail = ndb.get_multi([video.uploader, models.User.get_detail_key(video.uploader)])
-        uploader_info = uploader.get_public_info()
+        uploader_detail = models.User.get_detail_key(video.uploader).get()
+        uploader_info = models.User.get_snapshot_info(uploader_detail.nickname, video.uploader)
         uploader_info.update(uploader_detail.get_detail_info())
         change_snapshot = False
-        if video.uploader_name != uploader.nickname:
-            video.uploader_name = uploader.nickname
+        if video.uploader_name != uploader_detail.nickname:
+            video.uploader_name = uploader_detail.nickname
             change_snapshot = True
 
         # check video status for user
@@ -108,7 +109,7 @@ class Video(BaseHandler):
             self.user = user = self.user_key.get()
             try:
                 record, is_new_hit = models.ViewRecord.get_or_create(user.key, video.key)
-            except TransactionFailedError, e:
+            except models.TransactionFailedError, e:
                 is_new_hit = False
                 logging.error('View record get/create failed!')
             else:
@@ -122,8 +123,8 @@ class Video(BaseHandler):
                 record.put()
 
             video_info['watched'] = not is_new_hit
-            video_info['liked'] = bool(models.LikeRecord.query(models.LikeRecord.video==video.key, ancestor=self.user_key).get(keys_only=True))
-            uploader_info['subscribed'] = bool(models.Subscription.query(models.Subscription.uper==uploader.key, ancestor=self.user_key).get(keys_only=True))
+            video_info['liked'] = models.LikeRecord.has_liked(self.user_key, video.key)
+            uploader_info['subscribed'] = models.Subscription.has_subscribed(self.user_key, video.uploader)
         else:
             video_info['watched'] = True
             video_info['liked'] = False
@@ -131,11 +132,12 @@ class Video(BaseHandler):
 
         # update video entity
         if not video_info['watched']:
+            q = taskqueue.Queue('UpdateIndex')
+            payload = {'video': video.key.id(), 'kind': 'hit'}
+            q.add(taskqueue.Task(payload=json.dumps(payload), method='PULL'))
             video.hits += 1
-            video.update_hot_score(HOT_SCORE_PER_HIT)
             uploader_detail.videos_watched += 1
             ndb.put_multi([video, uploader_detail])
-            video.create_index('videos_by_hits', video.hits)
         elif change_snapshot:
             video.put()
 
@@ -143,8 +145,6 @@ class Video(BaseHandler):
             'video': video_info,
             'uploader': uploader_info,
             'playlist': playlist_info,
-            'subtitle_names': [cur_clip.subtitle_names[i] for i in xrange(0, len(cur_clip.subtitle_danmaku_pools)) if cur_clip.subtitle_approved[i]],
-            'subtitle_pool_ids': [cur_clip.subtitle_danmaku_pools[i].id() for i in xrange(0, len(cur_clip.subtitle_danmaku_pools)) if cur_clip.subtitle_approved[i]],
             'video_issues': models.Video_Issues,
             'comment_issues': models.Comment_Issues,
             'danmaku_issues': models.Danmaku_Issues,
@@ -309,17 +309,21 @@ class Comment(BaseHandler):
         allow_share = bool(self.request.get('allow-post-comment'))
         try:
             comment = models.Comment.CreateComment(user=user, video=video, content=content, allow_share=allow_share)
-        except TransactionFailedError, e:
+        except models.TransactionFailedError, e:
             logging.error('Comment post failed!!!!!')
             self.json_response(True, {'message': 'Post failed. Please try again.'})
             return
 
         video.comment_counter = comment.floorth
-        video.update_hot_score(HOT_SCORE_PER_COMMENT)
         video.updated = datetime.now()
         video.put()
 
-        models.MentionedRecord.Create(users, comment.key)
+        q = taskqueue.Queue('UpdateIndex')
+        payload = {'video': video.key.id(), 'kind': 'comment'}
+        q.add(taskqueue.Task(payload=json.dumps(payload), method='PULL'))
+
+        if users:
+            deferred.defer(models.MentionedRecord.Create, users, comment.key)
         self.json_response(False)
 
     @login_required_json
@@ -347,17 +351,18 @@ class Comment(BaseHandler):
         allow_share = bool(self.request.get('allow-post-reply'))
         try:
             inner_comment = models.Comment.CreateInnerComment(user=user, comment=comment, content=content, allow_share=allow_share)
-        except TransactionFailedError, e:
+        except models.TransactionFailedError, e:
             logging.error('Comment reply post failed!!!!!')
             self.json_response(True, {'message': 'Post failed. Please try again.'})
             return
 
-        models.MentionedRecord.Create(users, inner_comment.key)
+        if users:
+            deferred.defer(models.MentionedRecord.Create, users, inner_comment.key)
         self.json_response(False)
 
 def video_clip_exist_required_json(handler):
     def check_exist(self, video_id, clip_id):
-        clip = ndb.Key('VideoClip', int(clip_id), parent=ndb.Key('Video', video_id)).get()
+        clip = ndb.Key('VideoClip', int(clip_id)).get()
         if not clip:
             self.json_response(True, {'message': 'Video not found.'})
             return
@@ -366,32 +371,31 @@ def video_clip_exist_required_json(handler):
 
     return check_exist
 
+def flush_danmaku_pool(clip_key, new_danmaku_list, kind):
+    try:
+        pool = gcs.open('/danmaku/'+str(clip_key.id())+'/'+kind, 'r')
+        danmaku_list = json.loads(pool.read())
+        pool.close()
+    except NotFoundError:
+        danmaku_list = []
+
+    pool = gcs.open('/danmaku/'+str(clip_key.id())+'/'+kind, 'w', content_type="text/plain", options={'x-goog-acl': 'public-read'})
+    if kind == 'danmaku':
+        danmaku_list += [Danmaku.format_danmaku(danmaku) for danmaku in new_danmaku_list]
+    elif kind == 'advanced':
+        danmaku_list += [Danmaku.format_advanced_danmaku(danmaku) for danmaku in new_danmaku_list]
+    elif kind == 'subtitles':
+        danmaku_list += [Danmaku.format_subtitles_danmaku(danmaku) for danmaku in new_danmaku_list]
+    else: # code
+        danmaku_list += [Danmaku.format_code_danmaku(danmaku) for danmaku in new_danmaku_list]
+    pool.write(json.dumps(danmaku_list))
+    pool.close()
+
 class Danmaku(BaseHandler):
     @video_clip_exist_required_json
     def get(self, clip):
-        danmaku_list = []
-        danmaku_num = 0
-        danmaku_pools = ndb.get_multi(clip.danmaku_pools)
-        for danmaku_pool in danmaku_pools:
-            danmaku_num += len(danmaku_pool.danmaku_list)
-            danmaku_list += [Danmaku.format_danmaku(danmaku, danmaku_pool) for danmaku in danmaku_pool.danmaku_list]
-
-        advanced_danmaku_num = 0
-        if clip.advanced_danmaku_pool:
-            advanced_danmaku_pool = clip.advanced_danmaku_pool.get()
-            advanced_danmaku_num += len(advanced_danmaku_pool.danmaku_list)
-            danmaku_list += [Danmaku.format_advanced_danmaku(danmaku, advanced_danmaku_pool) for danmaku in advanced_danmaku_pool.danmaku_list if danmaku.approved]
-
-        code_danmaku_num = 0
-        if clip.code_danmaku_pool:
-            code_danmaku_pool = clip.code_danmaku_pool.get()
-            code_danmaku_num += len(code_danmaku_pool.danmaku_list)
-            danmaku_list += [Danmaku.format_code_danmaku(danmaku, code_danmaku_pool) for danmaku in code_danmaku_pool.danmaku_list if danmaku.approved]
-
-        if not clip.refresh and (clip.danmaku_num != danmaku_num or clip.advanced_danmaku_num != advanced_danmaku_num or clip.code_danmaku_num != code_danmaku_num):
-            clip.refresh = True
-            clip.put()
-
+        danmaku_list = [Danmaku.format_danmaku(danmaku) for danmaku in clip.danmaku_buffer]
+        danmaku_list += [Danmaku.format_advanced_danmaku(danmaku) for danmaku in clip.advanced_danmaku_buffer if danmaku.approved]
         self.json_response(False, {'danmaku_list': danmaku_list})
 
     @login_required_json
@@ -441,31 +445,29 @@ class Danmaku(BaseHandler):
                 return
 
             content = u'←' + content
-            if reply_to.key not in users: # TODO: Risk of empty user key
+            if reply_to.key not in users:
                 users.append(reply_to.key)
 
-        try:
-            danmaku_pool = clip.get_lastest_danmaku_pool()
-        except TransactionFailedError, e:
-            logging.error('Danmaku post failed!!!')
-            self.json_response(True, {'message': 'Danmaku post error. Please try again.'})
-            return
+        danmaku = models.Danmaku(index=clip.danmaku_counter, timestamp=timestamp, content=content, position=position, size=size, color=color, creator=self.user_key, created=datetime.now())
+        clip.danmaku_buffer.append(danmaku)
+        clip.danmaku_counter += 1
+        clip.danmaku_num += 1
 
-        danmaku = models.Danmaku(index=danmaku_pool.counter, timestamp=timestamp, content=content, position=position, size=size, color=color, creator=self.user_key)
-        danmaku_pool.danmaku_list.append(danmaku)
-        danmaku_pool.counter += 1
+        if len(clip.danmaku_buffer) > 1:
+            danmaku_list = clip.danmaku_buffer
+            clip.danmaku_buffer = []
+            deferred.defer(flush_danmaku_pool, clip.key, danmaku_list, 'danmaku')
 
-        user, video = ndb.get_multi([user_key, clip.key.parent()])
-        video.update_hot_score(HOT_SCORE_PER_DANMAKU)
-        video.updated = datetime.now()
+        user = user_key.get()
         danmaku_record = models.DanmakuRecord(parent=user_key, creator_name=user.nickname, content=content, danmaku_type='danmaku', video=video.key, clip_index=clip.index, video_title=video.title, timestamp=timestamp)
-        ndb.put_multi([danmaku_pool, video, danmaku_record])
+        ndb.put_multi([clip, danmaku_record])
 
-        models.MentionedRecord.Create(users, danmaku_record.key)
-        self.json_response(False, Danmaku.format_danmaku(danmaku, danmaku_pool))
+        if users:
+            deferred.defer(models.MentionedRecord.Create, users, danmaku_record.key)
+        self.json_response(False, Danmaku.format_danmaku(danmaku))
 
     @classmethod
-    def format_danmaku(cls, danmaku, danmaku_pool):
+    def format_danmaku(cls, danmaku):
         return {
                     'content': danmaku.content,
                     'timestamp': danmaku.timestamp,
@@ -476,7 +478,6 @@ class Danmaku(BaseHandler):
                     'type': danmaku.position,
                     'size': danmaku.size,
                     'color': danmaku.color,
-                    'pool_id': danmaku_pool.key.id(),
                     'index': danmaku.index,
                 }
 
@@ -538,29 +539,26 @@ class Danmaku(BaseHandler):
             self.json_response(True, {'message': 'Empty CSS.'})
             return
 
-        try:
-            advanced_danmaku_pool = clip.get_advanced_danmaku_pool()
-        except TransactionFailedError, e:
-            logging.error('Advanced danmaku post failed!!!')
-            self.json_response(True, {'message': 'Advanced danmaku post error. Please try again.'})
-            return
-        if len(advanced_danmaku_pool.danmaku_list) >= 1000:
-            self.json_response(True, {'message': 'Advanced danmaku pool is full.'})
-            return
+        danmaku = models.AdvancedDanmaku(index=clip.advanced_danmaku_counter, timestamp=timestamp, content=content, birth_x=birth_pos[0], birth_y=birth_pos[1], death_x=death_pos[0], death_y=death_pos[1], speed_x=speed[0], speed_y=speed[1], longevity=longevity, css=custom_css, as_percent=as_percent, relative=relative, creator=user_key)
+        clip.advanced_danmaku_buffer.append(danmaku)
+        clip.advanced_danmaku_counter += 1
+        clip.advanced_danmaku_num += 1
 
-        danmaku = models.AdvancedDanmaku(index=advanced_danmaku_pool.counter, timestamp=timestamp, content=content, birth_x=birth_pos[0], birth_y=birth_pos[1], death_x=death_pos[0], death_y=death_pos[1], speed_x=speed[0], speed_y=speed[1], longevity=longevity, css=custom_css, as_percent=as_percent, relative=relative, creator=user_key)
-        advanced_danmaku_pool.danmaku_list.append(danmaku)
-        advanced_danmaku_pool.counter += 1
+        if len(clip.advanced_danmaku_buffer) > 1:
+            danmaku_list = clip.advanced_danmaku_buffer
+            clip.advanced_danmaku_buffer = []
+            deferred.defer(flush_danmaku_pool, clip.key, danmaku_list, 'advanced')
 
-        user, video = ndb.get_multi([user_key, clip.key.parent()])
+        user, uploader = ndb.get_multi([user_key, clip.uploader])
         danmaku_record = models.DanmakuRecord(parent=user_key, creator_name=user.nickname, content=content, danmaku_type='advanced', video=video.key, clip_index=clip.index, video_title=video.title, timestamp=timestamp)
-        notification = models.Notification(receiver=user_key, subject='An advanced danmaku was posted.', content='An advanced danmaku was posted to your video, '+video.title+' ('+video.key.id()+'), by '+user.nickname+'. Please confirm or delete it if contains improper content.', note_type='info')
-        user.new_notifications += 1
-        ndb.put_multi([user, advanced_danmaku_pool, danmaku_record, notification])
-        self.json_response(False, Danmaku.format_advanced_danmaku(danmaku, advanced_danmaku_pool))
+        notification = models.Notification(receiver=uploader.key, subject='An advanced danmaku was posted.', content='An advanced danmaku was posted to your video, '+video.title+' ('+video.key.id()+'), by '+user.nickname+'. Please confirm or delete it if contains improper content.', note_type='info')
+        uploader.new_notifications += 1
+        ndb.put_multi([clip, uploader, danmaku_record, notification])
+
+        self.json_response(False, Danmaku.format_advanced_danmaku(danmaku))
 
     @classmethod
-    def format_advanced_danmaku(cls, advanced_danmaku, danmaku_pool):
+    def format_advanced_danmaku(cls, advanced_danmaku):
         return {
                     'content': advanced_danmaku.content,
                     'timestamp': advanced_danmaku.timestamp,
@@ -579,7 +577,6 @@ class Danmaku(BaseHandler):
                     'as_percent': advanced_danmaku.as_percent,
                     'relative': advanced_danmaku.relative,
                     'type': 'Advanced',
-                    'pool_id': danmaku_pool.key.id(),
                     'index': advanced_danmaku.index,
                     'approved': advanced_danmaku.approved,
                 }
@@ -603,29 +600,21 @@ class Danmaku(BaseHandler):
             return
         content = cgi.escape(content)
 
-        try:
-            code_danmaku_pool = clip.get_code_danmaku_pool()
-        except TransactionFailedError, e:
-            logging.error('Code danmaku post failed!!!')
-            self.json_response(True, {'message': 'Code danmaku post error. Please try again.'})
-            return
-        if len(code_danmaku_pool.danmaku_list) >= 100:
-            self.json_response(True, {'message': 'Code danmaku pool is full.'})
-            return
+        danmaku = models.CodeDanmaku(index=clip.code_danmaku_counter, timestamp=timestamp, content=content, creator=user_key)
+        clip.code_danmaku_counter += 1
+        clip.code_danmaku_num += 1
 
-        danmaku = models.CodeDanmaku(index=code_danmaku_pool.counter, timestamp=timestamp, content=content, creator=user_key)
-        code_danmaku_pool.danmaku_list.append(danmaku)
-        code_danmaku_pool.counter += 1
-
-        user, video = ndb.get_multi([user_key, clip.key.parent()])
+        user, uploader = ndb.get_multi([user_key, clip.uploader])
         danmaku_record = models.DanmakuRecord(parent=user_key, creator_name=user.nickname, content=content, danmaku_type='code', video=video.key, clip_index=clip.index, video_title=video.title, timestamp=timestamp)
-        notification = models.Notification(receiver=user_key, subject='A code danmaku was posted.', content='A code danmaku was posted to your video, '+video.title+' ('+video.key.id()+'), by '+user.nickname+'. Please confirm carefully or delete it if it does something unknown/harmful to you/other users.', note_type='info')
-        user.new_notifications += 1
-        ndb.put_multi([user, code_danmaku_pool, danmaku_record, notification])
+        notification = models.Notification(receiver=uploader.key, subject='A code danmaku was posted.', content='A code danmaku was posted to your video, '+video.title+' ('+video.key.id()+'), by '+user.nickname+'. Please confirm carefully or delete it if it does something unknown/harmful to you/other users.', note_type='info')
+        uploader.new_notifications += 1
+        ndb.put_multi([clip, uploader, danmaku_record, notification])
+
+        flush_danmaku_pool(clip.key, [danmaku], 'code')
         self.json_response(False)
 
     @classmethod
-    def format_code_danmaku(cls, code_danmaku, danmaku_pool):
+    def format_code_danmaku(cls, code_danmaku):
         return {
                     'content': code_danmaku.content,
                     'timestamp': code_danmaku.timestamp,
@@ -634,7 +623,6 @@ class Danmaku(BaseHandler):
                     'created_seconds': models.time_to_seconds(code_danmaku.created),
                     'creator': code_danmaku.creator.id(),
                     'type': 'Code',
-                    'pool_id': danmaku_pool.key.id(),
                     'index': code_danmaku.index,
                     'approved': code_danmaku.approved,
                 }
@@ -663,41 +651,28 @@ class Danmaku(BaseHandler):
                 self.json_response(True, {'message': 'Subtitles format error.'})
                 return
 
-        subtitle_danmaku_pool = models.SubtitleDanmakuPool(subtitles=subtitles, creator=user_key)
-        subtitle_danmaku_pool.put()
-        try:
-            clip.append_new_subtitles(name, subtitle_danmaku_pool.key)
-        except TransactionFailedError, e:
-            logging.error('Subtitles post failed!!!')
-            subtitle_danmaku_pool.key.delete_async()
-            self.json_response(True, {'message': 'Subtitles submit error. Please try again.'})
-            return
+        danmaku = models.SubtitlesDanmaku(index=clip.subtitles_counter, name=name, content=subtitles, creator=user_key)
+        clip.subtitles_counter += 1
+        clip.subtitles_num += 1
 
-        user, video = ndb.get_multi([user_key, clip.key.parent()])
+        user, uploader = ndb.get_multi([user_key, clip.uploader])
         danmaku_record = models.DanmakuRecord(parent=user_key, creator_name=user.nickname, content=subtitles, danmaku_type='subtitles', video=video.key, clip_index=clip.index, video_title=video.title)
-        notification = models.Notification(receiver=user_key, subject='A new subtitles was submitted.', content='A new subtitles, '+name+', was submitted to your video, '+video.title+' ('+video.key.id()+'), by '+user.nickname+'. Please confirm or delete it if improper.', note_type='info')
-        user.new_notifications += 1
-        ndb.put_multi([user, danmaku_record, notification])
+        notification = models.Notification(receiver=uploader.key, subject='A new subtitles was submitted.', content='A new subtitles, '+name+', was submitted to your video, '+video.title+' ('+video.key.id()+'), by '+user.nickname+'. Please confirm or delete it if improper.', note_type='info')
+        uploader.new_notifications += 1
+        ndb.put_multi([clip, uploader, danmaku_record, notification])
+
+        flush_danmaku_pool(clip.key, [danmaku], 'subtitles')
         self.json_response(False)
 
-class Subtitles(BaseHandler):
-    def get(self, subtitles_pool_id):
-        subtitle_danmaku_pool = models.SubtitleDanmakuPool.get_by_id(int(subtitles_pool_id))
-        if not subtitle_danmaku_pool:
-            self.json_response(True, {'message': 'Subtitles not found.'})
-            return
-
-        self.json_response(False, Subtitles.format_subtitles(subtitle_danmaku_pool))
-
     @classmethod
-    def format_subtitles(cls, subtitle_danmaku_pool):
+    def format_subtitles_danmaku(cls, subtitles_danmaku):
         return {
-            'subtitles': subtitle_danmaku_pool.subtitles,
-            'creator': subtitle_danmaku_pool.creator.id(),
-            'created': subtitle_danmaku_pool.created.strftime("%m-%d %H:%M"),
-            'created_year': subtitle_danmaku_pool.created.strftime("%Y-%m-%d %H:%M"),
-            'created_seconds': models.time_to_seconds(subtitle_danmaku_pool.created),
-            'pool_id': subtitle_danmaku_pool.key.id(),
+            'name': subtitles_danmaku.name,
+            'subtitles': subtitles_danmaku.content,
+            'creator': subtitles_danmaku.creator.id(),
+            'created': subtitles_danmaku.created.strftime("%m-%d %H:%M"),
+            'created_year': subtitles_danmaku.created.strftime("%Y-%m-%d %H:%M"),
+            'created_seconds': models.time_to_seconds(subtitles_danmaku.created),
         }
 
 class Like(BaseHandler):
@@ -707,9 +682,10 @@ class Like(BaseHandler):
         if not video or video.deleted:
             self.json_response(True, {'message': 'Video not found.'})
             return
+
         try:
-            is_new = models.LikeRecord.unique_create(video.key, self.user_key)
-        except TransactionFailedError, e:
+            is_new = models.LikeRecord.unique_create(self.user_key, video.key)
+        except models.TransactionFailedError, e:
             logging.error('Like unique creation failed!!!')
             self.json_response(True, {'message': 'Like error. Please try again.'})
             return
@@ -717,9 +693,12 @@ class Like(BaseHandler):
         if is_new:
             video.likes += 1
             video.updated = datetime.now()
-            video.update_hot_score(HOT_SCORE_PER_LIKE)
             video.put()
-            video.create_index('videos_by_likes', video.likes)
+            
+            q = taskqueue.Queue('UpdateIndex')
+            payload = {'video': video.key.id(), 'kind': 'like'}
+            q.add(taskqueue.Task(payload=json.dumps(payload), method='PULL'))
+
             self.json_response(False)
         else:
             self.json_response(True)
@@ -727,17 +706,24 @@ class Like(BaseHandler):
 class Unlike(BaseHandler):
     @login_required_json
     def post(self, video_id):
-        user_key = self.user_key
         video_key = ndb.Key('Video', video_id)
-
-        record = models.LikeRecord.query(models.LikeRecord.video==video_key, ancestor=user_key).get(keys_only=True)
-        if record:
-            record.delete()
+        delete = models.LikeRecord.dislike(self.user_key, video_key)
+        if delete:
             video = video_key.get()
-            if video:
+            if video and not video.deleted:
                 video.likes -= 1
                 video.put()
-                video.create_index('videos_by_likes', video.likes)
+
+                q = taskqueue.Queue('UpdateIndex')
+                payload = {'video': video.key.id(), 'kind': 'like'}
+                q.add(taskqueue.Task(payload=json.dumps(payload), method='PULL'))
+
             self.json_response(False)
         else:
             self.json_response(True)
+
+class Watched(BaseHandler):
+    @login_required_json
+    def post(self, video_id):
+        watched = models.ViewRecord.has_viewed(self.user_key, ndb.Key('Video', video_id))
+        self.json_response(False, {'watched': watched})

@@ -39,7 +39,7 @@ def host_info(handler):
         context['host'].update(host_detail.get_detail_info())
         context['host'].update(host_detail.get_visitor_info())
         if self.user_info:
-            context['host']['subscribed'] = bool(models.Subscription.query(models.Subscription.uper==host.key, ancestor=user.key).get(keys_only=True))
+            context['host']['subscribed'] = models.Subscription.has_subscribed(user.key, host.key)
         else:
             context['host']['subscribed'] = False
 
@@ -126,15 +126,15 @@ class FeaturedUpers(BaseHandler):
         page_size = models.MEDIUM_PAGE_SIZE
 
         cursor = models.Cursor(urlsafe=self.request.get('cursor'))
-        subscriptions, cursor, more = models.Subscription.query(ancestor=host_key).order(-models.Subscription.score).fetch_page(page_size, start_cursor=cursor, projection=['uper'])
+        subscriptions, cursor, more = models.Subscription.query(user=host_key).order(-models.Subscription.score).fetch_page(page_size, start_cursor=cursor, projection=['uper'])
         uper_keys = [subscription.uper for subscription in subscriptions]
         upers = ndb.get_multi(uper_keys)
 
         if self.user_info:
-            subscriptions = models.Subscription.query(ancestor=self.user_key).order(-models.Subscription.score).fetch(projection=['uper'])
-            subscribed_keys = [subscription.uper for subscription in subscriptions]
+            subscriptions = models.Subscription.query(user=self.user_key).order(-models.Subscription.score).fetch(projection=['uper'])
+            subscribed_keys = set([subscription.uper for subscription in subscriptions])
         else:
-            subscribed_keys = []
+            subscribed_keys = set()
 
         context = {
             'upers': [],
@@ -160,22 +160,22 @@ class Subscribe(BaseHandler):
             self.json_response(True, {'message': 'You can\'t subscribe to yourself.'})
             return
 
-        host, user_detail = ndb.get_multi([host_key, models.User.get_detail_key(user_key)])
+        host, user = ndb.get_multi([host_key, user_key])
         if not host:
             self.json_response(True, {'message': 'User not found.'})
             return
 
         try:
-            is_new = models.Subscription.unique_create(host.key, user_key)
-        except TransactionFailedError, e:
+            is_new = models.Subscription.unique_create(user_key, host.key)
+        except models.TransactionFailedError, e:
             logging.error('Subscription unique creation failed!!!')
             self.json_response(True, {'message': 'Subscription error. Please try again.'})
             return
 
         if is_new:
             host.subscribers_counter += 1
-            user_detail.subscription_counter += 1
-            ndb.put_multi([host, user_detail])
+            user.subscription_counter += 1
+            ndb.put_multi([host, user])
 
         self.json_response(False)
 
@@ -185,13 +185,11 @@ class Unsubscribe(BaseHandler):
         user_key = self.user_key
         host_key = ndb.Key('User', int(user_id))
 
-        subscription = models.Subscription.query(models.Subscription.uper==host_key, ancestor=user_key).get(keys_only=True)
-        if subscription:
-            host, user_detail = ndb.get_multi([host_key, models.User.get_detail_key(user_key)])
+        delete = models.Subscription.unsubscribe(user_key, host_key)
+        if delete:
+            host, user = ndb.get_multi([host_key, user_key])
             host.subscribers_counter -= 1
-            user_detail.subscription_counter -= 1
-            logging.info(user_detail.subscription_counter)
-            ndb.put_multi([host, user_detail])
-            subscription.delete()
+            user.subscription_counter -= 1
+            ndb.put_multi([host, user])
 
         self.json_response(False)

@@ -31,7 +31,7 @@ class History(BaseHandler):
         elif kind == 'comment':
             records, cursor, more = models.Comment.query(models.Comment.creator==user_key).order(-models.Comment.created).fetch_page(page_size, start_cursor=cursor)
         else:
-            records, cursor, more = models.ViewRecord.query(ancestor=user_key).order(-models.ViewRecord.created).fetch_page(page_size, start_cursor=cursor)
+            records, cursor, more = models.ViewRecord.query(user=user_key).order(-models.ViewRecord.created).fetch_page(page_size, start_cursor=cursor)
             videos = ndb.get_multi([record.video for record in records])
 
         context = {
@@ -67,7 +67,7 @@ class Likes(BaseHandler):
         page_size = models.STANDARD_PAGE_SIZE
 
         cursor = models.Cursor(urlsafe=self.request.get('cursor'))
-        records, cursor, more = models.LikeRecord.query(ancestor=user_key).order(-models.LikeRecord.created).fetch_page(page_size, start_cursor=cursor, projection=['video', 'created'])
+        records, cursor, more = models.LikeRecord.query(user=user_key).order(-models.LikeRecord.created).fetch_page(page_size, start_cursor=cursor, projection=['video', 'created'])
         videos = ndb.get_multi([record.video for record in records])
 
         context = {
@@ -86,17 +86,14 @@ class Likes(BaseHandler):
 class Subscribed(BaseHandler):
     @login_required
     def get(self):
-        user, user_detail = ndb.get_multi([self.user_key, self.user_detail_key])
-        self.user = user
-        context = {'user': user_detail.get_detail_info()}
-        self.render('subscribed_users', context)
+        self.render('subscribed_users')
 
     @login_required_json
     def post(self):
         user_key = self.user_key
         page_size = models.STANDARD_PAGE_SIZE
         cursor = models.Cursor(urlsafe=self.request.get('cursor'))
-        subscriptions, cursor, more = models.Subscription.query(ancestor=user_key).order(-models.Subscription.score).fetch_page(page_size, start_cursor=cursor, projection=['uper'])
+        subscriptions, cursor, more = models.Subscription.query(user=user_key).order(-models.Subscription.score).fetch_page(page_size, start_cursor=cursor, projection=['uper'])
         upers = ndb.get_multi([subscription.uper for subscription in subscriptions])
         
         context = {
@@ -132,7 +129,7 @@ class Subscriptions(BaseHandler):
         user_key = self.user_key
         page_size = models.STANDARD_PAGE_SIZE
         
-        subscriptions = models.Subscription.query(ancestor=user_key).order(-models.Subscription.score).fetch(projection=['uper'])
+        subscriptions = models.Subscription.query(user=user_key).order(-models.Subscription.score).fetch(projection=['uper'])
         uper_keys = [subscription.uper for subscription in subscriptions]
         cursor = models.Cursor(urlsafe=self.request.get('cursor'))
         kind = self.request.get('type')
@@ -234,6 +231,7 @@ class ChangeInfo(BaseHandler):
 
             self.user_model.delete_unique('nickname', user.nickname)
             user.nickname = nickname
+            user_detail.nickname = nickname
 
         user_detail.intro = intro
         user.create_index(intro)
@@ -279,8 +277,8 @@ class ChangeAvatar(BaseHandler):
             #         break;
 
             bucket_name = 'dantube-avatar'
-            standard_file = gcs.open('/'+bucket_name+'/standard-'+str(self.user_key.id()), 'w', content_type="text/plain", options={'x-goog-acl': 'public-read'})
-            small_file = gcs.open('/'+bucket_name+'/small-'+str(self.user_key.id()), 'w', content_type="text/plain", options={'x-goog-acl': 'public-read'})
+            standard_file = gcs.open('/'+bucket_name+'/standard-'+str(self.user_key.id()), 'w', content_type="image/jpeg", options={'x-goog-acl': 'public-read'})
+            small_file = gcs.open('/'+bucket_name+'/small-'+str(self.user_key.id()), 'w', content_type="image/jpeg", options={'x-goog-acl': 'public-read'})
 
             if im.mode == "RGBA" or "transparency" in im.info:
                 resized_im = im.crop((x0, y0, x0+width-1, y0+height-1)).resize((128,128), Image.ANTIALIAS)

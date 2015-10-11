@@ -1,5 +1,5 @@
 (function(dt, $) {
-var video_preview_timeout;
+var video_hover_timeout;
 var slide_timeout;
 var right_margin = 11;
 var element_width = 196;
@@ -44,7 +44,7 @@ $(document).ready(function() {
         var video_preview = $(this);
         var offset = video_preview.offset();
 
-        video_preview_timeout = setTimeout(function() {
+        video_hover_timeout = setTimeout(function() {
             preview_popup.find('.popup-title').text(video_preview.find('.video-preview-title').text());
             preview_popup.find('.popup-descript').text(video_preview.find('.video-preview-popup-info[data-type="intro"]').text());
             preview_popup.find('.popup-statistic-entry .hits-num').text(video_preview.find('.video-preview-popup-info[data-type="hits"]').text());
@@ -63,12 +63,18 @@ $(document).ready(function() {
             } else {
                 preview_popup.addClass('show').css({left: offset.left, top: offset.top - 5 - preview_popup[0].scrollHeight});
             }
-        }, 300);
+        }, 400);
     });
     $('.video-list-line').on('mouseleave', 'a.video-preview', function() {
         $('.video-preview-popup').removeClass('show');
-        clearTimeout(video_preview_timeout);
+        clearTimeout(video_hover_timeout);
     });
+
+    $('.video-list-line').on('mouseenter', 'a.video-preview, a.next-top-videos', dt.watched_or_not)
+                        .on('mouseleave', 'a.video-preview, a.next-top-videos', dt.cancel_watched);
+    $('a.slide').on('mouseenter', dt.watched_or_not)
+                .on('mouseleave', dt.cancel_watched);
+
 
     $('.search-scope').click(function() {
         if ($(this).hasClass('active')) return;
@@ -145,12 +151,12 @@ $(document).ready(function() {
                 video_columns += Math.ceil(result.videos.length/lines);
                 for (var i = 0; i < result.videos.length; i++) {
                     var video = result.videos[i];
-                    var div = '<a class="video-preview" target="_blank" href="' + video.url + '">\
+                    var div = '<a class="video-preview" target="_blank" href="' + video.url + '" data-id="' + video.id + '">\
                                     <div class="video-preview-thumbnail">\
                                         <img src="' + video.thumbnail_url + '">\
                                     </div>\
                                     <div class="video-preview-statistic">\
-                                        <div class="video-preview-title">' + video.title + '</div>\
+                                        <div class="video-preview-title">' + dt.escapeHTML(video.title) + '</div>\
                                         <div class="video-preview-hits"><span class="preview-icon views"></span>' + dt.numberWithCommas(video.hits) + '</div>\
                                         <div class="video-preview-comment-num"><span class="preview-icon comment"></span>' + dt.numberWithCommas(video.comment_counter) + '</div>\
                                     </div>\
@@ -267,9 +273,9 @@ $(document).ready(function() {
                 video_columns += Math.ceil(result.videos.length/lines);
                 for (var i = 0; i < result.videos.length; i++) {
                     var video = result.videos[i];
-                    var div = '<a class="next-top-videos" target="_blank" href="'+video.url+'">\
+                    var div = '<a class="next-top-videos" target="_blank" href="'+video.url+'" data-id="'+video.id+'">\
                                     <div class="hover-cover">\
-                                        <div class="cover-title">'+video.title+'</div>\
+                                        <div class="cover-title">'+dt.escapeHTML(video.title)+'</div>\
                                         <div class="cover-uploader">Uper:'+video.uploader.nickname+'</div>\
                                         <div class="cover-hits">Views:'+dt.numberWithCommas(video.hits)+'</div>\
                                     </div>\

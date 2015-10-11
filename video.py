@@ -1,11 +1,7 @@
 from views import *
-from watch import Danmaku, Subtitles
+from watch import Danmaku
 from PIL import Image
-from google.appengine.api import images
-import urlparse
 
-YOUTUBE_API_URL = "https://www.googleapis.com/youtube/v3"
-YOUTUBE_API_KEY = "AIzaSyBbf3cs6Nw483po40jw7hZLejmdrgwozWc"
 ISO_8601_period_rx = re.compile(
     'P'   # designates a period
     '(?:(?P<years>\d+)Y)?'   # years
@@ -150,6 +146,7 @@ class VideoUpload(BaseHandler):
         elif len(self.raw_urls) > 500:
             raise Exception('Too many parts!')
 
+        youtube = build('youtube', 'v3', developerKey=DEVELOPER_KEY)
         for i in xrange(0, len(self.raw_urls)):
             self.raw_urls[i] = self.raw_urls[i].strip();
             raw_url = self.raw_urls[i]
@@ -161,10 +158,10 @@ class VideoUpload(BaseHandler):
                 except Exception:
                     raise Exception('invalid url:'+str(i))
 
-                youtube_api_url = YOUTUBE_API_URL + '/videos?key=' + YOUTUBE_API_KEY + '&id=' + res['vid'] + '&part=contentDetails'
                 if i == 0:
-                    youtube_api_url += ',snippet'
-                vlist = json.load(urllib2.urlopen(youtube_api_url))['items']
+                    vlist = youtube.videos().list(id=res['vid'], part='contentDetails,snippet').execute()['items']
+                else:
+                    vlist = youtube.videos().list(id=res['vid'], part='contentDetails').execute()['items']
                 if not vlist:
                     raise Exception('invalid url:'+str(i))
 
@@ -204,20 +201,16 @@ class VideoUpload(BaseHandler):
                 raise Exception('Index error.')
 
     def upload_default_thumbnail(self, video_id):
-        try:
-            im = Image.open(cStringIO.StringIO(urllib2.urlopen('http://img.youtube.com/vi/'+self.default_thumbnail+'default.jpg').read()))
-            bucket_name = 'dantube-thumbnail'
-            large_file = gcs.open('/'+bucket_name+'/large-'+video_id, 'w', content_type="text/plain", options={'x-goog-acl': 'public-read'})
-            standard_file = gcs.open('/'+bucket_name+'/standard-'+video_id, 'w', content_type="text/plain", options={'x-goog-acl': 'public-read'})
-            resized_im = im.resize((512,288), Image.ANTIALIAS)
-            resized_im.save(large_file, format='jpeg', quality=90, optimize=True)
-            resized_im = resized_im.resize((208,117), Image.ANTIALIAS)
-            resized_im.save(standard_file, format='jpeg', quality=90, optimize=True)
-            large_file.close()
-            standard_file.close()
-        except Exception:
-            logging.info('Image process failed')
-            raise Exception('Image process failed.')
+        im = Image.open(cStringIO.StringIO(urllib2.urlopen('http://img.youtube.com/vi/'+self.default_thumbnail+'default.jpg').read()))
+        bucket_name = 'dantube-thumbnail'
+        large_file = gcs.open('/'+bucket_name+'/large-'+video_id, 'w', content_type="image/jpeg", options={'x-goog-acl': 'public-read'})
+        standard_file = gcs.open('/'+bucket_name+'/standard-'+video_id, 'w', content_type="image/jpeg", options={'x-goog-acl': 'public-read'})
+        resized_im = im.resize((512,288), Image.ANTIALIAS)
+        resized_im.save(large_file, format='jpeg', quality=90, optimize=True)
+        resized_im = resized_im.resize((208,117), Image.ANTIALIAS)
+        resized_im.save(standard_file, format='jpeg', quality=90, optimize=True)
+        large_file.close()
+        standard_file.close()
 
     def upload_thumbnail(self, video_id):
         try:
@@ -236,8 +229,8 @@ class VideoUpload(BaseHandler):
             #     except EOFError:
             #         break;
             bucket_name = 'dantube-thumbnail'
-            large_file = gcs.open('/'+bucket_name+'/large-'+video_id, 'w', content_type="text/plain", options={'x-goog-acl': 'public-read'})
-            standard_file = gcs.open('/'+bucket_name+'/standard-'+video_id, 'w', content_type="text/plain", options={'x-goog-acl': 'public-read'})
+            large_file = gcs.open('/'+bucket_name+'/large-'+video_id, 'w', content_type="image/jpeg", options={'x-goog-acl': 'public-read'})
+            standard_file = gcs.open('/'+bucket_name+'/standard-'+video_id, 'w', content_type="image/jpeg", options={'x-goog-acl': 'public-read'})
 
             if im.mode == "RGBA" or "transparency" in im.info:
                 resized_im = im.resize((512,288), Image.ANTIALIAS)
@@ -279,7 +272,7 @@ class VideoUpload(BaseHandler):
                 tags=self.tags,
                 allow_tag_add=self.allow_tag_add,
             )
-        except TransactionFailedError:
+        except models.TransactionFailedError:
             logging.error('Video submitted failed!!!')
             self.json_response(True, {'message': 'Video uploading error. Please try again.'})
             return
@@ -299,7 +292,6 @@ class VideoUpload(BaseHandler):
                 uploader=user.key,
                 title=self.clip_titles[i],
                 index=i,
-                parent=video.key,
                 subintro=self.subintros[i],
                 duration=self.durations[i],
                 raw_url=self.raw_urls[i],
@@ -314,16 +306,11 @@ class VideoUpload(BaseHandler):
         clip_list.titles = self.clip_titles
 
         user_detail.videos_submitted += 1
-        subscriptions = models.Subscription.query(models.Subscription.uper==self.user_key).fetch(keys_only=True)
-        subscribers = ndb.get_multi([subscription.parent() for subscription in subscriptions])
-        subscribers_put = []
-        for i in xrange(0, len(subscribers)):
-            subscriber = subscribers[i]
-            if not subscriber.check_new_subscription:
-                subscriber.check_new_subscription = True
-                subscribers_put.append(subscriber)
+        ndb.put_multi([user_detail, clip_list])
 
-        ndb.put_multi([user_detail, clip_list] + subscribers_put)
+        q = taskqueue.Queue('Activity')
+        q.add(taskqueue.Task(payload=str(self.user_key.id()), method='PULL'))
+            
         self.json_response(False)
 
     @login_required_json
@@ -422,7 +409,6 @@ class VideoUpload(BaseHandler):
                     uploader=self.user_key,
                     title=self.clip_titles[i],
                     index=i,
-                    parent=video.key,
                     subintro=self.subintros[i],
                     duration=self.durations[i],
                     raw_url=self.raw_urls[i],
@@ -444,25 +430,17 @@ class VideoUpload(BaseHandler):
         ndb.put_multi(put_clips)
         for i in xrange(0, len(ori_clips)):
             if i not in used_clips:
-                ori_clips[i].Delete()
+                models.VideoClip.Delete(ori_clips[i].key)
                 
         clip_list.clips = [clip.key for clip in new_clips]
         clip_list.titles = self.clip_titles
 
-        subscribers_put = []
-        if self.allow_post:
-            video.created = datetime.now()
-            subscriptions = models.Subscription.query(models.Subscription.uper==self.user_key).fetch(keys_only=True)
-            subscribers = ndb.get_multi([subscription.parent() for subscription in subscriptions])
-            subscribers_put = []
-            for i in xrange(0, len(subscribers)):
-                subscriber = subscribers[i]
-                if not subscriber.check_new_subscription:
-                    subscriber.check_new_subscription = True
-                    subscribers_put.append(subscriber)
-
         video.duration = video_duration
-        ndb.put_multi([video, clip_list] + subscribers_put)
+        ndb.put_multi([video, clip_list])
+
+        if self.allow_post:
+            q = taskqueue.Queue('Activity')
+            q.add(taskqueue.Task(payload=str(self.user_key.id()), method='PULL'))
 
         if reindex:
             video.create_index('videos_by_created', models.time_to_seconds(video.created))
@@ -534,8 +512,8 @@ class DeleteVideo(BaseHandler):
             video.Delete()
             deleted_counter += 1
 
-            large_file = gcs.open('/'+bucket_name+'/large-'+video.key.id(), 'w', content_type="text/plain", options={'x-goog-acl': 'public-read'})
-            standard_file = gcs.open('/'+bucket_name+'/standard-'+video.key.id(), 'w', content_type="text/plain", options={'x-goog-acl': 'public-read'})
+            large_file = gcs.open('/'+bucket_name+'/large-'+video.key.id(), 'w', content_type="image/png", options={'x-goog-acl': 'public-read'})
+            standard_file = gcs.open('/'+bucket_name+'/standard-'+video.key.id(), 'w', content_type="image/png", options={'x-goog-acl': 'public-read'})
             im.save(large_file, format='png', optimize=True)
             resized_im.save(standard_file, format='png', optimize=True)
             large_file.close()
@@ -624,56 +602,27 @@ class ManageDanmaku(BaseHandler):
         }
 
         clips = ndb.get_multi(clip_list.clips)
-        put_list = []
         for i in xrange(0, len(clips)):
             clip = clips[i]
-            if clip.refresh:
-                danmaku_num = 0
-                danmaku_pools = ndb.get_multi(clip.danmaku_pools)
-                for danmaku_pool in danmaku_pools:
-                    danmaku_num += len(danmaku_pool.danmaku_list)
-                clip.danmaku_num = danmaku_num
-
-                advanced_danmaku_num = 0
-                if clip.advanced_danmaku_pool:
-                    advanced_danmaku_pool = clip.advanced_danmaku_pool.get()
-                    advanced_danmaku_num += len(advanced_danmaku_pool.danmaku_list)
-                clip.advanced_danmaku_num = advanced_danmaku_num
-
-                code_danmaku_num = 0
-                if clip.code_danmaku_pool:
-                    code_danmaku_pool = clip.code_danmaku_pool.get()
-                    code_danmaku_num += len(code_danmaku_pool.danmaku_list)
-                clip.code_danmaku_num = code_danmaku_num
-
-                clip.refresh = False
-                put_list.append(clip)
-
             context['clips'].append({
                 'id': clip.key.id(),
-                'title': clip_list.titles[i],
+                'title': clip.title,
                 'danmaku_num': clip.danmaku_num,
                 'advanced_danmaku_num': clip.advanced_danmaku_num,
-                'subtitles_num': len(clip.subtitle_danmaku_pools),
+                'subtitles_num': clip.subtitles_num,
                 'code_num': clip.code_danmaku_num,
             })
 
-        ndb.put_multi(put_list)
         self.render('manage_danmaku', context)
 
-def pool_required_json(handler):
+def clip_required_json(handler):
     def check_index(self, video_id, clip_id):
-        clip = ndb.Key('VideoClip', int(clip_id), parent=ndb.Key('Video', video_id)).get()
+        clip = ndb.Key('VideoClip', int(clip_id)).get()
         if not clip or clip.uploader != self.user_key:
             self.json_response(True, {'message': 'You are not allowed to edit this video.',})
             return
 
-        try:
-            pool_index = int(self.request.get('pool_index')) - 1
-        except ValueError:
-            pool_index = 0
-
-        return handler(self, clip, pool_index)
+        return handler(self, clip)
 
     return check_index
 
@@ -681,7 +630,7 @@ class ManageDanmakuDetail(BaseHandler):
     @login_required
     def get(self, video_id, clip_id):
         video_key = ndb.Key('Video', video_id)
-        clip_key = ndb.Key('VideoClip', int(clip_id), parent=video_key)
+        clip_key = ndb.Key('VideoClip', int(clip_id))
         
         video, clip = ndb.get_multi([video_key, clip_key])
         if not video or video.deleted or video.uploader != self.user_key:
@@ -695,123 +644,90 @@ class ManageDanmakuDetail(BaseHandler):
             'clip_index': clip.index,
             'clip_title': clip.title,
             'danmaku_num': clip.danmaku_num,
-            'danmaku_list_range': range(0, len(clip.danmaku_pools)),
-            'advanced_danmaku_pool': clip.advanced_danmaku_pool,
-            'subtitles_num': len(clip.subtitle_danmaku_pools),
-            'subtitle_names': clip.subtitle_names,
-            'subtitle_approved': clip.subtitle_approved,
-            'code_danmaku_pool': clip.code_danmaku_pool,
+            'advanced_danmaku_num': clip.advanced_danmaku_num,
+            'subtitles_num': clip.subtitles_num,
+            'code_num': clip.code_danmaku_num,
         }
         self.render('manage_danmaku_detail', context)
 
     @login_required_json
-    @pool_required_json
-    def post(self, clip, pool_index):
-        pool_type = self.request.get('pool_type')
+    @clip_required_json
+    def confirm(self, clip):
         try:
-            if pool_type == 'danmaku':
-                danmaku_pool = clip.danmaku_pools[pool_index].get()
-                self.json_response(False,  {
-                    'danmaku_list': [Danmaku.format_danmaku(danmaku, danmaku_pool) for danmaku in danmaku_pool.danmaku_list]
-                })
-            elif pool_type == 'advanced':
-                advanced_danmaku_pool = clip.advanced_danmaku_pool.get()
-                self.json_response(False, {
-                    'danmaku_list': [Danmaku.format_advanced_danmaku(danmaku, advanced_danmaku_pool) for danmaku in advanced_danmaku_pool.danmaku_list]
-                })
-            elif pool_type == 'subtitles':
-                subtitle_danmaku_pool = clip.subtitle_danmaku_pools[pool_index].get()
-                self.json_response(False, {
-                    'subtitles_list': Subtitles.format_subtitles(subtitle_danmaku_pool)
-                })
-            elif pool_type == 'code':
-                code_danmaku_pool = clip.code_danmaku_pool.get()
-                self.json_response(False, {
-                    'danmaku_list': [Danmaku.format_code_danmaku(danmaku, code_danmaku_pool) for danmaku in code_danmaku_pool.danmaku_list]
-                })
-            else:
-                raise IndexError('Invalid type')
-        except IndexError:
-            self.json_response(True, {'message': 'Index out of range.'})
-
-    @login_required_json
-    @pool_required_json
-    def drop(self, clip, pool_index):
-        pool_type = self.request.get('pool_type')
-        try:
-            if pool_type == 'danmaku':
-                danmaku_pool = clip.danmaku_pools.pop(pool_index)
-                danmaku_pool.delete()
-            elif pool_type == 'advanced':
-                clip.advanced_danmaku_pool.delete()
-                clip.advanced_danmaku_pool = None
-            elif pool_type == 'subtitles':
-                subtitle_danmaku_pool = clip.subtitle_danmaku_pools.pop(pool_index)
-                subtitle_danmaku_pool.delete()
-                clip.subtitle_names.pop(pool_index)
-                clip.subtitle_approved.pop(pool_index)
-            elif pool_type == 'code':
-                clip.code_danmaku_pool.delete()
-                clip.code_danmaku_pool = None
-            clip.put()
-            self.json_response(False)
-        except IndexError:
-            self.json_response(True, {'message': 'Index out of range.'})
-
-    @login_required_json
-    @pool_required_json
-    def confirm(self, clip, pool_index):
-        try:
-            idx = int(self.request.get('danmaku_index'))
+            index = int(self.request.get('index'))
         except ValueError:
             self.json_response(True, {'message': 'Invalid index.'})
             return
 
         pool_type = self.request.get('pool_type')
         try:
-            if pool_type == 'advanced':
-                danmaku_pool = clip.advanced_danmaku_pool.get()
-                danmaku_pool.danmaku_list[idx].approved = True
-                danmaku_pool.put()
-            elif pool_type == 'subtitles':
-                clip.subtitle_approved[pool_index] = True
-                clip.put()
-            elif pool_type == 'code':
-                danmaku_pool = clip.code_danmaku_pool.get()
-                danmaku_pool.danmaku_list[idx].approved = True
-                danmaku_pool.put()
-            else:
-                self.json_response(True, {'message': 'Invalid type.'})
-                return
-            self.json_response(False)
+            pool = gcs.open('/danmaku/'+str(clip.key.id())+'/'+pool_type, 'r')
+            danmaku_list = json.loads(pool.read())
+            pool.close()
+        except NotFoundError:
+            danmaku_list = []
+        
+        new_danmaku_list = []
+        if pool_type == 'advanced':
+            new_danmaku_list = [Danmaku.format_advanced_danmaku(danmaku) for danmaku in clip.advanced_danmaku_buffer]
+            clip.advanced_danmaku_buffer = []
+            clip.put()
+        elif pool_type != 'subtitles' and pool_type != 'code':
+            self.json_response(True, {'message': 'Invalid type.'})
+            return
+
+        danmaku_list += new_danmaku_list
+        try:
+            danmaku_list[index]['approved']= True
         except IndexError:
             self.json_response(True, {'message': 'Index out of range.'})
+            return
+
+        pool = gcs.open('/danmaku/'+str(clip_key.id())+'/'+kind, 'w', content_type="text/plain", options={'x-goog-acl': 'public-read'})
+        pool.write(json.dumps(danmaku_list))
+        pool.close()
+        self.json_response(False)
 
     @login_required_json
-    @pool_required_json
-    def delete(self, clip, pool_index):
+    @clip_required_json
+    def delete(self, clip):
         try:
-            idxs = [int(index) for index in self.request.POST.getall('danmaku_index[]')]
+            idxs = [int(index) for index in self.request.POST.getall('index[]')]
         except ValueError:
             self.json_response(True, {'message': 'Invalid indices.'})
             return
         idxs.sort(reverse=True)
 
         pool_type = self.request.get('pool_type')
+        try:
+            pool = gcs.open('/danmaku/'+str(clip.key.id())+'/'+pool_type, 'r')
+            danmaku_list = json.loads(pool.read())
+            pool.close()
+        except NotFoundError:
+            danmaku_list = []
+
+        new_danmaku_list = []
         if pool_type == 'danmaku':
-            danmaku_pool = clip.danmaku_pools[pool_index].get()
+            new_danmaku_list = [Danmaku.format_danmaku(danmaku) for danmaku in clip.danmaku_buffer]
+            clip.danmaku_buffer = []
+            clip.put()
         elif pool_type == 'advanced':
-            danmaku_pool = clip.advanced_danmaku_pool.get()
-        elif pool_type == 'code':
-            danmaku_pool = clip.code_danmaku_pool.get()
-        else:
+            new_danmaku_list = [Danmaku.format_advanced_danmaku(danmaku) for danmaku in clip.advanced_danmaku_buffer]
+            clip.advanced_danmaku_buffer = []
+            clip.put()
+        elif pool_type != 'subtitles' or pool_type != 'code':
             self.json_response(True, {'message': 'Invalid type.'})
             return
 
+        danmaku_list += new_danmaku_list
         try:
             for index in idxs:
-                danmaku_pool.danmaku_list.pop(index)
-            danmaku_pool.put()
-            self.json_response(False, {'message': 'Danmaku deleted.'})
+                danmaku_list.pop(index)
         except IndexError:
             self.json_response(True, {'message': 'Index out of range.'})
+            return
+
+        pool = gcs.open('/danmaku/'+str(clip_key.id())+'/'+kind, 'w', content_type="text/plain", options={'x-goog-acl': 'public-read'})
+        pool.write(json.dumps(danmaku_list))
+        pool.close()
+        self.json_response(False)

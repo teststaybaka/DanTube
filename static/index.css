@@ -44,6 +44,7 @@
     height: 227px;
     display: inline-block;
     cursor: pointer;
+    position: relative;
 }
 
 .slide-bottom {
@@ -194,6 +195,11 @@ div.slide-title.active {
     margin-right: 11px;
     cursor: pointer;
     width: 196px;
+    position: relative;
+}
+
+.video-preview .watched-label {
+    top: 9%;
 }
 
 .video-preview-thumbnail {

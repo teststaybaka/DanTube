@@ -50,7 +50,8 @@ var ori_subtitles_longevity = 5;
 var subtitles_longevity = 5;
 var subtitles_opacity = 1;
 var linked_elements = new dt.LinkedList();
-var subtitle_danmaku_container = {};
+var subtitles_danmaku_container = {};
+var subtitles_danmaku_backup = {};
 var code_intervals = [];
 var code_timeouts = [];
 
@@ -74,6 +75,10 @@ function DanmakuTimeSequence(danmaku_list) {
 }
 DanmakuTimeSequence.prototype.addOne = function(danmaku) {
 	this.danmaku_list.push(danmaku);
+	dt.quick_sort(this.danmaku_list, 0, this.danmaku_list.length-1, danmaku_timestamp_lower_compare);
+}
+DanmakuTimeSequence.prototype.addMult = function(danmaku_list) {
+	this.danmaku_list.concat(danmaku_list);
 	dt.quick_sort(this.danmaku_list, 0, this.danmaku_list.length-1, danmaku_timestamp_lower_compare);
 }
 DanmakuTimeSequence.prototype.locate = function() {
@@ -1128,8 +1133,8 @@ function danmaku_update() {
 
 	if (show_subtitles) {
 		var player_background = document.getElementById('player-background');
-		for(var key in subtitle_danmaku_container) {
-			var subtitle_danmaku_list = subtitle_danmaku_container[key];
+		for(var key in subtitles_danmaku_container) {
+			var subtitle_danmaku_list = subtitles_danmaku_container[key];
 			subtitle_danmaku_list.locate();
 			var ref_danmaku;
 			while (ref_danmaku = subtitle_danmaku_list.next()) {
@@ -2002,7 +2007,7 @@ dt.onPlayerReady = function(event) {
 				}
 			}
 		}
-		subtitle_danmaku_container[-1] = new DanmakuTimeSequence(subtitles_list);
+		subtitles_danmaku_container[-1] = new DanmakuTimeSequence(subtitles_list);
 		var checkbox = $('.checkbox-selection.subtitles');
 		if (checkbox.hasClass('off')) {
 			checkbox.trigger('click');
@@ -2039,48 +2044,6 @@ dt.onPlayerReady = function(event) {
 			}
 		});
 		return false;
-	});
-	$('label.check-label.subtitle input[type="checkbox"]').change(function() {
-		var subtitles_id = $(this).attr('data-id');
-		var subtitle_index = $('label.check-label.subtitle').index($(this).parent()).toString();
-		if ($(this).is(':checked')) {
-            $.ajax({
-				type: "GET",
-				url: '/video/subtitles/'+subtitles_id,
-				success: function(result) {
-					if(!result.error) {
-						var entity = result;
-						var subtitles_list = [];
-						var lines = entity.subtitles.split('\n');
-						for (var i = 0; i < lines.length; i++) {
-							var line = lines[i].trim();
-							if (line) {
-								var result = line.match(dt.subtitle_format);
-								if (result[4]) {
-									subtitles_list.push({
-										'timestamp': parseInt(result[1])*60+parseInt(result[2])+parseInt(result[3])/100,
-										'content': result[4],
-										'type': 'Subtitles',
-									});
-								}
-							}
-						}
-
-						subtitle_danmaku_container[subtitle_index] = new DanmakuTimeSequence(subtitles_list);
-					} else {
-						dt.pop_ajax_message(result.message, 'error');
-					}
-				},
-				error: function (xhr, ajaxOptions, thrownError) {
-					console.log(xhr.status);
-					console.log(thrownError);
-					dt.pop_ajax_message(xhr.status+' '+thrownError, 'error');
-				}
-			});
-        } else {
-            delete subtitle_danmaku_container[subtitle_index];
-            subtitles_one_clear(subtitle_index);
-        }
 	});
 
 	new ZeroClipboard(document.getElementById("copy-code"));
@@ -2543,26 +2506,37 @@ $(document).ready(function() {
 		type: "GET",
 		url: '/video/danmaku/'+video_id+'/'+clip_id,
 		success: function(result) {
-			if(!result.error) {
-				console.log('Loaded danmaku: '+result.danmaku_list.length);
-				$('#total-danmaku-span').text(dt.numberWithCommas(result.danmaku_list.length));
-				for(var i = 0; i < result.danmaku_list.length; i++) {
-					result.danmaku_list[i].blocked = false;
-					danmaku_pool_list.push(result.danmaku_list[i]);
-				}
-				// dt.quick_sort(danmaku_pool_list, 0, danmaku_pool_list.length - 1, danmaku_timestamp_lower_compare);
-				dt.quick_sort(danmaku_pool_list, 0, danmaku_pool_list.length - 1, danmaku_date_lower_compare);
-				generate_danmaku_pool_list();
-				normal_danmaku_sequence = new DanmakuTimeSequence(result.danmaku_list);
-			} else {
-				dt.pop_ajax_message(result.message, 'error');
-			}
+			load_danmaku(result.danmaku_list);
 		},
 		error: function (xhr, ajaxOptions, thrownError) {
 			console.log(xhr.status);
 			console.log(thrownError);
 			dt.pop_ajax_message(xhr.status+' '+thrownError, 'error');
 		}
+	});
+	$.ajax({
+		type: "GET",
+		url: 'https://storage.googleapis.com/danmaku/'+clip_id+'/danmaku',
+		dataType: 'json',
+		success: load_danmaku,
+	});
+	$.ajax({
+		type: "GET",
+		url: 'https://storage.googleapis.com/danmaku/'+clip_id+'/advanced',
+		dataType: 'json',
+		success: load_danmaku,
+	});
+	$.ajax({
+		type: "GET",
+		url: 'https://storage.googleapis.com/danmaku/'+clip_id+'/code',
+		dataType: 'json',
+		success: load_danmaku,
+	});
+	$.ajax({
+		type: "GET",
+		url: 'https://storage.googleapis.com/danmaku/'+clip_id+'/subtitles',
+		dataType: 'json',
+		success: load_subtitles,
 	});
 
 	$('#danmaku-pool').on('click', 'div.per-bullet', function(evt) {
@@ -2940,6 +2914,61 @@ $(document).ready(function() {
 	};
 });
 
+function load_danmaku(danmaku_list) {
+	$('#total-danmaku-span').text(dt.numberWithCommas(danmaku_list.length + parseInt($('#total-danmaku-span').text())));
+	for(var i = 0; i < danmaku_list.length; i++) {
+		danmaku_list[i].blocked = false;
+		danmaku_pool_list.push(danmaku_list[i]);
+	}
+	dt.quick_sort(danmaku_pool_list, 0, danmaku_pool_list.length - 1, danmaku_date_lower_compare);
+	generate_danmaku_pool_list();
+	normal_danmaku_sequence.addMult(danmaku_list);
+}
+
+function load_subtitles(subtitles_list) {
+	for (var i = 0; i < subtitles_list.length; i++) {
+		$('.subtitles-list').append('<label class="check-label subtitle">\
+						              <div class="pseudo-checkbox"></div>\
+						              <input type="checkbox" class="hidden">\
+						              <span>'+dt.escapeHTML(subtitles_list[i].name)+'</span>\
+						            </label>')
+
+		var content = subtitles_list[i].subtitles;
+		var subtitles = [];
+		var lines = content.split('\n');
+		for (var i = 0; i < lines.length; i++) {
+			var line = lines[i].trim();
+			if (line) {
+				var result = line.match(dt.subtitle_format);
+				if (result[4]) {
+					subtitles.push({
+						'timestamp': parseInt(result[1])*60+parseInt(result[2])+parseInt(result[3])/100,
+						'content': result[4],
+						'type': 'Subtitles',
+					});
+				}
+			}
+		}
+		subtitles_danmaku_backup[i] = new DanmakuTimeSequence(subtitles);
+	}
+
+	$('label.check-label.subtitle input[type="checkbox"]').change(function() {
+		if ($(this).is(':checked')) {
+            $(this).prev().addClass('checked');
+        } else {
+            $(this).prev().removeClass('checked');
+        }
+
+		var subtitle_index = $('label.check-label.subtitle').index($(this).parent()).toString();
+		if ($(this).is(':checked')) {
+			subtitles_danmaku_container[subtitle_index] = subtitles_danmaku_backup[subtitle_index];
+        } else {
+            delete subtitles_danmaku_container[subtitle_index];
+            subtitles_one_clear(subtitle_index);
+        }
+	});
+}
+
 function render_comment_div(comment) {
 	var div = '<div class="comment-entry" data-id="' + comment.id + '">\
       <a href="' + comment.creator.space_url + '" target="_blank">\
@@ -3107,6 +3136,19 @@ function send_report(form, type) {
 	  }
 	});
 	return false;
+}
+
+function createCORSRequest(method, url){
+    var xhr = new XMLHttpRequest();
+    if ("withCredentials" in xhr){
+        xhr.open(method, url, true);
+    } else if (typeof XDomainRequest != "undefined"){
+        xhr = new XDomainRequest();
+        xhr.open(method, url);
+    } else {
+        xhr = null;
+    }
+    return xhr;
 }
 
 function get_player_inner_pos_left() {

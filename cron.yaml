@@ -1,0 +1,8 @@
+cron:
+- description: update hot score and index
+  url: /tasks/update_index
+  schedule: every 30 minutes synchronized
+
+- description: notify subscribers of new activities
+  url: /tasks/new_activites
+  schedule: every 2 hours synchronized

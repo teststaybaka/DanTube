@@ -76,8 +76,8 @@ Please use the following url to activate your account:
 
         img = Image.open(cStringIO.StringIO(urllib2.urlopen(self.request.host_url+'/static/emoticons_img/default_avatar'+str(random.randint(1,6))+'.png').read()))
         bucket_name = 'dantube-avatar'
-        standard_file = gcs.open('/'+bucket_name+'/standard-'+str(user.key.id()), 'w', content_type="text/plain", options={'x-goog-acl': 'public-read'})
-        small_file = gcs.open('/'+bucket_name+'/small-'+str(user.key.id()), 'w', content_type="text/plain", options={'x-goog-acl': 'public-read'})
+        standard_file = gcs.open('/'+bucket_name+'/standard-'+str(user.key.id()), 'w', content_type="image/png", options={'x-goog-acl': 'public-read'})
+        small_file = gcs.open('/'+bucket_name+'/small-'+str(user.key.id()), 'w', content_type="image/png", options={'x-goog-acl': 'public-read'})
         img.save(standard_file, format='png', optimize=True)
         img = img.resize((64, 64), Image.ANTIALIAS)
         img.save(small_file, format='png', optimize=True)

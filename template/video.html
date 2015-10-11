@@ -393,7 +393,6 @@
             <div class="checkbox-option on">On</div>
           </div>
         </div> -->
-        {% if subtitle_names|count != 0 %}
         <div class="player-full-setting-line">
           <label class="player-full-setting-label">Subtitles/CC</label>
           <div class="checkbox-selection subtitles off">
@@ -403,13 +402,6 @@
         </div>
         <div class="subtitles-block hidden">
           <div class="subtitles-list">
-            {% for name in subtitle_names %}
-            <label class="check-label subtitle">
-              <div class="pseudo-checkbox"></div>
-              <input type="checkbox" class="hidden" data-id="{{ subtitle_pool_ids[loop.index0] }}">
-              <span>{{ name }}</span>
-            </label>
-            {% endfor %}
           </div>
           <div class="player-full-setting-line">
             <label class="player-full-setting-label number">Subtitles font size</label>
@@ -439,7 +431,6 @@
             <label class="setting-reset-button blue-link number">Reset</label>
           </div>
         </div>
-        {% endif %}
       </div>
     </div>
     <div class="player-full-setting block hidden">
@@ -663,7 +654,7 @@ create_danmaku('Run this code!', function(ele, delta) {
         </div>
         <div class="danmaku-pool-info-box">
           <span class="info-title">Total danmaku:</span>
-          <span id="total-danmaku-span">...</span>
+          <span id="total-danmaku-span">0</span>
         </div>
       </div>
     </div>

@@ -1,6 +1,6 @@
 import webapp2
 
-import views, admin, login, account, video, message, user, playlist, watch, report
+import views, admin, login, account, video, message, user, playlist, watch, report, tasks
 import models
 
 secret_key = 'efrghtrrouhsmvnmxdiosjkgjfds68_=' \
@@ -69,7 +69,6 @@ routes = [
     webapp2.Route(r'/account/video/delete', video.DeleteVideo, name="delete_video"),
     webapp2.Route(r'/account/video/parts/<video_id:dt\d+>', video.ManageDanmaku, name="manage_danmaku"),
     webapp2.Route(r'/account/video/parts/danmaku/<video_id:dt\d+>/<clip_id:\d+>', video.ManageDanmakuDetail, name="manage_danmaku_detail"),
-    webapp2.Route(r'/account/video/parts/danmaku/<video_id:dt\d+>/<clip_id:\d+>/drop', video.ManageDanmakuDetail, name="drop_danmaku_pool", handler_method="drop"),
     webapp2.Route(r'/account/video/parts/danmaku/<video_id:dt\d+>/<clip_id:\d+>/delete', video.ManageDanmakuDetail, name="delete_danmaku", handler_method="delete"),
     webapp2.Route(r'/account/video/parts/danmaku/<video_id:dt\d+>/<clip_id:\d+>/confirm', video.ManageDanmakuDetail, name="confirm_danmaku", handler_method="confirm"),
 
@@ -94,9 +93,9 @@ routes = [
     webapp2.Route(r'/video/advanced_danmaku/<video_id:dt\d+>/<clip_id:\d+>', watch.Danmaku, name="advanced_danmaku", handler_method="post_advanced"),
     webapp2.Route(r'/video/subtitles_danmaku/<video_id:dt\d+>/<clip_id:\d+>', watch.Danmaku, name="subtitles_danmaku", handler_method="post_subtitles"),
     webapp2.Route(r'/video/code_danmaku/<video_id:dt\d+>/<clip_id:\d+>', watch.Danmaku, name="code_danmaku", handler_method="post_code"),
-    webapp2.Route(r'/video/subtitles/<subtitles_pool_id:\d+>', watch.Subtitles, name="subtitles_danmaku"),
     webapp2.Route(r'/video/like/<video_id:dt\d+>', watch.Like, name="like"),
     webapp2.Route(r'/video/unlike/<video_id:dt\d+>', watch.Unlike, name="unlike"),
+    webapp2.Route(r'/video/watched/<video_id:dt\d+>', watch.Watched, name="watched"),
 
     webapp2.Route(r'/category_videos', views.LoadByCategory, name="load_by_category"),
     webapp2.Route(r'/uper_videos', views.LoadByUper, name="load_by_uper"),
@@ -112,11 +111,14 @@ routes = [
 
     # webapp2.Route(r'/admin', admin.Home, name="Admin_Home"),
     webapp2.Route(r'/admin/delete/videos', admin.DeleteVideos, name="delete_video"),
+    webapp2.Route(r'/admin/nickname', admin.Nickname, name="nickname_change"),
     # webapp2.Route(r'/admin/video', admin.VideoPageTest, name="Admin_Video"),
     # webapp2.Route(r'/admin/danmaku', admin.DanmakuTest, name="Admin_Danmaku"),
     # webapp2.Route(r'/admin/notify', admin.Notify, name="Admin_Notify"),
     # webapp2.Route(r'/admin/feedbacks', admin.Feedbacks, name="Admin_Feedbacks"),
     # webapp2.Route(r'/admin/reports', admin.Reports, name="Admin_Reports"),
+    webapp2.Route(r'/tasks/update_index', tasks.UpdateIndex, name="update_index"),
+    webapp2.Route(r'/tasks/new_activites', tasks.NewActivity, name="new_activities"),
 ]
 for category in models.Video_Category:
     route = webapp2.Route(r'/%s' % models.URL_NAME_DICT[category][0], views.Home, name=category, handler_method="second_level")

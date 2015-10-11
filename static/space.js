@@ -5,7 +5,7 @@ $(document).ready(function() {
         for (var i = 0; i < result.videos.length; i++) {
             var video = result.videos[i];
             div += '<div class="content-entry">\
-                        <a class="video-img" href="'+video.url+'" target="_blank">\
+                        <a class="video-img" href="'+video.url+'" target="_blank" data-id="'+video.id+'">\
                             <img src="'+video.thumbnail_url+'">\
                             <div class="preview-time">'+dt.secondsToTime(video.duration)+'</div>\
                         </a>\
@@ -30,6 +30,9 @@ $(document).ready(function() {
                     </div>'
         }
         return div;
+    }, function() {
+        $('#space-list-container .page-container:last-child a.video-img').on('mouseenter', dt.watched_or_not)
+                                                                        .on('mouseleave', dt.cancel_watched);
     })
 });
 //end of the file

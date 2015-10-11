@@ -13,8 +13,10 @@ import cgi
 import json
 import re
 import math
-import cloudstorage as gcs
+import traceback
+import collections
 
+import cloudstorage as gcs
 from google.appengine.api import app_identity
 from datetime import datetime
 from jinja2 import Undefined
@@ -25,7 +27,10 @@ from google.appengine.api.datastore_errors import BadValueError
 from google.appengine.ext.webapp import blobstore_handlers
 from google.appengine.api import mail
 from google.appengine.api import search
+from google.appengine.api import taskqueue
 from google.appengine.ext import ndb
+from apiclient.discovery import build
+from google.appengine.ext import deferred
 
 import models
 
@@ -45,6 +50,7 @@ env = jinja2.Environment(
 env.globals = {
     'uri_for': webapp2.uri_for,
 }
+DEVELOPER_KEY = 'AIzaSyBbf3cs6Nw483po40jw7hZLejmdrgwozWc'
 
 class BaseHandler(webapp2.RequestHandler):
     @webapp2.cached_property
@@ -272,7 +278,7 @@ class Home(BaseHandler):
 
         remains = 8
         if self.user_info:
-            subscriptions = models.Subscription.query(ancestor=self.user_key).order(-models.Subscription.score).fetch(limit=remains, projection=['uper'])
+            subscriptions = models.Subscription.query(user=self.user_key).order(-models.Subscription.score).fetch(limit=remains, projection=['uper'])
             uper_keys = [subscription.uper for subscription in subscriptions]
             upers = ndb.get_multi(uper_keys)
             context['upers'] = []
@@ -574,10 +580,10 @@ class SearchUPers(BaseHandler):
             return
 
         if self.user_info:
-            subscriptions = models.Subscription.query(ancestor=self.user_key).order(-models.Subscription.score).fetch(projection=['uper'])
-            subscribed = [subscription.uper for subscription in subscriptions]
+            subscriptions = models.Subscription.query(user=self.user_key).order(-models.Subscription.score).fetch(projection=['uper'])
+            subscribed = set([subscription.uper for subscription in subscriptions])
         else:
-            subscribed = []
+            subscribed = set()
 
         context['upers'] = []
         for i in xrange(0, len(upers)):

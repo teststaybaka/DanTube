@@ -120,7 +120,7 @@ class DeleteVideos(webapp2.RequestHandler):
 
         videos = models.VideoClip.query().fetch(keys_only=True)
         for v in videos:
-            v.delete()
+            models.VideoClip.Delete(v)
 
         videos = models.VideoClipList.query().fetch(keys_only=True)
         for v in videos:
@@ -135,6 +135,14 @@ class DeleteVideos(webapp2.RequestHandler):
             e.delete()
 
         entities = models.ViewRecord.query().fetch(keys_only=True)
+        for e in entities:
+            e.delete()
+
+        entities = models.DanmakuRecord.query().fetch(keys_only=True)
+        for e in entities:
+            e.delete()
+
+        entities = models.MentionedRecord.query().fetch(keys_only=True)
         for e in entities:
             e.delete()
 
@@ -170,3 +178,10 @@ class DeleteSearch(webapp2.RequestHandler):
         user_detail.videos_watched = 0
         user_detail.put()
         
+class Nickname(webapp2.RequestHandler):
+    def get(self):
+        users = models.User.query().fetch()
+        user_details = ndb.get_multi([models.User.get_detail_key(user.key) for user in users])
+        for i in xrange(0, len(users)):
+            user_details[i].nickname = users[i].nickname
+        ndb.put_multi(user_details)

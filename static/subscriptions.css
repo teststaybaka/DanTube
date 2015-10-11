@@ -25,7 +25,7 @@
   border: 1px solid rgb(200,200,200);
   margin-top: 10px;
   margin-bottom: 10px;
-  margin-left: 30px;
+  margin-left: 26px;
   font-size: 0;
 }
 
@@ -48,8 +48,8 @@
 }
 
 .user-img {
-  width: 48px;
-  height: 48px;
+  width: 64px;
+  height: 64px;
   display: inline-block;
   font-size: 0;
 }

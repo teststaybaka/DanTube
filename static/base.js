@@ -625,6 +625,36 @@ dt.contentWrapper = function(text) {
     return text;
 }
 
+var check_watch;
+dt.watched_or_not = function() {
+    var container = $(this);
+    if (container.hasClass('checked')) return;
+
+    check_watch = setTimeout(function() {
+        container.addClass('checked');
+        var video_id = container.attr('data-id');
+        $.ajax({
+            type: "POST",
+            url: '/video/watched/'+video_id,
+            success: function(result) {
+                if(!result.error) {
+                    if (result.watched) {
+                        container.append('<div class="watched-label">Watched</div>')
+                    }
+                }
+            },
+            error: function (xhr, ajaxOptions, thrownError) {
+                console.log(xhr.status);
+                console.log(thrownError);
+                dt.pop_ajax_message(xhr.status+' '+thrownError, 'error');
+            }
+        });
+    }, 400);
+}
+dt.cancel_watched = function() {
+    clearTimeout(check_watch);
+}
+
 dt.http_format = /(https?:\/\/)?([A-Za-z][A-Za-z0-9_\-]*\.[A-Za-z][A-Za-z0-9_\-]*(?:\.[A-Za-z][A-Za-z0-9_\-]+)?(?:\:[0-9]+)?(?:\/[A-Za-z0-9_\-]+)?)/g;
 dt.at_user_format = /\[(.+)(@.+)\]/g
 dt.video_id_format = /(dt\d+)(?:#(\d+))?/g

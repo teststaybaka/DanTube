@@ -9,7 +9,7 @@ $(document).ready(function() {
             var video = result.videos[i];
             div += '<div class="content-entry">\
                         <div class="video-img-uper">\
-                            <a class="video-img" target="_blank" href="'+video.url+'">\
+                            <a class="video-img" target="_blank" href="'+video.url+'" data-id="'+video.id+'">\
                                 <img src="'+video.thumbnail_url+'">\
                                 <div class="preview-time">'+dt.secondsToTime(video.duration)+'</div>\
                             </a>\
@@ -49,6 +49,9 @@ $(document).ready(function() {
                     </div>'
         }
         return div;
+    }, function() {
+        $('.result-container .page-container:last-child a.video-img').on('mouseenter', dt.watched_or_not)
+                                                                    .on('mouseleave', dt.cancel_watched);
     });
 });
 //end of the file
