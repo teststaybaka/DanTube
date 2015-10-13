@@ -148,6 +148,7 @@ class Video(BaseHandler):
             'video_issues': models.Video_Issues,
             'comment_issues': models.Comment_Issues,
             'danmaku_issues': models.Danmaku_Issues,
+            'danmaku_list': json.dumps([danmaku.format() for danmaku in cur_clip.danmaku_buffer]),
         }
         self.render('video', context)
 
@@ -372,32 +373,18 @@ def video_clip_exist_required_json(handler):
     return check_exist
 
 def flush_danmaku_pool(clip_key, new_danmaku_list, kind):
-    try:
-        pool = gcs.open('/danmaku/'+str(clip_key.id())+'/'+kind, 'r')
-        danmaku_list = json.loads(pool.read())
-        pool.close()
-    except NotFoundError:
-        danmaku_list = []
-
-    pool = gcs.open('/danmaku/'+str(clip_key.id())+'/'+kind, 'w', content_type="text/plain", options={'x-goog-acl': 'public-read'})
+    danmaku_list = models.VideoClip.load_cloud_danmaku(clip_key, kind)
     if kind == 'danmaku':
-        danmaku_list += [Danmaku.format_danmaku(danmaku) for danmaku in new_danmaku_list]
+        danmaku_list += [danmaku.format() for danmaku in new_danmaku_list]
     elif kind == 'advanced':
-        danmaku_list += [Danmaku.format_advanced_danmaku(danmaku) for danmaku in new_danmaku_list]
+        danmaku_list += [danmaku.format() for danmaku in new_danmaku_list]
     elif kind == 'subtitles':
-        danmaku_list += [Danmaku.format_subtitles_danmaku(danmaku) for danmaku in new_danmaku_list]
+        danmaku_list += [danmaku.format() for danmaku in new_danmaku_list]
     else: # code
-        danmaku_list += [Danmaku.format_code_danmaku(danmaku) for danmaku in new_danmaku_list]
-    pool.write(json.dumps(danmaku_list))
-    pool.close()
+        danmaku_list += [danmaku.format() for danmaku in new_danmaku_list]
+    models.VideoClip.save_cloud_danmaku(clip_key, kind, danmaku_list)
 
 class Danmaku(BaseHandler):
-    @video_clip_exist_required_json
-    def get(self, clip):
-        danmaku_list = [Danmaku.format_danmaku(danmaku) for danmaku in clip.danmaku_buffer]
-        danmaku_list += [Danmaku.format_advanced_danmaku(danmaku) for danmaku in clip.advanced_danmaku_buffer if danmaku.approved]
-        self.json_response(False, {'danmaku_list': danmaku_list})
-
     @login_required_json
     @video_clip_exist_required_json
     def post(self, clip):
@@ -458,28 +445,13 @@ class Danmaku(BaseHandler):
             clip.danmaku_buffer = []
             deferred.defer(flush_danmaku_pool, clip.key, danmaku_list, 'danmaku')
 
-        user = user_key.get()
-        danmaku_record = models.DanmakuRecord(parent=user_key, creator_name=user.nickname, content=content, danmaku_type='danmaku', video=video.key, clip_index=clip.index, video_title=video.title, timestamp=timestamp)
+        user, video = ndb.get_multi([user_key, clip.video])
+        danmaku_record = models.DanmakuRecord(creator=user_key, creator_name=user.nickname, content=content, danmaku_type='danmaku', video=video.key, clip_index=clip.index, video_title=video.title, timestamp=timestamp)
         ndb.put_multi([clip, danmaku_record])
 
         if users:
             deferred.defer(models.MentionedRecord.Create, users, danmaku_record.key)
-        self.json_response(False, Danmaku.format_danmaku(danmaku))
-
-    @classmethod
-    def format_danmaku(cls, danmaku):
-        return {
-                    'content': danmaku.content,
-                    'timestamp': danmaku.timestamp,
-                    'created': danmaku.created.strftime("%m-%d %H:%M"),
-                    'created_year': danmaku.created.strftime("%Y-%m-%d %H:%M"),
-                    'created_seconds': models.time_to_seconds(danmaku.created),
-                    'creator': danmaku.creator.id(),
-                    'type': danmaku.position,
-                    'size': danmaku.size,
-                    'color': danmaku.color,
-                    'index': danmaku.index,
-                }
+        self.json_response(False, {'entry': danmaku.format()})
 
     @login_required_json
     @video_clip_exist_required_json
@@ -549,38 +521,14 @@ class Danmaku(BaseHandler):
             clip.advanced_danmaku_buffer = []
             deferred.defer(flush_danmaku_pool, clip.key, danmaku_list, 'advanced')
 
-        user, uploader = ndb.get_multi([user_key, clip.uploader])
-        danmaku_record = models.DanmakuRecord(parent=user_key, creator_name=user.nickname, content=content, danmaku_type='advanced', video=video.key, clip_index=clip.index, video_title=video.title, timestamp=timestamp)
+        user, uploader, video = ndb.get_multi([user_key, clip.uploader, clip.video])
+        danmaku_record = models.DanmakuRecord(creator=user_key, creator_name=user.nickname, content=content, danmaku_type='advanced', video=video.key, clip_index=clip.index, video_title=video.title, timestamp=timestamp)
         notification = models.Notification(receiver=uploader.key, subject='An advanced danmaku was posted.', content='An advanced danmaku was posted to your video, '+video.title+' ('+video.key.id()+'), by '+user.nickname+'. Please confirm or delete it if contains improper content.', note_type='info')
         uploader.new_notifications += 1
         ndb.put_multi([clip, uploader, danmaku_record, notification])
 
-        self.json_response(False, Danmaku.format_advanced_danmaku(danmaku))
-
-    @classmethod
-    def format_advanced_danmaku(cls, advanced_danmaku):
-        return {
-                    'content': advanced_danmaku.content,
-                    'timestamp': advanced_danmaku.timestamp,
-                    'created': advanced_danmaku.created.strftime("%m-%d %H:%M"),
-                    'created_year': advanced_danmaku.created.strftime("%Y-%m-%d %H:%M"),
-                    'created_seconds': models.time_to_seconds(advanced_danmaku.created),
-                    'creator': advanced_danmaku.creator.id(),
-                    'birth_x': advanced_danmaku.birth_x,
-                    'birth_y': advanced_danmaku.birth_y,
-                    'death_x': advanced_danmaku.death_x,
-                    'death_y': advanced_danmaku.death_y,
-                    'speed_x': advanced_danmaku.speed_x,
-                    'speed_y': advanced_danmaku.speed_y,
-                    'longevity': advanced_danmaku.longevity,
-                    'css': advanced_danmaku.css,
-                    'as_percent': advanced_danmaku.as_percent,
-                    'relative': advanced_danmaku.relative,
-                    'type': 'Advanced',
-                    'index': advanced_danmaku.index,
-                    'approved': advanced_danmaku.approved,
-                }
-
+        self.json_response(False)
+    
     @login_required_json
     @video_clip_exist_required_json
     def post_code(self, clip):
@@ -600,32 +548,18 @@ class Danmaku(BaseHandler):
             return
         content = cgi.escape(content)
 
-        danmaku = models.CodeDanmaku(index=clip.code_danmaku_counter, timestamp=timestamp, content=content, creator=user_key)
+        danmaku = models.CodeDanmaku(index=clip.code_danmaku_counter, timestamp=timestamp, content=content, creator=user_key, created=datetime.now())
         clip.code_danmaku_counter += 1
         clip.code_danmaku_num += 1
 
-        user, uploader = ndb.get_multi([user_key, clip.uploader])
-        danmaku_record = models.DanmakuRecord(parent=user_key, creator_name=user.nickname, content=content, danmaku_type='code', video=video.key, clip_index=clip.index, video_title=video.title, timestamp=timestamp)
+        user, uploader, video = ndb.get_multi([user_key, clip.uploader, clip.video])
+        danmaku_record = models.DanmakuRecord(creator=user_key, creator_name=user.nickname, content=content, danmaku_type='code', video=video.key, clip_index=clip.index, video_title=video.title, timestamp=timestamp)
         notification = models.Notification(receiver=uploader.key, subject='A code danmaku was posted.', content='A code danmaku was posted to your video, '+video.title+' ('+video.key.id()+'), by '+user.nickname+'. Please confirm carefully or delete it if it does something unknown/harmful to you/other users.', note_type='info')
         uploader.new_notifications += 1
         ndb.put_multi([clip, uploader, danmaku_record, notification])
 
         flush_danmaku_pool(clip.key, [danmaku], 'code')
         self.json_response(False)
-
-    @classmethod
-    def format_code_danmaku(cls, code_danmaku):
-        return {
-                    'content': code_danmaku.content,
-                    'timestamp': code_danmaku.timestamp,
-                    'created': code_danmaku.created.strftime("%m-%d %H:%M"),
-                    'created_year': code_danmaku.created.strftime("%Y-%m-%d %H:%M"),
-                    'created_seconds': models.time_to_seconds(code_danmaku.created),
-                    'creator': code_danmaku.creator.id(),
-                    'type': 'Code',
-                    'index': code_danmaku.index,
-                    'approved': code_danmaku.approved,
-                }
 
     @login_required_json
     @video_clip_exist_required_json
@@ -651,29 +585,18 @@ class Danmaku(BaseHandler):
                 self.json_response(True, {'message': 'Subtitles format error.'})
                 return
 
-        danmaku = models.SubtitlesDanmaku(index=clip.subtitles_counter, name=name, content=subtitles, creator=user_key)
+        danmaku = models.SubtitlesDanmaku(index=clip.subtitles_counter, name=name, content=subtitles, creator=user_key, created=datetime.now())
         clip.subtitles_counter += 1
         clip.subtitles_num += 1
 
-        user, uploader = ndb.get_multi([user_key, clip.uploader])
-        danmaku_record = models.DanmakuRecord(parent=user_key, creator_name=user.nickname, content=subtitles, danmaku_type='subtitles', video=video.key, clip_index=clip.index, video_title=video.title)
+        user, uploader, video = ndb.get_multi([user_key, clip.uploader, clip.video])
+        danmaku_record = models.DanmakuRecord(creator=user_key, creator_name=user.nickname, content=subtitles, danmaku_type='subtitles', video=video.key, clip_index=clip.index, video_title=video.title)
         notification = models.Notification(receiver=uploader.key, subject='A new subtitles was submitted.', content='A new subtitles, '+name+', was submitted to your video, '+video.title+' ('+video.key.id()+'), by '+user.nickname+'. Please confirm or delete it if improper.', note_type='info')
         uploader.new_notifications += 1
         ndb.put_multi([clip, uploader, danmaku_record, notification])
 
         flush_danmaku_pool(clip.key, [danmaku], 'subtitles')
         self.json_response(False)
-
-    @classmethod
-    def format_subtitles_danmaku(cls, subtitles_danmaku):
-        return {
-            'name': subtitles_danmaku.name,
-            'subtitles': subtitles_danmaku.content,
-            'creator': subtitles_danmaku.creator.id(),
-            'created': subtitles_danmaku.created.strftime("%m-%d %H:%M"),
-            'created_year': subtitles_danmaku.created.strftime("%Y-%m-%d %H:%M"),
-            'created_seconds': models.time_to_seconds(subtitles_danmaku.created),
-        }
 
 class Like(BaseHandler):
     @login_required_json

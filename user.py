@@ -126,12 +126,12 @@ class FeaturedUpers(BaseHandler):
         page_size = models.MEDIUM_PAGE_SIZE
 
         cursor = models.Cursor(urlsafe=self.request.get('cursor'))
-        subscriptions, cursor, more = models.Subscription.query(user=host_key).order(-models.Subscription.score).fetch_page(page_size, start_cursor=cursor, projection=['uper'])
+        subscriptions, cursor, more = models.Subscription.query(models.Subscription.user==host_key).order(-models.Subscription.score).fetch_page(page_size, start_cursor=cursor, projection=['uper'])
         uper_keys = [subscription.uper for subscription in subscriptions]
         upers = ndb.get_multi(uper_keys)
 
         if self.user_info:
-            subscriptions = models.Subscription.query(user=self.user_key).order(-models.Subscription.score).fetch(projection=['uper'])
+            subscriptions = models.Subscription.query(models.Subscription.user==self.user_key).order(-models.Subscription.score).fetch(projection=['uper'])
             subscribed_keys = set([subscription.uper for subscription in subscriptions])
         else:
             subscribed_keys = set()

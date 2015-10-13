@@ -27,11 +27,11 @@ class History(BaseHandler):
 
         kind = self.request.get('type')
         if kind == 'danmaku':
-            records, cursor, more = models.DanmakuRecord.query(ancestor=user_key).order(-models.DanmakuRecord.created).fetch_page(page_size, start_cursor=cursor)
+            records, cursor, more = models.DanmakuRecord.query(models.DanmakuRecord.creator==user_key).order(-models.DanmakuRecord.created).fetch_page(page_size, start_cursor=cursor)
         elif kind == 'comment':
             records, cursor, more = models.Comment.query(models.Comment.creator==user_key).order(-models.Comment.created).fetch_page(page_size, start_cursor=cursor)
         else:
-            records, cursor, more = models.ViewRecord.query(user=user_key).order(-models.ViewRecord.created).fetch_page(page_size, start_cursor=cursor)
+            records, cursor, more = models.ViewRecord.query(models.Subscription.user==user_key).order(-models.ViewRecord.created).fetch_page(page_size, start_cursor=cursor)
             videos = ndb.get_multi([record.video for record in records])
 
         context = {
@@ -67,7 +67,7 @@ class Likes(BaseHandler):
         page_size = models.STANDARD_PAGE_SIZE
 
         cursor = models.Cursor(urlsafe=self.request.get('cursor'))
-        records, cursor, more = models.LikeRecord.query(user=user_key).order(-models.LikeRecord.created).fetch_page(page_size, start_cursor=cursor, projection=['video', 'created'])
+        records, cursor, more = models.LikeRecord.query(models.Subscription.user==user_key).order(-models.LikeRecord.created).fetch_page(page_size, start_cursor=cursor, projection=['video', 'created'])
         videos = ndb.get_multi([record.video for record in records])
 
         context = {
@@ -93,7 +93,7 @@ class Subscribed(BaseHandler):
         user_key = self.user_key
         page_size = models.STANDARD_PAGE_SIZE
         cursor = models.Cursor(urlsafe=self.request.get('cursor'))
-        subscriptions, cursor, more = models.Subscription.query(user=user_key).order(-models.Subscription.score).fetch_page(page_size, start_cursor=cursor, projection=['uper'])
+        subscriptions, cursor, more = models.Subscription.query(models.Subscription.user==user_key).order(-models.Subscription.score).fetch_page(page_size, start_cursor=cursor, projection=['uper'])
         upers = ndb.get_multi([subscription.uper for subscription in subscriptions])
         
         context = {
@@ -129,7 +129,7 @@ class Subscriptions(BaseHandler):
         user_key = self.user_key
         page_size = models.STANDARD_PAGE_SIZE
         
-        subscriptions = models.Subscription.query(user=user_key).order(-models.Subscription.score).fetch(projection=['uper'])
+        subscriptions = models.Subscription.query(models.Subscription.user==user_key).order(-models.Subscription.score).fetch(projection=['uper'])
         uper_keys = [subscription.uper for subscription in subscriptions]
         cursor = models.Cursor(urlsafe=self.request.get('cursor'))
         kind = self.request.get('type')

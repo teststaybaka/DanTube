@@ -171,6 +171,7 @@ $(document).ready(function() {
             div += '<div class="content-entry '+video.id+'">\
                         <a class="video-img" href="'+video.url+'" target="_blank">\
                             <img src="'+video.thumbnail_url+'">\
+                            <div class="preview-time">'+dt.secondsToTime(video.duration)+'</div>\
                         </a>\
                         <div class="video-info">\
                             <div class="info-line">\

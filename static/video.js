@@ -9,6 +9,7 @@ var player_inner_width = 640;
 var player_inner_height = 360;
 var danmakuVar = null;
 var progressVar = null;
+var bufferingVar = null;
 var progressHold = false;
 var autoSwitch = false;
 var isLoop = false;
@@ -126,6 +127,9 @@ dt.onPlayerStateChange = function(event) {
 			progressVar = oldSetInterval(progress_update, 500);
 			progress_update();
 		}
+		if (bufferingVar == null) {
+			bufferingVar = oldSetInterval(buffer_update, 500);
+		}
 		if (switch_count_down != null) {
 			stop_switch_count_down();
 		}
@@ -137,6 +141,10 @@ dt.onPlayerStateChange = function(event) {
 		clearInterval(progressVar);
 		danmakuVar = null;
 		progressVar = null;
+		if (bufferingVar == null) {
+			bufferingVar = oldSetInterval(buffer_update, 500);
+		}
+
 		var button = document.getElementById("play-pause-button");
 		button.setAttribute("class", "play");
 	} else if (event.data == YT.PlayerState.ENDED) {
@@ -532,6 +540,10 @@ function buffer_update() {
 	var buffered = player.getVideoLoadedFraction();
 	var progress_buffered = document.getElementById("progress-bar-buffered");
 	progress_buffered.style.width = buffered*100+'%';
+	if (buffered === 1) {
+		clearInterval(bufferingVar);
+		bufferingVar = null;
+	}
 }
 
 var quality_reg = / \(.*\)/;
@@ -1186,7 +1198,6 @@ dt.onPlayerReady = function(event) {
 	player = dt.player;
 	var progress_number = document.getElementById("progress-number");
 	progress_number.lastChild.nodeValue = "00:00"+"/"+dt.secondsToTime(player.getDuration());
-	oldSetInterval(buffer_update, 500);
 
 	var volume = dt.getCookie('player_volume');
 	if (!volume) {
@@ -1776,7 +1787,6 @@ dt.onPlayerReady = function(event) {
 			$('.danmaku-menu').attr('data-creator', ele.ref_danmaku.creator)
 							.attr('data-index', danmaku_list_index)
 							.attr('data-type', ele.ref_danmaku.type)
-							.attr('data-pool-id', ele.ref_danmaku.pool_id)
 							.attr('data-danmaku-index', ele.ref_danmaku.index);
 			$('#danmaku-block-sender').removeClass('disabled');
 			$('#danmaku-locate-it').removeClass('disabled');
@@ -1888,14 +1898,15 @@ dt.onPlayerReady = function(event) {
 			data: $(this).serialize()+'&'+$.param({timestamp: player.getCurrentTime()}),
 			success: function(result) {
 				if(!result.error) {
+					var entry = result.entry;
 					$('#danmaku-input').val('');
 					dt.pop_ajax_message('Danmaku sent!', 'success');
-					result.timestamp = player.getCurrentTime() + 0.05;
-					result.blocked = false;
+					entry.timestamp = player.getCurrentTime() + 0.05;
+					entry.blocked = false;
 					var listNode = document.getElementById("danmaku-list");
-					danmaku_pool_list.push(result);
+					danmaku_pool_list.push(entry);
 					listNode.appendChild(generate_danmaku_pool_entry(danmaku_pool_list.length-1));
-					normal_danmaku_sequence.addOne(result);
+					normal_danmaku_sequence.addOne(entry);
 				} else {
 					dt.pop_ajax_message(result.message, 'error');
 				}
@@ -1965,13 +1976,7 @@ dt.onPlayerReady = function(event) {
 			success: function(result) {
 				if(!result.error) {
 					$('#advanced-danmaku-content').val('');
-					dt.pop_ajax_message('Danmaku sent!', 'success');
-					result.timestamp = result.timestamp + 0.05;
-					result.blocked = false;
-					var listNode = document.getElementById("danmaku-list");
-					danmaku_pool_list.push(result);
-					listNode.appendChild(generate_danmaku_pool_entry(danmaku_pool_list.length-1));
-					normal_danmaku_sequence.addOne(result);
+					dt.pop_ajax_message('Advanced danmaku has been submitted. Please wait for approval by the UPer.', 'success');
 				} else {
 					dt.pop_ajax_message(result.message, 'error');
 				}
@@ -2337,7 +2342,7 @@ function generate_danmaku_pool_list() {
 }
 
 function generate_danmaku_pool_entry(i) {
-	var entry = danmaku_pool_list[i]
+	var entry = danmaku_pool_list[i];
 	var per_container = document.createElement('div');
 	if (entry.blocked) {
 		per_container.className = "per-bullet blocked";
@@ -2502,18 +2507,7 @@ $(document).ready(function() {
 	});
 
 	// Retrieve Danmaku
-	$.ajax({
-		type: "GET",
-		url: '/video/danmaku/'+video_id+'/'+clip_id,
-		success: function(result) {
-			load_danmaku(result.danmaku_list);
-		},
-		error: function (xhr, ajaxOptions, thrownError) {
-			console.log(xhr.status);
-			console.log(thrownError);
-			dt.pop_ajax_message(xhr.status+' '+thrownError, 'error');
-		}
-	});
+	load_danmaku(JSON.parse($('#danmaku-buffer').val()));
 	$.ajax({
 		type: "GET",
 		url: 'https://storage.googleapis.com/danmaku/'+clip_id+'/danmaku',
@@ -2580,7 +2574,6 @@ $(document).ready(function() {
 	$('#danmaku-pool-report').click(function() {
 		$('#report-danmaku-form').removeClass('hidden');
 		var entry = danmaku_pool_list[$('.danmaku-pool-menu').attr('data-index')];
-		$('#report-danmaku-pool-id').val(entry.pool_id);
 		$('#report-danmaku-index').val(entry.index);
 		if (entry.type === 'Advanced') {
 			$('#report-danmaku-type').val('advanced');
@@ -2915,11 +2908,15 @@ $(document).ready(function() {
 });
 
 function load_danmaku(danmaku_list) {
-	$('#total-danmaku-span').text(dt.numberWithCommas(danmaku_list.length + parseInt($('#total-danmaku-span').text())));
+	var count = 0;
 	for(var i = 0; i < danmaku_list.length; i++) {
+		if (danmaku_list[i].hasOwnProperty('approved') && !danmaku_list[i].approved) continue;
+
+		count++;
 		danmaku_list[i].blocked = false;
 		danmaku_pool_list.push(danmaku_list[i]);
 	}
+	$('#total-danmaku-span').text(dt.numberWithCommas(count + parseInt($('#total-danmaku-span').text())));
 	dt.quick_sort(danmaku_pool_list, 0, danmaku_pool_list.length - 1, danmaku_date_lower_compare);
 	generate_danmaku_pool_list();
 	normal_danmaku_sequence.addMult(danmaku_list);
@@ -2927,6 +2924,8 @@ function load_danmaku(danmaku_list) {
 
 function load_subtitles(subtitles_list) {
 	for (var i = 0; i < subtitles_list.length; i++) {
+		if (!subtitles_list[i].approved) continue;
+
 		$('.subtitles-list').append('<label class="check-label subtitle">\
 						              <div class="pseudo-checkbox"></div>\
 						              <input type="checkbox" class="hidden">\

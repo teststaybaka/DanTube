@@ -1,12 +1,15 @@
 (function(dt, $) {
+var danmaku_list;
+var advanced_danmaku_list;
+var code_danmaku_list;
+var subtitles_list;
+
 $(document).ready(function() {
-    $('.list-selected').each(function() {
-        var first_option = $($(this).prev().children()[0]);
-        if (first_option.length > 0) {
-            load_danmaku_list(first_option);
-            $('.inline-button.drop').removeClass('disabled');
-        }
-    });
+    danmaku_list = JSON.parse($('.danmaku-list.normal').val());
+    advanced_danmaku_list = JSON.parse($('.danmaku-list.advanced').val());
+    code_danmaku_list = JSON.parse($('.danmaku-list.code').val());
+    subtitles_list = JSON.parse($('.danmaku-list.subtitles').val());
+    
     $('#account-right-section').on('click', '.single-checkbox', function() {
         if ($(this).hasClass('all')) {
             if ($(this).hasClass('checked')) {
@@ -23,125 +26,88 @@ $(document).ready(function() {
         }
     });
 
+    if ($('.list-option.active').length != 0)
+        load_danmaku_list($('.list-option.active'));
     $('.list-option').click(function() {
         load_danmaku_list($(this));
     });
-    $('.inline-button.drop').click(drop_danmaku_pool);
     $('.inline-button.delete').click(delete_danmaku);
-    $('.danmaku-confirm-label').click(confirm_subtitles);
     $('.pools-block').on('click', '.detail-label.confirm', confirm_danmaku);
     $('.pools-block').on('click', '.detail-label.expand', expand_danmaku);
 });
 
 function load_danmaku_list(option) {
     $('.inline-button.delete').addClass('disabled');
-    $('.danmaku-confirm-label').text('');
     var list_block = $('.pools-block');
     list_block.empty();
-    list_block.append('<div class="pool-detail-list loading"></div>');
-    $.ajax({
-        type: "POST",
-        url: window.location.href,
-        data: {pool_index: option.attr('data-index'), pool_type: option.attr('data-type')},
-        success: function(result) {
-            list_block.empty();
-            if (!result.error) {
-                if (option.attr('data-type') === 'danmaku') {
-                    list_block.append('<div class="pool-detail-entry label-line">\
-                        <div class="detail-label timestamp">Timestamp</div>\
-                        <div class="detail-label">Type</div>\
-                        <div class="detail-label color">Color</div>\
-                        <div class="detail-label">Font size</div>\
-                        <div class="detail-label content">Content</div>\
-                        <div class="detail-label created">Created</div>\
-                        <div class="single-checkbox inline all"></div>\
-                    </div>');
-                    for (var i = 0; i < result.danmaku_list.length; i++) {
-                        list_block.append(render_danmaku_entry(result.danmaku_list[i], i));
-                    }
-                    $('.danmaku-num-label').text(result.danmaku_list.length+'/1000');
-                } else if (option.attr('data-type') === 'advanced') {
-                    list_block.append('<div class="pool-detail-entry label-line">\
-                        <div class="detail-label timestamp">Timestamp</div>\
-                        <div class="detail-label">Type</div>\
-                        <div class="detail-label content long">Content</div>\
-                        <div class="detail-label created">Created</div>\
-                        <div class="single-checkbox inline all"></div>\
-                    </div>');
-                    for (var i = 0; i < result.danmaku_list.length; i++) {
-                        list_block.append(render_advanced_entry(result.danmaku_list[i], i));
-                    }
-                    $('.danmaku-num-label').text(result.danmaku_list.length+'/1000');
-                } else if (option.attr('data-type') === 'subtitles') {
-                    list_block.append('<div class="pool-detail-entry label-line">\
-                        <div class="detail-label timestamp">Timestamp</div>\
-                        <div class="detail-label">Type</div>\
-                        <div class="detail-label content long">Content</div>\
-                        <div class="detail-label created">Created</div>\
-                    </div>');
-                    var subtitles_list = [];
-                    var lines = result.subtitles_list.subtitles.split('\n');
-                    for (var i = 0; i < lines.length; i++) {
-                        var line = lines[i].trim();
-                        if (line) {
-                            var matched = line.match(dt.subtitle_format);
-                            if (matched[4]) {
-                                subtitles_list.push({
-                                    'timestamp': parseInt(matched[1])*60+parseInt(matched[2])+parseInt(matched[3])/100,
-                                    'content': matched[4],
-                                });
-                            }
-                        }
-                    }
-                    for (var i = 0; i < subtitles_list.length; i++) {
-                        list_block.append(render_subtitles_entry(subtitles_list[i], result.subtitles_list.created_year));
-                    }
-                    $('.danmaku-num-label').text(subtitles_list.length);
-                    if (!option.attr('data-approved')) {
-                        $('.danmaku-confirm-label').text('Confirm');
-                    }
-                } else if (option.attr('data-type') === 'code') {
-                    list_block.append('<div class="pool-detail-entry label-line">\
-                        <div class="detail-label timestamp">Timestamp</div>\
-                        <div class="detail-label">Type</div>\
-                        <div class="detail-label content long">Content</div>\
-                        <div class="detail-label created">Created</div>\
-                        <div class="single-checkbox inline all"></div>\
-                    </div>');
-                    for (var i = 0; i < result.danmaku_list.length; i++) {
-                        list_block.append(render_code_entry(result.danmaku_list[i], i));
-                    }
-                    $('.danmaku-num-label').text(result.danmaku_list.length+'/100');
-                }
-            } else {
-                list_block.append('<div class="content-entry none">Load error.</div>');
-                dt.pop_ajax_message(result.message, 'error');
-            }
-        },
-        error: function (xhr, ajaxOptions, thrownError) {
-            console.log(xhr.status);
-            console.log(thrownError);
-            list_block.empty();
-            list_block.append('<div class="content-entry none">Empty list.</div>');
-            dt.pop_ajax_message(xhr.status+' '+thrownError, 'error');
+    
+    if (option.attr('data-type') === 'danmaku') {
+        list_block.append('<div class="pool-detail-entry label-line">\
+                                <div class="detail-label timestamp">Timestamp</div>\
+                                <div class="detail-label">Type</div>\
+                                <div class="detail-label color">Color</div>\
+                                <div class="detail-label font-size">Font size</div>\
+                                <div class="detail-label content">Content</div>\
+                                <div class="detail-label created">Created</div>\
+                                <div class="single-checkbox inline all"></div>\
+                            </div>');
+        for (var i = 0; i < danmaku_list.length; i++) {
+            list_block.append(render_danmaku_entry(danmaku_list[i]));
         }
-    });
+        $('.danmaku-num-label').text(danmaku_list.length);
+    } else if (option.attr('data-type') === 'advanced') {
+        list_block.append('<div class="pool-detail-entry label-line">\
+                                <div class="detail-label timestamp">Timestamp</div>\
+                                <div class="detail-label">Type</div>\
+                                <div class="detail-label content long">Content</div>\
+                                <div class="detail-label created">Created</div>\
+                                <div class="single-checkbox inline all"></div>\
+                            </div>');
+        for (var i = 0; i < advanced_danmaku_list.length; i++) {
+            list_block.append(render_advanced_entry(advanced_danmaku_list[i]));
+        }
+        $('.danmaku-num-label').text(advanced_danmaku_list.length);
+    } else if (option.attr('data-type') === 'code') {
+        list_block.append('<div class="pool-detail-entry label-line">\
+                                <div class="detail-label timestamp">Timestamp</div>\
+                                <div class="detail-label">Type</div>\
+                                <div class="detail-label content long">Content</div>\
+                                <div class="detail-label created">Created</div>\
+                                <div class="single-checkbox inline all"></div>\
+                            </div>');
+        for (var i = 0; i < code_danmaku_list.length; i++) {
+            list_block.append(render_code_entry(code_danmaku_list[i]));
+        }
+        $('.danmaku-num-label').text(code_danmaku_list.length);
+    } else {
+        list_block.append('<div class="pool-detail-entry label-line">\
+                                <div class="detail-label name">Title</div>\
+                                <div class="detail-label">Type</div>\
+                                <div class="detail-label content long-long">Content</div>\
+                                <div class="detail-label created">Created</div>\
+                                <div class="single-checkbox inline all"></div>\
+                            </div>');
+        for (var i = 0; i < subtitles_list.length; i++) {
+            list_block.append(render_subtitles_entry(subtitles_list[i]));
+        }
+        $('.danmaku-num-label').text(subtitles_list.length);
+    }
 }
 
-function render_danmaku_entry(entry, index) {
+function render_danmaku_entry(entry) {
     div = '<div class="pool-detail-entry">\
                 <div class="detail-label timestamp">'+dt.millisecondsToTime(entry.timestamp)+'</div>\
                 <div class="detail-label">'+entry.type+'</div>\
                 <div class="detail-label color"><div class="color-box" style="background-color: '+dt.dec2hexColor(entry.color)+';"></div></div>\
-                <div class="detail-label">'+entry.size+'</div>\
+                <div class="detail-label font-size">'+entry.size+'</div>\
                 <div class="detail-label content" title="'+entry.content+'">'+entry.content+'</div>\
                 <div class="detail-label created">'+entry.created_year+'</div>\
-                <div class="single-checkbox inline" data-index="'+index+'"></div>\
+                <div class="single-checkbox inline"></div>\
             </div>'
     return div;
 }
 
-function render_advanced_entry(entry, index) {
+function render_advanced_entry(entry) {
     div = '<div class="pool-detail-entry">\
                 <div class="detail-label timestamp">'+dt.millisecondsToTime(entry.timestamp)+'</div>\
                 <div class="detail-label">Advanced</div>\
@@ -151,25 +117,34 @@ function render_advanced_entry(entry, index) {
                 }
                 div += '" title="'+entry.content+'">'+entry.content+'</div>'
                 if (!entry.approved) {
-                    div += '<div class="detail-label confirm blue-link" data-index="'+index+'">Confirm</div>'
+                    div += '<div class="detail-label confirm blue-link">Confirm</div>'
                 }
                 div += '<div class="detail-label created">'+entry.created_year+'</div>\
-                <div class="single-checkbox inline" data-index="'+index+'"></div>\
+                <div class="single-checkbox inline"></div>\
             </div>'
     return div;
 }
 
-function render_subtitles_entry(entry, created_year) {
+function render_subtitles_entry(entry) {
     div = '<div class="pool-detail-entry">\
-                <div class="detail-label timestamp">'+dt.millisecondsToTime(entry.timestamp)+'</div>\
+                <div class="detail-label name" title="'+entry.name+'">'+entry.name+'</div>\
                 <div class="detail-label">Subtitles</div>\
-                <div class="detail-label content long" title="'+entry.content+'">'+entry.content+'</div>\
-                <div class="detail-label created">'+created_year+'</div>\
+                <div class="detail-label content subtitles'
+                if (!entry.approved) {
+                    div += ' pending'
+                }
+                div += '" title="'+entry.subtitles+'">'+entry.subtitles+'</div>\
+                <div class="detail-label expand blue-link">Expand</div>'
+                if (!entry.approved) {
+                    div += '<div class="detail-label confirm blue-link">Confirm</div>'
+                }
+                div += '<div class="detail-label created">'+entry.created_year+'</div>\
+                <div class="single-checkbox inline"></div>\
             </div>'
     return div;
 }
 
-function render_code_entry(entry, index) {
+function render_code_entry(entry) {
     div = '<div class="pool-detail-entry">\
                 <div class="detail-label timestamp">'+dt.millisecondsToTime(entry.timestamp)+'</div>\
                 <div class="detail-label">Code</div>\
@@ -180,35 +155,12 @@ function render_code_entry(entry, index) {
                 div += '" title="'+entry.content+'">'+entry.content+'</div>\
                 <div class="detail-label expand blue-link">Expand</div>'
                 if (!entry.approved) {
-                    div += '<div class="detail-label confirm blue-link" data-index="'+index+'">Confirm</div>'
+                    div += '<div class="detail-label confirm blue-link">Confirm</div>'
                 }
                 div += '<div class="detail-label created">'+entry.created_year+'</div>\
-                <div class="single-checkbox inline" data-index="'+index+'"></div>\
+                <div class="single-checkbox inline"></div>\
             </div>'
     return div;
-}
-
-function drop_danmaku_pool() {
-    if ($(this).hasClass('disabled')) return;
-
-    var option = $('.list-option.active');
-    $.ajax({
-        type: "POST",
-        url: window.location.pathname+'/drop',
-        data: {pool_index: option.attr('data-index'), pool_type: option.attr('data-type')},
-        success: function(result) {
-            if (!result.error) {
-                window.location.reload();
-            } else {
-                dt.pop_ajax_message(result.message, 'error');
-            }
-        },
-        error: function (xhr, ajaxOptions, thrownError) {
-            console.log(xhr.status);
-            console.log(thrownError);
-            dt.pop_ajax_message(xhr.status+' '+thrownError, 'error');
-        }
-    });
 }
 
 function delete_danmaku() {
@@ -216,20 +168,26 @@ function delete_danmaku() {
 
     var option = $('.list-option.active');
     $('.inline-button.delete').addClass('disabled');
-    indices = []
     var checkboxes = $('.single-checkbox.checked');
-    for (var i = 0; i < checkboxes.length; i++) {
+    var entries = [];
+    var indices = [];
+    for (var i = checkboxes.length - 1; i >= 0; i--) {
         if ($(checkboxes[i]).hasClass('all')) continue;
-        indices.push($(checkboxes[i]).attr('data-index'));
+        var entry = $(checkboxes[i]).parent();
+        indices.push($('.pool-detail-entry').index(entry) - 1);
+        entries.push(entry);
     }
+
     $.ajax({
         type: "POST",
         url: window.location.pathname+'/delete',
-        data: {pool_index: option.attr('data-index'), pool_type: option.attr('data-type'), danmaku_index: indices},
+        data: {pool_type: option.attr('data-type'), index: indices},
         success: function(result) {
             if (!result.error) {
-                load_danmaku_list(option);
                 dt.pop_ajax_message('Danmaku deleted!', 'success');
+                for (var i = 0; i < entries.length; i++) {
+                    entries[i].remove();
+                }
             } else {
                 dt.pop_ajax_message(result.message, 'error');
             }
@@ -243,14 +201,15 @@ function delete_danmaku() {
 }
 
 function confirm_danmaku() {
-    var danmaku_index = $(this).attr('data-index');
+    var option = $('.list-option.active');
+    var entry = $(this).parent();
+    var index = $('.pool-detail-entry').index(entry) - 1;
     $(this).siblings('.detail-label.content').removeClass('pending');
     $(this).remove();
-    var option = $('.list-option.active');
     $.ajax({
         type: 'POST',
         url: window.location.pathname+'/confirm',
-        data: {pool_index: option.attr('data-index'), pool_type: option.attr('data-type'), danmaku_index: danmaku_index},
+        data: {pool_type: option.attr('data-type'), index: index},
         success: function(result) {
             if (!result.error) {
                 dt.pop_ajax_message('Danmaku confirmed!', 'success');
@@ -271,30 +230,6 @@ function expand_danmaku() {
     content.addClass('expanded');
     content.height(content[0].scrollHeight);
     $(this).remove();
-}
-
-function confirm_subtitles() {
-    $(this).siblings('.detail-label.content').removeClass('pending');
-    $(this).remove();
-    var option = $('.list-option.active');
-    $.ajax({
-        type: 'POST',
-        url: window.location.pathname+'/confirm',
-        data: {pool_index: option.attr('data-index'), pool_type: option.attr('data-type'), danmaku_index: 0},
-        success: function(result) {
-            if (!result.error) {
-                
-                dt.pop_ajax_message('Danmaku confirmed!', 'success');
-            } else {
-                dt.pop_ajax_message(result.message, 'error');
-            }
-        },
-        error: function (xhr, ajaxOptions, thrownError) {
-            console.log(xhr.status);
-            console.log(thrownError);
-            dt.pop_ajax_message(xhr.status+' '+thrownError, 'error');
-        }
-    });
 }
 //end of file
 } (dt, jQuery));

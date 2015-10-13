@@ -93,9 +93,12 @@ class BaseHandler(webapp2.RequestHandler):
         finally:
             self.session_store.save_sessions(self.response)
 
-    def render(self, tempname, context={}):
-        if not context.get('user'):
+    def render(self, tempname, context=None):
+        if not context:
+            context = {'user': {}}
+        elif not context.get('user'):
             context['user'] = {}
+            
         if self.user_info:
             try:
                 self.user
@@ -278,7 +281,7 @@ class Home(BaseHandler):
 
         remains = 8
         if self.user_info:
-            subscriptions = models.Subscription.query(user=self.user_key).order(-models.Subscription.score).fetch(limit=remains, projection=['uper'])
+            subscriptions = models.Subscription.query(models.Subscription.user==self.user_key).order(-models.Subscription.score).fetch(limit=remains, projection=['uper'])
             uper_keys = [subscription.uper for subscription in subscriptions]
             upers = ndb.get_multi(uper_keys)
             context['upers'] = []
@@ -580,7 +583,7 @@ class SearchUPers(BaseHandler):
             return
 
         if self.user_info:
-            subscriptions = models.Subscription.query(user=self.user_key).order(-models.Subscription.score).fetch(projection=['uper'])
+            subscriptions = models.Subscription.query(models.Subscription.user==self.user_key).order(-models.Subscription.score).fetch(projection=['uper'])
             subscribed = set([subscription.uper for subscription in subscriptions])
         else:
             subscribed = set()

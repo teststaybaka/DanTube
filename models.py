@@ -15,6 +15,7 @@ import time
 import re
 import logging
 import math
+import json
 
 def time_to_seconds(time):
   return int((time - datetime(1970, 1, 1)).total_seconds())
@@ -187,7 +188,7 @@ class User(webapp2_extras.appengine.auth.models.User):
   def get_private_info(self):
     if self.check_new_subscription:
       self.check_new_subscription = False
-      subscriptions = Subscription.query(user=self.key).fetch(projection=['uper'])
+      subscriptions = Subscription.query(models.Subscription.user==self.key).fetch(projection=['uper'])
       uper_keys = [subscription.uper for subscription in subscriptions]
       if uper_keys:
         self.new_subscriptions = Video.query(ndb.AND(Video.uploader.IN(uper_keys), Video.created > self.last_subscription_check)).count()
@@ -300,8 +301,8 @@ class User(webapp2_extras.appengine.auth.models.User):
     """
     return cls.token_model.get_key(user_id, subject, token)
 
-Video_Category = ['Anime', 'Music', 'Dance', 'Game', 'Entertainment', 'Techs', 'Sports', 'Movie', 'TV Series']
-Video_SubCategory = {'Anime': ['Continuing Anime', 'Finished Anime', 'MAD/AMV/GMV', 'MMD/3D', 'Original/Voice Acting', 'General']
+Video_Category = ['Anime', 'Music', 'Dance', 'Game', 'Entertainment', 'Techs', 'Sports', 'Movie', 'Drama']
+Video_SubCategory = {'Anime': ['TV Anime', 'OVA/Movie', 'MAD/AMV/GMV', 'MMD/3D', 'Original/Voice Acting', 'General']
                   , 'Music': ['Music Sharing', 'Cover Version', 'Instrument Playing', 'VOCALOID/UTAU', 'Music Selection', 'Sound Remix']
                   , 'Dance': ['Dance']
                   , 'Game': ['Game Video', 'Walkthrough/Guides', 'Eletronic Sports', 'Mugen']
@@ -309,14 +310,14 @@ Video_SubCategory = {'Anime': ['Continuing Anime', 'Finished Anime', 'MAD/AMV/GM
                   , 'Techs': ['Documentary', 'Various Techs', 'Tech Intro', 'Online Courses']
                   , 'Sports': ['Amazing Human', 'Sports Video', 'Tournament']
                   , 'Movie': ['Movie', 'Micro/Short Film', 'Trailer/Highlights']
-                  , 'TV Series': ['Continuing Series', 'Finished Series', 'Tokusatsu', 'Trailer/Highlights']}
+                  , 'Drama': ['TV Series', 'Tokusatsu', 'Trailer/Highlights']}
 
 URL_NAME_DICT = {
   # Categories
   'Anime': ['anime', {
     # Subcategories of Anime
-    'Continuing Anime': 'continuing',
-    'Finished Anime': 'finished',
+    'TV Anime': 'series',
+    'OVA/Movie': 'movie',
     'MAD/AMV/GMV': 'mad',
     'MMD/3D': 'mmd',
     'Original/Voice Acting': 'original',
@@ -368,10 +369,9 @@ URL_NAME_DICT = {
     'Micro/Short Film': 'micro',
     'Trailer/Highlights': 'trailer',
   }],
-  'TV Series': ['series', {
+  'Drama': ['drama', {
     # Subcategories of TV Series
-    'Continuing Series': 'continuing',
-    'Finished Series': 'finished',
+    'TV Series': 'series',
     'Tokusatsu': 'tokusatsu',
     'Trailer/Highlights': 'trailer',
   }],
@@ -410,9 +410,9 @@ class Playlist(ndb.Model):
       'modified': self.modified.strftime("%Y-%m-%d %H:%M"),
     }
     if self.playlist_type == 'Primary':
-      basic_info['url'] = Video.get_video_url(self.first_video.id()) if self.first_video else '',
+      basic_info['url'] = Video.get_video_url(self.first_video.id()) if self.first_video else ''
     else:
-      basic_info['url'] = Video.get_video_url(self.first_video.id(), self.key.id()) if self.first_video else '',
+      basic_info['url'] = Video.get_video_url(self.first_video.id(), self.key.id()) if self.first_video else ''
     return basic_info
 
   def delete_index(self):
@@ -526,27 +526,15 @@ class Video(ndb.Model):
     return info
 
   @classmethod
-  def get_video_count(cls, category="-"):
-    try:
-      return cls.video_counter[category].counter
-    except AttributeError:
-      category_counter = CategoryCounter.query(ancestor=ndb.Key('CategoryCounter', category)).get()
-      if not category_counter:
-        return 0
-      else:
-        cls.video_counter[category] = category_counter
-        return cls.video_counter[category].counter
-
-  @classmethod
   def get_max_id(cls):
     try:
-      return Video.video_id_factory.id_counter
+      return cls.video_id_factory.id_counter
     except AttributeError:
-      Video.video_id_factory = VideoIDFactory.query(ancestor=ndb.Key('EntityType', 'VideoIDFactory')).get()
-      if not Video.video_id_factory:
+      cls.video_id_factory = ndb.Key('VideoIDFactory', 'VideoIDFactory').get()
+      if not cls.video_id_factory:
         return 0
       else:
-        return Video.video_id_factory.id_counter
+        return cls.video_id_factory.id_counter
 
   @classmethod
   @ndb.transactional(retries=10)
@@ -579,7 +567,7 @@ class Video(ndb.Model):
     except AttributeError:
       cls.video_id_factory = ndb.Key('VideoIDFactory', 'VideoIDFactory').get()
       if not cls.video_id_factory:
-        cls.video_id_factory = VideoIDFactory(key=ndb.Key('VideoIDFactory', 'VideoIDFactory')).put()
+        cls.video_id_factory = VideoIDFactory(key=ndb.Key('VideoIDFactory', 'VideoIDFactory'))
       cls.video_id_factory.id_counter += 1
       cls.video_id_factory.put()
     return cls.video_id_factory.id_counter
@@ -761,6 +749,20 @@ class Danmaku(ndb.Model):
   creator = ndb.KeyProperty(kind='User', required=True, indexed=False)
   created = ndb.DateTimeProperty(required=True, indexed=False)
 
+  def format(self):
+    return {
+              'content': self.content,
+              'timestamp': self.timestamp,
+              'created': self.created.strftime("%m-%d %H:%M"),
+              'created_year': self.created.strftime("%Y-%m-%d %H:%M"),
+              'created_seconds': time_to_seconds(self.created),
+              'creator': self.creator.id(),
+              'type': self.position,
+              'size': self.size,
+              'color': self.color,
+              'index': self.index,
+            }
+
 class AdvancedDanmaku(ndb.Model):
   index = ndb.IntegerProperty(required=True, default=0, indexed=False)
   timestamp = ndb.FloatProperty(required=True, indexed=False)
@@ -779,6 +781,29 @@ class AdvancedDanmaku(ndb.Model):
   creator = ndb.KeyProperty(kind='User', required=True, indexed=False)
   created = ndb.DateTimeProperty(auto_now_add=True, indexed=False)
 
+  def format(self):
+    return {
+              'content': self.content,
+              'timestamp': self.timestamp,
+              'created': self.created.strftime("%m-%d %H:%M"),
+              'created_year': self.created.strftime("%Y-%m-%d %H:%M"),
+              'created_seconds': time_to_seconds(self.created),
+              'creator': self.creator.id(),
+              'birth_x': self.birth_x,
+              'birth_y': self.birth_y,
+              'death_x': self.death_x,
+              'death_y': self.death_y,
+              'speed_x': self.speed_x,
+              'speed_y': self.speed_y,
+              'longevity': self.longevity,
+              'css': self.css,
+              'as_percent': self.as_percent,
+              'relative': self.relative,
+              'type': 'Advanced',
+              'index': self.index,
+              'approved': self.approved,
+            }
+
 class SubtitlesDanmaku(ndb.Model):
   index = ndb.IntegerProperty(required=True, default=0, indexed=False)
   name = ndb.StringProperty(required=True, indexed=False)
@@ -786,6 +811,17 @@ class SubtitlesDanmaku(ndb.Model):
   approved = ndb.BooleanProperty(required=True, default=False, indexed=False)
   creator = ndb.KeyProperty(kind='User', required=True, indexed=False)
   created = ndb.DateTimeProperty(auto_now_add=True, indexed=False)
+
+  def format(self):
+    return {
+              'name': self.name,
+              'subtitles': self.content,
+              'creator': self.creator.id(),
+              'created': self.created.strftime("%m-%d %H:%M"),
+              'created_year': self.created.strftime("%Y-%m-%d %H:%M"),
+              'created_seconds': time_to_seconds(self.created),
+              'approved': self.approved,
+            }
 
 class CodeDanmaku(ndb.Model):
   index = ndb.IntegerProperty(required=True, default=0, indexed=False)
@@ -795,10 +831,24 @@ class CodeDanmaku(ndb.Model):
   creator = ndb.KeyProperty(kind='User', required=True, indexed=False)
   created = ndb.DateTimeProperty(auto_now_add=True, indexed=False)
 
+  def format(self):
+    return {
+              'content': self.content,
+              'timestamp': self.timestamp,
+              'created': self.created.strftime("%m-%d %H:%M"),
+              'created_year': self.created.strftime("%Y-%m-%d %H:%M"),
+              'created_seconds': time_to_seconds(self.created),
+              'creator': self.creator.id(),
+              'type': 'Code',
+              'index': self.index,
+              'approved': self.approved,
+            }
+
 class VideoClip(ndb.Model):
   DanmakuPrefix = 'https://storage.googleapis.com/danmaku/'
 
-  uploader = ndb.KeyProperty(required=True, indexed=False)
+  video = ndb.KeyProperty(kind='Video', required=True, indexed=False)
+  uploader = ndb.KeyProperty(kind='User', required=True, indexed=False)
   title = ndb.StringProperty(required=True, indexed=False)
   index = ndb.IntegerProperty(required=True, indexed=False)
   subintro = ndb.TextProperty(default='', required=True, indexed=False)
@@ -831,22 +881,38 @@ class VideoClip(ndb.Model):
     return {'url': url, 'vid': vid}
 
   @classmethod
+  def load_cloud_danmaku(cls, clip_key, kind):
+    try:
+      pool = gcs.open('/danmaku/'+str(clip_key.id())+'/'+kind, 'r')
+      danmaku_list = json.loads(pool.read())
+      pool.close()
+    except gcs.NotFoundError:
+      danmaku_list = []
+    return danmaku_list
+
+  @classmethod
+  def save_cloud_danmaku(cls, clip_key, kind, danmaku_list):
+    pool = gcs.open('/danmaku/'+str(clip_key.id())+'/'+kind, 'w', content_type="text/plain", options={'x-goog-acl': 'public-read'})
+    pool.write(json.dumps(danmaku_list))
+    pool.close()
+
+  @classmethod
   def Delete(cls, clip_key):
     try:
       pool = gcs.delete('/danmaku/'+str(clip_key.id())+'/danmaku')
-    except NotFoundError:
+    except gcs.NotFoundError:
       pass
     try:
       pool = gcs.delete('/danmaku/'+str(clip_key.id())+'/advanced')
-    except NotFoundError:
+    except gcs.NotFoundError:
       pass
     try:
       pool = gcs.delete('/danmaku/'+str(clip_key.id())+'/subtitles')
-    except NotFoundError:
+    except gcs.NotFoundError:
       pass
     try:
       pool = gcs.delete('/danmaku/'+str(clip_key.id())+'/code')
-    except NotFoundError:
+    except gcs.NotFoundError:
       pass
     clip_key.delete_async()
 
@@ -884,6 +950,7 @@ class Notification(ndb.Model):
 
 Danmaku_Types = ['danmaku', 'advanced', 'subtitles', 'code']
 class DanmakuRecord(ndb.Model):
+  creator = ndb.KeyProperty(kind='User', required=True)
   creator_name = ndb.StringProperty(required=True, indexed=False)
   content = ndb.TextProperty(indexed=False)
   danmaku_type = ndb.StringProperty(required=True, choices=Danmaku_Types, indexed=False)
@@ -900,7 +967,7 @@ class DanmakuRecord(ndb.Model):
       'timestamp': self.timestamp,
       'clip_index': self.clip_index,
       'created': self.created.strftime("%Y-%m-%d %H:%M"),
-      'creator': User.get_snapshot_info(self.creator_name, self.key.parent()),
+      'creator': User.get_snapshot_info(self.creator_name, self.creator),
     }
     content_info['video'] = {
       'url': Video.get_video_url(self.video.id()),
@@ -957,7 +1024,7 @@ class LikeRecord(ndb.Model):
   def dislike(cls, user_key, video_key):
     record = ndb.Key(cls, video_key.id() + 'l:' + str(user_key.id())).get()
     if record:
-      record.delete()
+      record.key.delete()
       return True
     else:
       return False
@@ -980,7 +1047,7 @@ class Subscription(ndb.Model):
   def unsubscribe(cls, user_key, uper_key):
     subscription = ndb.Key(cls, str(uper_key.id()) + 's:' + str(user_key.id())).get()    
     if subscription:
-      subscription.delete()
+      subscription.key.delete()
       return True
     else:
       return False
@@ -1027,7 +1094,6 @@ class ReportDanmaku(ndb.Model):
   description = ndb.TextProperty(indexed=False)
   processed = ndb.BooleanProperty(required=True, default=False, indexed=False)
   reporter = ndb.KeyProperty(kind='User', required=True, indexed=False)
-  pool = ndb.KeyProperty(required=True, indexed=False)
   danmaku_index = ndb.IntegerProperty(required=True, indexed=False)
   content = ndb.StringProperty(required=True, indexed=False)
   user = ndb.KeyProperty(kind='User', required=True, indexed=False)

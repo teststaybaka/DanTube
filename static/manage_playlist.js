@@ -10,7 +10,11 @@ $(document).ready(function() {
         for (var i = 0; i < result.playlists.length; i++) {
             var playlist = result.playlists[i];
             div += '<div class="content-entry '+playlist.id+'">\
-                        <a class="video-img" href="'+playlist.url+'" target="_blank">\
+                        <a class="video-img" '
+                        if (playlist.url) {
+                            div += 'href="'+playlist.url+'"'
+                        }
+                        div += ' target="_blank">\
                             <img src="'+playlist.thumbnail_url+'">\
                             <div class="video-num-box">\
                                 <div class="vertical-align-relative">\
@@ -28,7 +32,11 @@ $(document).ready(function() {
                         </a>\
                         <div class="list-info">\
                             <div class="info-line">\
-                                <a class="video-title normal-link" href="'+playlist.url+'" target="_blank">'+dt.escapeHTML(playlist.title)+'</a>\
+                                <a class="video-title normal-link" '
+                                if (playlist.url) {
+                                    div += 'href="'+playlist.url+'"'
+                                }
+                                div += ' target="_blank">'+dt.escapeHTML(playlist.title)+'</a>\
                             </div>\
                             <div class="info-line">\
                                 <div class="list-intro">'+dt.escapeHTML(playlist.intro)+'</div>\

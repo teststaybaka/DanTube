@@ -425,6 +425,16 @@ div.add-button, input.add-button {
     margin-right: 10px;
 }
 
+.detail-label.name {
+    width: 80px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.detail-label.font-size {
+    width: 55px;
+}
+
 .detail-label.color {
     width: 40px;
 }
@@ -434,37 +444,56 @@ div.add-button, input.add-button {
 }
 
 .detail-label.content {
-    width: 260px;
+    width: 280px;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 
 .detail-label.content.long {
-    width: 380px;
+    width: 395px;
 }
 
-.detail-label.content.long.pending {
-    width: 320px;
+.detail-label.content.long-long {
+    width: 385px;
 }
 
-.detail-label.content.code {
-    width: 325px;
-}
-
-.detail-label.content.code.expanded {
-    width: 380px;
+.detail-label.content.expanded {
     white-space: pre-wrap;
     word-wrap: break-word;
     -webkit-transition: height .3s; /* For Safari 3.1 to 6.0 */
     transition: height .3s;
 }
 
+.detail-label.content.subtitles {
+    width: 330px;
+}
+
+.detail-label.content.subtitles.expanded {
+    width: 385px;
+}
+
+.detail-label.content.subtitles.pending {
+    width: 270px;
+}
+
+.detail-label.content.subtitles.expanded.pending {
+    width: 325px;
+}
+
+.detail-label.content.code {
+    width: 340px;
+}
+
+.detail-label.content.code.expanded {
+    width: 395px;
+}
+
 .detail-label.content.code.pending {
-    width: 265px;
+    width: 280px;
 }
 
 .detail-label.content.code.expanded.pending {
-    width: 320px;
+    width: 335px;
 }
 
 .detail-label.expand {
@@ -478,7 +507,7 @@ div.add-button, input.add-button {
 }
 
 .detail-label.created {
-    width: 120px;
+    width: 110px;
 }
 
 .color-box {
@@ -515,6 +544,9 @@ div.add-button, input.add-button {
     font-size: 16px;
     color: rgb(100,100,100);
     margin-right: 10px;
+    max-width: 200px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .inline-button.actions {
@@ -530,15 +562,6 @@ div.add-button, input.add-button {
     vertical-align: middle;
     display: inline-block;
     margin-left: 10px;
-    color: rgb(100,100,100);
-}
-
-.danmaku-confirm-label {
-    font-size: 14px;
-    vertical-align: middle;
-    display: inline-block;
-    margin-left: 10px;
-    cursor: pointer;
     color: rgb(100,100,100);
 }
 

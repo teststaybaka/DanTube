@@ -93,17 +93,6 @@
   padding: 10px 25px;
 }
 
-a.uploader-img {
-  width: 64px;
-  height: 64px;
-  display: inline-block;
-}
-
-img.uploader-img {
-  width: 100%;
-  height: 100%;
-}
-
 div.activity-detail {
   display: inline-block;
   vertical-align: top;
@@ -189,6 +178,11 @@ a.comment-check {
   padding-bottom: 15px;
   margin: 0;
   display: block;
+}
+
+.user-img.quick {
+  width: 48px;
+  height: 48px;
 }
 
 .block-title-line {

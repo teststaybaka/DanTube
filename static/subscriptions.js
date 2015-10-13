@@ -20,7 +20,7 @@ $(document).ready(function() {
                 for (var i = 0; i < result.upers.length; i++) {
                     var uper = result.upers[i];
                     div += '<div class="quick-uper">\
-                                <a href="' + uper.space_url + '" class="user-img" title="' + uper.nickname + '" target="_blank">\
+                                <a href="' + uper.space_url + '" class="user-img quick" title="' + uper.nickname + '" target="_blank">\
                                     <img src="' + uper.avatar_url_small + '">\
                                 </a>\
                             </div>'
@@ -83,8 +83,8 @@ $(document).ready(function() {
             for (var i = 0; i < result.entries.length; i++) {
                 var comment = result.entries[i];
                 div += '<div class="content-entry">\
-                            <a class="uploader-img" href="' + comment.creator.space_url + '" target="_blank">\
-                                <img class="uploader-img" src="' + comment.creator.avatar_url_small + '">\
+                            <a class="user-img" href="' + comment.creator.space_url + '" target="_blank">\
+                                <img class="user-img" src="' + comment.creator.avatar_url_small + '">\
                             </a>\
                             <div class="activity-detail">\
                                 <div class="activity-title normal-link">\
@@ -115,8 +115,8 @@ $(document).ready(function() {
             for (var i = 0; i < result.entries.length; i++) {
                 var video = result.entries[i];
                 div += '<div class="content-entry">\
-                            <a class="uploader-img" href="' + video.uploader.space_url + '" target="_blank">\
-                                <img class="uploader-img" src="' + video.uploader.avatar_url_small + '">\
+                            <a class="user-img" href="' + video.uploader.space_url + '" target="_blank">\
+                                <img class="user-img" src="' + video.uploader.avatar_url_small + '">\
                             </a>\
                             <div class="activity-detail">\
                                 <div class="activity-title normal-link">\

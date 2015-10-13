@@ -38,8 +38,9 @@
 {% endblock %}
 
 {% block body %}
-<input type="text" class="hidden" id="video-id" value="{{ video.id }}">
-<input type="text" class="hidden" id="clip-id" value="{{ video.cur_clip_id }}">
+<input class="hidden" id="video-id" value="{{ video.id }}">
+<input class="hidden" id="clip-id" value="{{ video.cur_clip_id }}">
+<input class="hidden" id="danmaku-buffer" value="{{ danmaku_list }}">
 <div id="video-info-container" class="container">
   <div id="video-info">
     <div id="video-title">{{ video.title }}</div>
@@ -133,7 +134,6 @@
     </div>
     <form id="report-danmaku-form" class="popup-box hidden" method="POST">
       <input type="text" class="hidden" name="pool_type" id="report-danmaku-type">
-      <input type="text" class="hidden" name="pool_id" id="report-danmaku-pool-id">
       <input type="text" class="hidden" name="danmaku_index" id="report-danmaku-index">
       <div class="report-label">Why do you want to report this danmaku?</div>
       <div class="report-input-line">

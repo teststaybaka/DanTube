@@ -114,6 +114,17 @@ class DeleteVideos(webapp2.RequestHandler):
             # Delete the documents for the given ids from the Index.
             doc_index.delete(document_ids)
 
+        doc_index  = search.Index(name='playlists_by_modified')
+        # looping because get_range by default returns up to 100 documents at a time
+        while True:
+            # Get a list of documents populating only the doc_id field and extract the ids.
+            document_ids = [document.doc_id
+                            for document in doc_index.get_range(ids_only=True)]
+            if not document_ids:
+                break
+            # Delete the documents for the given ids from the Index.
+            doc_index.delete(document_ids)
+
         videos = models.Video.query().fetch(keys_only=True)
         for v in videos:
             v.delete()
@@ -146,6 +157,26 @@ class DeleteVideos(webapp2.RequestHandler):
         for e in entities:
             e.delete()
 
+        entities = models.Comment.query().fetch(keys_only=True)
+        for e in entities:
+            e.delete()
+
+        entities = models.Subscription.query().fetch(keys_only=True)
+        for e in entities:
+            e.delete()
+
+        entities = models.Notification.query().fetch(keys_only=True)
+        for e in entities:
+            e.delete()
+
+        entities = models.Playlist.query().fetch(keys_only=True)
+        for e in entities:
+            e.delete()
+
+        entities = models.PlaylistDetail.query().fetch(keys_only=True)
+        for e in entities:
+            e.delete()
+
         user_detail = models.User.get_detail_key(ndb.Key('User', 5730082031140864)).get()
         logging.info(user_detail.space_visited)
         logging.info(user_detail.videos_submitted)
@@ -154,6 +185,7 @@ class DeleteVideos(webapp2.RequestHandler):
         user_detail.space_visited = 0
         user_detail.videos_submitted = 0
         user_detail.videos_watched = 0
+        user_detail.playlists_created = 0
         user_detail.put()
 
 class DeleteSearch(webapp2.RequestHandler):

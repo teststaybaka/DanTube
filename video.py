@@ -1,5 +1,4 @@
 from views import *
-from watch import Danmaku
 from PIL import Image
 
 ISO_8601_period_rx = re.compile(
@@ -289,6 +288,7 @@ class VideoUpload(BaseHandler):
         video_clips = []
         for i in xrange(0, len(self.raw_urls)):
             video_clip = models.VideoClip(
+                video=video.key,
                 uploader=user.key,
                 title=self.clip_titles[i],
                 index=i,
@@ -406,6 +406,7 @@ class VideoUpload(BaseHandler):
                     changed = True
             else:
                 clip = models.VideoClip(
+                    video=video.key,
                     uploader=self.user_key,
                     title=self.clip_titles[i],
                     index=i,
@@ -637,16 +638,35 @@ class ManageDanmakuDetail(BaseHandler):
             self.notify('You are not allowed to edit this video.')
             return
 
+        danmaku_list = models.VideoClip.load_cloud_danmaku(clip_key, 'danmaku')
+        danmaku_list += [danmaku.format() for danmaku in clip.danmaku_buffer]
+        advanced_danmaku_list = models.VideoClip.load_cloud_danmaku(clip_key, 'advanced')
+        advanced_danmaku_list += [danmaku.format() for danmaku in clip.advanced_danmaku_buffer]
+        subtitles_list = models.VideoClip.load_cloud_danmaku(clip_key, 'subtitles')
+        code_danmaku_list = models.VideoClip.load_cloud_danmaku(clip_key, 'code')
+
+        if clip.danmaku_num != len(danmaku_list) or clip.advanced_danmaku_num != len(advanced_danmaku_list) or clip.subtitles_num != len(subtitles_list) or clip.code_danmaku_num != len(code_danmaku_list):
+            clip.danmaku_num = len(danmaku_list)
+            clip.advanced_danmaku_num = len(advanced_danmaku_list)
+            clip.subtitles_num = len(subtitles_list)
+            clip.code_danmaku_num = len(code_danmaku_list)
+            clip.put()
+
         context = {
             'id': video.key.id(),
             'video_url': models.Video.get_video_url(video.key.id()),
             'title': video.title,
+            'clip_id': clip.key.id(),
             'clip_index': clip.index,
             'clip_title': clip.title,
             'danmaku_num': clip.danmaku_num,
+            'danmaku_list': json.dumps(danmaku_list),
             'advanced_danmaku_num': clip.advanced_danmaku_num,
+            'advanced_danmaku_list': json.dumps(advanced_danmaku_list),
             'subtitles_num': clip.subtitles_num,
-            'code_num': clip.code_danmaku_num,
+            'subtitles_list': json.dumps(subtitles_list),
+            'code_danmaku_num': clip.code_danmaku_num,
+            'code_danmaku_list': json.dumps(code_danmaku_list),
         }
         self.render('manage_danmaku_detail', context)
 
@@ -660,32 +680,23 @@ class ManageDanmakuDetail(BaseHandler):
             return
 
         pool_type = self.request.get('pool_type')
-        try:
-            pool = gcs.open('/danmaku/'+str(clip.key.id())+'/'+pool_type, 'r')
-            danmaku_list = json.loads(pool.read())
-            pool.close()
-        except NotFoundError:
-            danmaku_list = []
-        
-        new_danmaku_list = []
+        danmaku_list = []
         if pool_type == 'advanced':
-            new_danmaku_list = [Danmaku.format_advanced_danmaku(danmaku) for danmaku in clip.advanced_danmaku_buffer]
+            danmaku_list = [danmaku.format() for danmaku in clip.advanced_danmaku_buffer]
             clip.advanced_danmaku_buffer = []
             clip.put()
         elif pool_type != 'subtitles' and pool_type != 'code':
             self.json_response(True, {'message': 'Invalid type.'})
             return
-
-        danmaku_list += new_danmaku_list
+        danmaku_list += models.VideoClip.load_cloud_danmaku(clip.key, pool_type)
+        
         try:
             danmaku_list[index]['approved']= True
         except IndexError:
             self.json_response(True, {'message': 'Index out of range.'})
             return
+        models.VideoClip.save_cloud_danmaku(clip.key, pool_type, danmaku_list)
 
-        pool = gcs.open('/danmaku/'+str(clip_key.id())+'/'+kind, 'w', content_type="text/plain", options={'x-goog-acl': 'public-read'})
-        pool.write(json.dumps(danmaku_list))
-        pool.close()
         self.json_response(False)
 
     @login_required_json
@@ -693,41 +704,40 @@ class ManageDanmakuDetail(BaseHandler):
     def delete(self, clip):
         try:
             idxs = [int(index) for index in self.request.POST.getall('index[]')]
+            if not idxs:
+                raise ValueError('Empty')
         except ValueError:
             self.json_response(True, {'message': 'Invalid indices.'})
             return
         idxs.sort(reverse=True)
 
         pool_type = self.request.get('pool_type')
-        try:
-            pool = gcs.open('/danmaku/'+str(clip.key.id())+'/'+pool_type, 'r')
-            danmaku_list = json.loads(pool.read())
-            pool.close()
-        except NotFoundError:
-            danmaku_list = []
-
-        new_danmaku_list = []
+        danmaku_list = []
         if pool_type == 'danmaku':
-            new_danmaku_list = [Danmaku.format_danmaku(danmaku) for danmaku in clip.danmaku_buffer]
+            danmaku_list = [danmaku.format() for danmaku in clip.danmaku_buffer]
             clip.danmaku_buffer = []
             clip.put()
         elif pool_type == 'advanced':
-            new_danmaku_list = [Danmaku.format_advanced_danmaku(danmaku) for danmaku in clip.advanced_danmaku_buffer]
+            danmaku_list = [danmaku.format() for danmaku in clip.advanced_danmaku_buffer]
             clip.advanced_danmaku_buffer = []
             clip.put()
-        elif pool_type != 'subtitles' or pool_type != 'code':
+        elif pool_type != 'subtitles' and pool_type != 'code':
             self.json_response(True, {'message': 'Invalid type.'})
             return
+        danmaku_list += models.VideoClip.load_cloud_danmaku(clip.key, pool_type)
 
-        danmaku_list += new_danmaku_list
         try:
-            for index in idxs:
-                danmaku_list.pop(index)
+            j = idxs[-1]
+            for i in xrange(idxs[-1], len(danmaku_list)):
+                if idxs and i == idxs[-1]:
+                    idxs.pop()
+                else:
+                    danmaku_list[j] = danmaku_list[i]
+                    j += 1
+            del danmaku_list[j:]
         except IndexError:
             self.json_response(True, {'message': 'Index out of range.'})
             return
+        models.VideoClip.save_cloud_danmaku(clip.key, pool_type, danmaku_list)
 
-        pool = gcs.open('/danmaku/'+str(clip_key.id())+'/'+kind, 'w', content_type="text/plain", options={'x-goog-acl': 'public-read'})
-        pool.write(json.dumps(danmaku_list))
-        pool.close()
         self.json_response(False)

@@ -38,7 +38,6 @@ class Contact(BaseHandler):
             description = description,
         )
         feedback.put()
-        
         self.json_response(False)
 
 class Report(BaseHandler):
@@ -54,13 +53,12 @@ class Report(BaseHandler):
 
         description = self.request.get('description').strip()
         report = models.ReportVideo(
-            video_clip = ndb.Key('VideoClip', int(clip_id), parent=ndb.Key('Video', video_id)),
+            video_clip = ndb.Key('VideoClip', int(clip_id)),
             issue = issue,
             description = description,
             reporter = self.user_key,
         )
         report.put()
-
         self.json_response(False)
 
     @login_required_json
@@ -107,7 +105,6 @@ class Report(BaseHandler):
             user = comment.creator,
         )
         report.put()
-
         self.json_response(False)
 
     @login_required_json
@@ -120,18 +117,8 @@ class Report(BaseHandler):
             self.json_response(True, {'message': 'Invalid issues!'})
             return
 
-        try:
-            pool_id = int(self.request.get('pool_id'))
-        except ValueError:
-            self.json_response(True, {'message': 'Invalid id!'})
-            return
-
         pool_type = self.request.get('pool_type')
-        if pool_type == 'danmaku':
-            pool_key = ndb.Key('DanmakuPool', pool_id)
-        elif pool_type == 'advanced':
-            pool_key = ndb.Key('AdvancedDanmakuPool', pool_id)
-        else:
+        if pool_type != 'danmaku' and pool_type != 'advanced':
             self.json_response(True, {'message': 'Invalid type.'})
             return
 
@@ -141,30 +128,38 @@ class Report(BaseHandler):
             self.json_response(True, {'message': 'Invalid index!'})
             return
 
-        pool = pool_key.get()
-        if not pool:
+        clip_key = ndb.Key('VideoClip', int(clip_id))
+        danmaku_list = models.VideoClip.load_cloud_danmaku(clip_key, pool_type)
+        if danmaku_list and danmaku_index <= danmaku_list[-1]['index']:
+            find_danmaku = None
+            for danmaku in danmaku_list:
+                if danmaku_index == danmaku['index']:
+                    find_danmaku = danmaku
+                    break
+        else:
+            clip = clip_key.get()
+            if pool_type == 'danmaku':
+                danmaku_buffer = clip.danmaku_buffer
+            else:
+                danmaku_buffer = clip.advanced_danmaku_buffer
+            for danmaku in danmaku_buffer:
+                if danmaku_index == danmaku.index:
+                    find_danmaku = danmaku.format()
+                    break
+
+        if not find_danmaku:
             self.json_response(False)
             return
-        else:
-            indices = [danmaku.index for danmaku in pool.danmaku_list]
-            try:
-                i = indices.index(danmaku_index)
-                danmaku = pool.danmaku_list[i]
-            except ValueError:
-                self.json_response(False)
-                return
 
         description = self.request.get('description').strip()
         report = models.ReportDanmaku(
-            video_clip = ndb.Key('VideoClip', int(clip_id), parent=ndb.Key('Video', video_id)),
+            video_clip = ndb.Key('VideoClip', int(clip_id)),
             issue = issue,
             description = description,
             reporter = self.user_key,
-            pool = pool_key,
-            danmaku_index = danmaku.index,
-            content = danmaku.content,
-            user = danmaku.creator,
+            danmaku_index = danmaku['index'],
+            content = danmaku['content'],
+            user = ndb.Key('User', int(danmaku['creator'])),
         )
         report.put()
-
         self.json_response(False)

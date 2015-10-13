@@ -89,7 +89,7 @@ routes = [
     webapp2.Route(r'/video/comment_post/<video_id:dt\d+>', watch.Comment, name="comment_post", handler_method="comment_post"),
     webapp2.Route(r'/video/reply_post/<video_id:dt\d+>', watch.Comment, name="reply_post", handler_method="reply_post"),
     webapp2.Route(r'/video/check_comment/<video_id:dt\d+>', watch.CheckComment, name="check_comment"),
-    webapp2.Route(r'/video/danmaku/<video_id:dt\d+>/<clip_id:\d+>', watch.Danmaku, name="danmaku"),
+    webapp2.Route(r'/video/danmaku/<video_id:dt\d+>/<clip_id:\d+>', watch.Danmaku, name="post_danmaku"),
     webapp2.Route(r'/video/advanced_danmaku/<video_id:dt\d+>/<clip_id:\d+>', watch.Danmaku, name="advanced_danmaku", handler_method="post_advanced"),
     webapp2.Route(r'/video/subtitles_danmaku/<video_id:dt\d+>/<clip_id:\d+>', watch.Danmaku, name="subtitles_danmaku", handler_method="post_subtitles"),
     webapp2.Route(r'/video/code_danmaku/<video_id:dt\d+>/<clip_id:\d+>', watch.Danmaku, name="code_danmaku", handler_method="post_code"),

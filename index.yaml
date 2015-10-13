@@ -30,14 +30,14 @@ indexes:
     direction: desc
 
 - kind: DanmakuRecord
-  ancestor: yes
   properties:
+  - name: creator
   - name: created
     direction: desc
 
 - kind: LikeRecord
-  ancestor: yes
   properties:
+  - name: user
   - name: created
     direction: desc
   - name: video
@@ -74,15 +74,10 @@ indexes:
     direction: desc
 
 - kind: Subscription
-  ancestor: yes
   properties:
+  - name: user
   - name: score
     direction: desc
-  - name: uper
-
-- kind: Subscription
-  ancestor: yes
-  properties:
   - name: uper
 
 - kind: Video
@@ -130,7 +125,7 @@ indexes:
     direction: desc
 
 - kind: ViewRecord
-  ancestor: yes
   properties:
+  - name: user
   - name: created
     direction: desc
