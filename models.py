@@ -779,7 +779,7 @@ class AdvancedDanmaku(ndb.Model):
   relative = ndb.BooleanProperty(required=True, indexed=False)
   approved = ndb.BooleanProperty(required=True, default=False, indexed=False)
   creator = ndb.KeyProperty(kind='User', required=True, indexed=False)
-  created = ndb.DateTimeProperty(auto_now_add=True, indexed=False)
+  created = ndb.DateTimeProperty(required=True, indexed=False)
 
   def format(self):
     return {
@@ -810,7 +810,7 @@ class SubtitlesDanmaku(ndb.Model):
   content = ndb.TextProperty(required=True, indexed=False)
   approved = ndb.BooleanProperty(required=True, default=False, indexed=False)
   creator = ndb.KeyProperty(kind='User', required=True, indexed=False)
-  created = ndb.DateTimeProperty(auto_now_add=True, indexed=False)
+  created = ndb.DateTimeProperty(required=True, indexed=False)
 
   def format(self):
     return {
@@ -829,7 +829,7 @@ class CodeDanmaku(ndb.Model):
   content = ndb.TextProperty(required=True, indexed=False)
   approved = ndb.BooleanProperty(required=True, default=False, indexed=False)
   creator = ndb.KeyProperty(kind='User', required=True, indexed=False)
-  created = ndb.DateTimeProperty(auto_now_add=True, indexed=False)
+  created = ndb.DateTimeProperty(required=True, indexed=False)
 
   def format(self):
     return {
@@ -846,6 +846,7 @@ class CodeDanmaku(ndb.Model):
 
 class VideoClip(ndb.Model):
   DanmakuPrefix = 'https://storage.googleapis.com/danmaku/'
+  # DanmakuPrefix = 'http://localhost:8080/_ah/gcs/danmaku/'
 
   video = ndb.KeyProperty(kind='Video', required=True, indexed=False)
   uploader = ndb.KeyProperty(kind='User', required=True, indexed=False)

@@ -55,6 +55,8 @@ var subtitles_danmaku_container = {};
 var subtitles_danmaku_backup = {};
 var code_intervals = [];
 var code_timeouts = [];
+// var danmaku_prefix = 'http://localhost:8080/_ah/gcs/danmaku/';
+var danmaku_prefix = 'https://storage.googleapis.com/danmaku/';
 
 var oldSetInterval = window.setInterval;
 var oldSetTimeout = window.setTimeout;
@@ -79,18 +81,17 @@ DanmakuTimeSequence.prototype.addOne = function(danmaku) {
 	dt.quick_sort(this.danmaku_list, 0, this.danmaku_list.length-1, danmaku_timestamp_lower_compare);
 }
 DanmakuTimeSequence.prototype.addMult = function(danmaku_list) {
-	this.danmaku_list.concat(danmaku_list);
+	this.danmaku_list = this.danmaku_list.concat(danmaku_list);
 	dt.quick_sort(this.danmaku_list, 0, this.danmaku_list.length-1, danmaku_timestamp_lower_compare);
 }
 DanmakuTimeSequence.prototype.locate = function() {
-	if (this.danmaku_pointer < this.danmaku_list.length && this.danmaku_list[this.danmaku_pointer].timestamp <= curTime) {
-		while (this.danmaku_pointer < this.danmaku_list.length
-			&& (this.danmaku_list[this.danmaku_pointer].timestamp < curTime - 1 || this.danmaku_list[this.danmaku_pointer].timestamp < lastTime)) {
-			this.danmaku_pointer += 1;
-		}
-	} else {
+	if (curTime < lastTime && (this.danmaku_pointer >= this.danmaku_list.length || this.danmaku_list[this.danmaku_pointer].timestamp > curTime)) {
 		while(this.danmaku_pointer > 0 && this.danmaku_list[this.danmaku_pointer - 1].timestamp >= curTime) {
 			this.danmaku_pointer -= 1;
+		}
+	} else {
+		while (this.danmaku_pointer < this.danmaku_list.length && this.danmaku_list[this.danmaku_pointer].timestamp < curTime - 1) {
+			this.danmaku_pointer += 1;
 		}
 	}
 }
@@ -2510,25 +2511,25 @@ $(document).ready(function() {
 	load_danmaku(JSON.parse($('#danmaku-buffer').val()));
 	$.ajax({
 		type: "GET",
-		url: 'https://storage.googleapis.com/danmaku/'+clip_id+'/danmaku',
+		url: danmaku_prefix + clip_id + '/danmaku',
 		dataType: 'json',
 		success: load_danmaku,
 	});
 	$.ajax({
 		type: "GET",
-		url: 'https://storage.googleapis.com/danmaku/'+clip_id+'/advanced',
+		url: danmaku_prefix + clip_id + '/advanced',
 		dataType: 'json',
 		success: load_danmaku,
 	});
 	$.ajax({
 		type: "GET",
-		url: 'https://storage.googleapis.com/danmaku/'+clip_id+'/code',
+		url: danmaku_prefix + clip_id + '/code',
 		dataType: 'json',
 		success: load_danmaku,
 	});
 	$.ajax({
 		type: "GET",
-		url: 'https://storage.googleapis.com/danmaku/'+clip_id+'/subtitles',
+		url: danmaku_prefix + clip_id + '/subtitles',
 		dataType: 'json',
 		success: load_subtitles,
 	});

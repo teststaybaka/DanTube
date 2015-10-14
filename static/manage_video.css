@@ -464,6 +464,10 @@ div.add-button, input.add-button {
     transition: height .3s;
 }
 
+.detail-label.content.long.pending {
+    width: 335px;
+}
+
 .detail-label.content.subtitles {
     width: 330px;
 }

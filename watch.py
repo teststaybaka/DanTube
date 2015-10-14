@@ -440,7 +440,7 @@ class Danmaku(BaseHandler):
         clip.danmaku_counter += 1
         clip.danmaku_num += 1
 
-        if len(clip.danmaku_buffer) > 1:
+        if len(clip.danmaku_buffer) > 50:
             danmaku_list = clip.danmaku_buffer
             clip.danmaku_buffer = []
             deferred.defer(flush_danmaku_pool, clip.key, danmaku_list, 'danmaku')
@@ -511,12 +511,12 @@ class Danmaku(BaseHandler):
             self.json_response(True, {'message': 'Empty CSS.'})
             return
 
-        danmaku = models.AdvancedDanmaku(index=clip.advanced_danmaku_counter, timestamp=timestamp, content=content, birth_x=birth_pos[0], birth_y=birth_pos[1], death_x=death_pos[0], death_y=death_pos[1], speed_x=speed[0], speed_y=speed[1], longevity=longevity, css=custom_css, as_percent=as_percent, relative=relative, creator=user_key)
+        danmaku = models.AdvancedDanmaku(index=clip.advanced_danmaku_counter, timestamp=timestamp, content=content, birth_x=birth_pos[0], birth_y=birth_pos[1], death_x=death_pos[0], death_y=death_pos[1], speed_x=speed[0], speed_y=speed[1], longevity=longevity, css=custom_css, as_percent=as_percent, relative=relative, creator=user_key, created=datetime.now())
         clip.advanced_danmaku_buffer.append(danmaku)
         clip.advanced_danmaku_counter += 1
         clip.advanced_danmaku_num += 1
 
-        if len(clip.advanced_danmaku_buffer) > 1:
+        if len(clip.advanced_danmaku_buffer) > 10:
             danmaku_list = clip.advanced_danmaku_buffer
             clip.advanced_danmaku_buffer = []
             deferred.defer(flush_danmaku_pool, clip.key, danmaku_list, 'advanced')
