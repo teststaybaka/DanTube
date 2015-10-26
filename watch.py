@@ -650,3 +650,20 @@ class Watched(BaseHandler):
     def post(self, video_id):
         watched = models.ViewRecord.has_viewed(self.user_key, ndb.Key('Video', video_id))
         self.json_response(False, {'watched': watched})
+
+class Test(BaseHandler):
+    def get(self):
+        Expiration = str(models.time_to_seconds(datetime.now()) + 120)
+        StringToSign = 'GET\n'+\
+                        '\n'+\
+                        '\n'+\
+                        Expiration+'\n'+\
+                        '/dantube-videos/test.mp4';
+        # logging.info(StringToSign)
+        signed = app_identity.sign_blob(StringToSign)
+        # logging.info(signed[0])
+        # logging.info(app_identity.get_service_account_name())
+        url = 'https://storage.googleapis.com/dantube-videos/test.mp4' + "?GoogleAccessId=" + app_identity.get_service_account_name() + "&Expires=" + Expiration + "&Signature=" + urllib.quote(base64.b64encode(signed[1]), safe='')
+        # logging.info(url);
+
+        self.render('test', {'video_source': url})

@@ -1,0 +1,9 @@
+{% extends "template/base.html" %}
+
+{% block body %}
+<video src="{{ video_source }}" autoplay>
+  Sorry, your browser doesn't support embedded videos, 
+  but don't worry, you can <a href="{{ video_source }}">download it</a>
+  and watch it with your favorite video player!
+</video>
+{% endblock %}

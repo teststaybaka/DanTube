@@ -57,7 +57,7 @@ class Signup(BaseHandler):
             self.json_response(True, {'message': 'Sign up failed.'})
             return
         user.create_index(intro='')
-        user_detail = models.UserDetail(key=models.User.get_detail_key(user.key))
+        user_detail = models.UserDetail(key=models.User.get_detail_key(user.key), nickname=nickname)
         user_detail.put()
 
         token = self.user_model.create_signup_token(user.key.id())

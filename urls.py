@@ -96,6 +96,7 @@ routes = [
     webapp2.Route(r'/video/like/<video_id:dt\d+>', watch.Like, name="like"),
     webapp2.Route(r'/video/unlike/<video_id:dt\d+>', watch.Unlike, name="unlike"),
     webapp2.Route(r'/video/watched/<video_id:dt\d+>', watch.Watched, name="watched"),
+    webapp2.Route(r'/video/test', watch.Test, name="testwatch"),
 
     webapp2.Route(r'/category_videos', views.LoadByCategory, name="load_by_category"),
     webapp2.Route(r'/uper_videos', views.LoadByUper, name="load_by_uper"),

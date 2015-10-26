@@ -55,8 +55,8 @@ var subtitles_danmaku_container = {};
 var subtitles_danmaku_backup = {};
 var code_intervals = [];
 var code_timeouts = [];
-// var danmaku_prefix = 'http://localhost:8080/_ah/gcs/danmaku/';
 var danmaku_prefix = 'https://storage.googleapis.com/danmaku/';
+// var danmaku_prefix = 'http://localhost:8080/_ah/gcs/danmaku/';
 
 var oldSetInterval = window.setInterval;
 var oldSetTimeout = window.setTimeout;
