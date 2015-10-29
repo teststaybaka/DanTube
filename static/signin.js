@@ -53,7 +53,10 @@ $(document).ready(function() {
                 if(!result.error) {
                     dt.pop_ajax_message('Sign in successfully! Redirecting to home page in 3 seconds...', 'success');
                     setTimeout(function(){
-                        if (document.referrer && document.referrer !== window.location.href) {
+                        if (document.referrer && document.referrer.indexOf(window.location.hostname) != -1
+                            && document.referrer.indexOf('/signin') == -1
+                            && document.referrer.indexOf('/signup') == -1
+                            && document.referrer.indexOf('/password/reset') == -1) {
                             window.location.replace(document.referrer);
                         } else {
                             window.location.replace('/');

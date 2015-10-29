@@ -424,7 +424,7 @@ class Danmaku(BaseHandler):
         reply_to = self.request.get('reply-to')
         if reply_to:
             try:
-                reply_to = self.user_model.get_by_id(int(reply_to))
+                reply_to = models.User.get_by_id(int(reply_to))
                 if not reply_to:
                     raise ValueError('Not found.')
             except ValueError:

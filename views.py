@@ -14,7 +14,6 @@ import cgi
 import json
 import re
 import math
-import traceback
 import collections
 import base64
 
@@ -22,9 +21,6 @@ import cloudstorage as gcs
 from google.appengine.api import app_identity
 from datetime import datetime
 from jinja2 import Undefined
-from webapp2_extras import sessions
-from webapp2_extras import auth
-from webapp2_extras import sessions_ndb
 from google.appengine.api.datastore_errors import BadValueError
 from google.appengine.ext.webapp import blobstore_handlers
 from google.appengine.api import mail
@@ -33,6 +29,7 @@ from google.appengine.api import taskqueue
 from google.appengine.ext import ndb
 from apiclient.discovery import build
 from google.appengine.ext import deferred
+from sessions import *
 
 import models
 
@@ -52,50 +49,32 @@ env = jinja2.Environment(
 env.globals = {
     'uri_for': webapp2.uri_for,
 }
-DEVELOPER_KEY = 'AIzaSyBbf3cs6Nw483po40jw7hZLejmdrgwozWc'
 
 class BaseHandler(webapp2.RequestHandler):
     @webapp2.cached_property
+    def session(self):
+        return Session.get_session(self.request)
+
+    @webapp2.cached_property
     def auth(self):
-        """Shortcut to access the auth instance as a property."""
-        return auth.get_auth()
+        return Auth(self.session)
 
     @webapp2.cached_property
     def user_info(self):
-        return self.auth.get_user_by_session()
+        return self.auth.get_user()
 
     @webapp2.cached_property
     def user_key(self):
         u = self.user_info
-        return self.user_model.get_key(u['user_id']) if u else None
+        return models.User.get_key(u['user_id']) if u else None
 
     @webapp2.cached_property
     def user_detail_key(self):
         u = self.user_info
         return models.User.get_detail_key(self.user_key) if u else None
 
-    @webapp2.cached_property
-    def user_model(self):
-        return self.auth.store.user_model
-
-    @webapp2.cached_property
-    def session(self):
-        # return self.session_store.get_session(backend="datastore")
-        return self.session_store.get_session(name='db_session', factory=sessions_ndb.DatastoreSessionFactory)
-
-    def dispatch(self):
-        """
-        This snippet of code is taken from the webapp2 framework documentation.
-        See more at
-        http://webapp-improved.appspot.com/api/webapp2_extras/sessions.html
-        """
-        self.session_store = sessions.get_store(request=self.request)
-        try:
-            webapp2.RequestHandler.dispatch(self)
-        finally:
-            self.session_store.save_sessions(self.response)
-
     def render(self, tempname, context=None):
+        # logging.info(self.request.url)
         if not context:
             context = {'user': {}}
         elif not context.get('user'):
@@ -114,6 +93,7 @@ class BaseHandler(webapp2.RequestHandler):
         path = 'template/' + tempname + '.html'
         template = env.get_template(path)
         self.response.write(template.render(context))
+        self.session.save_session(self.response)
     
     def notify(self, notice, status=200, type='error'):
         self.response.set_status(status)
@@ -123,6 +103,7 @@ class BaseHandler(webapp2.RequestHandler):
         self.response.headers['Content-Type'] = 'application/json'
         result['error'] = error
         self.response.write(json.dumps(result))
+        self.session.save_session(self.response)
 
     def get_keywords(self):
         return models.ILLEGAL_LETTER.sub(' ', self.request.get('keywords')).strip().lower()
@@ -280,7 +261,7 @@ class Home(BaseHandler):
             video = videos[i]
             video_info = video.get_basic_info()
             context['top_ten_videos'].append(video_info)
-
+        
         remains = 8
         if self.user_info:
             subscriptions = models.Subscription.query(models.Subscription.user==self.user_key).order(-models.Subscription.score).fetch(limit=remains, projection=['uper'])

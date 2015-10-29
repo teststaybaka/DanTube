@@ -2,7 +2,7 @@ from google.appengine.ext import ndb
 from google.appengine.api.datastore_errors import TransactionFailedError
 from google.appengine.datastore.datastore_query import Cursor
 from google.appengine.api import search
-import webapp2_extras.appengine.auth.models
+from webapp2_extras.appengine.auth.models import Unique
 from webapp2_extras import security
 from google.appengine.ext import blobstore
 from google.appengine.ext import deferred
@@ -43,32 +43,24 @@ class UserToken(ndb.Model):
     return ndb.Key(cls, '%s.%s.%s' % (str(user_id), subject, token), parent=User.get_key(user_id))
 
   @classmethod
-  def create(cls, user_id, subject, token=None):
-    token = token or security.generate_random_string(entropy=128)
+  def create(cls, user_id, subject):
+    token = security.generate_random_string(entropy=128)
     key = cls.get_key(user_id, subject, token)
     entity = cls(key=key, subject=subject, token=token)
     entity.put()
     return entity
 
   @classmethod
-  def get(cls, user_id=None, subject=None, token=None):
-    if user_id and subject and token:
-      return cls.get_key(user_id, subject, token).get()
-
-    # assert subject and token, \
-    #     'subject and token must be provided to UserToken.get().'
-    # return cls.query(cls.subject == subject, cls.token == token).get()
-    return None
+  def get(cls, user_id, subject, token):
+    return cls.get_key(user_id, subject, token).get()
 
   @classmethod
-  def fetch_tokens(cls, user_key, subject):
+  def delet_tokens(cls, user_key, subject):
     all_tokens = cls.query(ancestor=user_key).fetch()
     res_tokens = []
     for token in all_tokens:
       if token.subject == subject:
-        res_tokens.append(token)
-
-    return res_tokens
+        token.key.delete()
 
 class UserDetail(ndb.Model):
   nickname = ndb.StringProperty(required=True, indexed=False)
@@ -114,11 +106,12 @@ class UserDetail(ndb.Model):
     user_detail = cls(key=cls.get_key(user_key))
     user_detail.put()
 
-class User(webapp2_extras.appengine.auth.models.User):
-  token_model = UserToken
+class User(ndb.Model):
   AvatarPrefix = 'https://storage.googleapis.com/dantube-avatar/'
+  Pepper = 'McbIlx'
 
-  email = ndb.StringProperty(required=True, indexed=False)
+  auth_ids = ndb.StringProperty(repeated=True)
+  email = ndb.StringProperty(indexed=False)
   password = ndb.StringProperty(required=True, indexed=False)
   nickname = ndb.StringProperty(required=True)
   level = ndb.IntegerProperty(required=True, default=1, indexed=False)
@@ -223,12 +216,6 @@ class User(webapp2_extras.appengine.auth.models.User):
     )
     add_result = index.put(doc)
 
-  def set_password(self, raw_password):
-    self.password = security.generate_password_hash(raw_password, length=12)
-
-  def auth_password(self, raw_password):
-    return security.check_password_hash(raw_password, self.password)
-
   @classmethod
   def validate_nickname(cls, nickname):
     if not nickname:
@@ -271,35 +258,59 @@ class User(webapp2_extras.appengine.auth.models.User):
     return email
 
   @classmethod
+  def Create(cls, email, raw_password, nickname):
+    uniques = ['%s.%s:%s' % (cls.__name__, 'email', email), '%s.%s:%s' % (cls.__name__, 'nickname', nickname)]
+    ok, existing = Unique.create_multi(uniques)
+    if ok:
+      password = security.generate_password_hash(raw_password, method='sha1', length=12, pepper=cls.Pepper)
+      user = cls(auth_ids=[email], email=email, nickname=nickname, password=password)
+      user.put()
+      user.create_index(intro='')
+      user_detail = UserDetail(key=cls.get_detail_key(user.key), nickname=nickname)
+      user_detail.put()
+      return user
+    else:
+      return None
+
+  @classmethod
   def check_unique(cls, name, value):
-    return bool(ndb.Key(cls.unique_model, '%s.%s:%s' % (cls.__name__, name, value)).get())
+    return bool(ndb.Key(Unique, '%s.%s:%s' % (cls.__name__, name, value)).get())
 
   @classmethod
   def delete_unique(cls, name, value):
-    ndb.Key(cls.unique_model, '%s.%s:%s' % (cls.__name__, name, value)).delete()
+    ndb.Key(Unique, '%s.%s:%s' % (cls.__name__, name, value)).delete()
 
   @classmethod
   def create_unique(cls, name, value):
-    return cls.unique_model.create('%s.%s:%s' % (cls.__name__, name, value))
+    return Unique.create('%s.%s:%s' % (cls.__name__, name, value))
 
   @classmethod
   def create_pwdreset_token(cls, user_id):
-    entity = cls.token_model.create(user_id, 'pwdreset')
+    entity = UserToken.create(user_id, 'pwdreset')
     return entity.token
 
   @classmethod
-  def get_token_key(cls, user_id, token, subject='auth'):
-    """Returns a token key based on a user ID and token.
- 
-    :param user_id:
-        The user_id of the requesting user.
-    :param token:
-        The token string to be verified.
-    :returns:
-        A tuple ``(User, timestamp)``, with a user object and
-        the token timestamp, or ``(None, None)`` if both were not found.
-    """
-    return cls.token_model.get_key(user_id, subject, token)
+  def create_signup_token(cls, user_id):
+    entity = UserToken.create(user_id, 'signup')
+    return entity.token
+
+  @classmethod
+  def get_token_key(cls, user_id, token, subject):
+    return UserToken.get_key(user_id, subject, token)
+
+  def set_password(self, raw_password):
+    self.password = security.generate_password_hash(raw_password, method='sha1', length=12, pepper=self.Pepper)
+
+  def auth_password(self, raw_password):
+    return security.check_password_hash(raw_password, self.password, pepper=self.Pepper)
+
+  @classmethod
+  def get_user_by_password(cls, auth_id, password):
+    user = cls.query(cls.auth_ids==auth_id).get()
+    if user and user.auth_password(password):
+      return user
+    else:
+      return None
 
 Video_Category = ['Anime', 'Music', 'Dance', 'Game', 'Entertainment', 'Techs', 'Sports', 'Movie', 'Drama']
 Video_SubCategory = {'Anime': ['TV Anime', 'OVA/Movie', 'MAD/AMV/GMV', 'MMD/3D', 'Original/Voice Acting', 'General']

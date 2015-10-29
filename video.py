@@ -145,7 +145,7 @@ class VideoUpload(BaseHandler):
         elif len(self.raw_urls) > 500:
             raise Exception('Too many parts!')
 
-        youtube = build('youtube', 'v3', developerKey=DEVELOPER_KEY)
+        youtube = build('youtube', 'v3', developerKey=self.app.config.get('developer_key'))
         for i in xrange(0, len(self.raw_urls)):
             self.raw_urls[i] = self.raw_urls[i].strip();
             raw_url = self.raw_urls[i]

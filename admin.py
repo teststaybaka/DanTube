@@ -79,104 +79,40 @@ class Reports(webapp2.RequestHandler):
         template = env.get_template('template/admin_reports.html')
         self.response.write(template.render(context))
 
+def delete_multi(entities):
+    for e in entities:
+        e.delete()
+
+def delete_search_multi(doc_index):
+    while True:
+        # Get a list of documents populating only the doc_id field and extract the ids.
+        document_ids = [document.doc_id for document in doc_index.get_range(ids_only=True)]
+        if not document_ids:
+            break
+        # Delete the documents for the given ids from the Index.
+        doc_index.delete(document_ids)
+
 class DeleteVideos(webapp2.RequestHandler):
     def get(self):
-        doc_index  = search.Index(name='videos_by_created')
-        # looping because get_range by default returns up to 100 documents at a time
-        while True:
-            # Get a list of documents populating only the doc_id field and extract the ids.
-            document_ids = [document.doc_id
-                            for document in doc_index.get_range(ids_only=True)]
-            if not document_ids:
-                break
-            # Delete the documents for the given ids from the Index.
-            doc_index.delete(document_ids)
-
-        doc_index  = search.Index(name='videos_by_likes')
-        # looping because get_range by default returns up to 100 documents at a time
-        while True:
-            # Get a list of documents populating only the doc_id field and extract the ids.
-            document_ids = [document.doc_id
-                            for document in doc_index.get_range(ids_only=True)]
-            if not document_ids:
-                break
-            # Delete the documents for the given ids from the Index.
-            doc_index.delete(document_ids)
-
-        doc_index  = search.Index(name='videos_by_hits')
-        # looping because get_range by default returns up to 100 documents at a time
-        while True:
-            # Get a list of documents populating only the doc_id field and extract the ids.
-            document_ids = [document.doc_id
-                            for document in doc_index.get_range(ids_only=True)]
-            if not document_ids:
-                break
-            # Delete the documents for the given ids from the Index.
-            doc_index.delete(document_ids)
-
-        doc_index  = search.Index(name='playlists_by_modified')
-        # looping because get_range by default returns up to 100 documents at a time
-        while True:
-            # Get a list of documents populating only the doc_id field and extract the ids.
-            document_ids = [document.doc_id
-                            for document in doc_index.get_range(ids_only=True)]
-            if not document_ids:
-                break
-            # Delete the documents for the given ids from the Index.
-            doc_index.delete(document_ids)
-
-        videos = models.Video.query().fetch(keys_only=True)
-        for v in videos:
-            v.delete()
-
-        videos = models.VideoClip.query().fetch(keys_only=True)
-        for v in videos:
-            models.VideoClip.Delete(v)
-
-        videos = models.VideoClipList.query().fetch(keys_only=True)
-        for v in videos:
-            v.delete()
-
-        entities = models.VideoIDFactory.query().fetch(keys_only=True)
-        for e in entities:
-            e.delete()
-
-        entities = models.LikeRecord.query().fetch(keys_only=True)
-        for e in entities:
-            e.delete()
-
-        entities = models.ViewRecord.query().fetch(keys_only=True)
-        for e in entities:
-            e.delete()
-
-        entities = models.DanmakuRecord.query().fetch(keys_only=True)
-        for e in entities:
-            e.delete()
-
-        entities = models.MentionedRecord.query().fetch(keys_only=True)
-        for e in entities:
-            e.delete()
-
-        entities = models.Comment.query().fetch(keys_only=True)
-        for e in entities:
-            e.delete()
-
-        entities = models.Subscription.query().fetch(keys_only=True)
-        for e in entities:
-            e.delete()
-
-        entities = models.Notification.query().fetch(keys_only=True)
-        for e in entities:
-            e.delete()
-
-        entities = models.Playlist.query().fetch(keys_only=True)
-        for e in entities:
-            e.delete()
-
-        entities = models.PlaylistDetail.query().fetch(keys_only=True)
-        for e in entities:
-            e.delete()
-
+        delete_search_multi(search.Index(name='videos_by_created'))
+        delete_search_multi(search.Index(name='videos_by_likes'))
+        delete_search_multi(search.Index(name='videos_by_hits'))
+        delete_search_multi(search.Index(name='playlists_by_modified'))
+        
+        delete_multi(models.Video.query().fetch(keys_only=True))
+        delete_multi(models.VideoClip.query().fetch(keys_only=True))
+        delete_multi(models.VideoClipList.query().fetch(keys_only=True))
+        delete_multi(models.VideoIDFactory.query().fetch(keys_only=True))
+        delete_multi(models.LikeRecord.query().fetch(keys_only=True))
+        delete_multi(models.ViewRecord.query().fetch(keys_only=True))
+        delete_multi(models.DanmakuRecord.query().fetch(keys_only=True))
+        delete_multi(models.MentionedRecord.query().fetch(keys_only=True))
+        delete_multi(models.Comment.query().fetch(keys_only=True))
+        delete_multi(models.Subscription.query().fetch(keys_only=True))
+        delete_multi(models.Notification.query().fetch(keys_only=True))
+        delete_multi(models.Playlist.query().fetch(keys_only=True))
+        delete_multi(models.PlaylistDetail.query().fetch(keys_only=True))
+        
         user_detail = models.User.get_detail_key(ndb.Key('User', 5730082031140864)).get()
         logging.info(user_detail.space_visited)
         logging.info(user_detail.videos_submitted)
@@ -209,6 +145,33 @@ class DeleteSearch(webapp2.RequestHandler):
         user_detail.videos_submitted = 0
         user_detail.videos_watched = 0
         user_detail.put()
+
+class DeleteAll(webapp2.RequestHandler):
+    def get(self):
+        delete_search_multi(search.Index(name='videos_by_created'))
+        delete_search_multi(search.Index(name='videos_by_likes'))
+        delete_search_multi(search.Index(name='videos_by_hits'))
+        delete_search_multi(search.Index(name='playlists_by_modified'))
+        
+        delete_multi(models.Video.query().fetch(keys_only=True))
+        delete_multi(models.VideoClip.query().fetch(keys_only=True))
+        delete_multi(models.VideoClipList.query().fetch(keys_only=True))
+        delete_multi(models.VideoIDFactory.query().fetch(keys_only=True))
+        delete_multi(models.LikeRecord.query().fetch(keys_only=True))
+        delete_multi(models.ViewRecord.query().fetch(keys_only=True))
+        delete_multi(models.DanmakuRecord.query().fetch(keys_only=True))
+        delete_multi(models.MentionedRecord.query().fetch(keys_only=True))
+        delete_multi(models.Comment.query().fetch(keys_only=True))
+        delete_multi(models.Subscription.query().fetch(keys_only=True))
+        delete_multi(models.Notification.query().fetch(keys_only=True))
+        delete_multi(models.Playlist.query().fetch(keys_only=True))
+        delete_multi(models.PlaylistDetail.query().fetch(keys_only=True))
+        delete_multi(models.UserToken.query().fetch(keys_only=True))
+        delete_multi(models.User.query().fetch(keys_only=True))
+        delete_multi(models.Unique.query().fetch(keys_only=True))
+        delete_multi(models.UserDetail.query().fetch(keys_only=True))
+        delete_multi(models.ReportComment.query().fetch(keys_only=True))
+        delete_multi(models.MessageThread.query().fetch(keys_only=True))
         
 class Nickname(webapp2.RequestHandler):
     def get(self):

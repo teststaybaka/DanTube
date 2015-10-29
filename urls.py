@@ -3,16 +3,11 @@ import webapp2
 import views, admin, login, account, video, message, user, playlist, watch, report, tasks
 import models
 
-secret_key = 'efrghtrrouhsmvnmxdiosjkgjfds68_=' \
-             'iooijgrdxuihbvc97yutcivbhugd479k'
+secret_key = 'Mfrghtrrouhsmvnmxdiosjkgjfds68_=iooijgrdxuihbvc97yutcivbhugd409k'
+developer_key = 'AIzaSyBbf3cs6Nw483po40jw7hZLejmdrgwozWc'
 config = {
-    'webapp2_extras.auth': {
-        'user_model' : 'models.User',
-        'user_attributes': ['level', 'nickname'],
-    },
-    'webapp2_extras.sessions': {
-        'secret_key': secret_key
-    }
+    'secret_key': secret_key,
+    'developer_key': developer_key,
 }
 
 routes = [
@@ -111,6 +106,7 @@ routes = [
     webapp2.Route(r'/report/danmaku/<video_id:dt\d+>/<clip_id:\d+>', report.Report, name="report_danmaku", handler_method="danmaku"),
 
     # webapp2.Route(r'/admin', admin.Home, name="Admin_Home"),
+    webapp2.Route(r'/admin/delete/all', admin.DeleteAll, name="delete_all"),
     webapp2.Route(r'/admin/delete/videos', admin.DeleteVideos, name="delete_video"),
     webapp2.Route(r'/admin/nickname', admin.Nickname, name="nickname_change"),
     # webapp2.Route(r'/admin/video', admin.VideoPageTest, name="Admin_Video"),

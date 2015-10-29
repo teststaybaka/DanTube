@@ -183,7 +183,7 @@ class ChangePassword(BaseHandler):
             self.json_response(True, {'message': 'Please enter your old password.'})
             return
 
-        new_password = self.user_model.validate_password(self.request.get('new_password'))
+        new_password = models.User.validate_password(self.request.get('new_password'))
         if not new_password:
             self.json_response(True, {'message': 'Invalid new password.'})
             return
@@ -220,16 +220,16 @@ class ChangeInfo(BaseHandler):
             return
 
         if nickname != user.nickname:
-            nickname = self.user_model.validate_nickname(nickname)
+            nickname = models.User.validate_nickname(nickname)
             if not nickname:
                 self.json_response(True, {'message': 'Invalid nickname.'})
                 return
 
-            if not self.user_model.create_unique('nickname', nickname):
+            if not models.User.create_unique('nickname', nickname):
                 self.json_response(True, {'message': 'Nickname already exist.'})
                 return
 
-            self.user_model.delete_unique('nickname', user.nickname)
+            models.User.delete_unique('nickname', user.nickname)
             user.nickname = nickname
             user_detail.nickname = nickname
 
@@ -300,45 +300,6 @@ class ChangeAvatar(BaseHandler):
             return
 
         self.json_response(False)
-            
-
-# class AvatarUpload(BaseHandler, blobstore_handlers.BlobstoreUploadHandler):
-#     def post(self, user_id):
-#         self.response.headers['Content-Type'] = 'text/plain'
-#         upload = self.get_uploads('avatarImage')
-#         if not upload:
-#             self.response.out.write('error')
-#             logging.warning('No file uploaded')
-#             # self.response.out.write(json.dumps({'error':True,'message': 'Please select a file.'}))
-#             return
-
-#         uploaded_image = upload[0]
-#         logging.info("upload content_type:"+uploaded_image.content_type)
-#         logging.info("upload size:"+str(uploaded_image.size))
-#         types = uploaded_image.content_type.split('/')
-#         if types[0] != 'image':
-#             uploaded_image.delete()
-#             self.response.out.write('error')
-#             logging.warning('File type error')
-#             # self.response.out.write(json.dumps({'error':True,'message': 'File type error.'}))
-#             return
-
-#         if uploaded_image.size > 50*1024*1024:
-#             uploaded_image.delete()
-#             self.response.out.write('error')
-#             logging.warning('File too large')
-#             # self.response.out.write(json.dumps({'error':True,'message': 'File is too large.'}))
-#             return
-
-#         user = self.user_model.get_by_id(int(user_id))
-#         if user.avatar:
-#             models.BlobCollection(blob=user.avatar).put()
-
-#         user.avatar = uploaded_image.key()
-#         user.avatar_url = images.get_serving_url(user.avatar)
-#         user.put()
-#         self.response.out.write('success')
-#         # self.response.out.write(json.dumps({'error':False}))
 
 class SpaceSetting(BaseHandler):
     @login_required

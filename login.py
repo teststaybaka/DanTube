@@ -5,7 +5,7 @@ from PIL import Image
 class EmailCheck(BaseHandler):
     def post(self):
         self.response.headers['Content-Type'] = 'text/plain'
-        res = self.user_model.check_unique('auth_id', self.request.get('email'))
+        res = models.User.check_unique('email', self.request.get('email'))
         if res:
             self.response.write('error')
         else:
@@ -14,7 +14,7 @@ class EmailCheck(BaseHandler):
 class NicknameCheck(BaseHandler):
     def post(self):
         self.response.headers['Content-Type'] = 'text/plain'
-        res = self.user_model.check_unique('nickname', self.request.get('nickname').strip())
+        res = models.User.check_unique('nickname', self.request.get('nickname').strip())
         if res:
             self.response.write('error')
         else:
@@ -28,39 +28,29 @@ class Signup(BaseHandler):
             self.render('signup')
     
     def post(self):
-        email = self.user_model.validate_email(self.request.get('email'))
+        email = models.User.validate_email(self.request.get('email'))
         if not email:
             self.json_response(True, {'message': 'Email is invalid.'})
             return
 
-        nickname = self.user_model.validate_nickname(self.request.get('nickname').strip())
+        nickname = models.User.validate_nickname(self.request.get('nickname').strip())
         if not nickname:
             self.json_response(True, {'message': 'Nickname is invalid.'})
             return
 
-        password = self.user_model.validate_password(self.request.get('password'))
+        password = models.User.validate_password(self.request.get('password'))
         if not password:
             self.json_response(True, {'message': 'Password is invalid.'})
             return
 
-        unique_properties = ['nickname']
-        success, user = self.user_model.create_user(
-            email,
-            unique_properties,
-            nickname=nickname,
-            email=email,
-            password_raw=password,
-        )
-        if not success:
+        user = models.User.Create(email=email, raw_password=password, nickname=nickname)
+        if not user:
             # self.session['message'] = 'Unable to create user for email %s because of \
             #     duplicate keys %s' % (email, user_data[1])
-            self.json_response(True, {'message': 'Sign up failed.'})
+            self.json_response(True, {'message': 'Sign up failed. Please try again.'})
             return
-        user.create_index(intro='')
-        user_detail = models.UserDetail(key=models.User.get_detail_key(user.key), nickname=nickname)
-        user_detail.put()
 
-        token = self.user_model.create_signup_token(user.key.id())
+        token = models.User.create_signup_token(user.key.id())
         verification_url = self.uri_for('verification', user_id=user.key.id(), signup_token=token, _full=True)
         message = mail.EmailMessage(sender="DanTube Support <dan-tube@appspot.gserviceaccount.com>",
                                     subject="Verficaition Email from DanTube")
@@ -98,20 +88,21 @@ class Signin(BaseHandler):
         password = self.request.get('password')
         remember = bool(self.request.get('remember'))
 
-        try:
-            u = self.auth.get_user_by_password(email, password, remember=remember)
-            if u['level'] == 1:
-                self.auth.unset_session()
+        user = models.User.get_user_by_password(email, password)
+        if not user:
+            # logging.info('Login failed for user %s because of %s', email, type(e))
+            self.json_response(True, {'message': 'Sign in failed. Email and password don\'t match.'})
+        else:
+            if user.level == 1:
                 self.json_response(True, {'message': 'Please verify your email address.'})
             else:
+                self.auth.set_user(user)
                 self.json_response(False)
-        except (auth.InvalidAuthIdError, auth.InvalidPasswordError) as e:
-            logging.info('Login failed for user %s because of %s', email, type(e))
-            self.json_response(True, {'message': 'Sign in failed. Email and password don\'t match.'})
 
 class Logout(BaseHandler):
   def get(self):
-    self.auth.unset_session()
+    self.auth.unset_user()
+    self.session.save_session(self.response)
     self.redirect(self.uri_for('home'))
 
 class ForgotPassword(BaseHandler):
@@ -136,12 +127,8 @@ class ForgotPassword(BaseHandler):
             self.json_response(True, {'message': 'Account does not exist.'})
             return
 
-        # delete any existing tokens if exist
-        tokens = self.user_model.token_model.fetch_tokens(user.key, 'pwdreset')
-        for token in tokens:
-            token.key.delete()
-        
-        token = self.user_model.create_pwdreset_token(user.key.id())
+        models.UserToken.delet_tokens(user.key, 'pwdreset')
+        token = models.User.create_pwdreset_token(user.key.id())
         password_reset_url = self.uri_for('forgot_password_reset', user_id=user.key.id(), pwdreset_token=token, _full=True)
         message = mail.EmailMessage(sender="DanTube Support <dan-tube@appspot.gserviceaccount.com>",
                                     subject="Password Reset Email from DanTube")
@@ -166,7 +153,7 @@ class ForgotPasswordReset(BaseHandler):
             return
 
         user_id = int(user_id)
-        token = self.user_model.get_token_key(user_id, pwdreset_token, 'pwdreset').get()
+        token = models.User.get_token_key(user_id, pwdreset_token, 'pwdreset').get()
         if token:
             time_passed = models.time_to_seconds(datetime.now()) - models.time_to_seconds(token.created)
             if time_passed > 24 * 60 * 60: # 24 hours
@@ -183,14 +170,14 @@ class ForgotPasswordReset(BaseHandler):
             self.json_response(True, {'message': 'You have already signed in.'})
             return
 
-        new_password = self.user_model.validate_password(self.request.get('new_password'))
+        new_password = models.User.validate_password(self.request.get('new_password'))
         if not new_password:
             self.json_response(True, {'message': 'Invalid new password.'})
             return
 
         user_id = int(user_id)
         user_key = ndb.Key('User', user_id)
-        token_key = self.user_model.get_token_key(user_id, pwdreset_token, 'pwdreset')
+        token_key = models.User.get_token_key(user_id, pwdreset_token, 'pwdreset')
         token, user = ndb.get_multi([token_key, user_key])
         if token and user:
             time_passed = models.time_to_seconds(datetime.now()) - models.time_to_seconds(token.created)
@@ -208,7 +195,7 @@ class Verification(BaseHandler):
     def get(self, user_id, signup_token):
         user_id = int(user_id)
         user_key = ndb.Key('User', user_id)
-        token_key = self.user_model.get_token_key(user_id, signup_token, 'signup')
+        token_key = models.User.get_token_key(user_id, signup_token, 'signup')
         token, user = ndb.get_multi([token_key, user_key])
         if token and user:
             time_passed = models.time_to_seconds(datetime.now()) - models.time_to_seconds(token.created)
@@ -219,7 +206,7 @@ class Verification(BaseHandler):
                 if user.level == 1:
                     user.level = 2
                     user.put()
-                self.auth.set_session(self.auth.store.user_to_dict(user), remember=True)
+                self.auth.set_user(user)
                 self.notify("Your account %s has been activated!" % (user.email), type='success')
         else:
             self.notify("Url not found.")
@@ -229,23 +216,17 @@ class SendVerification(BaseHandler):
         email = self.request.get('email')
         password = self.request.get('password')
         
-        try:
-            u = self.auth.get_user_by_password(email, password, save_session=False)            
-        except (auth.InvalidAuthIdError, auth.InvalidPasswordError) as e:
+        user = models.User.get_user_by_password(email, password)
+        if not user:
             self.json_response(True, {'message': 'Account invalid. Please check email address or password.'})
             return
 
-        if u['level'] != 1:
+        if user.level != 1:
             self.json_response(True, {'message': 'Your account has been activated.'})
             return
 
-        user = ndb.Key('User', u['user_id']).get()
-        # delete any existing tokens if exist
-        tokens = self.user_model.token_model.fetch_tokens(user.key, 'signup')
-        for token in tokens:
-            token.key.delete()
-
-        token = self.user_model.create_signup_token(user.key.id())
+        models.UserToken.delet_tokens(user.key, 'signup')
+        token = models.User.create_signup_token(user.key.id())
         verification_url = self.uri_for('verification', user_id=user.key.id(), signup_token=token, _full=True)
         message = mail.EmailMessage(sender="DanTube Support <dan-tube@appspot.gserviceaccount.com>",
                                     subject="Verficaition Email from DanTube")
