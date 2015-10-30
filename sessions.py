@@ -11,13 +11,14 @@ from webapp2_extras import security
 
 class Session(object):
     def __init__(self, value=None):
+        self.remember = False
         if value:
             self.value = value
         else:
             self.value = {}
 
     def get(self, name):
-        return self.value[name] if name in self.value else None
+        return self.value.get(name)
 
     def set(self, name, val):
         self.value[name] = val
@@ -26,7 +27,7 @@ class Session(object):
         del self.value[name]
 
     @classmethod
-    def get_session(cls, request, max_age=None):
+    def get_session(cls, request, max_age=2592000):
         cookie_value = request.cookies.get('db_session')
         if not cookie_value:
             return cls()
@@ -43,7 +44,7 @@ class Session(object):
             return cls()
 
         if max_age:
-            if int(timestamp) < self.get_timestamp() - max_age:
+            if int(timestamp) < cls.get_timestamp() - max_age:
                 logging.warning('Expired cookie %r', cookie_value)
                 return cls()
         try:
@@ -59,7 +60,10 @@ class Session(object):
         signature = self.sign('db_session', value, timestamp)
 
         cookie_value = '|'.join([value, timestamp, signature])
-        response.set_cookie('db_session', cookie_value, path='/', httponly=True)
+        if self.value.get('remember'):
+            response.set_cookie('db_session', cookie_value, max_age=2592000, path='/', httponly=True)
+        else:
+            response.set_cookie('db_session', cookie_value, path='/', httponly=True)
 
     @classmethod
     def sign(cls, *parts):
@@ -83,13 +87,14 @@ class Auth(object):
     def get_user(self):
         return self.session.get('user') if self.session else None
 
-    def set_user(self, user):
+    def set_user(self, user, remember=True):
         u = self.session.get('user')
         if not u:
             u = {}
             self.session.set('user', u)
         u['user_id'] = user.key.id()
         u['level'] = user.level
+        self.session.set('remember', remember)
 
     def unset_user(self):
         self.session.unset('user')

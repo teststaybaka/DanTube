@@ -32,6 +32,21 @@ EMIAL_REGEX = re.compile(r"^[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^
 ILLEGAL_REGEX = re.compile(r".*[&@.,?!:/\\\"'<>=].*")
 ILLEGAL_LETTER = re.compile(r"[&@.,?!:/\\\"'<>=]")
 
+class NonNegativeIntegerProperty(ndb.IntegerProperty):
+  def _validate(self, value):
+    # logging.info('validating')
+    if not isinstance(value, int):
+      raise TypeError('expected an integer, got %s' % repr(value))
+    return value if value > 0 else 0
+
+  # def _to_base_type(self, value):
+  #   logging.info('to base')
+  #   return value
+
+  # def _from_base_type(self, value):
+  #   logging.info('from base')
+  #   return value
+
 class UserToken(ndb.Model):
   subject = ndb.StringProperty(required=True, indexed=False)
   token = ndb.StringProperty(required=True, indexed=False)
@@ -69,10 +84,10 @@ class UserDetail(ndb.Model):
   css_file = ndb.BlobKeyProperty(indexed=False)
   recent_visitors = ndb.KeyProperty(kind='User', repeated=True, indexed=False)
   recent_visitor_names = ndb.StringProperty(repeated=True, indexed=False)
-  bullets = ndb.IntegerProperty(required=True, default=0, indexed=False)
-  playlists_created = ndb.IntegerProperty(required=True, default=0, indexed=False)
+  bullets = NonNegativeIntegerProperty(required=True, default=0, indexed=False)
+  playlists_created = NonNegativeIntegerProperty(required=True, default=0, indexed=False)
 
-  videos_submitted = ndb.IntegerProperty(required=True, default=0, indexed=False)
+  videos_submitted = NonNegativeIntegerProperty(required=True, default=0, indexed=False)
   videos_watched = ndb.IntegerProperty(required=True, default=0, indexed=False)
   space_visited = ndb.IntegerProperty(required=True, default=0, indexed=False)
 
@@ -117,14 +132,14 @@ class User(ndb.Model):
   level = ndb.IntegerProperty(required=True, default=1, indexed=False)
   created = ndb.DateTimeProperty(auto_now_add=True, indexed=False)
   updated = ndb.DateTimeProperty(auto_now_add=True, indexed=False)
-  new_messages = ndb.IntegerProperty(required=True, default=0, indexed=False)
-  new_mentions = ndb.IntegerProperty(required=True, default=0, indexed=False)
-  new_notifications = ndb.IntegerProperty(required=True, default=0, indexed=False)
-  new_subscriptions = ndb.IntegerProperty(required=True, default=0, indexed=False)
+  new_messages = NonNegativeIntegerProperty(required=True, default=0, indexed=False)
+  new_mentions = NonNegativeIntegerProperty(required=True, default=0, indexed=False)
+  new_notifications = NonNegativeIntegerProperty(required=True, default=0, indexed=False)
+  new_subscriptions = NonNegativeIntegerProperty(required=True, default=0, indexed=False)
   check_new_subscription = ndb.BooleanProperty(required=True, default=False, indexed=False)
   last_subscription_check = ndb.DateTimeProperty(auto_now_add=True, indexed=False)
-  subscribers_counter = ndb.IntegerProperty(required=True, default=0, indexed=False)
-  subscription_counter = ndb.IntegerProperty(required=True, default=0, indexed=False)
+  subscribers_counter = NonNegativeIntegerProperty(required=True, default=0, indexed=False)
+  subscription_counter = NonNegativeIntegerProperty(required=True, default=0, indexed=False)
 
   @classmethod
   def get_key(cls, user_id):
@@ -403,7 +418,7 @@ class Playlist(ndb.Model):
   playlist_type = ndb.StringProperty(required=True, choices=Playlist_Type)
   intro = ndb.TextProperty(required=True, default='', indexed=False)
   first_video = ndb.KeyProperty(kind='Video', indexed=False)
-  videos_num = ndb.IntegerProperty(required=True, default=0, indexed=False)
+  videos_num = NonNegativeIntegerProperty(required=True, default=0, indexed=False)
 
   @classmethod
   def get_detail_key(cls, list_key):
@@ -480,9 +495,9 @@ class Video(ndb.Model):
 
   hot_score = ndb.FloatProperty(default=0)
   hits = ndb.IntegerProperty(required=True, default=0, indexed=False)
-  likes = ndb.IntegerProperty(required=True, default=0, indexed=False)
+  likes = NonNegativeIntegerProperty(required=True, default=0, indexed=False)
   bullets = ndb.IntegerProperty(required=True, default=0, indexed=False)
-  shares = ndb.IntegerProperty(required=True, default=0, indexed=False)
+  shares = NonNegativeIntegerProperty(required=True, default=0, indexed=False)
   comment_counter = ndb.IntegerProperty(required=True, default=0, indexed=False)
 
   deleted = ndb.BooleanProperty(required=True, default=False, indexed=False)
@@ -869,15 +884,15 @@ class VideoClip(ndb.Model):
   duration = ndb.IntegerProperty(required=True, indexed=False, default=0)
   source = ndb.StringProperty(required=True, choices=['YouTube'], indexed=False)
 
-  danmaku_num = ndb.IntegerProperty(required=True, default=0, indexed=False)
+  danmaku_num = NonNegativeIntegerProperty(required=True, default=0, indexed=False)
   danmaku_counter = ndb.IntegerProperty(required=True, default=0, indexed=False)
   danmaku_buffer = ndb.LocalStructuredProperty(Danmaku, repeated=True, indexed=False)
-  advanced_danmaku_num = ndb.IntegerProperty(required=True, default=0, indexed=False)
+  advanced_danmaku_num = NonNegativeIntegerProperty(required=True, default=0, indexed=False)
   advanced_danmaku_counter = ndb.IntegerProperty(required=True, default=0, indexed=False)
   advanced_danmaku_buffer = ndb.LocalStructuredProperty(AdvancedDanmaku, repeated=True, indexed=False)
-  subtitles_num = ndb.IntegerProperty(required=True, default=0, indexed=False)
+  subtitles_num = NonNegativeIntegerProperty(required=True, default=0, indexed=False)
   subtitles_counter = ndb.IntegerProperty(required=True, default=0, indexed=False)
-  code_danmaku_num = ndb.IntegerProperty(required=True, default=0, indexed=False)
+  code_danmaku_num = NonNegativeIntegerProperty(required=True, default=0, indexed=False)
   code_danmaku_counter = ndb.IntegerProperty(required=True, default=0, indexed=False)
 
   @classmethod
@@ -938,7 +953,7 @@ class MessageThread(ndb.Model):
   subject = ndb.StringProperty(required=True, indexed=False)
   users = ndb.KeyProperty(kind='User', repeated=True)
   users_backup = ndb.KeyProperty(kind='User', repeated=True, indexed=False)
-  new_messages = ndb.IntegerProperty(required=True, indexed=False)
+  new_messages = NonNegativeIntegerProperty(required=True, indexed=False)
   updated = ndb.DateTimeProperty(required=True)
 
   def get_partner_key(self, user_key):

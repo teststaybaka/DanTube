@@ -96,7 +96,7 @@ class Signin(BaseHandler):
             if user.level == 1:
                 self.json_response(True, {'message': 'Please verify your email address.'})
             else:
-                self.auth.set_user(user)
+                self.auth.set_user(user, remember)
                 self.json_response(False)
 
 class Logout(BaseHandler):

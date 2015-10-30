@@ -180,3 +180,12 @@ class Nickname(webapp2.RequestHandler):
         for i in xrange(0, len(users)):
             user_details[i].nickname = users[i].nickname
         ndb.put_multi(user_details)
+
+class TestCounter(webapp2.RequestHandler):
+    def get(self):
+        user = ndb.Key('User', 5865619656278016).get()
+        logging.info(user.new_messages)
+        user.new_messages -= 11
+        logging.info(user.new_messages)
+        user.put()
+        logging.info(user.new_messages)

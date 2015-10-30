@@ -109,11 +109,13 @@ routes = [
     webapp2.Route(r'/admin/delete/all', admin.DeleteAll, name="delete_all"),
     webapp2.Route(r'/admin/delete/videos', admin.DeleteVideos, name="delete_video"),
     webapp2.Route(r'/admin/nickname', admin.Nickname, name="nickname_change"),
+    webapp2.Route(r'/admin/counter', admin.TestCounter, name="test_counter"),
     # webapp2.Route(r'/admin/video', admin.VideoPageTest, name="Admin_Video"),
     # webapp2.Route(r'/admin/danmaku', admin.DanmakuTest, name="Admin_Danmaku"),
     # webapp2.Route(r'/admin/notify', admin.Notify, name="Admin_Notify"),
     # webapp2.Route(r'/admin/feedbacks', admin.Feedbacks, name="Admin_Feedbacks"),
     # webapp2.Route(r'/admin/reports', admin.Reports, name="Admin_Reports"),
+
     webapp2.Route(r'/tasks/update_index', tasks.UpdateIndex, name="update_index"),
     webapp2.Route(r'/tasks/new_activites', tasks.NewActivity, name="new_activities"),
 ]
