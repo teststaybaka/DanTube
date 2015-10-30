@@ -42,7 +42,7 @@ $(document).ready(function() {
                             <div class="info-line video-tags">'
                             for (var j = 0; j < video.tags.length; j++) {
                                 var tag = video.tags[j];
-                                div += '<a class="tag-entry" href="?keywords='+tag+'">'+tag+'</a>'
+                                div += '<a class="tag-entry" href="?keywords='+tag+'">'+dt.escapeHTML(tag)+'</a>'
                             }
                             div += '</div>\
                         </div>\

@@ -126,8 +126,6 @@ class VideoUpload(BaseHandler):
             if tag and tag not in models.Video_Type:
                 if len(tag) > 100:
                     raise Exception('Tags are too long!')
-                elif models.ILLEGAL_REGEX.match(tag):
-                    raise Exception('Tags have illegal letters!')
                 self.tags.append(tag)
         if len(self.tags) == 0:
             raise Exception('Tags must not be empty!')
@@ -470,9 +468,6 @@ class AddTag(BaseHandler):
             return
         elif len(new_tag) > 100:
             self.json_response(True, {'message': 'Tag too long.'})
-            return
-        elif models.ILLEGAL_REGEX.match(new_tag):
-            self.json_response(True, {'message': 'Tag has illegal letters.'})
             return
         elif new_tag in video.tags or new_tag in models.Video_Type:
             self.json_response(True, {'message': 'Tag already existed.'})
