@@ -1,6 +1,5 @@
 from views import *
 from google.appengine.api import images
-import time
 from PIL import Image
 
 class Account(BaseHandler):
@@ -325,76 +324,23 @@ class SpaceSetting(BaseHandler):
         elif len(space_name) > 50:
             self.json_response(True, {'message': 'No longer than 50 characters.'})
             return
-        user_detail.spacename = space_name
+        elif user_detail.spacename != space_name:
+            user_detail.spacename = space_name
+            user_detail.put()
 
         file_key = None
         if file_field != '':
-            form = MultiPartForm()
-            # form.add_field('raw_url', raw_url)
-            form.add_file('user_style', 'user_style.css', fileHandle=file_field.file)
+            css_file = gcs.open('/dantube-css/'+str(self.user_key.id()), 'w', content_type="text/css", options={'x-goog-acl': 'public-read'})
+            css_file.write(file_field.file.read())
+            css_file.close()
 
-            # Build the request
-            upload_url = models.blobstore.create_upload_url(self.uri_for('css_upload'))
-            # logging.info(upload_url)
-            request = urllib2.Request(upload_url)
-            request.add_header('User-agent', 'PyMOTW (http://www.doughellmann.com/PyMOTW/)')
-            body = str(form)
-            request.add_header('Content-type', form.get_content_type())
-            request.add_header('Content-length', len(body))
-            request.add_data(body)
-            # request.get_data()
-
-            request_res = urllib2.urlopen(request).read()
-            if request_res == 'error':
-                self.json_response(True, {'message': 'CSS upload error.'})
-                return
-            else:
-                 file_key = models.blobstore.BlobKey(request_res)
-
-        if file_key:
-            if user_detail.css_file:
-                models.blobstore.BlobInfo(user_detail.css_file).delete()
-            user_detail.css_file = file_key
-
-        user_detail.put()
         self.json_response(False)
-
-class CSSUpload(BaseHandler, blobstore_handlers.BlobstoreUploadHandler):
-    def post(self):
-        self.response.headers['Content-Type'] = 'text/plain'
-        upload = self.get_uploads('user_style')
-        if not upload:
-            self.response.out.write('error')
-            return
-
-        uploaded_file = upload[0]
-        types = uploaded_file.content_type.split('/')
-        if types[1] != 'css':
-            uploaded_file.delete()
-            self.response.out.write('error')
-            return
-        
-        if uploaded_file.size > 1*1024*1024:
-            uploaded_file.delete()
-            self.response.out.write('error')
-            return
-
-        self.response.out.write(str(uploaded_file.key()))
 
 class SpaceSettingReset(BaseHandler):
     @login_required_json
     def post(self):
+        gcs.delete('/dantube-css/'+str(self.user_key.id()))
         user_detail = self.user_detail_key.get()
-        if user_detail.css_file:
-            models.blobstore.BlobInfo(user_detail.css_file).delete()
-            user_detail.css_file = None
-
         user_detail.spacename = ''
         user_detail.put()
         self.json_response(False)
-
-class SpaceCSS(blobstore_handlers.BlobstoreDownloadHandler):
-    def get(self, resource):
-        resource = str(urllib.unquote(resource))
-        blob_info = models.blobstore.BlobInfo.get(resource)
-        self.send_blob(blob_info)

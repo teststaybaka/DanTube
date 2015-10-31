@@ -7,9 +7,7 @@
 {% block head %}
 {{ super() }}
 <link rel="stylesheet" href="/static/space.css" type="text/css" />
-{% if host.space_css %}
-<link rel="stylesheet" href="{{ uri_for('space_css', resource=host.space_css) }}" type="text/css" />
-{% endif %}
+<link rel="stylesheet" href="{{ host.css_file }}" type="text/css" />
 {% endblock %}
 
 {% block navigation %}

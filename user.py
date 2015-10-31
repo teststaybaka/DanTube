@@ -38,6 +38,7 @@ def host_info(handler):
         context['host'] = host.get_public_info()
         context['host'].update(host_detail.get_detail_info())
         context['host'].update(host_detail.get_visitor_info())
+        context['host']['css_file'] = models.User.get_user_css_file(host_key)
         if self.user_info:
             context['host']['subscribed'] = models.Subscription.has_subscribed(user.key, host.key)
         else:

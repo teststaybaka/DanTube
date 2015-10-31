@@ -33,8 +33,6 @@ routes = [
     # webapp2.Route(r'/user/new_subscriptions', account.Subscriptions, name="count_new_subscriptions", handler_method="get_count"),
     webapp2.Route(r'/account/space', account.SpaceSetting, name="space_setting"),
     webapp2.Route(r'/account/space_reset', account.SpaceSettingReset, name="space_setting_reset"),
-    webapp2.Route(r'/account/css_upload', account.CSSUpload, name="css_upload"),
-    webapp2.Route(r'/user/css/<resource:.+>', account.SpaceCSS, name="space_css"),
     webapp2.Route(r'/history', account.History, name="history"),
     webapp2.Route(r'/likes', account.Likes, name="likes"),
     

@@ -11,7 +11,6 @@ import cloudstorage as gcs
 from datetime import datetime
 import urllib2
 import urlparse
-import time
 import re
 import logging
 import math
@@ -81,7 +80,6 @@ class UserDetail(ndb.Model):
   nickname = ndb.StringProperty(required=True, indexed=False)
   intro = ndb.TextProperty(required=True, default='',indexed=False)
   spacename = ndb.StringProperty(indexed=False)
-  css_file = ndb.BlobKeyProperty(indexed=False)
   recent_visitors = ndb.KeyProperty(kind='User', repeated=True, indexed=False)
   recent_visitor_names = ndb.StringProperty(repeated=True, indexed=False)
   bullets = NonNegativeIntegerProperty(required=True, default=0, indexed=False)
@@ -102,11 +100,6 @@ class UserDetail(ndb.Model):
       'space_visited': self.space_visited,
       'bullets': self.bullets,
     }
-    if self.css_file:
-      detail_info['space_css'] = str(self.css_file)
-    else:
-      detail_info['space_css'] = ''
-
     return detail_info
 
   def get_visitor_info(self):
@@ -123,6 +116,7 @@ class UserDetail(ndb.Model):
 
 class User(ndb.Model):
   AvatarPrefix = 'https://storage.googleapis.com/dantube-avatar/'
+  CSSPrefix = 'https://storage.googleapis.com/dantube-css/'
   Pepper = 'McbIlx'
 
   auth_ids = ndb.StringProperty(repeated=True)
@@ -160,6 +154,10 @@ class User(ndb.Model):
   @classmethod
   def get_avatar_url_small(cls, user_key):
     return cls.AvatarPrefix + 'small-' + str(user_key.id())
+
+  @classmethod
+  def get_user_css_file(cls, user_key):
+    return cls.CSSPrefix + str(user_key.id())
 
   @classmethod
   def get_snapshot_info(cls, nickname, user_key):
@@ -926,19 +924,19 @@ class VideoClip(ndb.Model):
   @classmethod
   def Delete(cls, clip_key):
     try:
-      pool = gcs.delete('/danmaku/'+str(clip_key.id())+'/danmaku')
+      gcs.delete('/danmaku/'+str(clip_key.id())+'/danmaku')
     except gcs.NotFoundError:
       pass
     try:
-      pool = gcs.delete('/danmaku/'+str(clip_key.id())+'/advanced')
+      gcs.delete('/danmaku/'+str(clip_key.id())+'/advanced')
     except gcs.NotFoundError:
       pass
     try:
-      pool = gcs.delete('/danmaku/'+str(clip_key.id())+'/subtitles')
+      gcs.delete('/danmaku/'+str(clip_key.id())+'/subtitles')
     except gcs.NotFoundError:
       pass
     try:
-      pool = gcs.delete('/danmaku/'+str(clip_key.id())+'/code')
+      gcs.delete('/danmaku/'+str(clip_key.id())+'/code')
     except gcs.NotFoundError:
       pass
     clip_key.delete_async()
