@@ -235,6 +235,17 @@ class CheckComment(BaseHandler):
             self.json_response(False, result)
 
 class Comment(BaseHandler):
+    @classmethod
+    def check_comment_floor(cls, comments, more):
+        if not comments[-1].floorth and not more:
+            comments[-1].floorth = 1
+            comments[-1].put()
+
+        for i in reversed(xrange(0, len(comments)-1)):
+            if not comments[i].floorth:
+                comments[i].floorth = comments[i+1].floorth + 1
+                comments[i].put()
+
     def get_comment(self, video_id):
         try:
             comment_id = int(self.request.get('comment_id'))
@@ -246,6 +257,7 @@ class Comment(BaseHandler):
 
         cursor = models.Cursor(urlsafe=self.request.get('cursor'))
         comments, cursor, more = models.Comment.query(ancestor=video_key).order(-models.Comment.created).fetch_page(page_size, start_cursor=cursor)
+        self.check_comment_floor(comments, more)
         
         result = {
             'comments': [],
@@ -308,16 +320,10 @@ class Comment(BaseHandler):
             return
 
         allow_share = bool(self.request.get('allow-post-comment'))
-        try:
-            comment = models.Comment.CreateComment(user=user, video=video, content=content, allow_share=allow_share)
-        except models.TransactionFailedError, e:
-            logging.error('Comment post failed!!!!!')
-            self.json_response(True, {'message': 'Post failed. Please try again.'})
-            return
-
-        video.comment_counter = comment.floorth
+        comment = models.Comment(parent=video.key, video=video.key, video_title=video.title, creator=user.key, creator_name=user.nickname, content=content, share=allow_share)
+        video.comment_counter += 1
         video.updated = datetime.now()
-        video.put()
+        ndb.put_multi([video, comment])
 
         q = taskqueue.Queue('UpdateIndex')
         payload = {'video': video.key.id(), 'kind': 'comment'}
@@ -350,12 +356,9 @@ class Comment(BaseHandler):
             return
 
         allow_share = bool(self.request.get('allow-post-reply'))
-        try:
-            inner_comment = models.Comment.CreateInnerComment(user=user, comment=comment, content=content, allow_share=allow_share)
-        except models.TransactionFailedError, e:
-            logging.error('Comment reply post failed!!!!!')
-            self.json_response(True, {'message': 'Post failed. Please try again.'})
-            return
+        inner_comment = models.Comment(parent=ndb.Key('Comment', comment.key.id()), video=comment.key.parent(), video_title=comment.video_title, creator=user.key, creator_name=user.nickname, content=content, share=allow_share)
+        comment.inner_comment_counter += 1
+        ndb.put_multi([comment, inner_comment])
 
         if users:
             deferred.defer(models.MentionedRecord.Create, users, inner_comment.key)

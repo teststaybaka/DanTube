@@ -237,8 +237,11 @@ class User(ndb.Model):
     if ILLEGAL_REGEX.match(nickname):
       logging.info('nickname 2')
       return None
-    if len(nickname) > 50:
+    if nickname == 'null' or nickname == 'None':
       logging.info('nickname 3')
+      return None
+    if len(nickname) > 50:
+      logging.info('nickname 4')
       return None
     return nickname
 
@@ -711,7 +714,7 @@ class Comment(ndb.Model):
   video_title = ndb.StringProperty(required=True, indexed=False)
 
   content = ndb.TextProperty(required=True, indexed=False)
-  floorth = ndb.IntegerProperty(required=True, indexed=False)
+  floorth = ndb.IntegerProperty(indexed=False)
   inner_floorth = ndb.IntegerProperty(indexed=False)
   inner_comment_counter = ndb.IntegerProperty(required=True, default=0, indexed=False)
   share = ndb.BooleanProperty(required=True)
@@ -734,28 +737,6 @@ class Comment(ndb.Model):
       'title': self.video_title,
     }
     return content_info
-
-  @classmethod
-  @ndb.transactional(retries=10)
-  def CreateComment(cls, user, video, content, allow_share):
-    newest_comment = cls.query(ancestor=video.key).order(-cls.created).get()
-    if not newest_comment:
-      comment_counter = 0
-    else:
-      comment_counter = newest_comment.floorth
-    comment_counter += 1
-    
-    comment = cls(parent=video.key, video=video.key, video_title=video.title, creator=user.key, creator_name=user.nickname, content=content, floorth=comment_counter, share=allow_share)
-    comment.put()
-    return comment
-
-  @classmethod
-  @ndb.transactional(retries=10, xg=True)
-  def CreateInnerComment(cls, user, comment, content, allow_share):
-    comment.inner_comment_counter += 1
-    inner_comment = cls(parent=ndb.Key('Comment', comment.key.id()), video=comment.key.parent(), video_title=comment.video_title, creator=user.key, creator_name=user.nickname, content=content, floorth=comment.floorth, inner_floorth=comment.inner_comment_counter, share=allow_share)
-    ndb.put_multi([comment, inner_comment])
-    return inner_comment
 
   def Delete():
     self.deleted = True

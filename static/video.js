@@ -2975,16 +2975,18 @@ function render_comment_div(comment) {
         <img class="comment-img" src="' + comment.creator.avatar_url_small + '">\
       </a>\
       <div class="comment-detail-box">\
-        <div class="user-title-line">\
-          <label class="floorth">#'+ comment.floorth +'</label>\
-          <a class="blue-link user-name" href="' + comment.creator.space_url + '" target="_blank">' + comment.creator.nickname + '</a>\
-          <label class="comment-time">' + comment.created + '</label>\
+        <div class="user-title-line">'
+        	if (comment.floorth) {
+        		div += '<label class="floorth">#'+ comment.floorth +'</label>'
+        	}
+			div += '<a class="blue-link user-name" href="' + comment.creator.space_url + '" target="_blank">' + comment.creator.nickname + '</a>\
+			<label class="comment-time">' + comment.created + '</label>\
         </div>\
         <div class="comment-content">' + comment.content + '</div>\
         <div class="display-button comment"><span class="display-text">Read more</span><span class="display-arrow"></span></div>\
         <div class="comment-operation-line">\
-          <div class="comment-operation reply">Reply</div>\
-          <div class="comment-operation report">Report</div>\
+			<div class="comment-operation reply">Reply</div>\
+			<div class="comment-operation report">Report</div>\
         </div>\
       </div>\
       <div class="inner-comment-container">'

@@ -3,9 +3,10 @@ from views import *
 class UpdateIndex(BaseHandler):
     def get(self):
         q = taskqueue.Queue('UpdateIndex')
+        batch = 400
         videos = {}
         while True:
-            tasks = q.lease_tasks(3600, 400)
+            tasks = q.lease_tasks(3600, batch)
             for t in tasks:
                 data = json.loads(t.payload)
                 video_id = data['video']
@@ -29,7 +30,7 @@ class UpdateIndex(BaseHandler):
                     video['like'] = True
                 
             q.delete_tasks(tasks)
-            if len(tasks) < 400:
+            if len(tasks) < batch:
                 break
 
         for video_id, data in videos.iteritems():
@@ -48,14 +49,15 @@ class UpdateIndex(BaseHandler):
 class FlushDanmaku(BaseHandler):
     def get(self):
         q = taskqueue.Queue('FlushDanmaku')
+        batch = 100
         clips = set()
         while True:
-            tasks = q.lease_tasks(3600, 100)
+            tasks = q.lease_tasks(3600, batch)
             for t in tasks:
                 clips.add(int(t.payload))
 
             q.delete_tasks(tasks)
-            if len(tasks) < 100:
+            if len(tasks) < batch:
                 break
 
         for clip_id in clips:
@@ -93,9 +95,10 @@ class FlushDanmaku(BaseHandler):
 class NewActivity(BaseHandler):
     def get(self):
         q = taskqueue.Queue('Activity')
+        batch = 1000
         users = set()
         while True:
-            tasks = q.lease_tasks(3600, 1000)
+            tasks = q.lease_tasks(3600, batch)
             for t in tasks:
                 upid = int(t.payload)
                 subscriptions = models.Subscription.query(models.Subscription.uper==ndb.Key('User', upid)).fetch(keys_only=True)
@@ -103,7 +106,7 @@ class NewActivity(BaseHandler):
                     users.add(int(subscription.key.id().split('s:')[1]))
 
             q.delete_tasks(tasks)
-            if len(tasks) < 1000:
+            if len(tasks) < batch:
                 break
 
         for uid in users:
