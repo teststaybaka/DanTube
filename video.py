@@ -119,19 +119,17 @@ class VideoUpload(BaseHandler):
         if not self.video_type:
             raise Exception('Video type must not be empty!')
 
-        self.tags_ori = self.request.get('tags').split(',')
+        self.tags_ori = self.request.POST.getall('tags[]')
         self.tags = []
         for i in xrange(0, len(self.tags_ori)):
             tag = self.tags_ori[i].strip()
-            if tag and tag not in models.Video_Type:
-                if len(tag) > 100:
-                    raise Exception('Tags are too long!')
-                self.tags.append(tag)
+            if len(tag) > 100:
+                raise Exception('One of tags is too long!')
+            self.tags.append(tag)
         if len(self.tags) == 0:
             raise Exception('Tags must not be empty!')
         elif len(self.tags) > 10:
             raise Exception('Too many tags!')
-
         self.allow_tag_add = bool(self.request.get('allow-add'))
 
         self.durations = []

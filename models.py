@@ -542,7 +542,7 @@ class Video(ndb.Model):
   def get_full_info(self):
     full_info = {
       'intro': self.intro,
-      'tags': self.tags,
+      'tags': [tag for tag in self.tags],
       'allow_tag_add': self.allow_tag_add,
     }
     info = self.get_basic_info()

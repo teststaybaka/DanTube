@@ -52,7 +52,7 @@ function css_file_check() {
 }
 
 $(document).ready(function() {
-    $('#user-space-url').text(window.location.host + $('#user-space-url').text());
+    $('#user-space-url').text('https://' + window.location.hostname + $('#user-space-url').text());
 
     $('#space-name-change').focusout(space_name_check);
     $('#space-css-file').on("change", css_file_check);

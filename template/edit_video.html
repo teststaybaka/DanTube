@@ -65,7 +65,7 @@ var video_subcategories = {};
     </div>
     <div class="input-line">
       <label for="video-description" class="form-label">Introduction:</label>
-      <textarea class="normal normal-input" id="video-description" name="description" tabindex="1" placeholder="A default introduction if no sub-intruduction specified.">{{ video.intro }}</textarea>
+      <textarea class="normal normal-input" id="video-description" name="description" tabindex="1" placeholder="An overall introduction.">{{ video.intro }}</textarea>
       <div class="input-error" id="video-description-error">Please.</div>
     </div>
     <div class="input-line">
@@ -76,8 +76,16 @@ var video_subcategories = {};
     </div>
     <div class="input-line">
       <label for="video-tags" class="form-label">Tags:</label>
-      <input type="text" id="video-tags" class="normal-input" name="tags" tabindex="1" placeholder="e.g., flying pig, the binding of isaac, sonic" value="{% for tag in video.tags %}{{ tag }},{% endfor %}">
-      <div class="input-error" id="video-tags-error">Please.</div>
+      <div class="tag-block">
+          {% for tag in video.tags %}
+          <div class="tag-entry">{{ tag }}<div class="remove-tag"></div><input name="tags[]" class="hidden" value="{{ tag }}"></div>
+          {% endfor %}
+          <div class="add-new-tag">
+              <input type="text" id="new-tag-input" class="normal-input" tabindex="1" placeholder="Add new tag">
+              <div class="add-new-tag-button" title="Add"></div>
+              <div class="input-error" id="video-tags-error">Please.</div>
+          </div>
+      </div>
       <div class="check-label-line">
         <label class="form-label"></label>
         <label class="check-label">

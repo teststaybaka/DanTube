@@ -87,37 +87,59 @@ function sub_intro_check(target) {
     }
 }
 
-function video_tag_check() {
-    var tags_ori = $('#video-tags').val().split(',');
-    var tags = []
-    for (var i = 0; i < tags_ori.length; i++) {
-        tag = tags_ori[i].trim()
-        if (tag != '') {
-            if (tag.length > 100) {
-                $('#video-tags-error').addClass('show');
-                $('#video-tags-error').text('All tags must be no longer than 100 characters.');
-                $('#video-tags').addClass('error');
-                return false;
-            }
-            tags.push(tag);
-        }
-    }
-    
-    if (tags.length === 0) {
+function tags_check() {
+    if ($('input[name="tags[]"]').length == 0) {
         $('#video-tags-error').addClass('show');
         $('#video-tags-error').text('Please add at least one tag.');
-        $('#video-tags').addClass('error');
+        $('#new-tag-input').addClass('error');
+        $('.add-new-tag-button').addClass('error');
         return false;
-    } else if (tags.length > 10) {
+    } else if ($('input[name="tags[]"]').length > 10) {
         $('#video-tags-error').addClass('show');
         $('#video-tags-error').text('You can add at most 10 tags.');
-        $('#video-tags').addClass('error');
+        $('#new-tag-input').addClass('error');
+        $('.add-new-tag-button').addClass('error');
         return false;
     } else {
         $('#video-tags-error').removeClass('show');
-        $('#video-tags').removeClass('error');
+        $('#new-tag-input').removeClass('error');
+        $('.add-new-tag-button').removeClass('error');
         return true;
     }
+}
+
+function add_new_tag_check() {
+    var tag = $('#new-tag-input').val().trim();
+    if (!tag) {
+        $('#video-tags-error').addClass('show');
+        $('#video-tags-error').text('Tag cannot be empty.');
+        $('#new-tag-input').addClass('error');
+        $('.add-new-tag-button').addClass('error');
+    } else if (tag.length > 100) {
+        $('#video-tags-error').addClass('show');
+        $('#video-tags-error').text('All tags must be no longer than 100 characters.');
+        $('#new-tag-input').addClass('error');
+        $('.add-new-tag-button').addClass('error');
+    } else if ($('input[name="tags[]"]').length >= 10) {
+        $('#video-tags-error').addClass('show');
+        $('#video-tags-error').text('You can add at most 10 tags.');
+        $('#new-tag-input').addClass('error');
+        $('.add-new-tag-button').addClass('error');
+    } else {
+        $('#video-tags-error').removeClass('show');
+        $('#new-tag-input').removeClass('error');
+        $('.add-new-tag-button').removeClass('error');
+        $('#new-tag-input').val('');
+        $('.add-new-tag').before('<div class="tag-entry">'+dt.escapeHTML(tag)+'<div class="remove-tag"></div><input name="tags[]" class="hidden" value="'+tag+'"></div>');
+    }
+}
+
+function remove_tag() {
+    var tag_div = $(this).parent();
+    tag_div.remove();
+    $('#video-tags-error').removeClass('show');
+    $('#new-tag-input').removeClass('error');
+    $('.add-new-tag-button').removeClass('error');
 }
 
 function thumbnail_change() {
@@ -181,7 +203,6 @@ $(document).ready(function() {
         $('.list-selection.subcategory').next().text(first_option.text())
                                         .next().val(first_option.text());
         first_option.addClass('active');
-
     });
 
     $('#video-part-content').mousedown(function(evt) {
@@ -271,8 +292,15 @@ $(document).ready(function() {
 
     $('#video-total-title').focusout(title_check);
     $('#video-description').focusout(descript_check);
-    $('#video-tags').focusout(video_tag_check);
     $('#thumbnail-input').on("change", thumbnail_change);
+    $('#new-tag-input').keypress(function(evt) {
+        if (evt.which === 13) {
+            add_new_tag_check();
+            return false;
+        }
+    });
+    $('.add-new-tag-button').click(add_new_tag_check);
+    $('form').on('click', '.remove-tag', remove_tag);
 
     $('a.add-more').click(function(evt) {
         $('#add-more-link').before(video_part_line_html);
@@ -298,7 +326,7 @@ $(document).ready(function() {
         var button = document.querySelector('input.save_change-button');
         button.disabled = true;
 
-        var error = !title_check() | !descript_check() | !video_tag_check();
+        var error = !title_check() | !descript_check() | !tags_check();
         var subtitles = $('input.title-input');
         if (subtitles.length == 0) {
             error = true;

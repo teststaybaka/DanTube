@@ -358,6 +358,92 @@ form.change input.url-input {
     width: 215px;
 }
 
+form.change .tag-block {
+    width: 450px;
+    display: inline-block;
+    white-space: normal;
+    vertical-align: top;
+}
+
+.tag-entry {
+    display: inline-block;
+    vertical-align: top;
+    position: relative;
+    line-height: 24px;
+    font-size: 14px;
+    margin-right: 10px;
+    padding-left: 8px;
+    padding-right: 16px;
+    border: 1px solid rgb(200,200,200);
+    border-radius: 5px;
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    color: rgb(100,100,100);
+    margin-bottom: 10px;
+}
+
+.remove-tag {
+    position: absolute;
+    right: 3px;
+    top: 9px;
+    width: 7px;
+    height: 7px;
+    background-image: url("/static/img/basic_icons.png");
+    background-position: 0 -1365px;
+    cursor: pointer;
+}
+
+.remove-tag:hover {
+    background-position: -25px -1365px;
+}
+
+.add-new-tag {
+    display: inline-block;
+    vertical-align: top;
+    margin-bottom: 10px;
+    white-space: nowrap;
+}
+
+#new-tag-input {
+    width: 80px;
+}
+
+.add-new-tag-button {
+    height: 16px;
+    width: 16px;
+    padding: 2px;
+    border-radius: 5px;
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    display: inline-block;
+    border: 1px solid rgb(200,200,200);
+    cursor: pointer;
+    background-image: url("/static/img/basic_icons.png");
+    background-position: 5px -873px;
+    background-repeat: no-repeat;
+    vertical-align: middle;
+    margin-left: 5px;
+}
+
+.add-new-tag-button:hover {
+    box-shadow: 0 0 2px rgb(81,203,238);
+    border: 1px solid rgb(81,203,238);
+    background-position: -17px -873px;
+}
+
+.add-new-tag-button.error {
+    box-shadow: 0 0 2px rgb(232,0,0);
+    border: 1px solid rgb(232,0,0);
+    background-position: -17px -891px;
+}
+
+.add-new-tag-button:active {
+    box-shadow: 0 0 0;
+    border: 1px solid rgb(81,203,238);
+    background-color: rgb(81,203,238);
+    background-position: 5px -891px;
+}
+
 #add-more-link {
     position: relative;
 }
@@ -409,10 +495,6 @@ form.change label.explain {
     font-weight: normal;
     display: inline-block;
     white-space: normal;
-}
-
-div.check-label-line {
-    margin-top: 10px;
 }
 
 form.change label.check-label {
