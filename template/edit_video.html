@@ -28,7 +28,7 @@ var video_subcategories = {};
 <form class="change" id="video-submission-form" method="post" enctype="multipart/form-data" action="{{ uri_for('edit_video_post', video_id=video.id) }}">
     <div class="input-line">
       <label for="video-total-title" class="form-label">Title:</label>
-      <input type="text" id="video-total-title" class="normal-input" name="total-title" value="{{ video.title }}" tabindex="1" placeholder="A title for all the parts.">
+      <input type="text" id="video-total-title" class="normal-input" name="total-title" data-original="{{ video.title }}" value="{{ video.title }}" tabindex="1" placeholder="A title for all the parts.">
       <div class="input-error" id="video-title-error">Please.</div>
     </div>
     <div class="input-line">
@@ -51,7 +51,7 @@ var video_subcategories = {};
               {% endfor %}
           </div>
           <div class="list-selected medium">{{ video.category }}</div>
-          <input name="category" type="text" class="hidden" value="{{ video.category }}">
+          <input name="category" type="text" class="hidden" data-original="{{ video.category }}" value="{{ video.category }}">
       </div>
       <div class="list-select">
           <div class="list-selection down subcategory hidden">
@@ -60,25 +60,25 @@ var video_subcategories = {};
               {% endfor %}
           </div>
           <div class="list-selected medium">{{ video.subcategory }}</div>
-          <input name="subcategory" type="text" class="hidden" value="{{ video.subcategory }}">
+          <input name="subcategory" type="text" class="hidden" data-original="{{ video.subcategory }}" value="{{ video.subcategory }}">
       </div>
     </div>
     <div class="input-line">
       <label for="video-description" class="form-label">Introduction:</label>
-      <textarea class="normal normal-input" id="video-description" name="description" tabindex="1" placeholder="An overall introduction.">{{ video.intro }}</textarea>
+      <textarea class="normal normal-input" id="video-description" name="description" data-original="{{ video.intro }}" tabindex="1" placeholder="An overall introduction.">{{ video.intro }}</textarea>
       <div class="input-error" id="video-description-error">Please.</div>
     </div>
     <div class="input-line">
       <label class="form-label">Type:</label>
       <div class="option-button type {% if video.type == 'Original' %}select{% endif %}">Original</div>
       <div class="option-button type {% if video.type == 'Republish' %}select{% endif %}">Republish</div>
-      <input type="text" name="video-type-option" value="{{ video.type }}" class="hidden" id="video-type-option">
+      <input type="text" name="video-type-option" data-original="{{ video.type }}" value="{{ video.type }}" class="hidden" id="video-type-option">
     </div>
     <div class="input-line">
       <label for="video-tags" class="form-label">Tags:</label>
       <div class="tag-block">
           {% for tag in video.tags %}
-          <div class="tag-entry">{{ tag }}<div class="remove-tag"></div><input name="tags[]" class="hidden" value="{{ tag }}"></div>
+          <div class="tag-entry">{{ tag }}<div class="remove-tag"></div><input class="hidden" name="tags[]" data-original="{{ tag }}" value="{{ tag }}"></div>
           {% endfor %}
           <div class="add-new-tag">
               <input type="text" id="new-tag-input" class="normal-input" tabindex="1" placeholder="Add new tag">
@@ -107,9 +107,9 @@ var video_subcategories = {};
         <div class="video-part-line">
             <div class="video-part-drag-wrapper" ondragstart="return false;" ondrop="return false;">
                 <div class="video-part-error">Title too long.</div>
-                <input type="text" class="title-input normal-input" placeholder="Optional title" name="sub-title[]" value="{{ clip.title }}" tabindex="1">
+                <input type="text" class="title-input normal-input" placeholder="Optional title" name="sub-title[]" data-original="{{ clip.title }}" value="{{ clip.title }}" tabindex="1">
                 <div class="video-part-error">Title too long.</div>
-                <textarea class="intro-input normal-input" placeholder="Optional sub-introduction" name="sub-intro[]" tabindex="1">{{ clip.subintro }}</textarea>
+                <textarea class="intro-input normal-input" placeholder="Optional sub-introduction" name="sub-intro[]" data-original="{{ clip.subintro }}" tabindex="1">{{ clip.subintro }}</textarea>
                 <div class="list-select source">
                     <div class="list-selection down hidden">
                         <div class="list-option medium active">YouTube</div>
@@ -118,9 +118,10 @@ var video_subcategories = {};
                     <input name="source[]" type="text" class="hidden" value="{{ clip.source }}">
                 </div>
                 <div class="video-part-error">Title too long.</div>
-                <input type="text" class="url-input normal-input" name="video-url[]" placeholder="e.g., youtube.com/watch?v=8NNTvx5eoXE" value="{{ clip.raw_url }}" tabindex="1">
+                <input type="text" class="url-input normal-input read-only" name="video-url[]" placeholder="e.g., youtube.com/watch?v=8NNTvx5eoXE" value="{{ clip.raw_url }}" readonly="readonly" tabindex="1">
                 <div class="video-part-delete" title="Remove"></div>
                 <input class="hidden" type="text" name="index[]" value="{{ clip.index }}">
+                <input class="hidden" type="text" name="changed[]" value="False">
             </div>
         </div>
         {% endfor %}
@@ -133,7 +134,7 @@ var video_subcategories = {};
 
     <div>
       <input class="save_change-button" type="submit" value="Save Changes" />
-      <label class="check-label">
+      <label class="check-label" title="Your changes will be posted to your subscribers.">
           <div class="pseudo-checkbox"></div>
           <input type="checkbox" class="hidden" id="allow-post" name="allow-post">
           <span>Post your changes.</span>

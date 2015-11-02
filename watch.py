@@ -240,11 +240,11 @@ class Comment(BaseHandler):
         if not comments[-1].floorth and not more:
             comments[-1].floorth = 1
             comments[-1].put()
-
-        for i in reversed(xrange(0, len(comments)-1)):
-            if not comments[i].floorth:
-                comments[i].floorth = comments[i+1].floorth + 1
-                comments[i].put()
+        if comments[-1].floorth:
+            for i in reversed(xrange(0, len(comments)-1)):
+                if not comments[i].floorth:
+                    comments[i].floorth = comments[i+1].floorth + 1
+                    comments[i].put()
 
     def get_comment(self, video_id):
         try:
@@ -258,7 +258,7 @@ class Comment(BaseHandler):
         cursor = models.Cursor(urlsafe=self.request.get('cursor'))
         comments, cursor, more = models.Comment.query(ancestor=video_key).order(-models.Comment.created).fetch_page(page_size, start_cursor=cursor)
         self.check_comment_floor(comments, more)
-        
+
         result = {
             'comments': [],
             'cursor': cursor.urlsafe() if more else '',

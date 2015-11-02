@@ -7,7 +7,7 @@ div.danmaku {
     left: 640px;
     top: 0;
     color: white;
-    white-space: nowrap;
+    white-space: pre;
     text-shadow: 1px 0 1px black, -1px 0 1px black, 0 1px 1px black, 0 -1px 1px black;
     will-change: transform, -ms-transform, -webkit-transform, opacity, text-shadow, left, color, font-size, font-family;
 }
@@ -1082,7 +1082,7 @@ div.bullet-content-value {
 	padding: 5px 10px;
 	text-overflow: ellipsis;
 	overflow: hidden;
-	white-space: nowrap;
+	white-space: pre;
 	border-right: 1px solid rgb(255,255,255);
 }
 

@@ -136,15 +136,34 @@ class VideoUpload(BaseHandler):
         self.vids = []
         self.sources = self.request.POST.getall('source[]')
         self.raw_urls = self.request.POST.getall('video-url[]')
-        if len(self.raw_urls) == 0:
+        self.clip_titles = self.request.POST.getall('sub-title[]')
+        self.subintros = self.request.POST.getall('sub-intro[]')
+        self.indices = self.request.POST.getall('index[]')
+        self.sub_changed = self.request.POST.getall('changed[]')
+        if len(self.indices) == 0:
             raise Exception('You must submit at least one video!')
-        elif len(self.raw_urls) > 500:
+        elif len(self.indices) > 500:
             raise Exception('Too many parts!')
+        for i in xrange(0, len(self.indices)):
+            try:
+                self.indices[i] = int(self.indices[i].strip())
+            except Exception, e:
+                raise Exception('Index error.')
+
+        for i in xrange(0, len(self.sub_changed)):
+            if self.sub_changed[i] == 'False':
+                self.sub_changed[i] = False
+            else:
+                self.sub_changed[i] = True
 
         youtube = build('youtube', 'v3', developerKey=self.app.config.get('developer_key'))
-        for i in xrange(0, len(self.raw_urls)):
-            self.raw_urls[i] = self.raw_urls[i].strip();
-            raw_url = self.raw_urls[i]
+        for i in xrange(0, len(self.indices)):
+            if self.indices[i] != -1:
+                self.vids.append(-1)
+                self.durations.append(-1)
+                continue
+
+            raw_url = self.raw_urls[i] = self.raw_urls[i].strip()
             if not raw_url:
                 raise Exception('invalid url:'+str(i))
             else:
@@ -176,24 +195,15 @@ class VideoUpload(BaseHandler):
                     else:
                         self.default_thumbnail += '/mq'
 
-        self.clip_titles = self.request.POST.getall('sub-title[]')
         for i in xrange(0, len(self.clip_titles)):
             self.clip_titles[i] = self.clip_titles[i].strip()
             if len(self.clip_titles[i]) > 400:
                 raise Exception('Sub title too long!')
 
-        self.subintros = self.request.POST.getall('sub-intro[]')
         for i in xrange(0, len(self.subintros)):
             self.subintros[i] = self.subintros[i].strip()
             if len(self.subintros[i]) > 2000:
                 raise Exception('Sub intro too long!')
-
-        self.indices = self.request.POST.getall('index[]')
-        for i in xrange(0, len(self.indices)):
-            try:
-                self.indices[i] = int(self.indices[i].strip())
-            except Exception, e:
-                raise Exception('Index error.')
 
     def upload_default_thumbnail(self, video_id):
         im = Image.open(cStringIO.StringIO(urllib2.urlopen('http://img.youtube.com/vi/'+self.default_thumbnail+'default.jpg').read()))
@@ -300,7 +310,6 @@ class VideoUpload(BaseHandler):
         clip_list = models.VideoClipList(key=models.VideoClipList.get_key(video.key.id()))
         clip_list.clips = [clip.key for clip in video_clips]
         clip_list.titles = self.clip_titles
-
         user_detail.videos_submitted += 1
         ndb.put_multi([user_detail, clip_list])
 
@@ -326,80 +335,54 @@ class VideoUpload(BaseHandler):
             self.json_response(True, {'message': str(e)})
             return
 
-        reindex = False
-        changed = False
+        changed = 0
         if video.title != self.title:
             video.title = self.title
-            reindex = True
-            changed = True
+            changed |= 3
 
         if video.intro != self.intro:
             video.intro = self.intro
-            reindex = True
-            changed = True
+            changed |= 3
 
         if video.category != self.category:
             video.category = self.category
-            reindex = True
-            changed = True
+            changed |= 3
 
         if video.subcategory != self.subcategory:
             video.subcategory = self.subcategory
-            reindex = True
-            changed = True
+            changed |= 3
 
         if video.video_type != self.video_type:
             video.video_type = self.video_type
-            changed = True
+            changed |= 3
 
         if video.tags != self.tags:
             video.tags = self.tags
-            reindex = True
-            changed = True
+            changed |= 3
 
         if video.allow_tag_add != self.allow_tag_add:
             video.allow_tag_add = self.allow_tag_add
-            changed = True
+            changed |= 1
 
-        ori_clips = ndb.get_multi(clip_list.clips)
+        ori_clips = clip_list.clips
         new_clips = []
-        put_clips = []
         used_clips = set()
         video_duration = 0
         for i in xrange(0, len(self.indices)):
             index = self.indices[i]
             if index != -1:
-                clip_changed = False
-                clip = ori_clips[index]
-
-                if clip.title != self.clip_titles[i]:
-                    clip.title = self.clip_titles[i]
-                    clip_changed = True
-                if clip.index != i:
+                clip_key = ori_clips[index]
+                if self.sub_changed[i] or index != i:
+                    clip = clip_key.get()
                     clip.index = i
-                    clip_changed = True
-                if clip.subintro != self.subintros[i]:
+                    clip.title = self.clip_titles[i]
                     clip.subintro = self.subintros[i]
-                    clip_changed = True
-                if clip.raw_url != self.raw_urls[i]:
-                    clip.raw_url = self.raw_urls[i]
-                    clip_changed = True
-                if clip.source != self.sources[i]:
-                    clip.source = self.sources[i]
-                    clip_changed = True
-                if clip.vid != self.vids[i]:
-                    clip.vid = self.vids[i]
-                    clip_changed = True
-                if clip.duration != self.durations[i]:
-                    clip.duration = self.durations[i]
-                    clip_changed = True
+                    clip.put()
+                    changed |= 1
+                    logging.info(str(i)+' '+str(index)+' '+str(changed))
 
-                video_duration += clip.duration
                 used_clips.add(index)
-                new_clips.append(clip)
-                if clip_changed:
-                    put_clips.append(clip)
-                    changed = True
+                new_clips.append(clip_key)
             else:
                 clip = models.VideoClip(
                     video=video.key,
@@ -412,34 +395,36 @@ class VideoUpload(BaseHandler):
                     source=self.sources[i],
                     vid=self.vids[i]
                 )
+                clip.put()
                 video_duration += clip.duration
-                new_clips.append(clip)
-                put_clips.append(clip)
-                changed = True
+                new_clips.append(clip.key)
+                changed |= 1
+                logging.info(changed)
 
-        if not changed:
+        for index in xrange(0, len(ori_clips)):
+            if index not in used_clips:
+                clip = ori_clips[index].get()
+                video_duration -= clip.duration
+                models.VideoClip.Delete(clip.key)
+                changed |= 1
+
+        if not (changed & 1):
             if self.thumbnail_field != '':
                 self.json_response(False)
             else:
                 self.json_response(True, {'message': 'Nothing changed.'})
             return
-
-        ndb.put_multi(put_clips)
-        for i in xrange(0, len(ori_clips)):
-            if i not in used_clips:
-                models.VideoClip.Delete(ori_clips[i].key)
                 
-        clip_list.clips = [clip.key for clip in new_clips]
+        clip_list.clips = new_clips
         clip_list.titles = self.clip_titles
-
-        video.duration = video_duration
+        video.duration += video_duration
         ndb.put_multi([video, clip_list])
 
         if self.allow_post:
             q = taskqueue.Queue('Activity')
             q.add(taskqueue.Task(payload=str(self.user_key.id()), method='PULL'))
 
-        if reindex:
+        if changed & 2:
             video.create_index('videos_by_created', models.time_to_seconds(video.created))
             video.create_index('videos_by_hits', video.hits)
             video.create_index('videos_by_likes', video.likes)

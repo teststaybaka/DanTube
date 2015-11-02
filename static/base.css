@@ -124,6 +124,11 @@ textarea, input, select, option {
     border: 1px solid rgb(81,203,238);
 }
 
+.normal-input.read-only {
+    background-color: rgb(245,245,245);
+    color: rgb(150,150,150);
+}
+
 .normal-input.error {
     border: 1px solid rgb(232,0,0);
 }

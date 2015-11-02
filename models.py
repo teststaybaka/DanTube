@@ -183,11 +183,11 @@ class User(ndb.Model):
       'level': self.level,
       'nickname': self.nickname,
       'created': self.created.strftime("%Y-%m-%d %H:%M"),
-      'space_url': User.get_space_url(self.key.id()),
+      'space_url': self.get_space_url(self.key.id()),
       'subscribers_counter': self.subscribers_counter,
       'subscription_counter': self.subscription_counter,
-      'avatar_url': User.get_avatar_url(self.key),
-      'avatar_url_small': User.get_avatar_url_small(self.key),
+      'avatar_url': self.get_avatar_url(self.key),
+      'avatar_url_small': self.get_avatar_url_small(self.key),
     }
     return public_info
 

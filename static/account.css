@@ -371,7 +371,7 @@ form.change .tag-block {
     position: relative;
     line-height: 24px;
     font-size: 14px;
-    margin-right: 10px;
+    margin-right: 7px;
     padding-left: 8px;
     padding-right: 16px;
     border: 1px solid rgb(200,200,200);
@@ -384,7 +384,7 @@ form.change .tag-block {
 
 .remove-tag {
     position: absolute;
-    right: 3px;
+    right: 4px;
     top: 9px;
     width: 7px;
     height: 7px;

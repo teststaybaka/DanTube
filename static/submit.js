@@ -16,6 +16,7 @@ video_part_line_html = '<div class="video-part-line">\
                 <input type="text" class="url-input normal-input" name="video-url[]" placeholder="e.g., youtube.com/watch?v=8NNTvx5eoXE" tabindex="1">\
                 <div class="video-part-delete" title="Remove"></div>\
                 <input class="hidden" type="text" name="index[]" value="-1">\
+                <input class="hidden" type="text" name="changed[]" value="True">\
             </div>\
         </div>';
 
@@ -205,6 +206,42 @@ $(document).ready(function() {
         first_option.addClass('active');
     });
 
+    $('div.option-button.type').click(function(evt) {
+        $('div.option-button.type').removeClass('select');
+        $(evt.target).addClass('select');
+        $('#video-type-option').val($(evt.target).text());
+    });
+
+    $('#video-total-title').focusout(title_check);
+    $('#video-description').focusout(descript_check);
+    $('#thumbnail-input').on("change", thumbnail_change);
+    $('#new-tag-input').keypress(function(evt) {
+        if (evt.which === 13) {
+            add_new_tag_check();
+            return false;
+        }
+    });
+    $('.add-new-tag-button').click(add_new_tag_check);
+    $('form').on('click', '.remove-tag', remove_tag);
+
+    $('a.add-more').click(function(evt) {
+        $('#add-more-link').before(video_part_line_html);
+        $('div.input-error.add-more').removeClass('show');
+    });
+    $('form').on('click', 'div.video-part-delete', function(evt) {
+        $(evt.target).parent().parent().remove();
+    });
+
+    $('form').on('focusout', 'input.title-input', function(evt) {
+        sub_title_check(evt.target);
+    });
+    $('form').on('focusout', 'textarea.intro-input', function(evt) {
+        sub_intro_check(evt.target);
+    });
+    $('form').on('focusout', 'input.url-input', function(evt) {
+        url_check(evt.target);
+    });
+
     $('#video-part-content').mousedown(function(evt) {
         if ($(evt.target).hasClass('video-part-drag-wrapper') && $('div.table-label-line.stealth').length == 0) {
             var label_height = document.getElementById('table-label-line').offsetHeight;
@@ -284,42 +321,6 @@ $(document).ready(function() {
         }
     });
 
-    $('div.option-button.type').click(function(evt) {
-        $('div.option-button.type').removeClass('select');
-        $(evt.target).addClass('select');
-        $('#video-type-option').val($(evt.target).text());
-    });
-
-    $('#video-total-title').focusout(title_check);
-    $('#video-description').focusout(descript_check);
-    $('#thumbnail-input').on("change", thumbnail_change);
-    $('#new-tag-input').keypress(function(evt) {
-        if (evt.which === 13) {
-            add_new_tag_check();
-            return false;
-        }
-    });
-    $('.add-new-tag-button').click(add_new_tag_check);
-    $('form').on('click', '.remove-tag', remove_tag);
-
-    $('a.add-more').click(function(evt) {
-        $('#add-more-link').before(video_part_line_html);
-        $('div.input-error.add-more').removeClass('show');
-    });
-    $('form').on('click', 'div.video-part-delete', function(evt) {
-        $(evt.target).parent().parent().remove();
-    });
-
-    $('form').on('focusout', 'input.title-input', function(evt) {
-        sub_title_check(evt.target);
-    });
-    $('form').on('focusout', 'textarea.intro-input', function(evt) {
-        sub_intro_check(evt.target);
-    });
-    $('form').on('focusout', 'input.url-input', function(evt) {
-        url_check(evt.target);
-    });
-
     $('#video-submission-form').submit(function(evt) {
         $('#thumbnail-error').removeClass('show');
 
@@ -328,21 +329,27 @@ $(document).ready(function() {
 
         var error = !title_check() | !descript_check() | !tags_check();
         var subtitles = $('input.title-input');
-        if (subtitles.length == 0) {
+        var subintros = $('textarea.intro-input');
+        var urls = $('input.url-input');
+        var indices = $('input[name="index[]"]');
+        if (indices.length == 0) {
             error = true;
             $('div.input-error.add-more').addClass('show');
             $('div.input-error.add-more').text('Please add at least one video.');
         }
-        for (var i = 0; i < subtitles.length; i++) {
-            error |= !sub_title_check(subtitles[i]);
-        }
-        var subintros = $('textarea.intro-input');
-        for (var i = 0; i < subintros.length; i++) {
-            error |= !sub_intro_check(subintros[i]);
-        }
-        var urls = $('input.url-input');
-        for (var i = 0; i < urls.length; i++) {
+        for (var i = 0; i < indices.length; i++) {
+            var subtitle = subtitles[i];
+            var subintro = subintros[i];
+            var idx = indices[i];
+            error |= !sub_title_check(subtitle);
+            error |= !sub_intro_check(subintro);
             error |= !url_check(urls[i]);
+            if ($(subtitle).val().trim() === $(subtitle).attr('data-original')
+                && $(subintro).val().trim() === $(subintro).attr('data-original')) {
+                $(idx).siblings('input[name="changed[]"]').val('False');
+            } else {
+                $(idx).siblings('input[name="changed[]"]').val('True');
+            }
         }
         if (error) {
             button.disabled = false;

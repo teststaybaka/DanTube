@@ -71,8 +71,6 @@ var video_subcategories = {};
     <div class="input-line">
         <label for="video-tags" class="form-label">Tags:</label>
         <div class="tag-block">
-            <!-- <input name="tags" id="video-tags" class="hidden"> -->
-            <!-- <div class="tag-entry">tag<div class="remove-tag"></div></div> -->
             <div class="add-new-tag">
                 <input type="text" id="new-tag-input" class="normal-input" tabindex="1" placeholder="Add new tag">
                 <div class="add-new-tag-button" title="Add"></div>
@@ -113,6 +111,7 @@ var video_subcategories = {};
                 <input type="text" class="url-input normal-input" name="video-url[]" placeholder="e.g., youtube.com/watch?v=8NNTvx5eoXE" tabindex="1">
                 <div class="video-part-delete" title="Remove"></div>
                 <input class="hidden" type="text" name="index[]" value="-1">
+                <input class="hidden" type="text" name="changed[]" value="True">
             </div>
         </div>
         <div id="add-more-link">
