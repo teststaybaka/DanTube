@@ -116,6 +116,7 @@ class UserDetail(ndb.Model):
 
 class User(ndb.Model):
   AvatarPrefix = 'https://storage.googleapis.com/dantube-avatar/'
+  # AvatarPrefix = 'http://localhost:8080/_ah/gcs/dantube-avatar/'
   CSSPrefix = 'https://storage.googleapis.com/dantube-css/'
   Pepper = 'McbIlx'
 

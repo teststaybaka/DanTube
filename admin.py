@@ -152,6 +152,7 @@ class DeleteAll(webapp2.RequestHandler):
         delete_search_multi(search.Index(name='videos_by_likes'))
         delete_search_multi(search.Index(name='videos_by_hits'))
         delete_search_multi(search.Index(name='playlists_by_modified'))
+        delete_search_multi(search.Index(name='upers_by_created'))
         
         delete_multi(models.Video.query().fetch(keys_only=True))
         delete_multi(models.VideoClip.query().fetch(keys_only=True))

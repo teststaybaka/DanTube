@@ -47,30 +47,6 @@ def video_author_required(handler):
 
     return check_author
 
-class CoverUpload(BaseHandler, blobstore_handlers.BlobstoreUploadHandler):
-    def post(self):
-        self.response.headers['Content-Type'] = 'text/plain'
-        upload = self.get_uploads('coverImage')
-        if not upload:
-            self.response.out.write('error')
-            return
-
-        uploaded_image = upload[0]
-        logging.info("upload content_type:"+uploaded_image.content_type)
-        logging.info("upload size:"+str(uploaded_image.size))
-        types = uploaded_image.content_type.split('/')
-        if types[0] != 'image':
-            uploaded_image.delete()
-            self.response.out.write('error')
-            return
-        
-        if uploaded_image.size > 50*1024*1024:
-            uploaded_image.delete()
-            self.response.out.write('error')
-            return
-
-        self.response.out.write(str(uploaded_image.key()))
-
 class VideoUpload(BaseHandler):
     @login_required
     def submit(self):

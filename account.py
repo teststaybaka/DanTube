@@ -1,6 +1,6 @@
 from views import *
-from google.appengine.api import images
 from PIL import Image
+from gifimage import writeGifToFile, paletteImage
 
 class Account(BaseHandler):
     @login_required
@@ -261,40 +261,66 @@ class ChangeAvatar(BaseHandler):
 
         try:
             im = Image.open(avatar_field.file)
-            # mypalette = frame.getpalette()
-            # logging.info(frame.info['duration'])
-            # nframes = 0
-            # while frame:
-            #     frame.putpalette(mypalette)
-            #     im = frame
-            #     nframes += 1
-            #     if nframes > 4:
-            #         break;
-            #     try:
-            #         frame.seek(frame.tell() + 1)
-            #     except EOFError:
-            #         break;
-
             bucket_name = 'dantube-avatar'
-            standard_file = gcs.open('/'+bucket_name+'/standard-'+str(self.user_key.id()), 'w', content_type="image/jpeg", options={'x-goog-acl': 'public-read'})
-            small_file = gcs.open('/'+bucket_name+'/small-'+str(self.user_key.id()), 'w', content_type="image/jpeg", options={'x-goog-acl': 'public-read'})
+            if im.mode =='P':
+                logging.info(im.info)
+                standard_file = gcs.open('/'+bucket_name+'/standard-'+str(self.user_key.id()), 'w', content_type="image/gif", options={'x-goog-acl': 'public-read'})
+                small_file = gcs.open('/'+bucket_name+'/small-'+str(self.user_key.id()), 'w', content_type="image/gif", options={'x-goog-acl': 'public-read'})
+                seq_standard = []
+                seq_small = []
+                durations = []
+                xys = []
+                disposes = []
+                i = 0
+                # base_im = Image.new("RGB", im.size, (255,255,255))
+                # base_im.paste(im)
+                try:
+                    while 1:
+                        nim = Image.new("RGB", im.size, (255,255,255))
+                        # nim.paste(base_im)
+                        nim.paste(im)
+                        nim = nim.crop((x0, y0, x0+width-1, y0+height-1))
+                        im_standard = nim.resize((128, 128), Image.NEAREST)
+                        im_standard = im_standard.quantize(palette=paletteImage(im.getpalette()))
+                        seq_standard.append(im_standard)
+                        im_small = nim.resize((64, 64), Image.NEAREST)
+                        im_small = im_small.quantize(palette=paletteImage(im.getpalette()))
+                        seq_small.append(im_small)
+                        # logging.info(im.info)
+                        try:
+                            durations.append(im.info['duration']/1000.0)
+                        except Exception:
+                            durations.append(0.1)
+                        xys.append((0,0))
+                        disposes.append(2)
 
-            if im.mode == "RGBA" or "transparency" in im.info:
-                resized_im = im.crop((x0, y0, x0+width-1, y0+height-1)).resize((128,128), Image.ANTIALIAS)
-                new_im = Image.new("RGB", (128,128), (255,255,255))
-                new_im.paste(resized_im, resized_im)
-                new_im.save(standard_file, format='jpeg', quality=95, optimize=True)
-                new_im = new_im.resize((64, 64), Image.ANTIALIAS)
-                new_im.save(small_file, format='jpeg', quality=95, optimize=True)
+                        i += 1
+                        im.seek(im.tell()+1)
+                except EOFError:
+                    pass
+                
+                writeGifToFile(standard_file, seq_standard, durations=durations, loops=0, xys=xys, disposes=disposes)
+                writeGifToFile(small_file, seq_small, durations=durations, loops=0, xys=xys, disposes=disposes)
             else:
-                resized_im = im.crop((x0, y0, x0+width-1, y0+height-1)).resize((128,128), Image.ANTIALIAS)
-                resized_im.save(standard_file, format='jpeg', quality=95, optimize=True)
-                resized_im = resized_im.resize((64, 64), Image.ANTIALIAS)
-                resized_im.save(small_file, format='jpeg', quality=95, optimize=True)
+                standard_file = gcs.open('/'+bucket_name+'/standard-'+str(self.user_key.id()), 'w', content_type="image/jpeg", options={'x-goog-acl': 'public-read'})
+                small_file = gcs.open('/'+bucket_name+'/small-'+str(self.user_key.id()), 'w', content_type="image/jpeg", options={'x-goog-acl': 'public-read'})
+                if im.mode == "RGBA" or "transparency" in im.info:
+                    resized_im = im.crop((x0, y0, x0+width-1, y0+height-1)).resize((128,128), Image.ANTIALIAS)
+                    new_im = Image.new("RGB", (128,128), (255,255,255))
+                    new_im.paste(resized_im, resized_im)
+                    new_im.save(standard_file, format='jpeg', quality=95, optimize=True)
+                    new_im = new_im.resize((64, 64), Image.ANTIALIAS)
+                    new_im.save(small_file, format='jpeg', quality=95, optimize=True)
+                else:
+                    resized_im = im.crop((x0, y0, x0+width-1, y0+height-1)).resize((128,128), Image.ANTIALIAS)
+                    resized_im.save(standard_file, format='jpeg', quality=95, optimize=True)
+                    resized_im = resized_im.resize((64, 64), Image.ANTIALIAS)
+                    resized_im.save(small_file, format='jpeg', quality=95, optimize=True)
 
             standard_file.close()
             small_file.close()
         except Exception, e:
+            logging.info(str(e))
             self.json_response(True, {'message': 'Image crop error.'})
             return
 
