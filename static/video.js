@@ -2121,6 +2121,25 @@ dt.onPlayerReady = function(event) {
 		}
 	});
 
+	var ws = new WebSocket("ws://130.211.149.80/"+clip_id);
+    ws.onopen = function (event) {
+        console.log('WebSocket connected!');
+    }
+    ws.onclose = function(event) {
+    	console.log('WebSocket closed by server!');
+    }
+    ws.onmessage = function (event) {
+    	// console.log('ws:'+event.data);
+    	var data = JSON.parse(event.data);
+    	if (data.type === 'viewers') {
+    		$('span.current-number').text(dt.numberWithCommas(data.current));
+    		$('span.peak-number').text(dt.numberWithCommas(data.peak));
+    	}
+    }
+    ws.onerror = function(evt) {
+        console.log(JSON.stringify(evt));
+    }
+
 	var timestamp = parseFloat(dt.getParameterByName('timestamp'));
 	if (!isNaN(timestamp)) {
 		player_seek(timestamp - 0.05);

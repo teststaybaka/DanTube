@@ -74,7 +74,7 @@ class BaseHandler(webapp2.RequestHandler):
         return models.User.get_detail_key(self.user_key) if u else None
 
     def render(self, tempname, context=None):
-        # logging.info(self.request.url)
+        # logging.info(self.request.remote_addr)
         if not context:
             context = {'user': {}}
         elif not context.get('user'):

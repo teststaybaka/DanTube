@@ -98,6 +98,7 @@ class DeleteVideos(webapp2.RequestHandler):
         delete_search_multi(search.Index(name='videos_by_likes'))
         delete_search_multi(search.Index(name='videos_by_hits'))
         delete_search_multi(search.Index(name='playlists_by_modified'))
+        delete_search_multi(search.Index(name='upers_by_created'))
         
         delete_multi(models.Video.query().fetch(keys_only=True))
         delete_multi(models.VideoClip.query().fetch(keys_only=True))
@@ -113,16 +114,17 @@ class DeleteVideos(webapp2.RequestHandler):
         delete_multi(models.Playlist.query().fetch(keys_only=True))
         delete_multi(models.PlaylistDetail.query().fetch(keys_only=True))
         
-        user_detail = models.User.get_detail_key(ndb.Key('User', 5730082031140864)).get()
-        logging.info(user_detail.space_visited)
-        logging.info(user_detail.videos_submitted)
-        logging.info(user_detail.videos_watched)
+        user_details = models.UserDetail.query().fetch()
+        for user_detail in user_details:
+            logging.info(user_detail.space_visited)
+            logging.info(user_detail.videos_submitted)
+            logging.info(user_detail.videos_watched)
 
-        user_detail.space_visited = 0
-        user_detail.videos_submitted = 0
-        user_detail.videos_watched = 0
-        user_detail.playlists_created = 0
-        user_detail.put()
+            user_detail.space_visited = 0
+            user_detail.videos_submitted = 0
+            user_detail.videos_watched = 0
+            user_detail.playlists_created = 0
+            user_detail.put()
 
 class DeleteSearch(webapp2.RequestHandler):
     def get(self):

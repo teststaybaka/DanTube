@@ -861,8 +861,9 @@ class VideoClip(ndb.Model):
   subintro = ndb.TextProperty(default='', required=True, indexed=False)
   raw_url = ndb.StringProperty(indexed=False)
   vid = ndb.StringProperty(required=True, indexed=False)
-  duration = ndb.IntegerProperty(required=True, indexed=False, default=0)
+  duration = ndb.IntegerProperty(required=True, default=0, indexed=False)
   source = ndb.StringProperty(required=True, choices=['YouTube'], indexed=False)
+  peak = ndb.IntegerProperty(required=True, default=0, indexed=False)
 
   danmaku_num = NonNegativeIntegerProperty(required=True, default=0, indexed=False)
   danmaku_counter = ndb.IntegerProperty(required=True, default=0, indexed=False)

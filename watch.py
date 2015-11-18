@@ -237,6 +237,9 @@ class CheckComment(BaseHandler):
 class Comment(BaseHandler):
     @classmethod
     def check_comment_floor(cls, comments, more):
+        if not comments:
+            return
+
         if not comments[-1].floorth and not more:
             comments[-1].floorth = 1
             comments[-1].put()
@@ -653,6 +656,28 @@ class Watched(BaseHandler):
     def post(self, video_id):
         watched = models.ViewRecord.has_viewed(self.user_key, ndb.Key('Video', video_id))
         self.json_response(False, {'watched': watched})
+
+class UpdatePeak(BaseHandler):
+    def post(self, clip_id):
+        api_key = self.request.get('API_Key')
+        if api_key != self.app.config.get('developer_key'):
+            self.json_response(True, {'message': 'Unauthorized request.'})
+            return
+
+        try:
+            peak = int(self.request.get('peak'))
+        except ValueError:
+            self.json_response(True, {'message': 'Invalid peak value'})
+            return
+
+        clip = ndb.Key('VideoClip', int(clip_id)).get()
+        if not clip:
+            self.json_response(True, {'message': 'Target video not existed.'})
+            return
+
+        clip.peak = peak
+        clip.put()
+        self.json_response(False)
 
 class Test(BaseHandler):
     def get(self):
