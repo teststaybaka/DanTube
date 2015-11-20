@@ -2,6 +2,7 @@
 var clip_id;
 var video_id;
 var player;
+var ws;
 var isPlaying = false;
 var player_width = 640;
 var player_height = 446;
@@ -549,13 +550,17 @@ function buffer_update() {
 
 var quality_reg = / \(.*\)/;
 function progress_update() {
+	var currentTime = player.getCurrentTime();
+	if (ws.readyState === 1) {
+		ws.send(currentTime);
+	}
 	// console.log('progress_update');
 	var progress_number = document.getElementById("progress-number");
 	var splits = progress_number.lastChild.nodeValue.split('/');
-	progress_number.lastChild.nodeValue = dt.secondsToTime(player.getCurrentTime())+"/"+splits[1];
+	progress_number.lastChild.nodeValue = dt.secondsToTime(currentTime)+"/"+splits[1];
 	if (!progressHold) {
 		var progress_played = document.getElementById("progress-bar-played");
-		progress_played.style.width = player.getCurrentTime()/player.getDuration()*100+'%';
+		progress_played.style.width = currentTime/player.getDuration()*100+'%';
 	}
 
 	var cur_quality = quality_youtube2local(player.getPlaybackQuality());
@@ -1899,15 +1904,15 @@ dt.onPlayerReady = function(event) {
 			data: $(this).serialize()+'&'+$.param({timestamp: player.getCurrentTime()}),
 			success: function(result) {
 				if(!result.error) {
-					var entry = result.entry;
+					// var entry = result.entry;
 					$('#danmaku-input').val('');
-					dt.pop_ajax_message('Danmaku sent!', 'success');
-					entry.timestamp = player.getCurrentTime() + 0.05;
-					entry.blocked = false;
-					var listNode = document.getElementById("danmaku-list");
-					danmaku_pool_list.push(entry);
-					listNode.appendChild(generate_danmaku_pool_entry(danmaku_pool_list.length-1));
-					normal_danmaku_sequence.addOne(entry);
+					dt.pop_ajax_message('Fired!', 'success');
+					// entry.timestamp = player.getCurrentTime() + 0.05;
+					// entry.blocked = false;
+					// var listNode = document.getElementById("danmaku-list");
+					// danmaku_pool_list.push(entry);
+					// listNode.appendChild(generate_danmaku_pool_entry(danmaku_pool_list.length-1));
+					// normal_danmaku_sequence.addOne(entry);
 				} else {
 					dt.pop_ajax_message(result.message, 'error');
 				}
@@ -2121,7 +2126,16 @@ dt.onPlayerReady = function(event) {
 		}
 	});
 
-	var ws = new WebSocket("ws://130.211.149.80/"+clip_id);
+	var det_timestamp = parseFloat(dt.getParameterByName('timestamp'));
+	if (!isNaN(det_timestamp)) {
+		player_seek(det_timestamp - 0.1);
+	}
+	var autoplay = dt.getParameterByName('autoplay');
+	if (autoplay === '1') {
+		player.playVideo();
+	}
+
+	ws = new WebSocket("ws://130.211.149.80/"+video_id+"/"+clip_id+"?session="+dt.getCookie('db_session')+'&index='+$('#clip-index').val());
     ws.onopen = function (event) {
         console.log('WebSocket connected!');
     }
@@ -2134,20 +2148,26 @@ dt.onPlayerReady = function(event) {
     	if (data.type === 'viewers') {
     		$('span.current-number').text(dt.numberWithCommas(data.current));
     		$('span.peak-number').text(dt.numberWithCommas(data.peak));
+    	} else if (data.type === 'timestamp') {
+    		if (isNaN(det_timestamp) && data.timestamp !== 0) {
+    			player_seek(data.timestamp);
+    		}
+    	} else if (data.type === 'danmaku') {
+    		var entry = data.entry;
+			var listNode = document.getElementById("danmaku-list");
+			danmaku_pool_list.push(entry);
+			if (danmaku_filter(danmaku_pool_list.length-1)) {
+				entry.blocked = true;
+			} else {
+				entry.blocked = false;
+			}
+			listNode.appendChild(generate_danmaku_pool_entry(danmaku_pool_list.length-1));
+			normal_danmaku_sequence.addOne(entry);
     	}
     }
     ws.onerror = function(evt) {
         console.log(JSON.stringify(evt));
     }
-
-	var timestamp = parseFloat(dt.getParameterByName('timestamp'));
-	if (!isNaN(timestamp)) {
-		player_seek(timestamp - 0.05);
-	}
-	var autoplay = dt.getParameterByName('autoplay');
-	if (autoplay === '1') {
-		player.playVideo();
-	}
 }
 
 function code_danmaku_form_check() {
@@ -2327,7 +2347,7 @@ function danmaku_timestamp_lower_compare(x, y) {
 	if (x.timestamp != y.timestamp) {
 		return x.timestamp < y.timestamp;
 	} else {
-		return danmaku_content_lower_compare(x, y);
+		return danmaku_date_lower_compare(x, y);
 	}
 }
 

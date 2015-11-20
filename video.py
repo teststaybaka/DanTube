@@ -132,7 +132,7 @@ class VideoUpload(BaseHandler):
             else:
                 self.sub_changed[i] = True
 
-        youtube = build('youtube', 'v3', developerKey=self.app.config.get('developer_key'))
+        youtube = build('youtube', 'v3', developerKey=self.app.config.get('API_Key'))
         for i in xrange(0, len(self.indices)):
             if self.indices[i] != -1:
                 self.vids.append(-1)

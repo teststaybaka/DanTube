@@ -39,6 +39,7 @@
 
 {% block body %}
 <input class="hidden" id="video-id" value="{{ video.id }}">
+<input class="hidden" id="clip-index" value="{{ video.cur_index }}">
 <input class="hidden" id="clip-id" value="{{ video.cur_clip_id }}">
 <input class="hidden" id="danmaku-buffer" value="{{ danmaku_list }}">
 <div id="video-info-container" class="container">

@@ -1002,7 +1002,7 @@ class ViewRecord(ndb.Model):
   video = ndb.KeyProperty(kind='Video', required=True, indexed=False)
   playlist = ndb.KeyProperty(kind='Playlist', indexed=False)
   clip_index = ndb.IntegerProperty(required=True, default=0, indexed=False)
-  timestamp = ndb.IntegerProperty(required=True, default=0, indexed=False)
+  timestamp = ndb.FloatProperty(required=True, default=0, indexed=False)
   created = ndb.DateTimeProperty(auto_now=True)
 
   @classmethod

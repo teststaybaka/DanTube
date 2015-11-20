@@ -6,8 +6,21 @@ import hmac
 import hashlib
 import Cookie
 import logging
+import urllib
 
 from webapp2_extras import security
+
+class Secure(object):
+    @classmethod
+    def sign(cls, *parts):
+        try:
+            cls.secret_key
+        except AttributeError:
+            cls.secret_key = webapp2.get_app().config.get('secret_key')
+
+        signature = hmac.new(cls.secret_key, digestmod=hashlib.sha256)
+        signature.update('|'.join(parts))
+        return signature.hexdigest()
 
 class Session(object):
     def __init__(self, value=None):
@@ -32,13 +45,13 @@ class Session(object):
         if not cookie_value:
             return cls()
 
-        cookie_value = Cookie._unquote(cookie_value)
+        cookie_value = urllib.unquote(Cookie._unquote(cookie_value))
         parts = cookie_value.split('|')
         if len(parts) != 3:
             return cls()
 
         value, timestamp, signature = parts
-        valid_signature = cls.sign('db_session', value, timestamp)
+        valid_signature = Secure.sign('db_session', value, timestamp)
         if not security.compare_hashes(signature, valid_signature):
             logging.warning('Invalid cookie signature %r', cookie_value)
             return cls()
@@ -57,24 +70,13 @@ class Session(object):
     def save_session(self, response):
         value = base64.b64encode(json.dumps(self.value))
         timestamp = str(self.get_timestamp())
-        signature = self.sign('db_session', value, timestamp)
+        signature = Secure.sign('db_session', value, timestamp)
 
         cookie_value = '|'.join([value, timestamp, signature])
         if self.value.get('remember'):
-            response.set_cookie('db_session', cookie_value, max_age=2592000, path='/', httponly=True)
+            response.set_cookie('db_session', urllib.quote(cookie_value), max_age=2592000, path='/', httponly=False)
         else:
-            response.set_cookie('db_session', cookie_value, path='/', httponly=True)
-
-    @classmethod
-    def sign(cls, *parts):
-        try:
-            cls.secret_key
-        except AttributeError:
-            cls.secret_key = webapp2.get_app().config.get('secret_key')
-
-        signature = hmac.new(cls.secret_key, digestmod=hashlib.sha1)
-        signature.update('|'.join(parts))
-        return signature.hexdigest()
+            response.set_cookie('db_session', urllib.quote(cookie_value), path='/', httponly=False)
 
     @classmethod
     def get_timestamp(cls):

@@ -4,10 +4,11 @@ import views, admin, login, account, video, message, user, playlist, watch, repo
 import models
 
 secret_key = 'Mfrghtrrouhsmvnmxdiosjkgjfds68_=iooijgrdxuihbvc97yutcivbhugd409k'
-developer_key = 'AIzaSyBbf3cs6Nw483po40jw7hZLejmdrgwozWc'
+API_Key = 'AIzaSyBbf3cs6Nw483po40jw7hZLejmdrgwozWc'
 config = {
     'secret_key': secret_key,
-    'developer_key': developer_key,
+    'API_Key': API_Key,
+    'Realtime_server': '130.211.149.80',
 }
 
 routes = [
@@ -25,7 +26,6 @@ routes = [
     webapp2.Route(r'/account', account.Account, name="account"),
     webapp2.Route(r'/account/info', account.ChangeInfo, name="change_info"),
     webapp2.Route(r'/account/avatar', account.ChangeAvatar, name="change_avatar"),
-    # webapp2.Route(r'/account/avatar/upload/<user_id:\d+>', account.AvatarUpload, name="avatar_upload"),
     webapp2.Route(r'/account/password', account.ChangePassword, name="change_password"),
     webapp2.Route(r'/account/subscribed', account.Subscribed, name="subscribed_users"),
     webapp2.Route(r'/account/subscriptions', account.Subscriptions, name="subscriptions"),
@@ -54,7 +54,6 @@ routes = [
 
     webapp2.Route(r'/submit', video.VideoUpload, name="submit", handler_method="submit"),
     webapp2.Route(r'/submit_post', video.VideoUpload, name="submit_post", handler_method="submit_post"),
-    # webapp2.Route(r'/cover_upload', video.CoverUpload, name="cover_upload"),
     webapp2.Route(r'/video/new_tag/<video_id:dt\d+>', video.AddTag, name="add_tag"),
     webapp2.Route(r'/account/video', video.ManageVideo, name="manage_video"),
     webapp2.Route(r'/account/video/edit/<video_id:dt\d+>', video.VideoUpload, name="edit_video", handler_method="edit"),
@@ -90,6 +89,7 @@ routes = [
     webapp2.Route(r'/video/unlike/<video_id:dt\d+>', watch.Unlike, name="unlike"),
     webapp2.Route(r'/video/watched/<video_id:dt\d+>', watch.Watched, name="watched"),
     webapp2.Route(r'/video/update_peak/<clip_id:\d+>', watch.UpdatePeak, name="update_peak"),
+    webapp2.Route(r'/video/update_history/<clip_id:\d+>', watch.UpdateHistory, name="update_history"),
     webapp2.Route(r'/video/test', watch.Test, name="testwatch"),
 
     webapp2.Route(r'/category_videos', views.LoadByCategory, name="load_by_category"),

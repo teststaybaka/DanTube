@@ -8,7 +8,7 @@ $(document).ready(function() {
             for (var i = 0; i < result.entries.length; i++) {
                 var video = result.entries[i];
                 div += '<div class="content-entry">\
-                            <a class="video-img" href="'+video.url+'" target="_blank">\
+                            <a class="video-img" href="'+video.url+'?index='+(video.index+1)+'" target="_blank">\
                                 <img src="'+video.thumbnail_url+'">\
                                 <div class="preview-time">'+dt.secondsToTime(video.duration)+'</div>\
                             </a>\
@@ -61,7 +61,11 @@ $(document).ready(function() {
                                         cur_div += 'comment'
                                     }
                                     cur_div += ' in </label>\
-                                    <a class="message-title normal-link" href="'+comment.video.url+'" target="_blank">'+dt.escapeHTML(comment.video.title)+'</a>\
+                                    <a class="message-title normal-link" href="'+comment.video.url
+                                    if (comment.danmaku_type){
+                                        cur_div += '?index='+(comment.clip_index+1)
+                                    }
+                                    cur_div += '" target="_blank">'+dt.escapeHTML(comment.video.title)+'</a>\
                                 </div>\
                                 <div class="info-line">\
                                     <div class="comment-content">'+dt.contentWrapper(comment.content)+'</div>\
@@ -69,7 +73,7 @@ $(document).ready(function() {
                                 <div class="info-line">\
                                   <a href="'+comment.video.url+'?'
                                     if (comment.danmaku_type) {
-                                        cur_div += 'timestamp='+comment.timestamp
+                                        cur_div += 'index='+(comment.clip_index+1)+'&timestamp='+comment.timestamp
                                     } else if (comment.inner_floorth) {
                                         cur_div += 'comment='+comment.parent_id+'&reply='+comment.id
                                     } else {

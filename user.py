@@ -166,13 +166,7 @@ class Subscribe(BaseHandler):
             self.json_response(True, {'message': 'User not found.'})
             return
 
-        try:
-            is_new = models.Subscription.unique_create(user_key, host.key)
-        except models.TransactionFailedError, e:
-            logging.error('Subscription unique creation failed!!!')
-            self.json_response(True, {'message': 'Subscription error. Please try again.'})
-            return
-
+        is_new = models.Subscription.unique_create(user_key, host.key)
         if is_new:
             host.subscribers_counter += 1
             user.subscription_counter += 1

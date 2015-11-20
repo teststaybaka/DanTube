@@ -49,7 +49,7 @@ class History(BaseHandler):
                 else:
                     video_info = video.get_basic_info()
                 video_info['index'] = record.clip_index
-                video_info['last_timestamp'] = record.timestamp
+                video_info['timestamp'] = record.timestamp
                 video_info['last_viewed_time'] = record.created.strftime("%Y-%m-%d %H:%M")
                 context['entries'].append(video_info)
 
