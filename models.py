@@ -30,6 +30,7 @@ def number_upper_limit_99(num):
 EMIAL_REGEX = re.compile(r"^[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$")
 ILLEGAL_REGEX = re.compile(r".*[&@.,?!:/\\\"'<>=].*")
 ILLEGAL_LETTER = re.compile(r"[&@.,?!:/\\\"'<>=]")
+VIDEO_ID_REGEX = re.compile(r"dt\d+")
 
 class NonNegativeIntegerProperty(ndb.IntegerProperty):
   def _validate(self, value):
@@ -1008,6 +1009,10 @@ class ViewRecord(ndb.Model):
   @classmethod
   def has_viewed(cls, user_key, video_key):
     return bool(ndb.Key(cls, video_key.id() + 'v:' + str(user_key.id())).get())
+
+  @classmethod
+  def get(cls, user_key, video_key):
+    return ndb.Key(cls, video_key.id() + 'v:' + str(user_key.id())).get()
 
   @classmethod
   def get_or_create(cls, user_key, video_key):

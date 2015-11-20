@@ -109,6 +109,9 @@ class Video(BaseHandler):
             change_snapshot = True
 
         # check video status for user
+        is_watched = True
+        video_info['liked'] = False
+        uploader_info['subscribed'] = False
         if self.user_info:
             self.user = user = self.user_key.get()
             record, is_new_hit = models.ViewRecord.get_or_create(user.key, video.key)
@@ -121,16 +124,16 @@ class Video(BaseHandler):
                     record.playlist = None
                     record.put()
 
-            video_info['watched'] = not is_new_hit
+            # let browser use cookies to figure out where to continue
+            if not self.request.cookies.get(video_id):
+                self.response.set_cookie(video_id, str(record.clip_index)+'|'+str(record.timestamp), path='/')
+
+            is_watched = not is_new_hit
             video_info['liked'] = models.LikeRecord.has_liked(self.user_key, video.key)
             uploader_info['subscribed'] = models.Subscription.has_subscribed(self.user_key, video.uploader)
-        else:
-            video_info['watched'] = True
-            video_info['liked'] = False
-            uploader_info['subscribed'] = False
 
         # update video entity
-        if not video_info['watched']:
+        if not is_watched:
             q = taskqueue.Queue('UpdateIndex')
             payload = {'video': video.key.id(), 'kind': 'hit'}
             q.add(taskqueue.Task(payload=json.dumps(payload), method='PULL'))
@@ -454,14 +457,9 @@ class Danmaku(BaseHandler):
         danmaku_record = models.DanmakuRecord(creator=user_key, creator_name=user.nickname, content=content, danmaku_type='danmaku', video=video.key, clip_index=clip.index, video_title=video.title, timestamp=timestamp)
         ndb.put_multi([clip, danmaku_record])
 
-        formatted_danmaku = danmaku.format()
-        base64_danmaku = base64.b64encode(json.dumps(formatted_danmaku))
-        signature = Secure.sign(base64_danmaku)
-        urllib2.urlopen('http://'+self.app.config.get('Realtime_server')+'/'+str(clip.key.id())+'?entry='+urllib.quote('|'.join([base64_danmaku, signature])) )
-
         if users:
             deferred.defer(models.MentionedRecord.Create, users, danmaku_record.key)
-        self.json_response(False, {'entry': formatted_danmaku})
+        self.json_response(False, {'entry': danmaku.format()})
 
     @login_required_json
     @video_clip_exist_required_json
@@ -675,38 +673,6 @@ class UpdatePeak(BaseHandler):
 
         clip.peak = peak
         clip.put()
-        self.json_response(False)
-
-class UpdateHistory(BaseHandler):
-    def post(self, clip_id):
-        api_key = self.request.get('API_Key')
-        if api_key != self.app.config.get('API_Key'):
-            self.json_response(True, {'message': 'Unauthorized request.'})
-            return
-
-        try:
-            timestamp = float(self.request.get('timestamp'))
-        except ValueError:
-            self.json_response(True, {'message': 'Invalid timestamp'})
-            return
-
-        try:
-            user = ndb.Key('User', int(self.request.get('user_id'))).get()
-            if not user:
-                raise ValueError
-        except ValueError:
-            self.json_response(True, {'message': 'Invalid user id.'})
-            return
-
-        clip = ndb.Key('VideoClip', int(clip_id)).get()
-        if not clip:
-            self.json_response(True, {'message': 'Target video not existed.'})
-            return
-
-        record, is_new_hit = models.ViewRecord.get_or_create(user.key, clip.video)
-        record.clip_index = clip.index
-        record.timestamp = timestamp
-        record.put()
         self.json_response(False)
 
 class Test(BaseHandler):

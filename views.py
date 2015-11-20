@@ -73,19 +73,53 @@ class BaseHandler(webapp2.RequestHandler):
         u = self.user_info
         return models.User.get_detail_key(self.user_key) if u else None
 
+    # modified from https://webapp-improved.appspot.com/api/webapp2_extras/sessions.html
+    def dispatch(self):
+        try:
+            # Dispatch the request.
+            webapp2.RequestHandler.dispatch(self)
+        finally:
+            # Save all sessions.
+            self.session.save_session(self.response)
+
+    def persist_view_history(self):
+        if self.request.route.name == 'watch':
+            return
+
+        for key in self.request.cookies:
+            if models.VIDEO_ID_REGEX.match(key):
+                value = self.request.cookies[key]
+                self.response.set_cookie(key, value, max_age=1, path='/')
+
+                video_id = key
+                video_key = ndb.Key('Video', video_id)
+                values = value.split('|')
+                try:
+                    clip_index = int(values[0])
+                    timestamp = float(values[1])
+                except ValueError:
+                    continue
+
+                record = models.ViewRecord.get(self.user_key, video_key)
+                if record:
+                    record.clip_index = clip_index
+                    record.timestamp = timestamp
+                    record.put()
+
     def render(self, tempname, context=None):
         # logging.info(self.request.remote_addr)
         if not context:
             context = {'user': {}}
         elif not context.get('user'):
             context['user'] = {}
-            
+        
         if self.user_info:
             try:
                 self.user
             except AttributeError:
                 self.user = self.user_key.get()
             context['user'].update(self.user.get_private_info())
+            self.persist_view_history()
         # logging.info('user: '+str(context['user']))
 
         context['category'] = models.Video_Category
@@ -93,8 +127,7 @@ class BaseHandler(webapp2.RequestHandler):
         path = 'template/' + tempname + '.html'
         template = env.get_template(path)
         self.response.write(template.render(context))
-        self.session.save_session(self.response)
-    
+        
     def notify(self, notice, status=200, type='error'):
         self.response.set_status(status)
         self.render('notice', {'notice': notice, 'type': type})
@@ -103,7 +136,6 @@ class BaseHandler(webapp2.RequestHandler):
         self.response.headers['Content-Type'] = 'application/json'
         result['error'] = error
         self.response.write(json.dumps(result))
-        self.session.save_session(self.response)
 
     def get_keywords(self):
         return models.ILLEGAL_LETTER.sub(' ', self.request.get('keywords')).strip().lower()

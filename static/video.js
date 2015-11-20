@@ -1,6 +1,7 @@
 (function(dt, $) {
 var clip_id;
 var video_id;
+var clip_index;
 var player;
 var ws;
 var isPlaying = false;
@@ -289,7 +290,6 @@ function widescreen_switch(evt) {
 	if ($(evt.target).hasClass('on')) {
 		$(evt.target).removeClass('on');
 		$(evt.target).addClass('off');
-		
 	} else {//off
 		$(evt.target).removeClass('off');
 		$(evt.target).addClass('on');
@@ -359,10 +359,10 @@ function fullscreen_change(evt) {
 		$('#player-container').removeClass('fix');
 		$('#progress-controller-wrap').removeClass('auto-hide')
 									.off('mouseenter mouseleave');
-		$(window).off('resize', page_wide_player);
 		
 		widescreen_change();
 	} else {//off
+		$(window).off('resize', page_wide_player);
 		$('#full-screen').addClass('on');
 		$('#full-screen').removeClass('off');
 		player_width = screen.width;
@@ -464,6 +464,7 @@ function page_wide_player() {
 	for (var i = 0; i < list.length; ++i) {
 	   list[i].style.left = player_width+"px";
 	}
+	console.log(player_canvas.style.height)
 }
 
 function progress_tip_show(evt) {
@@ -551,9 +552,7 @@ function buffer_update() {
 var quality_reg = / \(.*\)/;
 function progress_update() {
 	var currentTime = player.getCurrentTime();
-	if (ws.readyState === 1) {
-		ws.send(currentTime);
-	}
+	dt.setCookie(video_id, clip_index+'|'+currentTime, 0);
 	// console.log('progress_update');
 	var progress_number = document.getElementById("progress-number");
 	var splits = progress_number.lastChild.nodeValue.split('/');
@@ -1898,6 +1897,9 @@ dt.onPlayerReady = function(event) {
 			return false;
 		}
 
+		if (ws.readyState === 1) {
+			ws.send($(this).serialize()+'&'+$.param({timestamp: player.getCurrentTime()}));
+		}
 		$.ajax({
 			type: "POST",
 			url: '/video/danmaku/'+video_id+'/'+clip_id,
@@ -2126,16 +2128,24 @@ dt.onPlayerReady = function(event) {
 		}
 	});
 
-	var det_timestamp = parseFloat(dt.getParameterByName('timestamp'));
-	if (!isNaN(det_timestamp)) {
-		player_seek(det_timestamp - 0.1);
+	var param_timestamp = parseFloat(dt.getParameterByName('timestamp'));
+	var last_timestamp = dt.getCookie(video_id);
+	if (!isNaN(param_timestamp)) {
+		player_seek(param_timestamp - 0.1);
+	} else if (last_timestamp) {
+		var parts = last_timestamp.split('|');
+		var last_index = parts[0];
+		var last_timestamp = parseFloat(parts[1]);
+		if (last_index === $('#clip-index').val() && last_timestamp !== 0) {
+			player_seek(last_timestamp);
+		}
 	}
 	var autoplay = dt.getParameterByName('autoplay');
 	if (autoplay === '1') {
 		player.playVideo();
 	}
 
-	ws = new WebSocket("ws://130.211.149.80/"+video_id+"/"+clip_id+"?session="+dt.getCookie('db_session')+'&index='+$('#clip-index').val());
+	ws = new WebSocket("ws://130.211.149.80/"+clip_id+"?session="+dt.getCookie('db_session'));
     ws.onopen = function (event) {
         console.log('WebSocket connected!');
     }
@@ -2148,10 +2158,6 @@ dt.onPlayerReady = function(event) {
     	if (data.type === 'viewers') {
     		$('span.current-number').text(dt.numberWithCommas(data.current));
     		$('span.peak-number').text(dt.numberWithCommas(data.peak));
-    	} else if (data.type === 'timestamp') {
-    		if (isNaN(det_timestamp) && data.timestamp !== 0) {
-    			player_seek(data.timestamp);
-    		}
     	} else if (data.type === 'danmaku') {
     		var entry = data.entry;
 			var listNode = document.getElementById("danmaku-list");
@@ -2434,6 +2440,7 @@ $(document).ready(function() {
 
 	video_id = $('#video-id').val();
 	clip_id = $('#clip-id').val();
+	clip_index = $('#clip-index').val();
 	if (!clip_id) return;
 
 	$('div.more-episode').click(function() {
