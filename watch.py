@@ -109,7 +109,7 @@ class Video(BaseHandler):
             change_snapshot = True
 
         # check video status for user
-        is_watched = True
+        not_watched = False
         video_info['liked'] = False
         uploader_info['subscribed'] = False
         if self.user_info:
@@ -124,16 +124,16 @@ class Video(BaseHandler):
                     record.playlist = None
                     record.put()
 
-            # let browser use cookies to figure out where to continue
+            # let javascript use cookies to figure out where to continue
             if not self.request.cookies.get(video_id):
                 self.response.set_cookie(video_id, str(record.clip_index)+'|'+str(record.timestamp), path='/')
 
-            is_watched = not is_new_hit
+            not_watched = is_new_hit
             video_info['liked'] = models.LikeRecord.has_liked(self.user_key, video.key)
             uploader_info['subscribed'] = models.Subscription.has_subscribed(self.user_key, video.uploader)
 
         # update video entity
-        if not is_watched:
+        if not_watched:
             q = taskqueue.Queue('UpdateIndex')
             payload = {'video': video.key.id(), 'kind': 'hit'}
             q.add(taskqueue.Task(payload=json.dumps(payload), method='PULL'))

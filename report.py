@@ -157,9 +157,9 @@ class Report(BaseHandler):
             issue = issue,
             description = description,
             reporter = self.user_key,
-            danmaku_index = danmaku['index'],
-            content = danmaku['content'],
-            user = ndb.Key('User', int(danmaku['creator'])),
+            danmaku_index = danmaku.index,
+            content = danmaku.content,
+            user = danmaku.creator,
         )
         report.put()
         self.json_response(False)

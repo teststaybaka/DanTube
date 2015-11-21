@@ -464,7 +464,6 @@ function page_wide_player() {
 	for (var i = 0; i < list.length; ++i) {
 	   list[i].style.left = player_width+"px";
 	}
-	console.log(player_canvas.style.height)
 }
 
 function progress_tip_show(evt) {
@@ -1789,6 +1788,7 @@ dt.onPlayerReady = function(event) {
 		if (element_index) {
 			var ele = danmaku_elements[element_index];
 			var danmaku_list_index = danmaku_pool_list.indexOf(ele.ref_danmaku);
+			console.log(ele.ref_danmaku)
 			$('.danmaku-menu').attr('data-creator', ele.ref_danmaku.creator)
 							.attr('data-index', danmaku_list_index)
 							.attr('data-type', ele.ref_danmaku.type)
@@ -1796,7 +1796,11 @@ dt.onPlayerReady = function(event) {
 			$('#danmaku-block-sender').removeClass('disabled');
 			$('#danmaku-locate-it').removeClass('disabled');
 			$('#danmaku-reply').removeClass('disabled');
-			$('#danmaku-report').removeClass('disabled');
+			if (typeof ele.ref_danmaku.index !== 'undefined') {
+				$('#danmaku-report').removeClass('disabled');
+			} else {
+				$('#danmaku-report').addClass('disabled');
+			}
 		} else {
 			$('#danmaku-block-sender').addClass('disabled');
 			$('#danmaku-locate-it').addClass('disabled');
@@ -1862,7 +1866,6 @@ dt.onPlayerReady = function(event) {
 	$('#danmaku-report').click(function() {
 		if ($(this).hasClass('disabled')) return;
 		$('#report-danmaku-form').removeClass('hidden');
-		$('#report-danmaku-pool-id').val($('.danmaku-menu').attr('data-pool-id'));
 		$('#report-danmaku-index').val($('.danmaku-menu').attr('data-danmaku-index'));
 		var danmaku_type = $('.danmaku-menu').attr('data-type');
 		if (danmaku_type === 'Advanced') {
@@ -2590,7 +2593,15 @@ $(document).ready(function() {
 		$(this).addClass('selected');
 
 		$('#danmaku-pool-copy-content').attr('data-clipboard-text', $(this).children('.bullet-content-value').text());
-		$('.danmaku-pool-menu').attr('data-index', $(this).attr('data-index'));
+		var ref_danmaku = danmaku_pool_list[$(this).attr('data-index')];
+		$('.danmaku-pool-menu').attr('data-creator', ref_danmaku.creator)
+							.attr('data-type', ref_danmaku.type)
+							.attr('data-danmaku-index', ref_danmaku.index);
+		if (typeof ref_danmaku.index !== 'undefined') {
+			$('#danmaku-pool-report').removeClass('disabled');
+		} else {
+			$('#danmaku-pool-report').addClass('disabled');
+		}
 
 		$('.danmaku-pool-menu').removeClass('hidden');
 		$('.danmaku-pool-menu')[0].style.left = evt.originalEvent.pageX+'px';
@@ -2601,16 +2612,16 @@ $(document).ready(function() {
 		}
 		$(document).click(hide_menu);
 	});
+	new ZeroClipboard(document.getElementById("danmaku-pool-copy-content"));
 	$('#danmaku-pool-block-sender').click(function() {
 		var block_type = 'User';
-		var block_content = danmaku_pool_list[$('.danmaku-pool-menu').attr('data-index')].creator.toString();
+		var block_content = $('.danmaku-pool-menu').attr('data-creator');
 		add_block_rule(block_type, block_content);
 	});
-	new ZeroClipboard(document.getElementById("danmaku-pool-copy-content"));
 	$('#danmaku-pool-check-all-sent').click(function() {
 		$('#danmaku-list-all').empty();
 		var listNode = $('#danmaku-list-all')[0];
-		var user = danmaku_pool_list[$('.danmaku-pool-menu').attr('data-index')].creator.toString();
+		var user = $('.danmaku-pool-menu').attr('data-creator');
 		for (var i = 0; i < danmaku_pool_list.length; i++) {
 			if (danmaku_pool_list[i].creator.toString() === user) {
 				listNode.appendChild(generate_danmaku_pool_entry(i))
@@ -2619,10 +2630,11 @@ $(document).ready(function() {
 		$('.player-full-setting.check-all-sent').removeClass('hidden');
 	});
 	$('#danmaku-pool-report').click(function() {
+		if ($(this).hasClass('disabled')) return;
 		$('#report-danmaku-form').removeClass('hidden');
-		var entry = danmaku_pool_list[$('.danmaku-pool-menu').attr('data-index')];
-		$('#report-danmaku-index').val(entry.index);
-		if (entry.type === 'Advanced') {
+		$('#report-danmaku-index').val($('.danmaku-pool-menu').attr('data-danmaku-index'));
+		var danmaku_type = $('.danmaku-pool-menu').attr('data-type');
+		if (danmaku_type === 'Advanced') {
 			$('#report-danmaku-type').val('advanced');
 		} else {
 			$('#report-danmaku-type').val('danmaku');
@@ -3190,7 +3202,7 @@ function createCORSRequest(method, url){
     var xhr = new XMLHttpRequest();
     if ("withCredentials" in xhr){
         xhr.open(method, url, true);
-    } else if (typeof XDomainRequest != "undefined"){
+    } else if (typeof XDomainRequest !== "undefined"){
         xhr = new XDomainRequest();
         xhr.open(method, url);
     } else {
