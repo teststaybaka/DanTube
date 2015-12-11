@@ -8,7 +8,6 @@ API_Key = 'AIzaSyBbf3cs6Nw483po40jw7hZLejmdrgwozWc'
 config = {
     'secret_key': secret_key,
     'API_Key': API_Key,
-    'Realtime_server': '130.211.149.80',
 }
 
 routes = [

@@ -27,7 +27,7 @@ def number_upper_limit_99(num):
   else:
     return str(num)
 
-EMIAL_REGEX = re.compile(r"^[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$")
+EMAIL_REGEX = re.compile(r"^[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$")
 ILLEGAL_REGEX = re.compile(r".*[&@.,?!:/\\\"'<>=].*")
 ILLEGAL_LETTER = re.compile(r"[&@.,?!:/\\\"'<>=]")
 VIDEO_ID_REGEX = re.compile(r"dt\d+")
@@ -269,7 +269,7 @@ class User(ndb.Model):
     if not email:
       logging.info('email 1')
       return None
-    if not EMIAL_REGEX.match(email):
+    if not EMAIL_REGEX.match(email):
       logging.info('email 2')
       return None
 

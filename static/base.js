@@ -457,9 +457,22 @@ dt.unescapeHTML = function(safe) {
 var isLoading = {};
 var cursors = {};
 var isOver = {}
+function getParams(params) {
+    if (!params) {
+        return {key: {}, more: {}}
+    } else {
+        if (!params.key) {
+            params = {key: params, more: {}}
+        } else if (!params.more) {
+            params.more = {}
+        }
+        return params;
+    }
+}
+
 dt.loadNextPage = function(url, params, before_callback, success_callback, failure_callback) {
-    var params = $.param(params);
-    var key = url+'?'+params;
+    params = getParams(params);
+    var key = url+'?'+$.param(params.key);
     if (isLoading[key] || isOver[key])
         return;
 
@@ -470,7 +483,7 @@ dt.loadNextPage = function(url, params, before_callback, success_callback, failu
     $.ajax({
         type: 'POST',
         url: url,
-        data: params+'&'+$.param({cursor: cursors[key]}),
+        data: $.param(params.key)+'&'+$.param({cursor: cursors[key]})+'&'+$.param(params.more),
         success: function(result) {
             cursors[key] = result.cursor;
             isOver[key] = !result.cursor;
@@ -486,18 +499,18 @@ dt.loadNextPage = function(url, params, before_callback, success_callback, failu
     });
 }
 dt.setCursor = function(url, params, cursor) {
-    var params = $.param(params);
-    var key = url+'?'+params;
+    params = getParams(params);
+    var key = url+'?'+$.param(params.key);
     cursors[key] = cursor;
 }
 dt.getCursor = function(url, params, cursor) {
-    var params = $.param(params);
-    var key = url+'?'+params;
+    params = getParams(params);
+    var key = url+'?'+$.param(params.key);
     return cursors[key];
 }
 dt.resetLoad = function(url, params) {
-    var params = $.param(params);
-    var key = url+'?'+params;
+    params = getParams(params);
+    var key = url+'?'+$.param(params.key);
     isOver[key] = false;
     cursors[key] = '';
 }

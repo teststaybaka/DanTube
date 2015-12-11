@@ -1619,3 +1619,19 @@ span.video-timestamp-quick-link {
     -webkit-border-radius: 3px;
     -moz-border-radius: 3px;
 }
+
+@media only screen and (min-width: 1550px) {
+
+#user-bar {
+    width: 1438px;
+}
+
+#navigation-bar {
+    width: 1438px;
+}
+
+#body-container {
+    width: 1438px;
+}
+
+}

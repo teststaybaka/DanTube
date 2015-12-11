@@ -65,7 +65,7 @@ $(document).ready(function() {
     });
 
     popup_container.on('click', 'div.content-entry.popup', function() {
-        if ($(this).hasClass('belonged') || $(this).hasClass('loading')) return;
+        if ($(this).hasClass('belonged') || $(this).hasClass('loading') || $(this).hasClass('none')) return;
         
         if ($(this).hasClass('selected')) {
             $(this).removeClass('selected');

@@ -75,7 +75,7 @@ $(document).ready(function() {
     });
 
     popup_container.on('click', '.content-entry.popup', function() {
-        if ($(this).hasClass('loading')) return;
+        if ($(this).hasClass('loading') || $(this).hasClass('none')) return;
 
         $('.content-entry.popup').removeClass('selected');
         $(this).addClass('selected');

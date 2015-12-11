@@ -289,6 +289,7 @@ class Home(BaseHandler):
             'top_ten_videos': [],
             'top_ten_cursor': cursor.urlsafe() if more else '',
         }
+        logging.info(more)
         for i in xrange(0, len(videos)):
             video = videos[i]
             video_info = video.get_basic_info()
@@ -338,7 +339,7 @@ class Home(BaseHandler):
 
     def second_level(self):
         category = self.request.route.name
-        page_size = 10
+        page_size = 14
         cursor = models.Cursor()
         videos, cursor, more = models.Video.query(models.Video.category==category).order(-models.Video.hot_score).fetch_page(page_size, start_cursor=cursor)
         context = {
@@ -355,7 +356,7 @@ class Home(BaseHandler):
 
     def third_level(self):
         [category, subcategory] = self.request.route.name.split('-')
-        page_size = 10
+        page_size = 14
         cursor = models.Cursor()
         videos, cursor, more = models.Video.query(ndb.AND(models.Video.category==category, models.Video.subcategory==subcategory)).order(-models.Video.hot_score).fetch_page(page_size, start_cursor=cursor)
         context = {

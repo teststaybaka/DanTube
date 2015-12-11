@@ -314,14 +314,17 @@ div.edit-title-button:hover {
 
 .content-entry.popup.loading {
     padding: 30px 0;
+    cursor: default;
 }
 
 .content-entry.popup.none {
     padding: 100px 0;
+    cursor: default;
 }
 
 .content-entry.popup.belonged .video-title, .content-entry.popup.belonged .list-video-time {
     color: rgb(175,175,175);
+    cursor: default;
 }
 
 .content-entry.popup.selected {
