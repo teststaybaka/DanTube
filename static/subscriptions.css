@@ -1,6 +1,6 @@
 #subscription-block {
   border: 1px solid rgb(200,200,200);
-  width: 775px;
+  width: 800px;
   margin-top: 20px;
   float: left;
   background-color: white;
@@ -90,18 +90,20 @@
 }
 
 .content-entry {
-  padding: 10px 25px;
+  padding: 10px 45px 10px 25px;
 }
 
 div.activity-detail {
   display: inline-block;
   vertical-align: top;
   margin-left: 15px;
-  width: 621px;
+  width: calc(100% - 64px - 15px);
+  width: -moz-calc(100% - 64px - 15px); /* Firefox */
+  width: -webkit-calc(100% - 64px - 15px); /* Chrome, Safari */
 }
 
 div.uploader-name, div.activity-title {
-  margin-bottom: 2px;
+  margin-bottom: 5px;
   word-wrap: break-word;
   font-size: 0;
 }
@@ -143,7 +145,7 @@ a.comment-check {
   width: 176px;
   height: 99px;
   display: block;
-  margin-top: 5px;
+  margin: 5px 0;
 }
 
 .uper-page-container {
@@ -231,4 +233,17 @@ a.comment-check {
 
 .uper-page-arrow:hover .uper-page-arrow-image {
   background-position: 0 -1162px;
+}
+
+@media only screen and (min-width: 1550px) {
+
+#subscription-block {
+  width: 1214px;
+}
+
+.video-img {
+  width: 192px;
+  height: 108px;
+}
+
 }

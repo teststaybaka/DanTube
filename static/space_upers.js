@@ -5,12 +5,12 @@ $(document).ready(function() {
         for (var i = 0; i < result.upers.length; i++) {
             var uper = result.upers[i];
             div += '<div class="content-entry uper">\
-                        <a class="uper-img" href="'+uper.space_url+'">\
+                        <a class="uper-img" target="_blank" href="'+uper.space_url+'">\
                             <img src="'+uper.avatar_url_small+'">\
                         </a>\
                         <div class="uper-info">\
                             <div class="info-line">\
-                                <a class="uploader-link blue-link" href="'+uper.space_url+'">'+uper.nickname+'</a>\
+                                <a class="uploader-link blue-link" target="_blank" href="'+uper.space_url+'">'+uper.nickname+'</a>\
                             </div>\
                             <div class="info-line">\
                                 <div class="uper-detail-info">Subscribers: '+dt.numberWithCommas(uper.subscribers_counter)+'</div>\

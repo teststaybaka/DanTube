@@ -16,9 +16,11 @@
 
 .video-info, .list-info {
     display: inline-block;
-    padding-left: 15px;
+    margin-left: 15px;
     vertical-align: top;
-    width: 493px;
+    width: calc(100% - 176px - 15px);
+    width: -moz-calc(100% - 176px - 15px); /* Firefox */
+    width: -webkit-calc(100% - 176px - 15px); /* Chrome, Safari */
 }
 
 .info-line {

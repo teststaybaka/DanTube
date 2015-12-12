@@ -29,7 +29,7 @@
 }
 
 .content-entry {
-    padding-right: 40px;
+    padding-right: 45px;
 }
 
 .video-img-uper {
@@ -73,11 +73,13 @@
     display: inline-block;
     vertical-align: top;
     margin-left: 15px;
-    width: 745px;
+    width: calc(100% - 192px - 15px);
+    width: -moz-calc(100% - 192px - 15px); /* Firefox */
+    width: -webkit-calc(100% - 192px - 15px); /* Chrome, Safari */
 }
 
 .info-line {
-    margin-bottom: 2px;
+    margin-bottom: 5px;
 }
 
 .info-line:last-child {
@@ -189,8 +191,10 @@ a.episode-entry {
 
 .uper-info {
     display: inline-block;
-    margin-left: 20px;
-    width: 794px;
+    margin-left: 15px;
+    width: calc(100% - 128px - 15px);
+    width: -moz-calc(100% - 128px - 15px); /* Firefox */
+    width: -webkit-calc(100% - 128px - 15px); /* Chrome, Safari */
     vertical-align: top;
 }
 

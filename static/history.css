@@ -27,11 +27,13 @@ a.video-img {
     position: relative;
 }
 
-div.video-info {
+.video-info {
     display: inline-block;
-    width: 778px;
     margin-left: 15px;
     vertical-align: top;
+    width: calc(100% - 176px - 15px);
+    width: -moz-calc(100% - 176px - 15px); /* Firefox */
+    width: -webkit-calc(100% - 176px - 15px); /* Chrome, Safari */
 }
 
 .video-info-line {
@@ -64,15 +66,16 @@ div.video-info {
 .user-img {
     width: 48px;
     height: 48px;
-    box-shadow: 0 0 1px rgb(100,100,100);
 }
 
 .message-info {
     display: inline-block;
-    margin-left: 10px;
+    margin-left: 15px;
     vertical-align: top;
     font-size: 14px;
-    width: 850px;
+    width: calc(100% - 48px - 15px);
+    width: -moz-calc(100% - 48px - 15px); /* Firefox */
+    width: -webkit-calc(100% - 48px - 15px); /* Chrome, Safari */
 }
 
 .message-title {
@@ -95,7 +98,7 @@ div.video-info {
 }
 
 .info-line {
-     margin-bottom: 2px;
+     margin-bottom: 5px;
 }
 
 .info-line:last-child {

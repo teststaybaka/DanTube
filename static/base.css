@@ -1634,4 +1634,16 @@ span.video-timestamp-quick-link {
     width: 1438px;
 }
 
+#account-left-bar {
+    margin-left: 207px;
+}
+
+#account-right-section {
+    margin-right: 207px;
+}
+
+div.navi-category {
+    margin-left: 15px;
+}
+
 }
