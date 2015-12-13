@@ -1,14 +1,14 @@
 {% extends "template/account_base.html" %}
 {% block head %}
 {{ super() }}
-<link rel="stylesheet" href="/static/account.css" type="text/css" />
+<link rel="stylesheet" href="/static/css/account.css" type="text/css" />
 <script type="text/javascript">
 var video_subcategories = {};
 {% for key in category %}
   video_subcategories['{{ key }}'] = [{% for val in subcategory[key] %}'{{ val }}', {% endfor %}];
 {% endfor %}
 </script>
-<script src="/static/submit.js" language="JavaScript" type="text/javascript"></script>
+<script src="/static/js/submit.js" language="JavaScript" type="text/javascript"></script>
 {% endblock %}
 
 {% block videos_active %}active{% endblock %}

@@ -1,5 +1,8 @@
-#space-navigation {
+#space-navigation-background {
     border-bottom: 1px solid rgb(200,200,200);
+}
+
+#space-navigation {
     width: 1024px;
     margin: auto;
 }
