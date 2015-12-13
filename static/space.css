@@ -96,28 +96,9 @@
     width: -webkit-calc(100% - 176px - 15px); /* Chrome, Safari */
 }
 
-.video-category {
-    display: inline-block;
-    font-size: 14px;
-    border: 1px solid rgb(220,220,220);
-    padding: 3px 8px;
-    vertical-align: middle;
-}
-
-.video-category-arrow {
-    display: inline-block;
-    vertical-align: middle;
-    width: 8px;
-    height: 8px;
-    background-position: 0 0;
-    background-image: url("/static/img/basic_icons.png");
-    margin: 0 5px;
-}
-
 .video-time {
-    color: rgb(150,150,150);
+    color: rgb(100,100,100);
     font-size: 14px;
-    vertical-align: middle;
     display: inline-block;
     margin-left: 10px;
 }
@@ -135,7 +116,7 @@
     word-wrap: break-word;
     white-space: pre-wrap;
     line-height: 16px;
-    max-height: 32px;
+    height: 64px;
     overflow: hidden;
 }
 
@@ -160,7 +141,6 @@
     width: 128px;
     height: 128px;
     margin-top: 25px;
-    box-shadow: 0 0 1px rgb(100,100,100);
 }
 
 .inline-button.host {
@@ -171,7 +151,6 @@
 }
 
 .inline-button.uper {
-    margin-top: 2px;
     margin-right: 10px;
 }
 
@@ -260,7 +239,6 @@ div.message-content {
 #self-img {
     width: 64px;
     height: 64px;
-    box-shadow: 0 0 1px rgb(100,100,100);
 }
 
 #write-message {
@@ -325,12 +303,10 @@ a.visiter-img {
     font-size: 14px;
     color: rgb(150,150,150);
     display: inline-block;
-    vertical-align: top;
-    margin-right: 20px;
 }
 
 .info-line {
-    margin-bottom: 3px;
+    margin-bottom: 5px;
 }
 
 .info-line:last-child {
@@ -339,7 +315,7 @@ a.visiter-img {
 
 .video-statistic-entry {
     font-size: 14px;
-    color: rgb(150,150,150);
+    color: rgb(100,100,100);
     margin-right: 20px;
     display: inline-block;
 }
@@ -355,7 +331,7 @@ a.visiter-img {
 .message-title {
     display: inline-block;
     margin-left: 5px;
-    max-width: 530px;
+    max-width: 450px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -382,6 +358,10 @@ a.visiter-img {
 
 #space-list-container {
     width: 1189px;
+}
+
+.message-title {
+    max-width: 870px;
 }
 
 }

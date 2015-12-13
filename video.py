@@ -394,11 +394,12 @@ class VideoUpload(BaseHandler):
         clip_list.clips = new_clips
         clip_list.titles = self.clip_titles
         video.duration += video_duration
-        ndb.put_multi([video, clip_list])
-
         if self.allow_post:
+            video.created = datetime.now()
+            video.is_edited = True
             q = taskqueue.Queue('Activity')
             q.add(taskqueue.Task(payload=str(self.user_key.id()), method='PULL'))
+        ndb.put_multi([video, clip_list])
 
         if changed & 2:
             video.create_index('videos_by_created', models.time_to_seconds(video.created))

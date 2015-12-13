@@ -59,6 +59,13 @@ a.video-img {
     color: rgb(100,100,100);
 }
 
+.video-time {
+    color: rgb(100,100,100);
+    display: inline-block;
+    font-size: 14px;
+    margin-left: 10px;
+}
+
 .last-viewed {
     color: rgb(100,100,100);
 }
@@ -81,7 +88,7 @@ a.video-img {
 .message-title {
     display: inline-block;
     margin-left: 5px;
-    max-width: 770px;
+    max-width: 700px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -135,4 +142,12 @@ a.video-img {
 
 .content-entry:hover .unlike-button {
     display: inline-block;
+}
+
+@media only screen and (min-width: 1550px) {
+
+.message-title {
+    max-width: 1100px;
+}
+
 }

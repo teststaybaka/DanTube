@@ -10,11 +10,7 @@ $(document).ready(function() {
                         </a>\
                         <div class="message-info">\
                             <div class="info-line">\
-                                <a href="'+comment.creator.space_url+'" target="_blank" class="blue-link user-name">'+comment.creator.nickname+'</a>\
-                                <label class="message-time">'+comment.created+'</label>\
-                            </div>\
-                            <div class="info-line">\
-                                <label class="info-label">Post a '
+                                <label class="info-label">A '
                                 if (comment.danmaku_type) {
                                     div += 'danmaku'
                                 } else if (comment.inner_floorth) {
@@ -24,6 +20,7 @@ $(document).ready(function() {
                                 }
                                 div += ' in </label>\
                                 <a class="message-title normal-link" href="'+comment.video.url+'" target="_blank">'+dt.escapeHTML(comment.video.title)+'</a>\
+                                <label class="message-time">'+comment.created+'</label>\
                             </div>\
                             <div class="info-line">\
                                 <div class="comment-content">'+dt.contentWrapper(comment.content)+'</div>\

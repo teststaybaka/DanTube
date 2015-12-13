@@ -6,7 +6,6 @@
     width: 128px;
     height: 128px;
     position: relative;
-    box-shadow: 0 0 1px rgb(100,100,100);
     border-radius: 128px;
     -webkit-border-radius: 128px;
     -moz-border-radius: 128px;
@@ -615,7 +614,6 @@ form.change div.video-part-error.show {
     vertical-align: text-top;
     cursor: pointer;
     position: relative;
-    box-shadow: 0 0 1px rgb(100,100,100);
     margin-right: 8px;
 }
 

@@ -25,6 +25,13 @@ $(document).ready(function() {
                                     <div class="video-statistic-entry">Likes: '+dt.numberWithCommas(video.likes)+'</div>\
                                     <div class="video-statistic-entry">Comments: '+dt.numberWithCommas(video.comment_counter)+'</div>\
                                     <div class="video-statistic-entry">Bullets: '+dt.numberWithCommas(video.bullets)+'</div>\
+                                    <div class="video-time">'
+                                    if (video.is_edited) {
+                                        div += 'Edited: '
+                                    } else {
+                                        div += 'Uploaded: '
+                                    }
+                                    div += video.created+'</div>\
                                 </div>\
                                 <div class="video-info-line last-viewed">Last watched: '+video.last_viewed_time+'</div>\
                             </div>\
@@ -39,11 +46,7 @@ $(document).ready(function() {
                             </a>\
                             <div class="message-info">\
                                 <div class="info-line">\
-                                    <a href="'+comment.creator.space_url+'" target="_blank" class="blue-link user-name">'+comment.creator.nickname+'</a>\
-                                    <label class="message-time">'+comment.created+'</label>\
-                                </div>\
-                                <div class="info-line">\
-                                    <label class="info-label">Post a '
+                                    <label class="info-label">A '
                                     if (comment.danmaku_type) {
                                         if (comment.danmaku_type === 'danmaku') {
                                             cur_div += 'danmaku'
@@ -66,6 +69,7 @@ $(document).ready(function() {
                                         cur_div += '?index='+(comment.clip_index+1)
                                     }
                                     cur_div += '" target="_blank">'+dt.escapeHTML(comment.video.title)+'</a>\
+                                    <label class="message-time">'+comment.created+'</label>\
                                 </div>\
                                 <div class="info-line">\
                                     <div class="comment-content">'+dt.contentWrapper(comment.content)+'</div>\

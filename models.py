@@ -482,6 +482,7 @@ class Video(ndb.Model):
   ThumbnailPrefix = 'https://storage.googleapis.com/dantube-thumbnail/'
 
   created = ndb.DateTimeProperty(auto_now_add=True)
+  is_edited = ndb.BooleanProperty(required=True, default=False, indexed=False)
   updated = ndb.DateTimeProperty(auto_now_add=True)
   uploader = ndb.KeyProperty(kind='User')
   uploader_name = ndb.StringProperty(required=True, indexed=False)
@@ -538,6 +539,7 @@ class Video(ndb.Model):
       'shares': self.shares,
       'likes': self.likes,
       'created': self.created.strftime("%Y-%m-%d %H:%M") if not self.deleted else '',
+      'is_edited': self.is_edited,
       'uploader': User.get_snapshot_info(self.uploader_name, self.uploader),
       'thumbnail_url': Video.get_thumbnail_url(self.key.id()),
       'thumbnail_url_hq': Video.get_thumbnail_url_large(self.key.id()),

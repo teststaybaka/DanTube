@@ -86,28 +86,9 @@
     margin-bottom: 0;
 }
 
-.video-category {
-    display: inline-block;
-    font-size: 14px;
-    border: 1px solid rgb(220,220,220);
-    padding: 3px 8px;
-    vertical-align: middle;
-}
-
-.video-category-arrow {
-    display: inline-block;
-    vertical-align: middle;
-    width: 8px;
-    height: 8px;
-    background-position: 0 0;
-    background-image: url("/static/img/basic_icons.png");
-    margin: 0 5px;
-}
-
 .video-time {
-    color: rgb(150,150,150);
+    color: rgb(100,100,100);
     font-size: 14px;
-    vertical-align: middle;
     display: inline-block;
     margin-left: 10px;
 }
@@ -131,7 +112,7 @@
 .video-description, .playlist-description, .uper-description {
     font-size: 14px;
     color: rgb(150,150,150);
-    height: 48px;
+    height: 64px;
     overflow: hidden;
     word-wrap: break-word;
     white-space: pre-wrap;
