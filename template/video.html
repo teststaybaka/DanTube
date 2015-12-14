@@ -784,7 +784,7 @@ create_danmaku('Run this code!', function(ele, delta) {
     {% endif %}
     <div id="list-scroll-bar" data-id="{{ playlist.id }}" data-type="{{ playlist.type }}" data-cursor-prev="{{ playlist.cursor_prev }}" data-cursor-next="{{ playlist.cursor_next }}">
       {% for list_video in playlist.videos %}
-      <a class="list-entry {% if playlist.cur_index == list_video.index %}active{% endif %}" {% if playlist.cur_index != list_video.index %}href="{{ list_video.url }}"{% endif %}>
+      <a class="list-entry {% if playlist.cur_index == list_video.index %}active{% endif %}" {% if playlist.cur_index != list_video.index %}href="{{ list_video.url }}"{% endif %} data-deleted="{{ list_video.deleted }}">
         <div class="list-entry-index">{% if playlist.cur_index != list_video.index %}{{ list_video.index + 1 }}{% endif %}</div>
         <img class="list-video-img" src="{{ list_video.thumbnail_url }}">
         <div class="list-entry-info">

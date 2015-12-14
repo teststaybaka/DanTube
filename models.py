@@ -544,6 +544,7 @@ class Video(ndb.Model):
       'uploader': User.get_snapshot_info(None, None),
       'thumbnail_url': '/static/img/video_deleted.png',
       'thumbnail_url_hq': '/static/img/video_deleted.png',
+      'deleted': True,
     }
     return basic_info
 

@@ -27,7 +27,6 @@ from google.appengine.api import mail
 from google.appengine.api import search
 from google.appengine.api import taskqueue
 from google.appengine.ext import ndb
-from apiclient.discovery import build
 from google.appengine.ext import deferred
 from sessions import *
 

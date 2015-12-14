@@ -1,6 +1,7 @@
 from views import *
 from PIL import Image
 
+YOUTUBE_API_URL = "https://www.googleapis.com/youtube/v3"
 ISO_8601_period_rx = re.compile(
     'P'   # designates a period
     '(?:(?P<years>\d+)Y)?'   # years
@@ -132,7 +133,6 @@ class VideoUpload(BaseHandler):
             else:
                 self.sub_changed[i] = True
 
-        youtube = build('youtube', 'v3', developerKey=self.app.config.get('API_Key'))
         for i in xrange(0, len(self.indices)):
             if self.indices[i] != -1:
                 self.vids.append(-1)
@@ -148,10 +148,11 @@ class VideoUpload(BaseHandler):
                 except Exception:
                     raise Exception('invalid url:'+str(i))
 
+                youtube_api_url = YOUTUBE_API_URL + '/videos?key=' + self.app.config.get('API_Key') + '&id=' + res['vid'] + '&part=contentDetails'
                 if i == 0:
-                    vlist = youtube.videos().list(id=res['vid'], part='contentDetails,snippet').execute()['items']
-                else:
-                    vlist = youtube.videos().list(id=res['vid'], part='contentDetails').execute()['items']
+                    youtube_api_url += ',snippet'
+                req = urllib2.urlopen(youtube_api_url)
+                vlist = json.load(req)['items']
                 if not vlist:
                     raise Exception('invalid url:'+str(i))
 
