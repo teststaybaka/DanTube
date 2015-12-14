@@ -2148,7 +2148,7 @@ dt.onPlayerReady = function(event) {
 		player.playVideo();
 	}
 
-	ws = new WebSocket("ws://104.197.128.98/"+clip_id+"?session="+dt.getCookie('db_session'));
+	ws = new WebSocket("ws://104.197.128.177/"+clip_id+"?session="+dt.getCookie('db_session'));
     ws.onopen = function (event) {
         console.log('WebSocket connected!');
     }

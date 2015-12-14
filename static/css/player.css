@@ -1474,7 +1474,7 @@ div.bullet-date-value {
 #uploader-info {
 	display: inline-block;
 	vertical-align: top;
-	padding-left: 10px;
+	margin-left: 10px;
 }
 
 #uploader-link {
@@ -1499,7 +1499,7 @@ div.bullet-date-value {
 	color: rgb(100,100,100);
 	white-space: pre-wrap;
 	word-wrap: break-word;
-	width: 219px;
+	width: 100%;
 }
 
 .video-parts-container {
@@ -2315,4 +2315,16 @@ textarea.report {
 
 .load-more-button:hover {
 	text-decoration: underline;
+}
+
+@media only screen and (min-width: 1550px) {
+
+#video-info {
+	width: 1024px;
+}
+
+#uploader-link {
+	width: 200px;
+}
+
 }
