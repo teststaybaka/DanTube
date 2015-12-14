@@ -1,135 +1,590 @@
-{% extends "template/base.html" %}
-{% block head %}
-{{ super() }}
-<link href="/static/css/player.css" rel="stylesheet" type="text/css">
-<script src="/static/js/player.js" language="JavaScript" type="text/javascript"></script>
-{% endblock %}
+<!DOCTYPE html>
+<html>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<head>
+    <title>Danmaku video player</title>
+    <script src="/static/js/jquery.min.js" language="JavaScript" type="text/javascript" ></script>
+    <link href="/static/css/base.css" rel="stylesheet" type="text/css">
+    <script src="/static/js/base.js" language="JavaScript" type="text/javascript"></script>
+</head>
+<body>
+<noscript>
+    <style type="text/css">
+        #user-bar-background, #navigation-bar-background, #body-background { display:none; }
+    </style>
+    <div class="noscriptmsg">
+        You don't have javascript enabled. What are you expecting to see?
+    </div>
+</noscript>
 
-{% block body %}
-<div id="player-container" class="container">
-	<div id="player-controller">
-		<div id="player"></div>
-		<div id="controller-background">
-			<div id="controller" class="container">
-				<div id="full-screen" class="off"></div>
-				<div id="wide-screen" class="off"></div>
-				<div id="loop-switch" class="off">
-					<div id="loop-on-tip">Loop On</div>
-					<div id="loop-off-tip">Loop Off</div>
-				</div>
-				<div id="danmaku-switch" class="on">
-					<div id="danmaku-on-tip">Danmaku On</div>
-					<div id="danmaku-off-tip">Danmaku Off</div>
-				</div>
-				<div id="volume-controller" class="on">
-					<div id="volume-switch"></div>
-					<div id="volume-background">
-						<div id="volume-bar"></div>
-						<div id="volume-magnitude"></div>
-						<div id="volume-pointer"></div>
-						<div id="volume-tip">23</div>
-					</div>
-				</div>
-				<div id="progress-number">--/--</div>
-				<div id="play-pause-button" class="play"></div>
-				<div id="progress-bar"></div>
-				<div id="progress-bar-background"></div>
-				<div id="progress-bar-buffered"></div>
-				<div id="progress-bar-played"></div>
-				<div id="progress-pointer"></div>
-				<div id="progress-tip">23:23</div>
-			</div>
-			<div id="shooter" class="container">
-				<div id="danmaku-color-setting"></div>
-				<input id="danmaku-input" type="text" name="danmaku">
-				<button id="fire-button" type="button">Fire!</button>
-			</div>
-		</div>
-	</div>
-	<div id="danmaku-pool">
-		<div class="danmaku-order-title" id="time">Time</div>
-		<div class="danmaku-order-title" id="content">Content</div>
-		<div class="danmaku-order-title"  id="date">Date</div>
-		<div id="danmaku-list">
-			<div class="per-bullet container">
-				<div class="bullet-time-value">10:33</div>
-				<div class="space-padding"></div>
-				<div class="bullet-content-value">23333 33333333333333333333333</div>
-				<div class="space-padding"></div>
-				<div class="bullet-date-value">01-10 06:41</div>
-			</div>
-			<div class="per-bullet container">
-				<div class="bullet-time-value">10:33</div>
-				<div class="space-padding"></div>
-				<div class="bullet-content-value">2333333333333333333333333333</div>
-				<div class="space-padding"></div>
-				<div class="bullet-date-value">01-10 06:41</div>
-			</div>
-			<div class="per-bullet container">
-				<div class="bullet-time-value">10:33</div>
-				<div class="space-padding"></div>
-				<div class="bullet-content-value">2333333333333333333333333333</div>
-				<div class="space-padding"></div>
-				<div class="bullet-date-value">01-10 06:41</div>
-			</div>
-			<div class="per-bullet container">
-				<div class="bullet-time-value">10:33</div>
-				<div class="space-padding"></div>
-				<div class="bullet-content-value">2333333333333333333333333333</div>
-				<div class="space-padding"></div>
-				<div class="bullet-date-value">01-10 06:41</div>
-			</div>
-			<div class="per-bullet container">
-				<div class="bullet-time-value">10:33</div>
-				<div class="space-padding"></div>
-				<div class="bullet-content-value">2333333333333333333333333333</div>
-				<div class="space-padding"></div>
-				<div class="bullet-date-value">01-10 06:41</div>
-			</div>
-			<div class="per-bullet container">
-				<div class="bullet-time-value">10:33</div>
-				<div class="space-padding"></div>
-				<div class="bullet-content-value">2333333333333333333333333333</div>
-				<div class="space-padding"></div>
-				<div class="bullet-date-value">01-10 06:41</div>
-			</div>
-			<div class="per-bullet container">
-				<div class="bullet-time-value">10:33</div>
-				<div class="space-padding"></div>
-				<div class="bullet-content-value">2333333333333333333333333333</div>
-				<div class="space-padding"></div>
-				<div class="bullet-date-value">01-10 06:41</div>
-			</div>
-			<div class="per-bullet container">
-				<div class="bullet-time-value">10:33</div>
-				<div class="space-padding"></div>
-				<div class="bullet-content-value">2333333333333333333333333333</div>
-				<div class="space-padding"></div>
-				<div class="bullet-date-value">01-10 06:41</div>
-			</div>
-			<div class="per-bullet container">
-				<div class="bullet-time-value">10:33</div>
-				<div class="space-padding"></div>
-				<div class="bullet-content-value">2333333333333333333333333333</div>
-				<div class="space-padding"></div>
-				<div class="bullet-date-value">01-10 06:41</div>
-			</div>
-			<div class="per-bullet container">
-				<div class="bullet-time-value">10:33</div>
-				<div class="space-padding"></div>
-				<div class="bullet-content-value">2333333333333333333333333333</div>
-				<div class="space-padding"></div>
-				<div class="bullet-date-value">01-10 06:41</div>
-			</div>
-			<div class="per-bullet container">
-				<div class="bullet-time-value">10:33</div>
-				<div class="space-padding"></div>
-				<div class="bullet-content-value">2333333333333333333333333333</div>
-				<div class="space-padding"></div>
-				<div class="bullet-date-value">01-10 06:41</div>
-			</div>
-		</div>
-	</div>
-	<div id="danmaku-left-mask"></div>
+<input class="hidden" id="clip-id" value="{{ video.cur_clip_id }}">
+<input class="hidden" id="danmaku-buffer" value="{{ danmaku_list }}">
+<div id="player-container">
+  <div id="player-controller">
+    <div id="player-background">
+      <div class="player-vertical-padding"></div>
+      <div id="player-canvas">
+        <div id="player"></div>
+      </div>
+      <div id="switch-count-down" class="hidden">
+        <span id="switch-count-span">Switch to the next part in 5 seconds.</span>
+        <span id="switch-cancel normal-link">Cancel</span>
+      </div>
+    </div>
+    <form id="report-danmaku-form" class="popup-box hidden" method="POST">
+      <input type="text" class="hidden" name="pool_type" id="report-danmaku-type">
+      <input type="text" class="hidden" name="danmaku_index" id="report-danmaku-index">
+      <div class="report-label">Why do you want to report this danmaku?</div>
+      <div class="report-input-line">
+        <div class="list-select report">
+            <div class="list-selection down hidden">
+                {% for key in danmaku_issues %}
+                <div class="list-option medium">{{ key }}</div>
+                {% endfor %}
+            </div>
+            <div class="list-selected auto medium"></div>
+            <input name="issue" type="text" class="hidden">
+        </div>
+      </div>
+      <div class="report-label">Description (optional):</div>
+      <div class="report-input-line">
+        <textarea id="report-danmaku-textarea" name="description" class="normal-input report" placeholder="" tabindex="1"></textarea>
+      </div>
+      <div class="report-buttons-line">
+        <div class="inline-button report">Cancel</div>
+        <input class="inline-button special report" type="submit" value="Report" />
+      </div>
+    </form>
+    <div id="progress-controller-wrap">
+      <div id="progress-bar-background" ondragstart="return false;" ondrop="return false;" onselectstart="return false;">
+        <div id="progress-bar" ondragstart="return false;" ondrop="return false;" onselectstart="return false;"></div>
+        <div id="progress-bar-buffered" ondragstart="return false;" ondrop="return false;" onselectstart="return false;"></div>
+        <div id="progress-bar-played" ondragstart="return false;" ondrop="return false;" onselectstart="return false;"></div>
+        <div id="progress-tip" class="hidden">--:--</div>
+      </div>
+      <div id="controller-background">
+        <div id="controller">
+          <div class="screen-size">
+            <div id="page-wide" class="player-button off">
+              <div class="button-tip off">Page-wide screen</div>
+              <div class="button-tip on">Restore</div>
+            </div>
+            <div id="wide-screen" class="player-button off">
+              <div class="button-tip off">Wide screen</div>
+              <div class="button-tip on">Default view</div>
+            </div>
+            <div id="full-screen" class="player-button off">
+              <div class="button-tip off">Fullscreen</div>
+              <div class="button-tip on">Exit fullscreen</div>
+            </div>
+          </div>
+          <div id="settings-controller" class="player-button on">
+            <div class="button-tip on">Settings</div>
+            <div id="settings-switch"></div>
+            <div id="player-quick-settings">
+              <div class="player-setting-line">
+                <label class="player-setting-label">Speed</label>
+                <div class="list-select speed">
+                  <div class="list-selection hidden">
+                    <div class="list-option speed">0.25</div>
+                    <div class="list-option speed">0.5</div>
+                    <div class="list-option speed active">1.0</div>
+                    <div class="list-option speed">1.25</div>
+                    <div class="list-option speed">1.5</div>
+                    <div class="list-option speed">2.0</div>
+                  </div>
+                  <div class="list-selected">1.0</div>
+                </div>
+              </div>
+              <div class="player-setting-line">
+                <label class="player-setting-label">Quality</label>
+                <div class="list-select quality">
+                  <div class="list-selection quality hidden">
+                    <div class="list-option quality">1080p</div>
+                    <div class="list-option quality">720p</div>
+                    <div class="list-option quality">480p</div>
+                    <div class="list-option quality">360p</div>
+                    <div class="list-option quality">240p</div>
+                    <div class="list-option quality active">Auto</div>
+                  </div>
+                  <div class="list-selected quality">Auto</div>
+                </div>
+              </div>
+              <div class="player-setting-line">
+                <label class="player-setting-label">Auto switch</label>
+                <div class="checkbox-selection off" id="auto-switch">
+                  <div class="checkbox-option off">Off</div>
+                  <div class="checkbox-option on">On</div>
+                </div>
+              </div>
+              <div class="player-setting-line">
+                <label class="player-setting-label">Loop</label>
+                <div class="checkbox-selection off" id="loop-switch">
+                  <div class="checkbox-option off">Off</div>
+                  <div class="checkbox-option on">On</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div id="danmaku-controller" class="player-button on">
+            <div class="button-tip on">Danmaku on</div>
+            <div class="button-tip off">Danmaku off</div>
+            <div id="danmaku-switch"></div>
+            <div id="quick-block-box">
+              <div class="opacity-title">Danmaku opacity</div>
+              <div id="opacity-indicator" ondragstart="return false;" ondrop="return false;" onselectstart="return false;">
+                <div id="opacity-pointer" ondragstart="return false;" ondrop="return false;" onselectstart="return false;"></div>
+                <div id="opacity-line" ondragstart="return false;" ondrop="return false;" onselectstart="return false;"></div>
+              </div>
+              <label class="quick-block check-label">
+                <div class="pseudo-checkbox checked"></div>
+                <input type="checkbox" id="show-top-checkbox" class="hidden" checked="checked"/>
+                <span>Show top danmaku</span>
+              </label>
+              <label class="quick-block check-label">
+                <div class="pseudo-checkbox checked"></div>
+                <input type="checkbox" id="show-bottom-checkbox" class="hidden" checked="checked"/>
+                <span>Show bottom danmaku</span>
+              </label>
+              <label class="quick-block check-label">
+                <div class="pseudo-checkbox checked"></div>
+                <input type="checkbox" id="show-colored-checkbox" class="hidden" checked="checked"/>
+                <span>Show colored danmaku</span>
+              </label>
+            </div>
+          </div>
+          <div id="volume-controller" class="player-button on">
+            <div class="button-tip on">Volume on</div>
+            <div class="button-tip off">Volume off</div>
+            <div id="volume-switch"></div>
+            <div id="volume-background">
+              <div id="volume-bar"></div>
+              <div id="volume-magnitude"></div>
+              <div id="volume-pointer"></div>
+              <div id="volume-tip">--</div>
+            </div>
+          </div>
+          <div id="play-pause-button" class="play"></div>
+          <div id="backward-button" class="player-button on"><div class="button-tip on">3secs backward</div></div>
+          <div id="forward-button" class="player-button on"><div class="button-tip on">3secs forward</div></div>
+          <div id="progress-number">--:--/--:--</div>
+        </div>
+        <form id="shooter">
+          <div id="danmaku-type-box" class="hidden">
+            <div class="type-select-title">Font size</div>
+            <div>
+              <div class="danmaku-size-option small" title="12">A</div>
+              <div class="danmaku-size-option medium" title="16">A</div>
+              <div class="danmaku-size-option large active" title="20">A</div>
+              <input id="danmaku-size-input" type="text" value="20" name="size" class="hidden">
+            </div>
+            <div class="type-select-title">Danmaku type</div>
+            <div>
+              <div class="danmaku-type-option top"><div class="danmaku-type-img top"></div><div class="danmaku-type-text">Top</div></div>
+              <div class="danmaku-type-option bottom"><div class="danmaku-type-img bottom"></div><div class="danmaku-type-text">Bottom</div></div>
+              <div class="danmaku-type-option normal active"><div class="danmaku-type-img normal"></div><div class="danmaku-type-text">Scroll</div></div>
+              <input id="danmaku-type-input" type="text" value="Scroll" name="type" class="hidden">
+            </div>
+          </div>
+          <div class="danmaku-setting" id="danmaku-type-setting">
+            <div id="danmaku-type-tip">Danmaku options</div>
+          </div>
+          <div class="danmaku-setting" id="danmaku-color-setting">
+            <div id="danmaku-color-tip">Danmaku color</div>
+          </div>
+          <input id="danmaku-color-input" type="text" value="ffffff" name="color" class="hidden">
+          <div id="danmaku-input-container">
+            <input id="danmaku-reply-input" type="text" name="reply-to" class="hidden">
+            <div class="input-layon-block hidden" title="Replying">
+              <div class="layon-close"></div>
+            </div>
+            <input id="danmaku-input" type="text" placeholder="{% if not user %}Please sign in{% endif %}" name="content" tabindex="2">
+          </div>
+          <input id="fire-button" type="submit" value="Fire!" title="Burning Love!">
+        </form>
+      </div>
+    </div>
+  </div>
+  <div id="danmaku-pool">
+    <div class="player-full-setting player hidden">
+      <div class="player-setting-title-line">
+        <div class="player-setting-go-back"></div>
+        <div class="player-setting-content-title">Player Settings</div>
+      </div>
+      <div class="player-full-setting-lower-box">
+        <!-- <div class="settings-hint">*All settings are stored in cookies. </div> -->
+        <div class="player-full-setting-line">
+          <label class="player-full-setting-label number">Move speed</label>
+          <label class="number-adjusted">12</label>
+          <div class="number-adjust-bar speed" ondragstart="return false;" ondrop="return false;" onselectstart="return false;">
+            <div class="number-adjust-pointer" ondragstart="return false;" ondrop="return false;" onselectstart="return false;"></div>
+            <div class="number-adjust-line" ondragstart="return false;" ondrop="return false;" onselectstart="return false;"></div>
+          </div>
+          <label class="setting-reset-button blue-link number">Reset</label>
+        </div>
+        <div class="player-full-setting-line">
+          <label class="player-full-setting-label number">Longevity (of the top and bottom)</label>
+          <label class="number-adjusted">12</label>
+          <div class="number-adjust-bar time" ondragstart="return false;" ondrop="return false;" onselectstart="return false;">
+            <div class="number-adjust-pointer" ondragstart="return false;" ondrop="return false;" onselectstart="return false;"></div>
+            <div class="number-adjust-line" ondragstart="return false;" ondrop="return false;" onselectstart="return false;"></div>
+          </div>
+          <label class="setting-reset-button blue-link number">Reset</label>
+        </div>
+        <div class="player-full-setting-line">
+          <label class="player-full-setting-label number">Maximum number of danmaku</label>
+          <label class="number-adjusted">12</label>
+          <div class="number-adjust-bar danmaku-num" ondragstart="return false;" ondrop="return false;" onselectstart="return false;">
+            <div class="number-adjust-pointer" ondragstart="return false;" ondrop="return false;" onselectstart="return false;"></div>
+            <div class="number-adjust-line" ondragstart="return false;" ondrop="return false;" onselectstart="return false;"></div>
+          </div>
+          <label class="setting-reset-button blue-link number">Reset</label>
+        </div>
+        <div class="player-full-setting-line">
+          <label class="player-full-setting-label number">Text scale</label>
+          <label class="number-adjusted">12</label>
+          <div class="number-adjust-bar scale" ondragstart="return false;" ondrop="return false;" onselectstart="return false;">
+            <div class="number-adjust-pointer" ondragstart="return false;" ondrop="return false;" onselectstart="return false;"></div>
+            <div class="number-adjust-line" ondragstart="return false;" ondrop="return false;" onselectstart="return false;"></div>
+          </div>
+          <label class="setting-reset-button blue-link number">Reset</label>
+        </div>
+        <div class="player-full-setting-line">
+          <label class="player-full-setting-label">Text outline</label>
+          <div class="checkbox-selection text-outline on">
+            <div class="checkbox-option off">Off</div>
+            <div class="checkbox-option on">On</div>
+          </div>
+        </div>
+        <div class="player-full-setting-line">
+          <label class="player-full-setting-label">Text font</label>
+          <div class="list-select font">
+            <div class="list-selection down hidden">
+              <div class="list-option medium font">Georgia</div>
+              <div class="list-option medium font">Palatino Linotype</div>
+              <div class="list-option medium font">Book Antiqua</div>
+              <div class="list-option medium font active">Times New Roman</div>
+              <div class="list-option medium font">Aria</div>
+              <div class="list-option medium font">Helvetica</div>
+              <div class="list-option medium font">Arial Black</div>
+              <div class="list-option medium font">Impact</div>
+              <div class="list-option medium font">Lucida Sans Unicode</div>
+              <div class="list-option medium font">Tahoma</div>
+              <div class="list-option medium font">Verdana</div>
+              <div class="list-option medium font">Courier New</div>
+              <div class="list-option medium font">Lucida Console</div>
+            </div>
+            <div class="list-selected medium font">Times New Roman</div>
+          </div>
+          <label class="setting-reset-button blue-link font">Reset</label>
+        </div>
+        <div class="player-full-setting-line">
+          <label class="player-full-setting-label">Autohide controls</label>
+          <div class="checkbox-selection hide-controls off">
+            <div class="checkbox-option off">Off</div>
+            <div class="checkbox-option on">On</div>
+          </div>
+        </div>
+        <!-- <div class="player-full-setting-line">
+          <label class="player-full-setting-label">Full buffering</label>
+          <div class="checkbox-selection off">
+            <div class="checkbox-option off">Off</div>
+            <div class="checkbox-option on">On</div>
+          </div>
+        </div> -->
+        <div class="player-full-setting-line">
+          <label class="player-full-setting-label">Subtitles/CC</label>
+          <div class="checkbox-selection subtitles off">
+            <div class="checkbox-option off">Off</div>
+            <div class="checkbox-option on">On</div>
+          </div>
+        </div>
+        <div class="subtitles-block hidden">
+          <div class="subtitles-list">
+          </div>
+          <div class="player-full-setting-line">
+            <label class="player-full-setting-label number">Subtitles font size</label>
+            <label class="number-adjusted">16</label>
+            <div class="number-adjust-bar subtitles-size" ondragstart="return false;" ondrop="return false;" onselectstart="return false;">
+              <div class="number-adjust-pointer" ondragstart="return false;" ondrop="return false;" onselectstart="return false;"></div>
+              <div class="number-adjust-line" ondragstart="return false;" ondrop="return false;" onselectstart="return false;"></div>
+            </div>
+            <label class="setting-reset-button blue-link number">Reset</label>
+          </div>
+          <div class="player-full-setting-line">
+            <label class="player-full-setting-label number">Subtitles longevity</label>
+            <label class="number-adjusted">12</label>
+            <div class="number-adjust-bar subtitles-longevity" ondragstart="return false;" ondrop="return false;" onselectstart="return false;">
+              <div class="number-adjust-pointer" ondragstart="return false;" ondrop="return false;" onselectstart="return false;"></div>
+              <div class="number-adjust-line" ondragstart="return false;" ondrop="return false;" onselectstart="return false;"></div>
+            </div>
+            <label class="setting-reset-button blue-link number">Reset</label>
+          </div>
+          <div class="player-full-setting-line">
+            <label class="player-full-setting-label number">Subtitles opacity</label>
+            <label class="number-adjusted">12</label>
+            <div class="number-adjust-bar subtitles-opacity" ondragstart="return false;" ondrop="return false;" onselectstart="return false;">
+              <div class="number-adjust-pointer" ondragstart="return false;" ondrop="return false;" onselectstart="return false;"></div>
+              <div class="number-adjust-line" ondragstart="return false;" ondrop="return false;" onselectstart="return false;"></div>
+            </div>
+            <label class="setting-reset-button blue-link number">Reset</label>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="player-full-setting block hidden">
+      <div class="player-setting-title-line">
+        <div class="player-setting-go-back"></div>
+        <div class="player-setting-content-title">Block Settings</div>
+      </div>
+      <div class="player-full-setting-line"><label>Add blocking rules</label><a class="help-link" title="How to use blocking rules?"></a></div>
+      <form id="add-rule-form" class="player-full-setting-line">
+        <div class="list-select block">
+          <div class="list-selection down hidden">
+            <div class="list-option medium active">Keywords</div>
+            <div class="list-option medium">RegExp</div>
+            <div class="list-option medium">User</div>
+          </div>
+          <div class="list-selected medium block">Keywords</div>
+        </div>
+        <input type="text" class="normal-input block-condition-input" tabindex="1">
+        <input type="submit" class="inline-button special add-block" value="Add">
+      </form>
+      <div class="block-list-title-line">
+        <div class="block-title rule-type">Type</div>
+        <div class="block-title rule-content">Content</div>
+        <div class="block-title rule-status">Status</div>
+      </div>
+      <div class="block-list"></div>
+    </div>
+    <div class="player-full-setting special hidden">
+      <div class="player-setting-title-line">
+        <div class="player-setting-go-back"></div>
+        <div class="player-setting-content-title">Special Danmaku</div>
+      </div>
+      <div class="danmaku-full-settings">
+        <div class="danmaku-pool-setting tab advanced selected">Advanced</div>
+        <div class="danmaku-pool-setting tab subtitle unselected">Subtitles</div>
+        <div class="danmaku-pool-setting tab code unselected">Code</div>
+      </div>
+      <form class="special-danmaku-setting advanced" id="advanced-danmaku-form">
+        <div class="player-full-setting-line">
+          <label>Content</label>
+          <div class="advanced-danmaku-input-box">
+            <input class="normal-input long-long" id="advanced-danmaku-content" type="text" name="content" tabindex="1">
+          </div>
+        </div>
+        <div class="player-full-setting-line">
+          <label class="advanced-danmaku-label">Birth position</label>
+          <div class="advanced-danmaku-input-box">
+            <label>X:</label>
+            <input class="normal-input advanced-danmaku-input number-input negative" type="text" name="birth-position-X" value="0" data-old="0" tabindex="1">
+            <div class="number-input-arrow up"></div>
+            <div class="number-input-arrow down"></div>
+          </div>
+          <div class="advanced-danmaku-input-box">
+            <label>Y:</label>
+            <input class="normal-input advanced-danmaku-input number-input negative" type="text" name="birth-position-Y" value="0" data-old="0" tabindex="1">
+            <div class="number-input-arrow up"></div>
+            <div class="number-input-arrow down"></div>
+          </div>
+        </div>
+        <div class="player-full-setting-line">
+          <label class="advanced-danmaku-label">Death position</label>
+          <div class="advanced-danmaku-input-box">
+            <label>X:</label>
+            <input class="normal-input advanced-danmaku-input number-input negative" type="text" name="death-position-X" value="-1" data-old="-1" tabindex="1">
+            <div class="number-input-arrow up"></div>
+            <div class="number-input-arrow down"></div>
+          </div>
+          <div class="advanced-danmaku-input-box">
+            <label>Y:</label>
+            <input class="normal-input advanced-danmaku-input number-input negative" type="text" name="death-position-Y" value="0" data-old="0" tabindex="1">
+            <div class="number-input-arrow up"></div>
+            <div class="number-input-arrow down"></div>
+          </div>
+        </div>
+        <div class="player-full-setting-line">
+          <label class="advanced-danmaku-label">Position options</label>
+          <label class="check-label as-percent">
+            <div class="pseudo-checkbox"></div>
+            <input type="checkbox" class="hidden" name="as-percent">
+            <span>As percent</span>
+          </label>
+          <label class="check-label">
+            <div class="pseudo-checkbox"></div>
+            <input type="checkbox" class="hidden" tabindex="1" name="relative">
+            <span>Relative to actual screen</span>
+          </label>
+        </div>
+        <div class="player-full-setting-line">
+          <label class="advanced-danmaku-label">Speed (pixel/sec)</label>
+          <div class="advanced-danmaku-input-box">
+            <label>X:</label>
+            <input class="normal-input advanced-danmaku-input number-input" type="text" name="speed-X" value="80" data-old="80" tabindex="1">
+            <div class="number-input-arrow up"></div>
+            <div class="number-input-arrow down"></div>
+          </div>
+          <div class="advanced-danmaku-input-box">
+            <label>Y:</label>
+            <input class="normal-input advanced-danmaku-input number-input" type="text" name="speed-Y" value="0" data-old="0" tabindex="1">
+            <div class="number-input-arrow up"></div>
+            <div class="number-input-arrow down"></div>
+          </div>
+        </div>
+        <div class="player-full-setting-line">
+          <label class="advanced-danmaku-label">Longevity (sec)</label>
+          <div class="advanced-danmaku-input-box">
+            <input class="normal-input advanced-danmaku-input number-input" type="text" name="longevity" value="0" data-old="0" tabindex="1">
+            <div class="number-input-arrow up"></div>
+            <div class="number-input-arrow down"></div>
+          </div>
+        </div>
+        <div class="player-full-setting-line">
+          <label class="advanced-danmaku-label">Start time (sec)</label>
+          <div class="advanced-danmaku-input-box">
+            <input class="normal-input advanced-danmaku-input number-input" id="advanced-timestamp" type="text" value="0" data-old="0" tabindex="1">
+            <div class="number-input-arrow up"></div>
+            <div class="number-input-arrow down"></div>
+          </div>
+          <label class="check-label">
+            <div class="pseudo-checkbox checked"></div>
+            <input type="checkbox" class="hidden" id="advanced-use-cur-timestamp" checked="checked">
+            <span>Use current timestamp</span>
+          </label>
+        </div>
+        <div class="player-full-setting-line">
+          <label>CSS customization</label>
+          <a class="help-link" title="Reference for advanced danmaku"></a>
+        </div>
+        <div class="player-full-setting-line">
+          <textarea class="css-customize-input normal-input" name="danmaku-css" placeholder="e.g., color: rgb(255,255,255);" tabindex="1">color: rgb(255,255,255);&#10;font-size: 20px;&#10;text-shadow: 1px 0 1px rgb(0,0,0), -1px 0 1px rgb(0,0,0), 0 1px 1px rgb(0,0,0), 0 -1px 1px rgb(0,0,0);</textarea>
+        </div>
+        <div class="player-full-setting-line buttons-line">
+          <input class="inline-button special-danmaku-button" type="button" value="Preview">
+          <input class="inline-button special special-danmaku-button" type="submit" value="Send">
+        </div>
+      </form>
+      <form class="special-danmaku-setting subtitle hidden" id="subtitles-danmaku-form">
+        <div class="player-full-setting-line">
+          <label class="subtitle-danmaku-label">Language & description</label>
+          <input class="subtitle-danmaku-input normal-input" name="name" type="text" placeholder="e.g., English (by XXX)" tabindex="1">
+        </div>
+        <div class="player-full-setting-line">
+          <label>Copy all your subtitles/captions here.</label>
+          <a class="help-link" title="Subtitle format"></a>
+        </div>
+        <div class="player-full-setting-line">
+          <textarea class="subtitle-content-input normal-input" name="subtitles" placeholder="e.g., [10:23.08] This is a line." tabindex="1"></textarea>
+        </div>
+        <div class="player-full-setting-line buttons-line">
+          <input class="inline-button special-danmaku-button" type="button" value="Preview">
+          <input class="inline-button special special-danmaku-button" type="submit" value="Send">
+        </div>
+      </form>
+      <form class="special-danmaku-setting code hidden" id="code-danmaku-form">
+        <div class="player-full-setting-line">
+          <label>Output</label>
+          <label id="copy-output" class="blue-link code-area-button" data-clipboard-target="textarea-danmaku-output">Copy</label>
+          <label id="clear-output" class="blue-link code-area-button">Clear</label>
+        </div>
+        <div class="player-full-setting-line">
+          <textarea id="textarea-danmaku-output" class="code-danmaku-output normal-input" readonly="readonly"></textarea>
+        </div>
+        <div class="player-full-setting-line">
+          <label>Script</label>
+          <a class="help-link" title="Script reference"></a>
+          <label id="copy-code" class="blue-link code-area-button" data-clipboard-target="textarea-code-danmaku">Copy</label>
+          <label id="clear-code" class="blue-link code-area-button">Clear</label>
+        </div>
+        <div class="player-full-setting-line">
+          <textarea id="textarea-code-danmaku" class="code-danmaku-content-input normal-input" name="content" tabindex="1">
+var pos_x = 0;
+create_danmaku('Run this code!', function(ele, delta) {
+    var speed = (100*danmaku_speed + 400)/10;
+    if (pos_x > player_width + ele.offsetWidth) {
+        return true;
+    } else {
+        pos_x += speed*delta;
+        ele.style.WebkitTransform = "translate(-"+pos_x+"px, 0px)";
+        ele.style.msTransform = "translate(-"+pos_x+"px, 0px)";
+        ele.style.transform = "translate(-"+pos_x+"px, 0px)";
+        return false;
+    }
+});
+          </textarea>
+        </div>
+        <div class="player-full-setting-line">
+          <label class="advanced-danmaku-label">Execute at (sec)</label>
+          <div class="advanced-danmaku-input-box">
+            <input class="normal-input advanced-danmaku-input number-input" id="code-timestamp" type="text" value="0" data-old="0" tabindex="1">
+            <div class="number-input-arrow up"></div>
+            <div class="number-input-arrow down"></div>
+          </div>
+          <label class="check-label">
+            <div class="pseudo-checkbox checked"></div>
+            <input type="checkbox" class="hidden" id="code-use-cur-timestamp" checked="checked">
+            <span>Use current timestamp</span>
+          </label>
+        </div>
+        <div class="player-full-setting-line buttons-line">
+          <input type="button" class="inline-button special-danmaku-button" value="Preview">
+          <input type="submit" class="inline-button special special-danmaku-button" value="Send">
+        </div>
+      </form>
+    </div>
+    <div class="player-full-setting check-all-sent hidden">
+      <div class="player-setting-title-line">
+        <div class="player-setting-go-back"></div>
+        <div class="player-setting-content-title">All danmaku sent by him/her</div>
+      </div>
+      <div id="danmaku-list-all"></div>
+    </div>
+    <div class="danmaku-pool-info">
+      <div class="video-source-icon"></div>
+      <div class="danmaku-info-box-left">
+        <span class="special-number">Currently watching:</span>
+        <span class="special-number current-number">...</span>
+      </div>
+      <div class="dammaku-info-box-right">
+        <div class="danmaku-pool-info-box">
+          <span class="info-title">Watching peak:</span>
+          <span class="peak-number">...</span>
+        </div>
+        <div class="danmaku-pool-info-box">
+          <span class="info-title">Total danmaku:</span>
+          <span id="total-danmaku-span">0</span>
+        </div>
+      </div>
+    </div>
+    <div class="video-full-settings">
+      <div class="danmaku-pool-setting player">Player Settings</div>
+      <div class="danmaku-pool-setting block">Block Settings</div>
+      <div class="danmaku-pool-setting special">Special Danmaku</div>
+    </div>
+    <div class="danmaku-orders">
+      <div class="danmaku-order-title" id="time">Time</div>
+      <div class="danmaku-order-title" id="content">Content</div>
+      <div class="danmaku-order-title" id="date">Date</div>
+    </div>
+    <div id="danmaku-list"></div>
+  </div>
+  <div class="danmaku-menu hidden">
+    <div class="right-click-entry" id="danmaku-copy-content">Copy content</div>
+    <div class="right-click-entry" id="danmaku-reply">Reply to the sender</div>
+    <div class="right-click-entry" id="danmaku-locate-it">Locate the danmaku</div>
+    <div class="right-click-entry" id="danmaku-block-sender">Block the sender</div>
+    <div class="right-click-separate-line"></div>
+    <div class="right-click-entry" id="danmaku-report">Report abuse</div>
+  </div>
+  <div class="danmaku-pool-menu hidden">
+    <div class="right-click-entry" id="danmaku-pool-copy-content">Copy content</div>
+    <div class="right-click-entry" id="danmaku-pool-check-all-sent">Check all his/her danmaku</div>
+    <div class="right-click-entry" id="danmaku-pool-block-sender">Block the sender</div>
+    <div class="right-click-separate-line"></div>
+    <div class="right-click-entry" id="danmaku-pool-report">Report abuse</div>
+  </div>
 </div>
-{% endblock %}
+
+</body>
+</html>

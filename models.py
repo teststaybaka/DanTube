@@ -523,6 +523,30 @@ class Video(ndb.Model):
   def get_thumbnail_url(cls, video_id):
     return cls.ThumbnailPrefix+'standard-'+video_id
 
+  @classmethod
+  def get_none_info(cls, video_key):
+    basic_info = {
+      'id': video_key.id(),
+      'url': Video.get_video_url(video_key.id()),
+      'title': 'deleted',
+      'intro': '',
+      'category': '',
+      'subcategory': '',
+      'duration': 0,
+      'type': '',
+      'hits': 0,
+      'comment_counter': 0,
+      'bullets': 0,
+      'shares': 0,
+      'likes': 0,
+      'created': '',
+      'is_edited': '',
+      'uploader': User.get_snapshot_info(None, None),
+      'thumbnail_url': '/static/img/video_deleted.png',
+      'thumbnail_url_hq': '/static/img/video_deleted.png',
+    }
+    return basic_info
+
   def get_basic_info(self, playlist_id=None):
     basic_info = {
       'id': self.key.id(),
@@ -538,7 +562,7 @@ class Video(ndb.Model):
       'bullets': self.bullets,
       'shares': self.shares,
       'likes': self.likes,
-      'created': self.created.strftime("%Y-%m-%d %H:%M") if not self.deleted else '',
+      'created': self.created.strftime("%Y-%m-%d %H:%M"),
       'is_edited': self.is_edited,
       'uploader': User.get_snapshot_info(self.uploader_name, self.uploader),
       'thumbnail_url': Video.get_thumbnail_url(self.key.id()),
@@ -668,13 +692,16 @@ class Video(ndb.Model):
   def Delete(self):
     if self.playlist_belonged:
       playlist, list_detail = ndb.get_multi([self.playlist_belonged, Playlist.get_detail_key(self.playlist_belonged)])
-      list_detail.videos.remove(self.key)
-      if not list_detail.videos:
-        playlist.first_video = None
-      elif playlist.first_video != list_detail.videos[0]:
-        playlist.first_video = list_detail.videos[0]
-      playlist.videos_num = len(list_detail.videos)
-      ndb.put_multi([playlist, list_detail])
+      try:
+        list_detail.videos.remove(self.key)
+        if not list_detail.videos:
+          playlist.first_video = None
+        else:
+          playlist.first_video = list_detail.videos[0]
+        playlist.videos_num = len(list_detail.videos)
+        ndb.put_multi([playlist, list_detail])
+      except ValueError:
+        pass
       self.playlist_belonged = None
 
     video_clip_list = VideoClipList.get_key(self.key.id()).get()
@@ -695,21 +722,14 @@ class Video(ndb.Model):
     #     break
     #   except TransactionFailedError:
     #     pass
+
+    gcs.delete('/dantube-thumbnail/large-'+self.key.id())
+    gcs.delete('/dantube-thumbnail/standard-'+self.key.id())
     
     self.delete_index('videos_by_created')
     self.delete_index('videos_by_hits')
     self.delete_index('videos_by_likes')
-    
-    self.deleted = True
-    self.title = 'Video deleted'
-    self.intro = ''
-    self.duration = 0
-    self.uploader = None
-    self.updated = None
-    self.created = None
-    self.hot_score = None
-    self.put()
-    # self.key.delete()
+    self.key.delete()
 
 class Comment(ndb.Model):
   creator = ndb.KeyProperty(kind='User', required=True)

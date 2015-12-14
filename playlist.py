@@ -162,6 +162,9 @@ class DeletePlaylist(BaseHandler):
                 videos = ndb.get_multi(list_detail.videos)
                 for j in xrange(0, len(videos)):
                     video = videos[j]
+                    if not video:
+                        continue
+
                     video.playlist_belonged = None
                 ndb.put_multi(videos)
 
@@ -218,7 +221,9 @@ class EditPlaylist(BaseHandler):
         for i in xrange(0, len(videos)):
             video = videos[i]
             index = indices[i]
-            if playlist_type == 'Primary':
+            if not video:
+                video_info = models.Video.get_none_info(video_keys[i])
+            elif playlist_type == 'Primary':
                 video_info = video.get_basic_info()
             else:
                 video_info = video.get_basic_info(playlist_id)
@@ -239,7 +244,7 @@ class SearchVideo(BaseHandler):
         if res:
             video_id = res.group(0)
             video = models.Video.get_by_id(video_id)
-            if not video or video.deleted or (playlist_type == 'Primary' and video.uploader != user_key):
+            if not video or (playlist_type == 'Primary' and video.uploader != user_key):
                 videos = []
             else:
                 videos = [video]
@@ -262,6 +267,10 @@ class SearchVideo(BaseHandler):
         context['videos'] = []
         for i in xrange(0, len(videos)):
             video = videos[i]
+            logging.info(video)
+            if not video:
+                continue
+                
             video_info = video.get_basic_info()
             if playlist_type == 'Primary' and video.playlist_belonged:
                 video_info['belonged'] = True
@@ -287,7 +296,7 @@ class AddVideo(BaseHandler):
 
             for i in xrange(0, len(ids)):
                 video = videos[i]
-                if not video or video.deleted or video.playlist_belonged or video.uploader != user_key:
+                if not video or video.playlist_belonged or video.uploader != user_key:
                     continue
 
                 list_detail.videos.append(video.key)
@@ -326,7 +335,6 @@ class RemoveVideo(BaseHandler):
     @login_required_json
     @playlist_author_required_json
     def post(self, playlist, list_detail):
-        user_key = self.user_key
         put_list = []
         try:
             ids = self.get_ids()
@@ -347,14 +355,15 @@ class RemoveVideo(BaseHandler):
 
             if playlist.playlist_type == 'Primary':
                 video = videos[i]
-                if not video or video.deleted or video.playlist_belonged != playlist.key or video.uploader != user_key:
+                if not video or video.playlist_belonged != playlist.key or video.uploader != self.user_key:
                     continue
+
                 video.playlist_belonged = None
                 put_list.append(video)
         
         if not list_detail.videos:
             playlist.first_video = None
-        elif playlist.first_video != list_detail.videos[0]:
+        else:
             playlist.first_video = list_detail.videos[0]
 
         playlist.videos_num = len(list_detail.videos)

@@ -35,7 +35,7 @@ class UpdateIndex(BaseHandler):
 
         for video_id, data in videos.iteritems():
             video = ndb.Key('Video', video_id).get()
-            if video and not video.deleted:
+            if video:
                 if data['score_counter']:
                     video.hot_score = video.hot_score*pow(99.0/1000, data['score_counter']) + data['hotscore']
                     video.put()

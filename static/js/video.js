@@ -2916,11 +2916,11 @@ $(document).ready(function() {
 		var playlist_id = $(this).attr('data-id');
 		var playlist_type = $(this).attr('data-type');
 		if ($(this).attr('data-cursor-next')) {
-			dt.setCursor('/video/list/'+video_id+'/'+playlist_id, {type: 'next', playlist_type: playlist_type}, $(this).attr('data-cursor-next'));
+			dt.setCursor('/video/list/'+playlist_id, {type: 'next', playlist_type: playlist_type}, $(this).attr('data-cursor-next'));
 			$('#list-scroll-bar').scroll(detectLoadMorePlaylist);
 		}
 		if ($(this).attr('data-cursor-prev')) {
-			dt.setCursor('/video/list/'+video_id+'/'+playlist_id, {type: 'prev', playlist_type: playlist_type}, $(this).attr('data-cursor-prev'));
+			dt.setCursor('/video/list/'+playlist_id, {type: 'prev', playlist_type: playlist_type}, $(this).attr('data-cursor-prev'));
 			$('#list-scroll-bar').prepend('<a class="list-entry cursor prev">Load previous</a>')
 			$('.list-entry.cursor.prev').click(loadPrevPlaylist);
 		}
@@ -3084,7 +3084,7 @@ function render_inner_comment_div(inner_comment) {
 
 function loadPrevPlaylist() {
 	var playlist_id = $('#list-scroll-bar').attr('data-id');
-	dt.loadNextPage('/video/list/'+video_id+'/'+playlist_id, {type: 'prev'}, function() {
+	dt.loadNextPage('/video/list/'+playlist_id, {type: 'prev'}, function() {
 		$('.list-entry.cursor.prev').remove();
 		$('#list-scroll-bar').prepend('<a class="list-entry prev loading"></a>')
 	}, function(result, isOver) {
@@ -3107,7 +3107,7 @@ function loadPrevPlaylist() {
 
 function loadMorePlaylist() {
 	var playlist_id = $('#list-scroll-bar').attr('data-id');
-	dt.loadNextPage('/video/list/'+video_id+'/'+playlist_id, {type: 'next'}, function() {
+	dt.loadNextPage('/video/list/'+playlist_id, {type: 'next'}, function() {
 		$('#list-scroll-bar').append('<a class="list-entry more loading"></a>')
 	}, function(result, isOver) {
 		$('.list-entry.more.loading').remove();

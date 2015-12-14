@@ -24,37 +24,31 @@ class Video(BaseHandler):
 
         video, clip_list = ndb.get_multi([video_key, models.VideoClipList.get_key(video_id)])
         if not video:
-            self.notify('Video not found.')
+            self.notify('Video not found or deleted.')
             return
 
-        # load video/clip info
-        if video.deleted:
-            video_info = video.get_basic_info()
-            video_info['deleted'] = True
-        else:
-            if clip_index >= len(clip_list.clips):
-                self.redirect(self.uri_for('watch', video_id=video_id))
-                return
+        if clip_index >= len(clip_list.clips):
+            self.redirect(self.uri_for('watch', video_id=video_id))
+            return
 
-            cur_clip = clip_list.clips[clip_index].get()
-            video_info = video.get_full_info()
-            video_info.update({
-                'cur_clip_id': cur_clip.key.id(),
-                'cur_vid': cur_clip.vid,
-                'cur_subintro': cur_clip.subintro,
-                'cur_index': clip_index,
-                'clip_titles': clip_list.titles,
-                'clip_range': range(0, len(clip_list.clips)),
-            })
-            if clip_index == 0:
-                video_info['clip_range_min'] = 0
-                video_info['clip_range_max'] = min(2, len(clip_list.clips))
-            elif clip_index == len(clip_list.clips) - 1:
-                video_info['clip_range_min'] = max(0, len(clip_list.clips) - 2)
-                video_info['clip_range_max'] = len(clip_list.clips)
-            else:
-                video_info['clip_range_min'] = clip_index - 1
-                video_info['clip_range_max'] = clip_index + 1
+        cur_clip = clip_list.clips[clip_index].get()
+        video_info = video.get_full_info()
+        video_info.update({
+            'cur_clip_id': cur_clip.key.id(),
+            'cur_vid': cur_clip.vid,
+            'cur_subintro': cur_clip.subintro,
+            'cur_index': clip_index,
+            'clip_titles': clip_list.titles,
+        })
+        if clip_index == 0:
+            video_info['clip_range_min'] = 0
+            video_info['clip_range_max'] = min(2, len(clip_list.clips))
+        elif clip_index == len(clip_list.clips) - 1:
+            video_info['clip_range_min'] = max(0, len(clip_list.clips) - 2)
+            video_info['clip_range_max'] = len(clip_list.clips)
+        else:
+            video_info['clip_range_min'] = clip_index - 1
+            video_info['clip_range_max'] = clip_index + 1
 
         # load playlist info
         if list_id is not None:
@@ -81,37 +75,20 @@ class Video(BaseHandler):
                 playlist_info['videos'] = []
                 for i in xrange(0, len(videos)):
                     list_video = videos[i]
-                    if list_id is not None:
-                        list_video_info = list_video.get_basic_info(list_id)
+                    if not list_video:
+                        list_video_info = models.Video.get_none_info(list_detail.videos[min_idx + i])
                     else:
-                        list_video_info = list_video.get_basic_info()
+                        list_video_info = list_video.get_basic_info(list_id)
                     list_video_info['index'] = min_idx + i
                     playlist_info['videos'].append(list_video_info)
 
                 if list_id is not None:
                     video_info['list_id'] = list_id
 
-        if video.deleted:
-            context = {
-                'video': video_info,
-                'playlist': playlist_info,
-            }
-            self.render('video', context)
-            return
-
-        # update uploader info
-        uploader_detail = models.User.get_detail_key(video.uploader).get()
-        uploader_info = models.User.get_snapshot_info(uploader_detail.nickname, video.uploader)
-        uploader_info.update(uploader_detail.get_detail_info())
-        change_snapshot = False
-        if video.uploader_name != uploader_detail.nickname:
-            video.uploader_name = uploader_detail.nickname
-            change_snapshot = True
-
         # check video status for user
-        not_watched = False
+        is_new_hit = False
+        has_subscribed = False
         video_info['liked'] = False
-        uploader_info['subscribed'] = False
         if self.user_info:
             self.user = user = self.user_key.get()
             record, is_new_hit = models.ViewRecord.get_or_create(user.key, video.key)
@@ -128,12 +105,21 @@ class Video(BaseHandler):
             if not self.request.cookies.get(video_id):
                 self.response.set_cookie(video_id, str(record.clip_index)+'|'+str(record.timestamp), path='/')
 
-            not_watched = is_new_hit
             video_info['liked'] = models.LikeRecord.has_liked(self.user_key, video.key)
-            uploader_info['subscribed'] = models.Subscription.has_subscribed(self.user_key, video.uploader)
+            has_subscribed = models.Subscription.has_subscribed(self.user_key, video.uploader)
+        
+        # update uploader info
+        uploader_detail = models.User.get_detail_key(video.uploader).get()
+        uploader_info = models.User.get_snapshot_info(uploader_detail.nickname, video.uploader)
+        uploader_info.update(uploader_detail.get_detail_info())
+        uploader_info['subscribed'] = has_subscribed
+        change_snapshot = False
+        if video.uploader_name != uploader_detail.nickname:
+            video.uploader_name = uploader_detail.nickname
+            change_snapshot = True
 
         # update video entity
-        if not_watched:
+        if is_new_hit:
             q = taskqueue.Queue('UpdateIndex')
             payload = {'video': video.key.id(), 'kind': 'hit'}
             q.add(taskqueue.Task(payload=json.dumps(payload), method='PULL'))
@@ -155,7 +141,7 @@ class Video(BaseHandler):
         self.render('video', context)
 
 class GetPlaylistVideo(BaseHandler):
-    def post(self, video_id, playlist_id):
+    def post(self, playlist_id):
         page_size = models.STANDARD_PAGE_SIZE
         playlist_id = int(playlist_id)
         list_detail = models.Playlist.get_detail_key(ndb.Key('Playlist', playlist_id)).get()
@@ -186,11 +172,13 @@ class GetPlaylistVideo(BaseHandler):
         result['videos'] = []
         for i in xrange(0, len(videos)):
             video = videos[i]
-            if playlist_type == 'Primary':
+            if not video:
+                video_info = models.Video.get_none_info(list_detail.videos[min_idx + i])
+            elif playlist_type == 'Primary':
                 video_info = video.get_basic_info()
             else:
                 video_info = video.get_basic_info(playlist_id)
-            video_info['index'] = i + min_idx
+            video_info['index'] = min_idx + i
             result['videos'].append(video_info)
 
         self.json_response(False, result)
@@ -320,7 +308,7 @@ class Comment(BaseHandler):
         content, users = self.at_users_content(content, True)
 
         user, video = ndb.get_multi([self.user_key, ndb.Key('Video', video_id)])
-        if not video or video.deleted:
+        if not video:
             self.json_response(True, {'message': 'Video not found.'})
             return
 
@@ -610,7 +598,7 @@ class Like(BaseHandler):
     @login_required_json
     def post(self, video_id):
         video = ndb.Key('Video', video_id).get()
-        if not video or video.deleted:
+        if not video:
             self.json_response(True, {'message': 'Video not found.'})
             return
 
@@ -635,7 +623,7 @@ class Unlike(BaseHandler):
         delete = models.LikeRecord.dislike(self.user_key, video_key)
         if delete:
             video = video_key.get()
-            if video and not video.deleted:
+            if video:
                 video.likes -= 1
                 video.put()
 

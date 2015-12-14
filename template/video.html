@@ -7,7 +7,6 @@
 <link href="/static/css/player.css" rel="stylesheet" type="text/css">
 <script src="/static/js/video.js" language="JavaScript" type="text/javascript"></script>
 <script type="text/javascript">
-{% if not video.deleted %}
   var tag = document.createElement('script');
   tag.src = "https://www.youtube.com/iframe_api";
   var firstScriptTag = document.getElementsByTagName('script')[0];
@@ -33,7 +32,6 @@
       }
     });
   }
-{% endif %}
 </script>
 {% endblock %}
 
@@ -84,12 +82,12 @@
     </div>
     <div id="video-parts-container">
       {% if video.clip_titles|length > 1 %}
-        {% for i in video.clip_range %}
-          <a class="inline-button episode-link {% if i == video.cur_index %}active{% endif %} {% if i < video.clip_range_min or i > video.clip_range_max %}hidden{% endif %}" href="{{ video.url }}?index={{ i+1 }}{% if video.list_id %}&list={{ video.list_id }}{% endif %}">
-          {% if video.clip_titles[i] %}
-            {{ i+1 }}. {{ video.clip_titles[i] }}
+        {% for title in video.clip_titles %}
+          <a class="inline-button episode-link {% if loop.index0 == video.cur_index %}active{% endif %} {% if loop.index0 < video.clip_range_min or loop.index0 > video.clip_range_max %}hidden{% endif %}" href="{{ video.url }}?index={{ loop.index }}{% if video.list_id %}&list={{ video.list_id }}{% endif %}">
+          {% if title %}
+            {{ loop.index }}. {{ title }}
           {% else %}
-            Part {{ i+1 }}
+            Part {{ loop.index }}
           {% endif %}
           </a>
         {% endfor %}
@@ -100,7 +98,6 @@
       {% endif %}
     </div>
   </div>
-  {% if not video.deleted %}
   <div id="uploader-info-box">
     <a id="uploader-img" href="{{ uploader.space_url}}" target="_blank">
       <img src="{{ uploader.avatar_url_small }}">
@@ -115,18 +112,13 @@
       <div id="uploader-intro">{{ uploader.intro }}</div>
     </div>
   </div>
-  {% endif %}
 </div>
 <div id="player-container">
   <div id="player-controller">
     <div id="player-background">
       <div class="player-vertical-padding"></div>
       <div id="player-canvas">
-        {% if video.deleted %}
-        <img src="/static/img/video_deleted.png">
-        {% else %}
         <div id="player"></div>
-        {% endif %}
       </div>
       <div id="switch-count-down" class="hidden">
         <span id="switch-count-span">Switch to the next part in 5 seconds.</span>
@@ -687,7 +679,6 @@ create_danmaku('Run this code!', function(ele, delta) {
     <div class="right-click-entry" id="danmaku-pool-report">Report abuse</div>
   </div>
 </div>
-{% if not video.deleted %}
 <div id="left-info-box">
   <div id="video-detail-info-block">
     <div id="video-tags-line">
@@ -756,7 +747,6 @@ create_danmaku('Run this code!', function(ele, delta) {
     <!-- <div class="load-more-line"><span class="load-more-button">Load previous comments</span></div> -->
   </div>
 </div>
-{% endif %}
 <form id="report-comment-form" class="popup-box hidden" method="POST">
   <input type="text" class="hidden" name="is_inner" id="report-comment-is-inner">
   <input type="text" class="hidden" name="comment_id" id="report-comment-id">

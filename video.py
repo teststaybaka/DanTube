@@ -39,7 +39,7 @@ def video_author_required(handler):
     def check_author(self, video_id):
         user, video, clip_list = ndb.get_multi([self.user_key, ndb.Key('Video', video_id), models.VideoClipList.get_key(video_id)])
         self.user = user
-        if not video or video.deleted or video.uploader != user.key:
+        if not video or video.uploader != user.key:
             self.notify('You are not allowed to edit this video.')
             return
 
@@ -297,7 +297,7 @@ class VideoUpload(BaseHandler):
     @login_required_json
     def edit_post(self, video_id):
         video, clip_list = ndb.get_multi([ndb.Key('Video', video_id), models.VideoClipList.get_key(video_id)])
-        if not video or video.deleted or video.uploader != self.user_key:
+        if not video or video.uploader != self.user_key:
             self.json_response(True, {'message': 'You are not allowed to edit this video.'})
             return
 
@@ -414,7 +414,7 @@ class AddTag(BaseHandler):
     @login_required_json
     def post(self, video_id):
         video = models.Video.get_by_id(video_id)
-        if not video or video.deleted:
+        if not video:
             self.json_response(True, {'message': 'Video not found.'})
             return
 
@@ -454,26 +454,15 @@ class DeleteVideo(BaseHandler):
             self.json_response(True, {'message': 'Invalid id.'})
             return
 
-        im = Image.open(cStringIO.StringIO(urllib2.urlopen(self.request.host_url+'/static/img/video_deleted.png').read()))
-        resized_im = im.resize((208,117), Image.ANTIALIAS)
-        bucket_name = 'dantube-thumbnail'
-
         videos = ndb.get_multi([ndb.Key('Video', identifier) for identifier in ids])
         deleted_counter = 0
         for i in xrange(0, len(ids)):
             video = videos[i]
-            if not video or video.deleted or video.uploader != self.user_key:
+            if not video or video.uploader != self.user_key:
                 continue
 
             video.Delete()
             deleted_counter += 1
-
-            large_file = gcs.open('/'+bucket_name+'/large-'+video.key.id(), 'w', content_type="image/png", options={'x-goog-acl': 'public-read'})
-            standard_file = gcs.open('/'+bucket_name+'/standard-'+video.key.id(), 'w', content_type="image/png", options={'x-goog-acl': 'public-read'})
-            im.save(large_file, format='png', optimize=True)
-            resized_im.save(standard_file, format='png', optimize=True)
-            large_file.close()
-            standard_file.close()
 
         user_detail = self.user_detail_key.get()
         user_detail.videos_submitted -= deleted_counter
@@ -589,7 +578,7 @@ class ManageDanmakuDetail(BaseHandler):
         clip_key = ndb.Key('VideoClip', int(clip_id))
         
         video, clip = ndb.get_multi([video_key, clip_key])
-        if not video or video.deleted or video.uploader != self.user_key:
+        if not video or video.uploader != self.user_key:
             self.notify('You are not allowed to edit this video.')
             return
 

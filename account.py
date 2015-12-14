@@ -44,7 +44,9 @@ class History(BaseHandler):
                 context['entries'].append(comment_info)
             else:
                 video = videos[i]
-                if record.playlist:
+                if not video:
+                    video_info = models.Video.get_none_info(record.video)
+                elif record.playlist:
                     video_info = video.get_basic_info(record.playlist.id())
                 else:
                     video_info = video.get_basic_info()
@@ -76,8 +78,11 @@ class Likes(BaseHandler):
         for i in xrange(0, len(records)):
             video = videos[i]
             record = records[i]
-            video_info = video.get_basic_info()
-            video_info['liked'] = record.created.strftime("%Y-%m-%d %H:%M")
+            if not video:
+                video_info = models.Video.get_none_info(record.video)
+            else:
+                video_info = video.get_basic_info()
+                video_info['liked'] = record.created.strftime("%Y-%m-%d %H:%M")
             context['videos'].append(video_info)
 
         self.json_response(False, context)

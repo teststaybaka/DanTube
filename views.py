@@ -450,7 +450,7 @@ class FeelingLucky(BaseHandler):
     def get(self):
         max_id = models.Video.get_max_id()
         video = None
-        while not video or video.deleted:
+        while not video:
             random_id = 'dt'+str(random.randint(1, max_id))
             video = models.Video.get_by_id(random_id)
         self.redirect(self.uri_for('watch', video_id=random_id))

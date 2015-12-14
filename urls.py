@@ -74,7 +74,7 @@ routes = [
     webapp2.Route(r'/account/playlists/edit/<playlist_id:\d+>/move', playlist.MoveVideo, name="move_video_in_list"),
 
     webapp2.Route(r'/video/<video_id:dt\d+>', watch.Video, name="watch"),
-    webapp2.Route(r'/video/list/<video_id:dt\d+>/<playlist_id:\d+>', watch.GetPlaylistVideo, name="get_list"),
+    webapp2.Route(r'/video/list/<playlist_id:\d+>', watch.GetPlaylistVideo, name="get_list"),
     webapp2.Route(r'/video/comment/<video_id:dt\d+>', watch.Comment, name="comment", handler_method="get_comment"),
     webapp2.Route(r'/video/inner_comment/<video_id:dt\d+>', watch.Comment, name="inner_comment", handler_method="get_inner_comment"),
     webapp2.Route(r'/video/comment_post/<video_id:dt\d+>', watch.Comment, name="comment_post", handler_method="comment_post"),
