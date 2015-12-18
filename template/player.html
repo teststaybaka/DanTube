@@ -6,6 +6,11 @@
     <script src="/static/js/jquery.min.js" language="JavaScript" type="text/javascript" ></script>
     <link href="/static/css/base.css" rel="stylesheet" type="text/css">
     <script src="/static/js/base.js" language="JavaScript" type="text/javascript"></script>
+    <link rel="stylesheet" href="/static/css/colpick.css" type="text/css"/>
+    <script src="/static/js/colpick.js" type="text/javascript"></script>
+    <script src="/static/js/ZeroClipboard.min.js" type="text/javascript"></script>
+    <link href="/static/css/player.css" rel="stylesheet" type="text/css">
+    <script src="/static/js/player.js" language="JavaScript" type="text/javascript"></script>
 </head>
 <body>
 <noscript>
@@ -17,8 +22,12 @@
     </div>
 </noscript>
 
-<input class="hidden" id="clip-id" value="{{ video.cur_clip_id }}">
-<input class="hidden" id="danmaku-buffer" value="{{ danmaku_list }}">
+<input class="hidden" id="video-id" value="{{ clip.video_id }}">
+<input class="hidden" id="clip-id" value="{{ clip.id }}">
+<input class="hidden" id="clip-index" value="{{ clip.index }}">
+<input class="hidden" id="clip-vid" value="{{ clip.vid }}">
+<input class="hidden" id="danmaku-buffer" value="{{ clip.danmaku_list }}">
+<textarea class="hidden" id="clip-subintro">{{ clip.subintro }}</textarea>
 <div id="player-container">
   <div id="player-controller">
     <div id="player-background">
@@ -56,6 +65,7 @@
       </div>
     </form>
     <div id="progress-controller-wrap">
+      <div id="progress-bar-placeholder"></div>
       <div id="progress-bar-background" ondragstart="return false;" ondrop="return false;" onselectstart="return false;">
         <div id="progress-bar" ondragstart="return false;" ondrop="return false;" onselectstart="return false;"></div>
         <div id="progress-bar-buffered" ondragstart="return false;" ondrop="return false;" onselectstart="return false;"></div>

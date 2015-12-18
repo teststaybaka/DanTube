@@ -145,12 +145,15 @@ $(document).ready(function() {
                 <div class="emoticons-option">(⌒▽⌒)</div>\
                 <div class="emoticons-option">（￣▽￣）</div>\
                 <div class="emoticons-option">(=・ω・=)</div>\
+                <div class="emoticons-option">=￣ω￣=</div>\
                 <div class="emoticons-option">(｀・ω・´)</div>\
                 <div class="emoticons-option">(〜￣△￣)〜</div>\
                 <div class="emoticons-option">(･∀･)</div>\
                 <div class="emoticons-option">(°∀°)ﾉ</div>\
                 <div class="emoticons-option">(￣3￣)</div>\
                 <div class="emoticons-option">╮(￣▽￣)╭</div>\
+                <div class="emoticons-option">╮(╯▽╰)╭</div>\
+                <div class="emoticons-option">╮(￣▽￣")╭</div>\
                 <div class="emoticons-option">( ´_ゝ｀)</div>\
                 <div class="emoticons-option">←_←</div>\
                 <div class="emoticons-option">→_→</div>\
@@ -161,13 +164,18 @@ $(document).ready(function() {
                 <div class="emoticons-option">(ﾟДﾟ≡ﾟдﾟ)!?</div>\
                 <div class="emoticons-option">Σ(ﾟдﾟ;)</div>\
                 <div class="emoticons-option">Σ( ￣□￣||)</div>\
+                <div class="emoticons-option">Σ(っ °Д °;)っ</div>\
+                <div class="emoticons-option">（ˉ﹃ˉ）</div>\
                 <div class="emoticons-option">(´；ω；`)</div>\
                 <div class="emoticons-option">（/TДT)/</div>\
+                <div class="emoticons-option">(´･ω･`)</div>\
                 <div class="emoticons-option">(^・ω・^ )</div>\
                 <div class="emoticons-option">(｡･ω･｡)</div>\
                 <div class="emoticons-option">(●￣(ｴ)￣●)</div>\
+                <div class="emoticons-option">(≧∀≦)</div>\
                 <div class="emoticons-option">ε=ε=(ノ≧∇≦)ノ</div>\
                 <div class="emoticons-option">(´･_･`)</div>\
+                <div class="emoticons-option">( ˙-˙ )</div>\
                 <div class="emoticons-option">(-_-#)</div>\
                 <div class="emoticons-option">（￣へ￣）</div>\
                 <div class="emoticons-option">(￣ε(#￣) Σ</div>\
@@ -176,7 +184,13 @@ $(document).ready(function() {
                 <div class="emoticons-option">（#-_-)┯━┯</div>\
                 <div class="emoticons-option">_(:3」∠)_</div>\
                 <div class="emoticons-option">T_T</div>\
-                <div class="emoticons-option">OTL</div>\
+                <div class="emoticons-option">QAQ</div>\
+                <div class="emoticons-option">╭(°A°`)╮</div>\
+                <div class="emoticons-option">(ಥ_ಥ)</div>\
+                <div class="emoticons-option">(ಡωಡ)</div>\
+                <div class="emoticons-option">(๑•̀ㅂ•́)و✧</div>\
+                <div class="emoticons-option">(ง •̀_•́)ง</div>\
+                <div class="emoticons-option">( ﾟДﾟ)_σ異議あり!!</div>\
             </div>\
             <div class="emoticons-label">Emoticons</div>');
     $('div.emoticons-select').click(function() {
@@ -207,12 +221,12 @@ $(document).ready(function() {
         $(document).click(function() {
             $('.list-selection').addClass('hidden');
         });
-        $('#body-container').on('click', '.list-selected', function(evt) {
+        $(document).on('click', '.list-selected', function(evt) {
             evt.stopPropagation();
             $('.list-selection').addClass('hidden');
             $(this).prev().removeClass('hidden');
         });
-        $('#body-container').on('click', '.list-option', function(evt) {
+        $(document).on('click', '.list-option', function(evt) {
             var list = $(this).parent();
             list.next().text($(this).text());
             list.next().next().val($(this).text());
@@ -245,6 +259,17 @@ $(document).ready(function() {
         $(document).keydown(function(e) {
             if (e.keyCode == 27) {
                 $('.popup-window-container').removeClass('show');
+            }
+        });
+    }
+
+    $('.popup-box .inline-button').click(function() {
+        $(this).parent().parent().addClass('hidden');
+    });
+    if ($('.popup-box').length > 0) {
+        $(document).keydown(function(evt) {
+            if (evt.keyCode == 27) {
+                $('.popup-box').addClass('hidden');
             }
         });
     }
@@ -287,7 +312,7 @@ function deleteWindow(url) {
 
     $('#action-select .option-entry.delete').click(function() {
         var checked_boxes = $('div.single-checkbox.checked');
-        if (checked_boxes.length != 0) {
+        if (checked_boxes.length !== 0) {
             $('div.popup-window-container.remove').addClass('show');
             $('div.delete-target-name').remove();
             var ids = $(checked_boxes[0]).attr('data-id');
@@ -356,7 +381,7 @@ function register_subscribe_button_action() {
 
 // Modified from http://www.w3schools.com/js/js_cookies.asp
 dt.setCookie = function(cname, cvalue, extime) {
-    if (extime == 0) {
+    if (extime === 0) {
         document.cookie = cname + "=" + cvalue + ';path=/';
     } else {
         var d = new Date();
@@ -371,8 +396,8 @@ dt.getCookie = function(cname) {
     var ca = document.cookie.split(';');
     for(var i=0; i<ca.length; i++) {
         var c = ca[i];
-        while (c.charAt(0)==' ') c = c.substring(1);
-        if (c.indexOf(name) == 0) return c.substring(name.length, c.length);
+        while (c.charAt(0) === ' ') c = c.substring(1);
+        if (c.indexOf(name) === 0) return c.substring(name.length, c.length);
     }
     return "";
 }
@@ -529,7 +554,7 @@ dt.scrollUpdate = function(url, params, element_class, container, callback, fini
         container.children('.'+element_class+'.loading').remove();
         var div = callback(result);
         if (div === '') {
-            if (container.find('.'+element_class).length == 0) {
+            if (container.find('.'+element_class).length === 0) {
                 div = '<div class="'+element_class+' none">'
                 if (no_data_string) {
                     div += no_data_string
@@ -668,10 +693,32 @@ dt.cancel_watched = function() {
     clearTimeout(check_watch);
 }
 
+dt.send_report = function(form, type) {
+    dt.pop_ajax_message('Reporting...', 'info');
+    $.ajax({
+      type: "POST",
+      url: '/report/'+type+'/'+video_id+'/'+clip_id,
+      data: form.serialize(),
+      success: function(result) {
+        if(result.error) {
+            dt.pop_ajax_message(result.message, 'error');
+        } else {
+            $('#report-'+type+'-textarea').val('');
+            dt.pop_ajax_message('We\'ve received your report. Thank you!', 'success');
+        }
+      },
+      error: function (xhr, ajaxOptions, thrownError) {
+        console.log(xhr.status);
+        console.log(thrownError);
+        dt.pop_ajax_message(xhr.status+' '+thrownError, 'error');
+      }
+    });
+}
+
 dt.http_format = /(https?:\/\/)?([A-Za-z][A-Za-z0-9_\-]*\.[A-Za-z][A-Za-z0-9_\-]*(?:\.[A-Za-z][A-Za-z0-9_\-]+)?(?:\:[0-9]+)?(?:\/[A-Za-z0-9_\-]+)?)/g;
-dt.at_user_format = /\[(.+)(@.+)\]/g
-dt.video_id_format = /(dt\d+)(?:#(\d+))?/g
-dt.video_time_format = /(\[(\d+):(\d{1,2})\])/g
+dt.at_user_format = /\[(.+)(@.+)\]/g;
+dt.video_id_format = /(dt\d+)(?:#(\d+))?/g;
+dt.video_time_format = /(\[(\d+):(\d{1,2})\])/g;
 dt.subtitle_format = /^\[(\d+):(\d{1,2}).(\d{1,2})\](.*)$/;
 dt.email_format = /^[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/;
 dt.puncts = /[&@.,?!:/\\"'<>=]/;

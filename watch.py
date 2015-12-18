@@ -31,12 +31,9 @@ class Video(BaseHandler):
             self.redirect(self.uri_for('watch', video_id=video_id))
             return
 
-        cur_clip = clip_list.clips[clip_index].get()
         video_info = video.get_full_info()
         video_info.update({
-            'cur_clip_id': cur_clip.key.id(),
-            'cur_vid': cur_clip.vid,
-            'cur_subintro': cur_clip.subintro,
+            'cur_clip_id': clip_list.clips[clip_index].id(),
             'cur_index': clip_index,
             'clip_titles': clip_list.titles,
         })
@@ -131,14 +128,29 @@ class Video(BaseHandler):
 
         context = {
             'video': video_info,
+            'timestamp': self.request.get('timestamp'),
             'uploader': uploader_info,
             'playlist': playlist_info,
             'video_issues': models.Video_Issues,
             'comment_issues': models.Comment_Issues,
             'danmaku_issues': models.Danmaku_Issues,
-            'danmaku_list': json.dumps([danmaku.format() for danmaku in cur_clip.danmaku_buffer]),
         }
         self.render('video', context)
+
+class VideoClip(BaseHandler):
+    def get(self, clip_id):
+        clip = ndb.Key('VideoClip', int(clip_id)).get()
+        if not clip:
+            self.notify('Video part not found.')
+            return
+
+        clip_info = clip.get_basic_info()
+        clip_info['danmaku_list'] = json.dumps([danmaku.format() for danmaku in clip.danmaku_buffer])
+        context = {
+            'clip': clip_info,
+            'danmaku_issues': models.Danmaku_Issues,
+        }
+        self.render('player', context)
 
 class GetPlaylistVideo(BaseHandler):
     def post(self, playlist_id):
@@ -358,7 +370,7 @@ class Comment(BaseHandler):
         self.json_response(False)
 
 def video_clip_exist_required_json(handler):
-    def check_exist(self, video_id, clip_id):
+    def check_exist(self, clip_id):
         clip = ndb.Key('VideoClip', int(clip_id)).get()
         if not clip:
             self.json_response(True, {'message': 'Video not found.'})
@@ -659,8 +671,9 @@ class UpdatePeak(BaseHandler):
             self.json_response(True, {'message': 'Target video not existed.'})
             return
 
-        clip.peak = peak
-        clip.put()
+        if peak > clip.peak:
+            clip.peak = peak
+            clip.put()
         self.json_response(False)
 
 class Test(BaseHandler):

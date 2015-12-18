@@ -96,6 +96,7 @@ body {
 	padding: 0;
 	font-family:"Times New Roman",Georgia,Serif;
 	background-color: rgb(255,255,255);
+    height: 100%;
 }
 
 form {
@@ -1617,6 +1618,69 @@ span.video-timestamp-quick-link {
     border-radius: 3px;
     -webkit-border-radius: 3px;
     -moz-border-radius: 3px;
+}
+
+.popup-box {
+    position: absolute;
+    z-index: 2;
+    background-color: white;
+    box-shadow: 2px 2px 4px rgba(200,200,200, 0.5);
+    border: 1px solid rgb(200,200,200);
+    padding: 10px 15px;
+    color: rgb(100,100,100);
+    text-align: left;
+    font-size: 0;
+}
+
+.popup-box.arrow:before, .popup-box.arrow:after {
+    bottom: 100%;
+    left: 7%;
+    border: solid transparent;
+    content: " ";
+    height: 0;
+    width: 0;
+    position: absolute;
+    pointer-events: none;
+}
+
+.popup-box.arrow:after {
+    border-bottom-color: rgb(255, 255, 255);
+    border-width: 10px;
+    margin-left: -10px;
+}
+
+.popup-box.arrow:before {
+    border-bottom-color: rgb(200, 200, 200);
+    border-width: 11px;
+    margin-left: -11px;
+}
+
+.list-select.report {
+    width: 250px;
+}
+
+.report-input-line {
+    margin: 5px 0;
+}
+
+textarea.report {
+    width: 250px;
+    height: 50px;
+    resize: none;
+}
+
+.report-buttons-line {
+    text-align: right;
+    margin-top: 10px;
+}
+
+.inline-button.report {
+    font-weight: normal;
+    margin-left: 10px;
+}
+
+.report-label {
+    font-size: 14px;
 }
 
 @media only screen and (min-width: 1550px) {

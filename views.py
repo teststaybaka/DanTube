@@ -82,7 +82,7 @@ class BaseHandler(webapp2.RequestHandler):
             self.session.save_session(self.response)
 
     def persist_view_history(self):
-        if self.request.route.name == 'watch':
+        if self.request.route.name == 'watch' or self.request.route.name == 'watch_clip':
             return
 
         for key in self.request.cookies:

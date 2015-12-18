@@ -900,6 +900,18 @@ class VideoClip(ndb.Model):
   code_danmaku_num = NonNegativeIntegerProperty(required=True, default=0, indexed=False)
   code_danmaku_counter = ndb.IntegerProperty(required=True, default=0, indexed=False)
 
+  def get_basic_info(self):
+    basic_info = {
+      'id': self.key.id(),
+      'index': self.index,
+      'title': self.title,
+      'vid': self.vid,
+      'video_id': self.video.id(),
+      'subintro': self.subintro,
+      'source': self.source
+    }
+    return basic_info
+
   @classmethod
   def parse_url(cls, raw_url, source):
     if not urlparse.urlparse(raw_url).scheme:
@@ -1102,7 +1114,7 @@ class Feedback(ndb.Model):
   processed = ndb.BooleanProperty(required=True, default=False, indexed=False)
   created = ndb.DateTimeProperty(auto_now_add=True)
 
-Video_Issues = ['Graphic sexual activity', 'Nudity', 'Animal abuse', 'Promotes hatred', 'Promotes terrorism', 'Drug abuse', 'Self injury', 'Child abuse', 'Misleading thumbnail', 'Misleading text', 'Scams/fraud', 'Infringe copyrights', 'Suspicious script', 'Others']
+Video_Issues = ['Graphic sexual activity', 'Nudity', 'Animal abuse', 'Promotes hatred', 'Promotes terrorism', 'Drug abuse', 'Self injury', 'Child abuse', 'Misleading thumbnail', 'Misleading words', 'Scams/fraud', 'Infringe copyrights', 'Suspicious script', 'Others']
 class ReportVideo(ndb.Model):
   video_clip = ndb.KeyProperty(kind='VideoClip', required=True, indexed=False)
   issue = ndb.StringProperty(required=True, choices=Video_Issues, indexed=False)
