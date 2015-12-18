@@ -636,12 +636,10 @@ function danmaku_update() {
                 ele.element.setAttribute('data-index', i);
                 ele.element.lastChild.nodeValue = dt.unescapeHTML(ele.ref_danmaku.content);
                 ele.element.setAttribute('style', ele.ref_danmaku.css);
-                ele.element.style.left = player_width+'px';
             } else {
                 ele.element.setAttribute('data-index', i);
                 ele.element.lastChild.nodeValue = dt.unescapeHTML(ele.ref_danmaku.content);
                 ele.element.setAttribute('style', '');
-                ele.element.style.left = player_width+'px';
                 ele.element.style.opacity = danmaku_opacity;
                 ele.element.style.color = dt.dec2hexColor(ele.ref_danmaku.color);
                 if (has_text_outline) {
@@ -703,7 +701,6 @@ function danmaku_update() {
                 var bul = document.createElement('div');
                 bul.setAttribute('class', 'danmaku');
                 bul.appendChild(document.createTextNode(dt.unescapeHTML(ref_danmaku.content)));
-                bul.style.left = player_width+'px';
                 bul.style.opacity = subtitles_opacity;
                 bul.style.fontSize = subtitles_font_size+'px';
                 player_background.appendChild(bul);
@@ -925,8 +922,8 @@ dt.onPlayerReady = function(event) {
     $('#volume-background').mousedown(function(evt) {
         var volume = $('#volume-bar')[0];
         function volume_move(evt) {
-            var rect = volume.getBoundingClientRect();
-            var len = volume.offsetHeight - (evt.clientY - rect.top);
+            var rect = $(volume).offset();
+            var len = volume.offsetHeight - (evt.pageY - rect.top);
             if (len > volume.offsetHeight) {
                 len = volume.offsetHeight;
             }
@@ -971,7 +968,7 @@ dt.onPlayerReady = function(event) {
     var player_background = document.getElementById("player-background");
     for (var i = 0; i < 120; i++) {
         var bul = document.createElement('div');
-        bul.setAttribute('class', 'danmaku');
+        bul.className = 'danmaku';
         var text = document.createTextNode('sdfsdfs');
         bul.appendChild(text);
         player_background.appendChild(bul);
@@ -1257,8 +1254,8 @@ dt.onPlayerReady = function(event) {
     $('#opacity-indicator').mousedown(function(evt) {
         var indicator = $(this)[0];
         function move_pointer(evt) {
-            var rect = indicator[0].getBoundingClientRect();
-            var offset = rect.right - evt.clientX;
+            var rect = $(indicator).offset();
+            var offset = rect.left + indicator.offsetWidth - evt.pageX;
             if (offset < 0) {
                 offset = 0;
             }
@@ -1278,7 +1275,7 @@ dt.onPlayerReady = function(event) {
         }
         
         function stop_move() {
-            $(document).off('mousemove, mouseup mouseout');
+            $(document).off('mousemove mouseup mouseout');
         }
 
         move_pointer(evt);
@@ -1442,8 +1439,8 @@ dt.onPlayerReady = function(event) {
     $('.number-adjust-bar').mousedown(function(evt) {
         var bar = $(this)[0];
         function move_pointer(evt) {
-            var rect = bar.getBoundingClientRect();
-            var offset = rect.right - evt.clientX;
+            var rect = $(bar).offset();
+            var offset = rect.left + bar.offsetWidth - evt.pageX;
             if (offset < 0) {
                 offset = 0;
             }
@@ -1719,15 +1716,14 @@ dt.onPlayerReady = function(event) {
             $('#danmaku-report').addClass('disabled');
         }
 
-        var rect = $('#player-container').offset();
         $('.danmaku-menu').removeClass('hidden');
-        if (evt.pageY + $('.danmaku-menu')[0].scrollHeight > player_height + rect.top) {
-            $('.danmaku-menu')[0].style.top = player_height + rect.top - $('.danmaku-menu')[0].scrollHeight+'px';
+        if (evt.pageY + $('.danmaku-menu')[0].scrollHeight > player_height) {
+            $('.danmaku-menu')[0].style.top = player_height - $('.danmaku-menu')[0].scrollHeight+'px';
         } else {
             $('.danmaku-menu')[0].style.top = evt.pageY+'px';
         }
-        if (evt.pageX + $('.danmaku-menu')[0].scrollWidth > player_width + rect.left) {
-            $('.danmaku-menu')[0].style.left = player_width + rect.left - $('.danmaku-menu')[0].scrollWidth+'px';
+        if (evt.pageX + $('.danmaku-menu')[0].scrollWidth > player_width) {
+            $('.danmaku-menu')[0].style.left = player_width - $('.danmaku-menu')[0].scrollWidth+'px';
         } else {
             $('.danmaku-menu')[0].style.left = evt.pageX+'px';
         }
@@ -1815,15 +1811,14 @@ dt.onPlayerReady = function(event) {
             $('#danmaku-pool-report').addClass('disabled');
         }
 
-        var rect = $('#player-container').offset();
         $('.danmaku-pool-menu').removeClass('hidden');
         if (evt.pageY + $('.danmaku-pool-menu')[0].scrollHeight > $(document).height()) {
-            $('.danmaku-pool-menu')[0].style.top = $(document).height() + rect.top - $('.danmaku-pool-menu')[0].scrollHeight+'px';
+            $('.danmaku-pool-menu')[0].style.top = $(document).height() - $('.danmaku-pool-menu')[0].scrollHeight+'px';
         } else {
             $('.danmaku-pool-menu')[0].style.top = evt.pageY+'px';
         }
         if (evt.pageX + $('.danmaku-pool-menu')[0].scrollWidth > $(document).width()) {
-            $('.danmaku-pool-menu')[0].style.left = $(document).width() + rect.left - $('.danmaku-pool-menu')[0].scrollWidth+'px';
+            $('.danmaku-pool-menu')[0].style.left = $(document).width() - $('.danmaku-pool-menu')[0].scrollWidth+'px';
         } else {
             $('.danmaku-pool-menu')[0].style.left = evt.pageX+'px';
         }
@@ -1970,7 +1965,7 @@ dt.onPlayerReady = function(event) {
             type: 'Advanced',
         }
         var bul = document.createElement('div');
-        bul.setAttribute('class', 'danmaku');
+        bul.className = 'danmaku';
         bul.setAttribute('style', preview_danmaku.css);
         bul.style.left = player_width+'px';
         var text = document.createTextNode(preview_danmaku.content);
@@ -2561,7 +2556,7 @@ function create_danmaku(content, update_callback) {
         type: 'Custom',
     }
     var bul = document.createElement('div');
-    bul.setAttribute('class', 'danmaku');
+    bul.className = 'danmaku';
     bul.innerHTML = content;
     var player_background = document.getElementById('player-background');
     player_background.appendChild(bul);
