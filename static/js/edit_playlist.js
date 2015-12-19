@@ -57,6 +57,7 @@ $(document).ready(function() {
     popup_container = $('.popup-video-container');
 
     $('#add-videos-button').click(function(evt) {
+        $('body').addClass('background');
         $('.popup-window-container.add-to').addClass('show');
         if (popup_container.children().length == 0) {
             popup_container.scroll(detect_popup_scroll);
@@ -78,6 +79,7 @@ $(document).ready(function() {
     });
 
     $('.add-button').click(function(evt) {
+        $('body').removeClass('background');
         $('.popup-window-container.add-to').removeClass('show');
     });
 
@@ -92,7 +94,7 @@ $(document).ready(function() {
     });
 
     $('input.add-button').click(function(evt) {
-        if (ids.length == 0) return;
+        if (ids.length === 0) return;
 
         $(evt.target).prop('disabled', true);
         dt.pop_ajax_message('Adding videos to the playlist...', 'info');

@@ -66,6 +66,7 @@ $(document).ready(function() {
     popup_container = $('.popup-playlist-container');
 
     $('.submitted-video-container').on('click', '.add-to', function() {
+        $('body').addClass('background');
         $('.popup-window-container.add-to').addClass('show')
                                             .attr('data-id', $(this).attr('data-id'));
         if (popup_container.children().length == 0) {
@@ -82,6 +83,7 @@ $(document).ready(function() {
     });
 
     $('.add-button').click(function(evt) {
+        $('body').removeClass('background');
         $('.popup-window-container.add-to').removeClass('show');
     });
 
@@ -97,7 +99,7 @@ $(document).ready(function() {
 
     $('input.add-button').click(function(evt) {
         var entries = $('.content-entry.popup.selected');
-        if (entries.length != 1) return;
+        if (entries.length !== 1) return;
 
         $(evt.target).prop('disabled', true);
         dt.pop_ajax_message('Adding the video to the playlist...', 'info');

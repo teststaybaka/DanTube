@@ -258,6 +258,7 @@ $(document).ready(function() {
     if ($('.popup-window-container').length > 0) {
         $(document).keydown(function(e) {
             if (e.keyCode == 27) {
+                $('body').removeClass('background');
                 $('.popup-window-container').removeClass('show');
             }
         });
